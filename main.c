@@ -398,9 +398,9 @@ void fPlaying ()
 				// PlaySoundMulti(missHitSE);
 			}
 			ClearBackground(BLACK);
-			printf("health %f \n", _health);
+			//printf("health %f \n", _health);
 		}
-		printf("health %f \n", _health);
+		//printf("health %f \n", _health);
 
 		if(_health > 100)
 			_health = 100;
@@ -619,10 +619,11 @@ void fCountDown ()
 
 void fEditor ()
 {
+	int bpm = 150;
 	static bool isPlaying = false;
-	static float _scrollSpeed = 1;
+	static float _scrollSpeed = 5;
 	_musicPlaying = isPlaying;
-	//printf("musicTime: %.2f \t rMusicTime: %.2f\n", _musicTime, (float)_musicFrameCount/(_decoder.outputSampleRate));
+
 	if(isPlaying) {
 		// UpdateMusicStreamCustom(music);
 		_musicTime += GetFrameTime();
@@ -634,13 +635,13 @@ void fEditor ()
 		if(IsKeyPressed(KEY_UP)) _scrollSpeed *= 1.2;
 		if(IsKeyPressed(KEY_DOWN)) _scrollSpeed /= 1.2;
 		if(_scrollSpeed == 0) _scrollSpeed = 0.01;
-		printf("Mousewheel: %f  \n Key Right: %d", GetMouseWheelMove(), IsKeyDown(KEY_RIGHT));	
+		//printf("Mousewheel: %f  \n Key Right: %d", GetMouseWheelMove(), IsKeyDown(KEY_RIGHT));
 	}
-
+	//printf("Framecount: %d\n MusicTime: %f\n SongLength: %d\n", _musicFrameCount, _musicTime, _musicLength);
 	if(_musicTime < 0)
 		_musicTime = 0;
 	
-
+	
 	BeginDrawing();
 		ClearBackground(BLACK);
 		
