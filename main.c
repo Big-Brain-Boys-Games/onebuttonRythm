@@ -415,9 +415,9 @@ void fPlaying ()
 				_health += healthAdded;
 				//feedback("hit!");
 				int scoreAdded = noLessThanZero(300 - closestTime * (300 / _maxMargin));
-				if(_score > 200) {
+				if(scoreAdded > 200) {
 					feedback("300!");
-				}else if (_score > 100) {
+				}else if (scoreAdded > 100) {
 					feedback("200!");
 				} else {
 					feedback("100!");
