@@ -878,7 +878,7 @@ void fEditor ()
 		//Draw the bars
 		for (int i = 0; i < getBarsCount(); i++)
 		{
-			float x = middle + middle / (_musicLength / getBarsCount() - _musicTime);
+			float x = middle + middle / (_musicLength / getBarsCount() - _musicTime) * (1/_scrollSpeed);
 			DrawRectangle(x,middle,5,1000,WHITE);
 			printf("X is: %f\t", x);
 		}
