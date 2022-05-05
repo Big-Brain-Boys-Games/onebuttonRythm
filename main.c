@@ -187,10 +187,7 @@ void loadMusic(char * file)
 	
 }
 
-<<<<<<< HEAD
-int getMusicDuration() {
-	return _musicLength / _decoder.outputSampleRate;
-=======
+
 float getMusicDuration() {
 	return _musicLength / (float)_decoder.outputSampleRate;
 }
@@ -203,7 +200,6 @@ void fixMusicTime()
 {
 	if(fabs(_musicTime - getMusicPosition()) > 0.1)
 		_musicTime = getMusicPosition();
->>>>>>> 675e356fc1c88c6bb61c34905c88b336a7946d1b
 }
 
 int getBarsCount() {
