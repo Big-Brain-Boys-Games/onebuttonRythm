@@ -374,6 +374,44 @@ void drawButton(Rectangle rect, char * text)
 	DrawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + GetScreenHeight() * 0.01, GetScreenWidth() * 0.05, (color.r == GRAY.r) ? BLACK : DARKGRAY);
 }
 
+float musicTimeToScreen(float musicTime)
+{
+	float middle = GetScreenWidth() /2;
+	return middle + middle * (musicTime - _musicHead) * (1/_scrollSpeed);
+}
+
+float screenToMusicTime(float x)
+{
+	float middle = GetScreenWidth() /2;
+	return (x-middle)/(middle*(1/_scrollSpeed))+_musicHead;
+}
+
+void drawProgressBar()
+{
+	DrawRectangle( GetScreenWidth()*0.01, GetScreenHeight()*0.93, GetScreenWidth()*0.98, GetScreenHeight()*0.02, (Color){.r=255,.g=255,.b=255,.a=126});
+	//drop shadow
+	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.95, GetScreenWidth()*0.03, (Color){.r=0,.g=0,.b=0,.a=80});
+	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.94, GetScreenWidth()*0.025, WHITE);
+}
+
+void drawBars()
+{
+	//Draw the bars
+	float middle = GetScreenWidth()/2;
+	float distBetweenBars = getMusicDuration() / getBarsCount();
+	for (int i = screenToMusicTime(0)/distBetweenBars; i < screenToMusicTime(GetScreenWidth())/distBetweenBars; i++)
+	{
+		DrawRectangle(musicTimeToScreen(distBetweenBars*i),middle+GetScreenHeight()*0.1,GetScreenWidth()*0.01,GetScreenHeight()*0.3,(Color){.r=255,.g=255,.b=255,.a=180});
+	}
+
+	float distBetweenBeats = getMusicDuration() / getBeatsCount();
+	for (int i = screenToMusicTime(0)/distBetweenBeats; i < screenToMusicTime(GetScreenWidth())/distBetweenBeats; i++)
+	{
+		if(i % 4 == 0) continue;
+		DrawRectangle(musicTimeToScreen(distBetweenBeats*i),middle+GetScreenHeight()*0.2,GetScreenWidth()*0.01,GetScreenHeight()*0.2,(Color){.r=255,.g=255,.b=255,.a=180});
+	}
+}
+
 void fRecording ()
 {
 	_musicHead += GetFrameTime();
@@ -406,7 +444,8 @@ void fRecording ()
 			ClearBackground(BLACK);
 		}
 		// DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=255,.g=255,.b=255,.a=noLessThanZero(fadeOut - GetMusicTimePlayed(music))*255});
-
+		drawBars();
+		drawProgressBar();
 	EndDrawing();
 	if(endOfMusic())
 	{
@@ -415,10 +454,9 @@ void fRecording ()
 	}
 }
 
-float musicTimeToScreen(float musicTime)
+float noteFadeOut(float note)
 {
-	float middle = GetScreenWidth() /2;
-	return middle + middle * (musicTime - _musicHead) * (1/_scrollSpeed);
+	return fmin(1, fmax(0, (1-fabs(note - _musicHead) * (1/_scrollSpeed))*3));
 }
 
 void dNotes () 
@@ -432,8 +470,7 @@ void dNotes ()
 		if(i < 0) continue;
 		//DrawCircle( middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
 		//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
-		float x = middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed) - _noteTex.width * scaleNotes / 2;
-		DrawTextureEx(_noteTex, (Vector2){.x=x, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,(Color){.r=128,.g=128,.b=128,.a= noLessThanZero(255-(255-(_pNotes[i] - _musicHead) * (255/_scrollSpeed)) / 2)});
+		DrawTextureEx(_noteTex, (Vector2){.x=musicTimeToScreen(_pNotes[i])- _noteTex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,(Color){.r=128,.g=128,.b=128,.a=255*noteFadeOut(_pNotes[i])});
 
 	}
 
@@ -444,7 +481,8 @@ void dNotes ()
 		{
 			//DrawCircle( middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
 			//DrawTextureEx(_noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
-			DrawTextureEx(_noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed) - _noteTex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,WHITE);
+			DrawTextureEx(_noteTex, (Vector2){.x=musicTimeToScreen(_pNotes[i])- _noteTex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,(Color){.r=255,.g=255,.b=255,.a=255*noteFadeOut(_pNotes[i])});
+
 		}
 	}
 	DrawRectangle(middle - width / 2,0 , width, GetScreenHeight(), (Color){.r=255,.g=255,.b=255,.a=255/2});
@@ -590,7 +628,7 @@ void fPlaying ()
 			_pGameplayFunction = &fFail;
 			// StopMusicStream(music);
 		}
-
+		drawProgressBar();
 	EndDrawing();
 }
 
@@ -781,7 +819,6 @@ void fCountDown ()
 void fEditor ()
 {
 	static bool isPlaying = false;
-	static float _scrollSpeed = 5;
 	_musicPlaying = isPlaying;
 	if(isPlaying) {
 		// UpdateMusicStreamCustom(music);
@@ -804,11 +841,7 @@ void fEditor ()
 		_musicHead = getMusicDuration();
 	
 
-<<<<<<< HEAD
 	// printf("Bars: %i\t music length: %i\t current time: %f\n", getBarsCount(), _musicLength, _musicTime);
-=======
-	printf("Bars: %i\t music length: %i\t current time: %f\n", getBarsCount(), _musicLength, _musicHead);
->>>>>>> bb97bfc853e8750524b44f1a31655028961d5f5f
 
 	BeginDrawing();
 		ClearBackground(BLACK);
@@ -885,19 +918,9 @@ void fEditor ()
 			isPlaying = !isPlaying;
 		}
 
-		//Draw the bars
-		for (int i = 0; i < getBarsCount(); i++)
-		{
-<<<<<<< HEAD
-			// float x = middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed) - _noteTex.width * scaleNotes / 2;
-			float distBetweenBars = getMusicDuration() / getBarsCount();
-			float x = middle + middle*(distBetweenBars*i - _musicTime)*(1/_scrollSpeed);
-=======
-			float x = middle + middle / (_musicLength / getBarsCount() - _musicHead) * (1/_scrollSpeed);
->>>>>>> bb97bfc853e8750524b44f1a31655028961d5f5f
-			DrawRectangle(x,middle,5,1000,WHITE);
-			// printf("X is: %f\t", x);
-		}
+		
+		drawBars();
+		drawProgressBar();
 
 	EndDrawing();
 	if(endOfMusic())
