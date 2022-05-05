@@ -49,6 +49,7 @@ int _musicLength = 0;
 #define EFFECT_BUFFER_SIZE 48000*4*4
 void* _pMusic;
 void* _pEffectsBuffer;
+int _effectOffset;
 
 void* _pHitSE;
 int _hitSE_Size;
@@ -71,13 +72,13 @@ void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uin
 	}
 	//sound effects
 
-	//todo optimize this so memcpy and memset don't have to happen
 	for(int i = 0; i < frameCount*2; i++)
 	{
-		((_Float32*)pOutput)[i] += ((_Float32*)_pEffectsBuffer)[i];
+		((_Float32*)pOutput)[i] += ((_Float32*)_pEffectsBuffer)[(i+_effectOffset)%(4800*4)];
+		((_Float32*)_pEffectsBuffer)[(i+_effectOffset)%(4800*4)] = 0;
 	}
-	memcpy(_pEffectsBuffer, &((_Float32*)_pEffectsBuffer)[frameCount], EFFECT_BUFFER_SIZE-frameCount*sizeof(_Float32)*2);
-	memset(_pEffectsBuffer+EFFECT_BUFFER_SIZE-frameCount*sizeof(_Float32)*2, 0, frameCount*sizeof(_Float32)*2);
+	_effectOffset+=frameCount;
+
 
 
     (void)pInput;
@@ -130,7 +131,6 @@ void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
 	return pAudio;
 }
 
-
 void loadMusic(char * file)
 {
 	_musicPlaying = false;
@@ -150,6 +150,7 @@ void loadMusic(char * file)
     _deviceConfig.sampleRate        = _decoder.outputSampleRate;
     _deviceConfig.dataCallback      = data_callback;
     _deviceConfig.pUserData         = &_decoder;
+	// _deviceConfig.periodSizeInMilliseconds = 300;
 	
 }
 
@@ -157,7 +158,7 @@ void playAudioEffect(void * effect, int size)
 {
 	for(int i = 0; i < size; i++)
 	{
-		((_Float32*)_pEffectsBuffer)[i] += ((_Float32*)effect)[i];
+		((_Float32*)_pEffectsBuffer)[(i+_effectOffset)%(4800*4)] += ((_Float32*)effect)[i];
 	}
 }
 
@@ -885,7 +886,7 @@ int main (int argc, char **argv)
 	//todo do this smarter
 	_pEffectsBuffer = calloc(sizeof(char), EFFECT_BUFFER_SIZE); //4 second long buffer
 	ma_decoder tmp;
-	_pHitSE = loadAudio("hit.mp3", &tmp, &_hitSE_Size);
+	_pHitSE = loadAudio("test.mp3", &tmp, &_hitSE_Size);
 	_pMissHitSE = loadAudio("missHit.mp3", &tmp, &_missHitSE_Size);
 	_pMissSE = loadAudio("missHit.mp3", &tmp, &_missSE_Size);
 	
