@@ -144,15 +144,10 @@ void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
         printf("failed to open music file %s\n", file);
 		exit(0);
     }
-	printf("ma_resample_algorithm %i\n", decoder_config.resampling.algorithm);
-	printf("decoder format %i   Sizeof %i\n", decoder->outputFormat, sizeof(_Float32));
 	int lastFrame = -1;
 	ma_decoder_get_length_in_pcm_frames(decoder, audioLength);
-	printf("audio length %i\n", *audioLength);
-	printf("audio samplerate: %i\n", decoder->outputSampleRate);
 	void * pAudio = calloc(sizeof(_Float32)*2*2, *audioLength); //added some patting to get around memory issue //todo fix this work around
 	void * pCursor = pAudio;
-	printf("doing resampling %i\n", decoder->converter.hasResampler);
 	while(decoder->readPointerInPCMFrames !=lastFrame)
 	{
 		lastFrame = decoder->readPointerInPCMFrames;
@@ -329,6 +324,18 @@ void loadMap (int fileType)
 	
 }
 
+void drawProgressBar()
+{
+	DrawRectangle( GetScreenWidth()*0.01, GetScreenHeight()*0.89, GetScreenWidth()*0.98, GetScreenHeight()*0.02, (Color){.r=255,.g=255,.b=255,.a=126});
+	//drop shadow
+
+	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.91, GetScreenWidth()*0.03, (Color){.r=0,.g=0,.b=0,.a=80});
+
+	// printf("progress %f\n", getMusicPosition()/ getMusicDuration());
+	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.9, GetScreenWidth()*0.025, WHITE);
+
+}
+
 void drawCursor ()
 {
 	static float lastClick;
@@ -395,7 +402,7 @@ void fRecording ()
 			ClearBackground(BLACK);
 		}
 		// DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=255,.g=255,.b=255,.a=noLessThanZero(fadeOut - GetMusicTimePlayed(music))*255});
-
+		drawProgressBar();
 	EndDrawing();
 	if(endOfMusic())
 	{
@@ -574,7 +581,7 @@ void fPlaying ()
 			_pGameplayFunction = &fFail;
 			// StopMusicStream(music);
 		}
-
+		drawProgressBar();
 	EndDrawing();
 }
 
@@ -864,7 +871,7 @@ void fEditor ()
 			isPlaying = !isPlaying;
 		}
 
-
+		drawProgressBar();
 	EndDrawing();
 	if(endOfMusic())
 	{
