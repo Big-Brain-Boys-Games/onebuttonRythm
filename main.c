@@ -151,7 +151,7 @@ void loadMap (int fileType)
 	strcat(pStr, "/image.png");
 	_background = LoadTexture(pStr);
 	strcpy(pStr, _pMap);
-	strcat(pStr, "/music.mp3");
+	strcat(pStr, "/song.mp3");
 
 	// ma_result result
 	// music = LoadMusicStream(pStr);
