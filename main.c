@@ -87,7 +87,7 @@ void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uin
 
 bool endOfMusic()
 {
-	if(_musicLength < _musicFrameCount)
+	if(_musicLength/20 < _musicFrameCount)
 		return true;
 	return false;
 }
@@ -103,10 +103,35 @@ float noLessThanZero(float var)
 	return var;
 }
 
-void saveFile (int noteIndex)
+void printAllNotes()
 {
-	fwrite(_pNotes, sizeof(float), noteIndex, _pFile);
+	for(int i = 0; i < _amountNotes; i++)
+	{
+		printf("note %.2f\n", _pNotes[i]);
+	}
+}
+
+
+void saveFile (int noteAmount)
+{
 	printf("written map data\n");
+	char * mapName = "Map1";
+	char * Creator = "Me";
+	int Difficulty = 3;
+	fprintf(_pFile, "[Name]\n");
+	fprintf(_pFile, "%s\n", mapName);
+	fprintf(_pFile, "[Creator]\n");
+	fprintf(_pFile, "%s\n", Creator);
+	fprintf(_pFile, "[Difficulty]\n");
+	fprintf(_pFile, "%i\n", Difficulty);
+	fprintf(_pFile, "[Notes]\n");
+	for(int i = 0; i < noteAmount; i++)
+	{
+		fprintf(_pFile, "%f\n", _pNotes[i]);
+	}
+	fclose(_pFile);
+	//fwrite(_pNotes, sizeof(float), noteIndex, _pFile);
+	
 }
 
 void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
@@ -162,8 +187,23 @@ void loadMusic(char * file)
 	
 }
 
+<<<<<<< HEAD
 int getMusicDuration() {
 	return _musicLength / _decoder.outputSampleRate;
+=======
+float getMusicDuration() {
+	return _musicLength / (float)_decoder.outputSampleRate;
+}
+
+float getMusicPosition() {
+	return _musicFrameCount / (float)_decoder.outputSampleRate;
+}
+
+void fixMusicTime()
+{
+	if(fabs(_musicTime - getMusicPosition()) > 0.1)
+		_musicTime = getMusicPosition();
+>>>>>>> 675e356fc1c88c6bb61c34905c88b336a7946d1b
 }
 
 int getBarsCount() {
@@ -202,6 +242,8 @@ void startMusic()
 	_musicPlaying = true;
 }
 
+enum FilePart{fpNone, fpName, fpCreator, fpDifficulty, fpNotes};
+
 void loadMap (int fileType)
 {
 	char * pStr = malloc(strlen(_pMap) + 12);
@@ -221,18 +263,68 @@ void loadMap (int fileType)
 	if(fileType == 0)
 	{
 		_pFile = fopen(pStr, "rb");
-		float size;
-		fread(&size, 1, sizeof(float), _pFile);
-		printf("size: %i", (int)size);
-		if(_amountNotes != 0)
+		// float size;
+		// //fread(&size, 1, sizeof(float), _pFile);
+		// printf("size: %i", (int)size);
+		// if(_amountNotes != 0)
+		// {
+		// 	free(_pNotes);
+		// }
+		// _pNotes = calloc(size, sizeof(float));
+		// rewind (_pFile);
+		// fread(_pNotes, size, sizeof(float), _pFile);
+		// fclose(_pFile);
+		// _amountNotes = size;
+
+		//text file
+		char line [1000];
+		enum FilePart mode = fpNone;
+		_amountNotes = 50;
+		_pNotes = malloc(sizeof(float)*_amountNotes);
+   		while(fgets(line,sizeof(line),_pFile)!= NULL)
 		{
-			free(_pNotes);
+			int stringLenght = strlen(line);
+			bool emptyLine = true;
+			for(int i = 0; i < stringLenght; i++)
+				if(line[i] != ' ' && line[i] != '\n')
+					emptyLine = false;
+			
+			if(emptyLine)
+				continue;
+
+			if(strcmp(line, "[Name]\n") == 0)			{mode = fpName;			continue;}
+			if(strcmp(line, "[Creator]\n") == 0)		{mode = fpCreator;		continue;}
+			if(strcmp(line, "[Difficulty]\n") == 0)	{mode = fpDifficulty;	continue;}
+			if(strcmp(line, "[Notes]\n") == 0)		{mode = fpNotes;		continue;}
+			printf("%i mode, %s\n", mode, line);
+			switch(mode)
+			{
+				case fpNone:
+					break;
+				case fpName:
+					//todo save name
+					break;
+				case fpCreator:
+					//todo save creator
+					break;
+				case fpDifficulty:
+					//todo save difficulty
+					break;
+				case fpNotes:
+					_noteIndex++;
+					if(_noteIndex <= _amountNotes)
+					{
+						_amountNotes += 50;
+						_pNotes = realloc(_pNotes, _amountNotes);
+					}
+					_pNotes[_noteIndex] = atof(line);
+					printf("note %i  %f\n", _noteIndex, _pNotes[_noteIndex]);
+					break;
+			}
 		}
-		_pNotes = calloc(size, sizeof(float));
-		rewind (_pFile);
-		fread(_pNotes, size, sizeof(float), _pFile);
+		_amountNotes = _noteIndex;
+		_noteIndex = 0;
 		fclose(_pFile);
-		_amountNotes = size;
 	}else
 	{
 		_pFile = fopen(pStr, "wb");
@@ -287,6 +379,9 @@ void drawButton(Rectangle rect, char * text)
 
 void fRecording ()
 {
+	_musicTime += GetFrameTime();
+	fixMusicTime();
+
 	// UpdateMusicStream(music);
 	BeginDrawing();
 		ClearBackground(BLACK);
@@ -299,12 +394,13 @@ void fRecording ()
 			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
 		}
 
-		if(GetKeyPressed())
+		if(GetKeyPressed() && _musicTime!=0)
 		{
 			printf("keyPressed! \n");
 			
 			//todo fix
-			_pNotes[_noteIndex] = 0;
+			_pNotes[_noteIndex] = _musicTime;
+			printf("music Time: %.2f\n", _musicTime);
 			//GetMusicTimePlayed(music);
 			
 			// printf("written value %f  to index: %i, supposed to be %f\n", notes[noteIndex], noteIndex,  GetMusicTimePlayed(music));
@@ -317,8 +413,8 @@ void fRecording ()
 	EndDrawing();
 	if(endOfMusic())
 	{
-		printf("eyo saving file boggers\n");
 		saveFile(_noteIndex);
+		_pGameplayFunction = &fMainMenu;
 	}
 }
 
@@ -328,18 +424,19 @@ void dNotes ()
 	float width = GetScreenWidth() * 0.005;
 	float middle = GetScreenWidth() /2;
 	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
+	
+	for(int i = _noteIndex; i >= 0 && _pNotes[i] + _scrollSpeed > _musicTime; i--)
+	{
+		if(i < 0) continue;
+		//DrawCircle( middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
+		//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
+		float x = middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed) - _noteTex.width * scaleNotes / 2;
+		DrawTextureEx(_noteTex, (Vector2){.x=x, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,(Color){.r=128,.g=128,.b=128,.a= noLessThanZero(255-(255-(_pNotes[i] - _musicTime) * (255/_scrollSpeed)) / 2)});
+
+	}
+
 	if(_noteIndex < _amountNotes) //draw notes after line
 	{
-		for(int i = _noteIndex; i >= 0 && _pNotes[i] + _scrollSpeed > _musicTime; i--)
-		{
-			if(i < 0) continue;
-			//DrawCircle( middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
-			//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
-			float x = middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed) - _noteTex.width * scaleNotes / 2;
-			DrawTextureEx(_noteTex, (Vector2){.x=x, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,(Color){.r=128,.g=128,.b=128,.a= noLessThanZero(255-(_pNotes[i] - _musicTime) * (255/_scrollSpeed)) / 2});
-
-		}
-
 		//draw notes before line
 		for(int i = _noteIndex; i < _amountNotes && _pNotes[i] - _scrollSpeed < _musicTime; i++)
 		{
@@ -357,6 +454,8 @@ void fPlaying ()
 	static char *feedbackSayings [5];
 	static int feedbackIndex = 0;
 	_musicTime += GetFrameTime();
+
+	fixMusicTime();
 
 	// _pGameplayFunction = &fEndScreen;
 
@@ -602,7 +701,6 @@ void fEndScreen ()
 	EndDrawing();
 }
 
-
 void fCountDown ()
 {
 	_musicPlaying = false;
@@ -699,6 +797,9 @@ void fEditor ()
 	//printf("Framecount: %d\n MusicTime: %f\n SongLength: %d\n", _musicFrameCount, _musicTime, _musicLength);
 	if(_musicTime < 0)
 		_musicTime = 0;
+
+	if(_musicTime > getMusicDuration())
+		_musicTime = getMusicDuration();
 	
 
 	printf("Bars: %i\t music length: %i\t current time: %f\n", getBarsCount(), _musicLength, _musicTime);
@@ -736,21 +837,23 @@ void fEditor ()
 		}
 		if (IsKeyPressed(KEY_X))
 		{
+			
 			if(closestTime < _maxMargin)
 			{
-			_amountNotes--;
-			for(int i = closestIndex; i < _amountNotes; i++)
-			{
-				_pNotes[i] = _pNotes[i+1];
+				printf("old\n");
+				printAllNotes();
+				printf("new\n");
+				_amountNotes--;
+				float * tmp = malloc(sizeof(float) * _amountNotes);
+				for(int i = closestIndex; i < _amountNotes; i++)
+				{
+					tmp[i] = _pNotes[i+1];
+				}
+				free(_pNotes);
+				_pNotes = tmp;
+				printAllNotes();
 			}
-			float * tmp = malloc(sizeof(float) * _amountNotes);
-			for(int i = 0; i < _amountNotes; i++)
-			{
-				tmp[i] = _pNotes[i];
-			}
-			free(_pNotes);
-			_pNotes = tmp;
-			}
+			
 		}
 		if(IsKeyPressed(KEY_Z))
 		{
@@ -787,7 +890,14 @@ void fEditor ()
 	EndDrawing();
 	if(endOfMusic())
 	{
+		printAllNotes();
+		char str [100];
+		strcpy(str, _pMap);
+		strcat(str, "/map.data");
+		_pFile = fopen(str, "wb");
 		saveFile(_amountNotes);
+		_pGameplayFunction = &fMainMenu;
+
 	}
 }
 
@@ -839,7 +949,7 @@ void fMainMenu()
 		if(IsMouseButtonReleased(0) && mouseInRect(recordingButton))
 		{
 			//switching to recording map
-			loadMap(0);
+			loadMap(1);
 			startMusic();
 			_health = 50;
 			_score = 0;
