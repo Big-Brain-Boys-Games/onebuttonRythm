@@ -421,6 +421,11 @@ void fRecording ()
 	}
 }
 
+float musicTimeToScreen(float musicTime)
+{
+	float middle = GetScreenWidth() /2;
+	return middle + middle * (musicTime - _musicTime) * (1/_scrollSpeed);
+}
 
 void dNotes () 
 {
@@ -433,7 +438,8 @@ void dNotes ()
 		if(i < 0) continue;
 		//DrawCircle( middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
 		//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
-		float x = middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed) - _noteTex.width * scaleNotes / 2;
+		float x = middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed);
+		//- _noteTex.width * scaleNotes / 2;
 		DrawTextureEx(_noteTex, (Vector2){.x=x, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,(Color){.r=128,.g=128,.b=128,.a= noLessThanZero(255-(255-(_pNotes[i] - _musicTime) * (255/_scrollSpeed)) / 2)});
 
 	}
@@ -805,7 +811,7 @@ void fEditor ()
 		_musicTime = getMusicDuration();
 	
 
-	printf("Bars: %i\t music length: %i\t current time: %f\n", getBarsCount(), _musicLength, _musicTime);
+	// printf("Bars: %i\t music length: %i\t current time: %f\n", getBarsCount(), _musicLength, _musicTime);
 
 	BeginDrawing();
 		ClearBackground(BLACK);
@@ -888,9 +894,11 @@ void fEditor ()
 		//Draw the bars
 		for (int i = 0; i < getBarsCount(); i++)
 		{
-			float x = middle + middle / (_musicLength / getBarsCount() - _musicTime);
+			// float x = middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed) - _noteTex.width * scaleNotes / 2;
+			float distBetweenBars = getMusicDuration() / getBarsCount();
+			float x = middle + middle*(distBetweenBars*i - _musicTime)*(1/_scrollSpeed);
 			DrawRectangle(x,middle,5,1000,WHITE);
-			printf("X is: %f\t", x);
+			// printf("X is: %f\t", x);
 		}
 
 	EndDrawing();
