@@ -86,7 +86,7 @@ void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uin
 
 bool endOfMusic()
 {
-	if(_musicLength < _musicFrameCount)
+	if(_musicLength/20 < _musicFrameCount)
 		return true;
 	return false;
 }
@@ -102,10 +102,26 @@ float noLessThanZero(float var)
 	return var;
 }
 
-void saveFile (int noteIndex)
+void saveFile (int noteAmount)
 {
-	fwrite(_pNotes, sizeof(float), noteIndex, _pFile);
 	printf("written map data\n");
+	char * mapName = "Map1";
+	char * Creator = "Me";
+	int Difficulty = 3;
+	fprintf(_pFile, "[Name]\n");
+	fprintf(_pFile, "%s\n", mapName);
+	fprintf(_pFile, "[Creator]\n");
+	fprintf(_pFile, "%s\n", Creator);
+	fprintf(_pFile, "[Difficulty]\n");
+	fprintf(_pFile, "%i\n", Difficulty);
+	fprintf(_pFile, "[Notes]\n");
+	for(int i = 0; i < noteAmount; i++)
+	{
+		fprintf(_pFile, "%f\n", _pNotes[i]);
+	}
+	fclose(_pFile);
+	//fwrite(_pNotes, sizeof(float), noteIndex, _pFile);
+	
 }
 
 void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
@@ -304,8 +320,8 @@ void fRecording ()
 	EndDrawing();
 	if(endOfMusic())
 	{
-		printf("eyo saving file boggers\n");
 		saveFile(_noteIndex);
+		_pGameplayFunction = &fMainMenu;
 	}
 }
 
@@ -805,7 +821,7 @@ void fMainMenu()
 		if(IsMouseButtonReleased(0) && mouseInRect(editorButton))
 		{
 			//switching to editing map
-			loadMap(0);
+			loadMap(1);
 			startMusic();
 			_health = 50;
 			_score = 0;
@@ -819,7 +835,7 @@ void fMainMenu()
 		if(IsMouseButtonReleased(0) && mouseInRect(recordingButton))
 		{
 			//switching to recording map
-			loadMap(0);
+			loadMap(1);
 			startMusic();
 			_health = 50;
 			_score = 0;
