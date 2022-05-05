@@ -440,10 +440,7 @@ void fPlaying ()
 			ClearBackground(BLACK);
 			//printf("health %f \n", _health);
 		}
-<<<<<<< HEAD
 		//printf("health %f \n", _health);
-=======
->>>>>>> 61da707c69581772cb426cb5163c5c1cda212f33
 
 		if(_health > 100)
 			_health = 100;
@@ -887,13 +884,10 @@ void fMainMenu()
 
 int main (int argc, char **argv)
 {
-<<<<<<< HEAD
 	SetTargetFPS(60);
 	// printf("size of int: %i", sizeof(int));
 	// printf("size of float: %i", sizeof(float));
 	//if(argc == 3) limit = strtol(argv[2], &p, 10);
-=======
->>>>>>> 61da707c69581772cb426cb5163c5c1cda212f33
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 600, "Simple rythm game");
 
