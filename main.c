@@ -10,32 +10,32 @@
 #define GLSL_VERSION            330
 
 
-float * notes;
-FILE * file;
-void (*gameplayFunction)();
-Texture2D background, heartTex, healthBarTex, noteTex, cursorTex;
+float * _pNotes;
+FILE * _pFile;
+void (*_pGameplayFunction)();
+Texture2D _background, _heartTex, _healthBarTex, _noteTex, _cursorTex;
 // Music music;
 // Sound hitSE, missHitSE, missSE;
-int noBackground = 0;
-float fadeOut= 0;
-float health = 50;
-int noteIndex = 1, amountNotes =0 ;
-int score= 0;
-char * map = "testMap";
-float musicTime = 0;
+bool _noBackground = false;
+float _fadeOut= 0;
+float _health = 50;
+int _noteIndex = 1, _amountNotes =0 ;
+int _score= 0;
+char * _pMap = "testMap";
+float _musicTime = 0;
 
-float maxMargin = 0.1;
-int hitPoints = 5;
-int missPenalty = 10;
-float scrollSpeed = 0.6;
-Color fade = WHITE;
+float _maxMargin = 0.1;
+int _hitPoints = 5;
+int _missPenalty = 10;
+float _scrollSpeed = 0.6;
+Color _fade = WHITE;
 
 
-ma_decoder decoder;
-ma_device_config deviceConfig;
-ma_device device;
+ma_decoder _decoder;
+ma_device_config _deviceConfig;
+ma_device _device;
 
-bool musicPlaying;
+bool _musicPlaying;
 
 
 void fFail ();
@@ -44,33 +44,28 @@ void fEndScreen ();
 void fMainMenu();
 
 
-int musicFrameCount = 0;
-int musicLength = 0;
-void* pMusic;
+int _musicFrameCount = 0;
+int _musicLength = 0;
+void* _pMusic;
+
+
 void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount)
 {
-	if(!musicPlaying)
+	if(!_musicPlaying)
 		return;
-    ma_decoder* pDecoder = (ma_decoder*)pDevice->pUserData;
-    if (pDecoder == NULL) {
-        return;
-    }
-	if(musicLength > musicFrameCount)
-		memcpy(pOutput, pMusic+musicFrameCount*sizeof(_Float32)*2, frameCount*sizeof(_Float32)*2);
-	musicFrameCount += frameCount;
 
+	if(_musicLength > _musicFrameCount)
+		memcpy(pOutput, _pMusic+_musicFrameCount*sizeof(_Float32)*2, frameCount*sizeof(_Float32)*2);
+	_musicFrameCount += frameCount;
 
-   
-	printf("framecount %i  musicIndex %i musicLength %i\n", frameCount, musicFrameCount, musicLength);
 
     (void)pInput;
 }
 
 void resetBackGround()
 {
-	background = LoadTexture("background.png");
+	_background = LoadTexture("background.png");
 }
-
 
 float noLessThanZero(float var)
 {
@@ -80,37 +75,37 @@ float noLessThanZero(float var)
 
 void saveFile (int noteIndex)
 {
-	fwrite(notes, sizeof(float), noteIndex, file);
+	fwrite(_pNotes, sizeof(float), noteIndex, _pFile);
 	printf("written map data\n");
 }
 
 void loadMusic(char * file)
 {
-	musicPlaying = false;
-	if(musicLength != 0)
+	_musicPlaying = false;
+	if(_musicLength != 0)
 	{
 		//unload previous music
-		free(pMusic);
-		ma_decoder_uninit(&decoder);
+		free(_pMusic);
+		ma_decoder_uninit(&_decoder);
 	}
 	ma_result result;
 
-	result = ma_decoder_init_file(file, NULL, &decoder);
+	result = ma_decoder_init_file(file, NULL, &_decoder);
     if (result != MA_SUCCESS) {
         printf("failed to open music file %s\n", file);
 		exit(0);
     }
-	printf("decoder format %i   Sizeof %i\n", decoder.outputFormat, sizeof(_Float32));
+	printf("decoder format %i   Sizeof %i\n", _decoder.outputFormat, sizeof(_Float32));
 	int lastFrame = -1;
 	int musicSize = 10;
-	musicLength = ma_decoder_get_length_in_pcm_frames(&decoder);
-	printf("Music length %i\n", musicLength);
-	pMusic = calloc(sizeof(_Float32)*2, musicLength);
-	void * pCursor = pMusic;
-	while(decoder.readPointerInPCMFrames !=lastFrame)
+	_musicLength = ma_decoder_get_length_in_pcm_frames(&_decoder);
+	printf("Music length %i\n", _musicLength);
+	_pMusic = calloc(sizeof(_Float32)*2, _musicLength);
+	void * pCursor = _pMusic;
+	while(_decoder.readPointerInPCMFrames !=lastFrame)
 	{
-		lastFrame = decoder.readPointerInPCMFrames;
-		ma_decoder_read_pcm_frames(&decoder, pCursor, 256);
+		lastFrame = _decoder.readPointerInPCMFrames;
+		ma_decoder_read_pcm_frames(&_decoder, pCursor, 256);
 		int size = 0;
 		while(*(int*)(pCursor + size) != 0)
 		{
@@ -121,81 +116,81 @@ void loadMusic(char * file)
 	}
 
 
-	deviceConfig = ma_device_config_init(ma_device_type_playback);
-    deviceConfig.playback.format   = decoder.outputFormat;
-    deviceConfig.playback.channels = decoder.outputChannels;
-    deviceConfig.sampleRate        = decoder.outputSampleRate;
-    deviceConfig.dataCallback      = data_callback;
-    deviceConfig.pUserData         = &decoder;
+	_deviceConfig = ma_device_config_init(ma_device_type_playback);
+    _deviceConfig.playback.format   = _decoder.outputFormat;
+    _deviceConfig.playback.channels = _decoder.outputChannels;
+    _deviceConfig.sampleRate        = _decoder.outputSampleRate;
+    _deviceConfig.dataCallback      = data_callback;
+    _deviceConfig.pUserData         = &_decoder;
 	
 }
 
 void startMusic()
 {
-	if(musicFrameCount != 0)
+	if(_musicFrameCount != 0)
 	{
 		//unload previous devices
-		ma_device_uninit(&device);
-   		ma_decoder_uninit(&decoder);
+		ma_device_uninit(&_device);
+   		ma_decoder_uninit(&_decoder);
 	}
-	if (ma_device_init(NULL, &deviceConfig, &device) != MA_SUCCESS) {
+	if (ma_device_init(NULL, &_deviceConfig, &_device) != MA_SUCCESS) {
 			printf("Failed to open playback device.\n");
-			ma_decoder_uninit(&decoder);
+			ma_decoder_uninit(&_decoder);
 			return;
 	}
 
-	if (ma_device_start(&device) != MA_SUCCESS) {
+	if (ma_device_start(&_device) != MA_SUCCESS) {
 		printf("Failed to start playback device.\n");
-		ma_device_uninit(&device);
-		ma_decoder_uninit(&decoder);
+		ma_device_uninit(&_device);
+		ma_decoder_uninit(&_decoder);
 		return;
 	}
-	musicPlaying = true;
+	_musicPlaying = true;
 }
 
 void loadMap (int fileType)
 {
-	char * tmp = malloc(strlen(map) + 12);
-	strcpy(tmp, map);
-	strcat(tmp, "/image.png");
-	background = LoadTexture(tmp);
-	strcpy(tmp, map);
-	strcat(tmp, "/music.mp3");
+	char * pStr = malloc(strlen(_pMap) + 12);
+	strcpy(pStr, _pMap);
+	strcat(pStr, "/image.png");
+	_background = LoadTexture(pStr);
+	strcpy(pStr, _pMap);
+	strcat(pStr, "/music.mp3");
 
 	// ma_result result
-	// music = LoadMusicStream(tmp);
-	loadMusic(tmp);
+	// music = LoadMusicStream(pStr);
+	loadMusic(pStr);
 	
 
-	strcpy(tmp, map);
-	strcat(tmp, "/map.data");
+	strcpy(pStr, _pMap);
+	strcat(pStr, "/map.data");
 	if(fileType == 0)
 	{
-		file = fopen(tmp, "rb");
+		_pFile = fopen(pStr, "rb");
 		float size;
-		fread(&size, 1, sizeof(float), file);
+		fread(&size, 1, sizeof(float), _pFile);
 		printf("size: %i", (int)size);
-		if(amountNotes != 0)
+		if(_amountNotes != 0)
 		{
-			free(notes);
+			free(_pNotes);
 		}
-		notes = calloc(size, sizeof(float));
-		rewind (file);
-		fread(notes, size, sizeof(float), file);
-		fclose(file);
-		amountNotes = size;
+		_pNotes = calloc(size, sizeof(float));
+		rewind (_pFile);
+		fread(_pNotes, size, sizeof(float), _pFile);
+		fclose(_pFile);
+		_amountNotes = size;
 	}else
 	{
-		file = fopen(tmp, "wb");
-		notes = calloc(100000, sizeof(float));
+		_pFile = fopen(pStr, "wb");
+		_pNotes = calloc(100000, sizeof(float));
 	}
-	free(tmp);
+	free(pStr);
 
-	if(background.id == 0)
+	if(_background.id == 0)
 	{
 		printf("no background texture found\n");
-		background = LoadTexture("background.png");
-		noBackground = 1;
+		_background = LoadTexture("background.png");
+		_noBackground = 1;
 	}
 
 	
@@ -209,8 +204,8 @@ void drawCursor ()
 	{
 		lastClick = GetTime();
 	}
-	float size = (GetScreenWidth() * (0.06 - 0.1 * noLessThanZero(0.06 + (lastClick - GetTime())) )) / cursorTex.width;
-	DrawTextureEx(cursorTex, (Vector2){.x=GetMouseX(), .y=GetMouseY()}, 0, size, WHITE);
+	float size = (GetScreenWidth() * (0.06 - 0.1 * noLessThanZero(0.06 + (lastClick - GetTime())) )) / _cursorTex.width;
+	DrawTextureEx(_cursorTex, (Vector2){.x=GetMouseX(), .y=GetMouseY()}, 0, size, WHITE);
 }
 
 
@@ -243,12 +238,12 @@ void fRecording ()
 	// UpdateMusicStream(music);
 	BeginDrawing();
 		ClearBackground(BLACK);
-		if(!noBackground)
+		if(!_noBackground)
 		{
-			float scale = (float)GetScreenWidth() / (float)background.width;
-			DrawTextureEx(background, (Vector2){.x=0, .y=(GetScreenHeight() - background.height * scale)/2}, 0, scale,WHITE);
+			float scale = (float)GetScreenWidth() / (float)_background.width;
+			DrawTextureEx(_background, (Vector2){.x=0, .y=(GetScreenHeight() - _background.height * scale)/2}, 0, scale,WHITE);
 		}else{
-			DrawTextureTiled(background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = background.height, .width= background.width},
+			DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
 			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
 		}
 
@@ -257,11 +252,11 @@ void fRecording ()
 			printf("keyPressed! \n");
 			
 			//todo fix
-			notes[noteIndex] = 0;
+			_pNotes[_noteIndex] = 0;
 			//GetMusicTimePlayed(music);
 			
 			// printf("written value %f  to index: %i, supposed to be %f\n", notes[noteIndex], noteIndex,  GetMusicTimePlayed(music));
-			noteIndex++;
+			_noteIndex++;
 			// fadeOut = GetMusicTimePlayed(music) + 0.1;
 			ClearBackground(BLACK);
 		}
@@ -275,25 +270,25 @@ void dNotes ()
 {
 	float width = GetScreenWidth() * 0.005;
 	float middle = GetScreenWidth() /2;
-	float scaleNotes = (float)(GetScreenWidth() / noteTex.width) / 9;
-	if(noteIndex < amountNotes)//draw notes after line
+	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
+	if(_noteIndex < _amountNotes)//draw notes after line
 	{
-		for(int i = noteIndex; i >= 0 && notes[i] + scrollSpeed > musicTime; i--)
+		for(int i = _noteIndex; i >= 0 && _pNotes[i] + _scrollSpeed > _musicTime; i--)
 		{
 			if(i < 0) continue;
-			//DrawCircle( middle + middle * (notes[i] - musicTime) * (1/scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
-			//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (notes[i] - musicTime) * (1/scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
-			float x = middle + middle * (notes[i] - musicTime) * (1/scrollSpeed) - noteTex.width * scaleNotes / 2;
-			DrawTextureEx(noteTex, (Vector2){.x=x, .y=GetScreenHeight() / 2 - noteTex.height * scaleNotes}, 0,  scaleNotes,(Color){.r=128,.g=128,.b=128,.a= noLessThanZero(255-(notes[i] - musicTime) * (255/scrollSpeed)) / 2});
+			//DrawCircle( middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
+			//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
+			float x = middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed) - _noteTex.width * scaleNotes / 2;
+			DrawTextureEx(_noteTex, (Vector2){.x=x, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,(Color){.r=128,.g=128,.b=128,.a= noLessThanZero(255-(_pNotes[i] - _musicTime) * (255/_scrollSpeed)) / 2});
 
 		}
 
 		//draw notes before line
-		for(int i = noteIndex; i < amountNotes && notes[i] - scrollSpeed < musicTime; i++)
+		for(int i = _noteIndex; i < _amountNotes && _pNotes[i] - _scrollSpeed < _musicTime; i++)
 		{
-			//DrawCircle( middle + middle * (notes[i] - musicTime) * (1/scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
-			//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (notes[i] - musicTime) * (1/scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
-			DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (notes[i] - musicTime) * (1/scrollSpeed) - noteTex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 - noteTex.height * scaleNotes}, 0,  scaleNotes,WHITE);
+			//DrawCircle( middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
+			//DrawTextureEx(_noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
+			DrawTextureEx(_noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed) - _noteTex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,WHITE);
 		}
 	}
 	DrawRectangle(middle - width / 2,0 , width, GetScreenHeight(), (Color){.r=255,.g=255,.b=255,.a=255/2});
@@ -304,28 +299,19 @@ void fPlaying ()
 {
 	static char *feedbackSayings [5];
 	static int feedbackIndex = 0;
-	// UpdateMusicStream(music);
-	musicTime += GetFrameTime();
-	// if(GetMusicTimePlayed(music) > musicTime)
-	// 	musicTime = GetMusicTimePlayed(music);
-	// if(GetMusicTimePlayed(music) < musicTime - 0.1)
-	// 	musicTime = GetMusicTimePlayed(music);
-	// if(GetMusicTimePlayed(music)/GetMusicTimeLength(music) > 0.99)
-	// {
-	// 	//goto endScreen
-	// 	gameplayFunction = &fEndScreen;
-	// 	StopMusicStream(music);
-	// 	return;
-	// }
+	_musicTime += GetFrameTime();
+
+	// _pGameplayFunction = &fEndScreen;
+
 	BeginDrawing();
 		ClearBackground(BLACK);
 		
-		if(!noBackground)
+		if(!_noBackground)
 		{
-			float scale = (float)GetScreenWidth() / (float)background.width;
-			DrawTextureEx(background, (Vector2){.x=0, .y=(GetScreenHeight() - background.height * scale)/2}, 0, scale,WHITE);
+			float scale = (float)GetScreenWidth() / (float)_background.width;
+			DrawTextureEx(_background, (Vector2){.x=0, .y=(GetScreenHeight() - _background.height * scale)/2}, 0, scale,WHITE);
 		}else{
-			DrawTextureTiled(background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = background.height, .width= background.width},
+			DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
 			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
 		}
 		//DrawFPS(500,0);
@@ -334,11 +320,11 @@ void fPlaying ()
 		float width = GetScreenWidth() * 0.005;
 		float middle = GetScreenWidth() /2;
 		
-		float scaleNotes = (float)(GetScreenWidth() / noteTex.width) / 9;
+		float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
 
 		//draw score
 		char * tmpString = malloc(9);
-		sprintf(tmpString, "%i", score);
+		sprintf(tmpString, "%i", _score);
 		DrawText(tmpString, GetScreenWidth() * 0.05, GetScreenHeight()*0.05, GetScreenWidth() * 0.05, WHITE);
 		free(tmpString);
 
@@ -353,93 +339,96 @@ void fPlaying ()
 
 		
 		//printf("note %f   time: %f\n", notes[noteIndex], musicTime);
-		if(noteIndex < amountNotes && musicTime - maxMargin > notes[noteIndex])
+		if(_noteIndex < _amountNotes && _musicTime - _maxMargin > _pNotes[_noteIndex])
 		{
 			//passed note
-			noteIndex++;
-			health -= missPenalty;
-			printf("missed note %f  index %i   note: %f\n", musicTime, noteIndex, notes[noteIndex]);
+			_noteIndex++;
+			_health -= _missPenalty;
+			printf("missed note %f  index %i   note: %f\n", _musicTime, _noteIndex, _pNotes[_noteIndex]);
 			// fadeOut = GetMusicTimePlayed(music) + 0.1;
-			fade = RED;
+			_fade = RED;
 			feedback("miss!");
 		}
 
-		if(GetKeyPressed() && noteIndex < amountNotes)
+		if(GetKeyPressed() && _noteIndex < _amountNotes)
 		{
 			//printf("keyPressed! \n");
 			
 			// fadeOut = GetMusicTimePlayed(music) + 0.1;
-			fade = WHITE;
+			_fade = WHITE;
 			float closestTime = 55;
 			int closestIndex = 0;
-			for(int i = noteIndex; i <= noteIndex + 1 && i < amountNotes; i++)
+			for(int i = _noteIndex; i <= _noteIndex + 1 && i < _amountNotes; i++)
 			{
-				//printf("fabs: %f\n",fabs(notes[i] - musicTime));
-				if(closestTime > fabs(notes[i] - musicTime))
+				//printf("fabs: %f\n",fabs(_pNotes[i] - musicTime));
+				if(closestTime > fabs(_pNotes[i] - _musicTime))
 				{
-					closestTime = fabs(notes[i] - musicTime);
+					closestTime = fabs(_pNotes[i] - _musicTime);
 					closestIndex = i;
 				}
 			}
 			//printf("closestTime: %f\n", closestTime);
-			if(closestTime < maxMargin)
+			if(closestTime < _maxMargin)
 			{
-				printf("hit note! %i\n", noteIndex);
-				while(noteIndex < closestIndex)
+				printf("hit note! %i\n", _noteIndex);
+				while(_noteIndex < closestIndex)
 				{
-					noteIndex++;
-					health -= missPenalty;
+					_noteIndex++;
+					_health -= _missPenalty;
 					feedback("miss!");
 				}
-				int healthAdded = noLessThanZero(hitPoints - closestTime * (hitPoints / maxMargin));
-				health += healthAdded;
+				int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / _maxMargin));
+				_health += healthAdded;
 				//feedback("hit!");
-				int scoreAdded = noLessThanZero(300 - closestTime * (300 / maxMargin));
-				if(score > 200) {
+				int scoreAdded = noLessThanZero(300 - closestTime * (300 / _maxMargin));
+				if(_score > 200) {
 					feedback("300!");
-				}else if (score > 100) {
+				}else if (_score > 100) {
 					feedback("200!");
 				} else {
 					feedback("100!");
 				}
-				score += scoreAdded;
+				_score += scoreAdded;
 			
-				noteIndex++;
-				printf("new note index %i\n", noteIndex);
+				_noteIndex++;
+				printf("new note index %i\n", _noteIndex);
 				// PlaySoundMulti(hitSE);
 			}else
 			{
 				printf("missed note\n");
 				feedback("miss!");
-				fade = RED;
-				health -= missPenalty;
+				_fade = RED;
+				_health -= _missPenalty;
 				// PlaySoundMulti(missHitSE);
 			}
 			ClearBackground(BLACK);
-			printf("health %f \n", health);
+			printf("health %f \n", _health);
 		}
-		if(health > 100)
-			health = 100;
-		if(health < 0)
-			health = 0;
+		printf("health %f \n", _health);
+
+		if(_health > 100)
+			_health = 100;
+		if(_health < 0)
+			_health = 0;
 
 		if(feedbackIndex >= 5)
 			feedbackIndex = 0;
 
-		float heartScale = (GetScreenWidth() * 0.08) / heartTex.width;
-		float healthBarScale = (GetScreenHeight() * 0.4) / healthBarTex.height;
+		float heartScale = (GetScreenWidth() * 0.08) / _heartTex.width;
+		float healthBarScale = (GetScreenHeight() * 0.4) / _healthBarTex.height;
 		//DrawTextureEx(heartTex, (Vector2){.x=0, .y=0}, 0, heartScale,WHITE);
-		DrawTextureEx(healthBarTex, (Vector2){.x=GetScreenWidth() * 0.85 + (heartTex.width / 2) * heartScale - (healthBarTex.width / 2) * healthBarScale,
-			.y=GetScreenHeight() * 0.85 - healthBarTex.height * healthBarScale + (heartTex.height / 2) * heartScale}, 0, healthBarScale,WHITE);
-		DrawTextureEx(heartTex, (Vector2){.x=GetScreenWidth() * 0.85, .y=GetScreenHeight() * (0.85 - health / 250)}, 0, heartScale,WHITE);
+		DrawTextureEx(_healthBarTex, (Vector2){.x=GetScreenWidth() * 0.85 + (_heartTex.width / 2) * heartScale - (_healthBarTex.width / 2) * healthBarScale,
+			.y=GetScreenHeight() * 0.85 - _healthBarTex.height * healthBarScale + (_heartTex.height / 2) * heartScale}, 0, healthBarScale,WHITE);
+		DrawTextureEx(_heartTex, (Vector2){.x=GetScreenWidth() * 0.85, .y=GetScreenHeight() * (0.85 - _health / 250)}, 0, heartScale,WHITE);
 		
 		
 		// DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=fade.r,.g=fade.g,.b=fade.b,.a=noLessThanZero(fadeOut - GetMusicTimePlayed(music))*255});
 
-		if(health <= 0)
+		if(_health <= 0)
 		{
+			printf("goto fail\n");
 			//goto fFail
-			gameplayFunction = &fFail;
+			_pGameplayFunction = &fFail;
 			// StopMusicStream(music);
 		}
 
@@ -448,14 +437,15 @@ void fPlaying ()
 
 void fFail ()
 {
+	_musicPlaying = false;
 	BeginDrawing();
 		ClearBackground(BLACK);
-		if(!noBackground)
+		if(!_noBackground)
 		{
-			float scale = (float)GetScreenWidth() / (float)background.width;
-			DrawTextureEx(background, (Vector2){.x=0, .y=(GetScreenHeight() - background.height * scale)/2}, 0, scale,WHITE);
+			float scale = (float)GetScreenWidth() / (float)_background.width;
+			DrawTextureEx(_background, (Vector2){.x=0, .y=(GetScreenHeight() - _background.height * scale)/2}, 0, scale,WHITE);
 		}else{
-			DrawTextureTiled(background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = background.height, .width= background.width},
+			DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
 			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
 		}
 		DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=0,.g=0,.b=0,.a=128});
@@ -475,7 +465,7 @@ void fFail ()
 
 		//draw score
 		char * tmpString = malloc(9);
-		sprintf(tmpString, "%i", score);
+		sprintf(tmpString, "%i", _score);
 		textSize = MeasureText(tmpString, GetScreenWidth() * 0.1);
 		DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.1, LIGHTGRAY);
 		free(tmpString);
@@ -484,13 +474,14 @@ void fFail ()
 		{
 			//retrying map
 			printf("retrying map! \n");
-			gameplayFunction = &fCountDown;
+			_pGameplayFunction = &fCountDown;
 		}
 		if(IsMouseButtonReleased(0) && mouseInRect(MMButton))
 		{
 			//retrying map
 			printf("going to main Menu! \n");
-			gameplayFunction = &fMainMenu;
+			
+			_pGameplayFunction = &fMainMenu;
 			resetBackGround();
 		}
 		drawCursor();
@@ -500,14 +491,15 @@ void fFail ()
 
 void fEndScreen ()
 {
+	_musicPlaying = false;
 	BeginDrawing();
 		ClearBackground(BLACK);
-		if(!noBackground)
+		if(!_noBackground)
 		{
-			float scale = (float)GetScreenWidth() / (float)background.width;
-			DrawTextureEx(background, (Vector2){.x=0, .y=(GetScreenHeight() - background.height * scale)/2}, 0, scale,WHITE);
+			float scale = (float)GetScreenWidth() / (float)_background.width;
+			DrawTextureEx(_background, (Vector2){.x=0, .y=(GetScreenHeight() - _background.height * scale)/2}, 0, scale,WHITE);
 		}else{
-			DrawTextureTiled(background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = background.height, .width= background.width},
+			DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
 			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
 		}
 		DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=0,.g=0,.b=0,.a=128});
@@ -527,7 +519,7 @@ void fEndScreen ()
 
 		//draw score
 		char * tmpString = malloc(9);
-		sprintf(tmpString, "%i", score);
+		sprintf(tmpString, "%i", _score);
 		textSize = MeasureText(tmpString, GetScreenWidth() * 0.1);
 		DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.1, LIGHTGRAY);
 		free(tmpString);
@@ -536,13 +528,15 @@ void fEndScreen ()
 		{
 			//retrying map
 			printf("retrying map! \n");
-			gameplayFunction = &fCountDown;
+			
+		_pGameplayFunction = &fCountDown;
 		}
 		if(IsMouseButtonReleased(0) && mouseInRect(MMButton))
 		{
 			//retrying map
 			printf("going to main Menu! \n");
-			gameplayFunction = &fMainMenu;
+			
+		_pGameplayFunction = &fMainMenu;
 			resetBackGround();
 		}
 		drawCursor();
@@ -553,6 +547,7 @@ void fEndScreen ()
 
 void fCountDown ()
 {
+	_musicPlaying = false;
 	static float countDown  = 0;
 	if(countDown == 0) countDown = GetTime() + 3;
 	// printf("countDown %f  getTime %f\n", countDown, GetTime());
@@ -561,26 +556,27 @@ void fCountDown ()
 		countDown = 0;
 		//switching to playing map
 		printf("switching to playing map! \n");
-		gameplayFunction = &fPlaying;
+		
+	_pGameplayFunction = &fPlaying;
 
 		startMusic();
 		
 		
 		// PlayMusicStream(music);  
 		// SetMusicVolume(music, 0.8);
-		health = 50;
-		score = 0;
-		noteIndex =1;
-		musicTime = 0;
+		_health = 50;
+		_score = 0;
+		_noteIndex =1;
+		_musicTime = 0;
 	}
 	BeginDrawing();
 		ClearBackground(BLACK);
-		if(!noBackground)
+		if(!_noBackground)
 		{
-			float scale = (float)GetScreenWidth() / (float)background.width;
-			DrawTextureEx(background, (Vector2){.x=0, .y=(GetScreenHeight() - background.height * scale)/2}, 0, scale,WHITE);
+			float scale = (float)GetScreenWidth() / (float)_background.width;
+			DrawTextureEx(_background, (Vector2){.x=0, .y=(GetScreenHeight() - _background.height * scale)/2}, 0, scale,WHITE);
 		}else{
-			DrawTextureTiled(background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = background.height, .width= background.width},
+			DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
 			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
 		}
 		//DrawFPS(500,0);
@@ -592,23 +588,23 @@ void fCountDown ()
 		float middle = GetScreenWidth() /2;
 		
 		
-		float scaleNotes = (float)(GetScreenWidth() / noteTex.width) / 9;
+		float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
 
 		DrawRectangle(middle - width / 2,0 , width, GetScreenHeight(), (Color){.r=255,.g=255,.b=255,.a=255/2});
 
 		//draw score
 		char * tmpString = malloc(9);
-		sprintf(tmpString, "%i", score);
+		sprintf(tmpString, "%i", _score);
 		DrawText(tmpString, GetScreenWidth() * 0.05, GetScreenHeight()*0.05, GetScreenWidth() * 0.05, WHITE);
 		
 		drawCursor();
 		
-		float heartScale = (GetScreenWidth() * 0.08) / heartTex.width;
-		float healthBarScale = (GetScreenHeight() * 0.4) / healthBarTex.height;
+		float heartScale = (GetScreenWidth() * 0.08) / _heartTex.width;
+		float healthBarScale = (GetScreenHeight() * 0.4) / _healthBarTex.height;
 		//DrawTextureEx(heartTex, (Vector2){.x=0, .y=0}, 0, heartScale,WHITE);
-		DrawTextureEx(healthBarTex, (Vector2){.x=GetScreenWidth() * 0.85 + (heartTex.width / 2) * heartScale - (healthBarTex.width / 2) * healthBarScale,
-			.y=GetScreenHeight() * 0.85 - healthBarTex.height * healthBarScale + (heartTex.height / 2) * heartScale}, 0, healthBarScale,WHITE);
-		DrawTextureEx(heartTex, (Vector2){.x=GetScreenWidth() * 0.85, .y=GetScreenHeight() * (0.85 - health / 250)}, 0, heartScale,WHITE);
+		DrawTextureEx(_healthBarTex, (Vector2){.x=GetScreenWidth() * 0.85 + (_heartTex.width / 2) * heartScale - (_healthBarTex.width / 2) * healthBarScale,
+			.y=GetScreenHeight() * 0.85 - _healthBarTex.height * healthBarScale + (_heartTex.height / 2) * heartScale}, 0, healthBarScale,WHITE);
+		DrawTextureEx(_heartTex, (Vector2){.x=GetScreenWidth() * 0.85, .y=GetScreenHeight() * (0.85 - _health / 250)}, 0, heartScale,WHITE);
 		DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=0,.g=0,.b=0,.a=128});
 
 		sprintf(tmpString, "%i", (int)(countDown - GetTime() + 1));
@@ -628,39 +624,32 @@ void fCountDown ()
 void fEditor ()
 {
 	static bool isPlaying = false;
-	static float scrollSpeed = 1;
-	musicPlaying = isPlaying;
-	printf("musicTime: %.2f \t rMusicTime: %.2f\n", musicTime, (float)musicFrameCount/(decoder.outputSampleRate));
+	static float _scrollSpeed = 1;
+	_musicPlaying = isPlaying;
+	printf("musicTime: %.2f \t rMusicTime: %.2f\n", _musicTime, (float)_musicFrameCount/(_decoder.outputSampleRate));
 	if(isPlaying) {
 		// UpdateMusicStreamCustom(music);
-		musicTime += GetFrameTime();
-		// if(GetMusicTimePlayed(music) > musicTime)
-		// 	musicTime = GetMusicTimePlayed(music);
-		// if(GetMusicTimePlayed(music) < musicTime - 0.1)
-		// 	musicTime = GetMusicTimePlayed(music);
-		// if(GetMusicTimePlayed(music)/GetMusicTimeLength(music) > 0.99)
-		// {
-		// 	isPlaying = false;
-		// }
+		_musicTime += GetFrameTime();
 	}else
 	{
-		musicFrameCount = musicTime*decoder.outputSampleRate;
+		_musicFrameCount = _musicTime*_decoder.outputSampleRate;
+		if(IsKeyDown(KEY_RIGHT)) _musicTime+= GetFrameTime()*_scrollSpeed;
+		if(IsKeyDown(KEY_LEFT)) _musicTime-= GetFrameTime()*_scrollSpeed;
+		if(IsKeyPressed(KEY_UP)) _scrollSpeed *= 1.2;
+		if(IsKeyPressed(KEY_DOWN)) _scrollSpeed /= 1.2;
+		if(_scrollSpeed == 0) _scrollSpeed = 0.01;
 	}
-	if(IsKeyDown(KEY_RIGHT)) musicTime+= GetFrameTime()*scrollSpeed;
-	if(IsKeyDown(KEY_LEFT)) musicTime-= GetFrameTime()*scrollSpeed;
-	if(IsKeyPressed(KEY_UP)) scrollSpeed *= 1.2;
-	if(IsKeyPressed(KEY_DOWN)) scrollSpeed /= 1.2;
-	if(scrollSpeed == 0) scrollSpeed = 0.01;
+	
 
 	BeginDrawing();
 		ClearBackground(BLACK);
 		
-		if(!noBackground)
+		if(!_noBackground)
 		{
-			float scale = (float)GetScreenWidth() / (float)background.width;
-			DrawTextureEx(background, (Vector2){.x=0, .y=(GetScreenHeight() - background.height * scale)/2}, 0, scale,WHITE);
+			float scale = (float)GetScreenWidth() / (float)_background.width;
+			DrawTextureEx(_background, (Vector2){.x=0, .y=(GetScreenHeight() - _background.height * scale)/2}, 0, scale,WHITE);
 		}else{
-			DrawTextureTiled(background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = background.height, .width= background.width},
+			DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
 			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
 		}
 		//DrawFPS(500,0);
@@ -669,53 +658,53 @@ void fEditor ()
 		float width = GetScreenWidth() * 0.005;
 		float middle = GetScreenWidth() /2;
 		
-		float scaleNotes = (float)(GetScreenWidth() / noteTex.width) / 9;
+		float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
 
 		dNotes();
 
 		float closestTime = 55;
 		int closestIndex = 0;
-		for(int i = 0; i < amountNotes; i++)
+		for(int i = 0; i < _amountNotes; i++)
 		{
-			if(closestTime > fabs(notes[i] - musicTime))
+			if(closestTime > fabs(_pNotes[i] - _musicTime))
 			{
-				closestTime = fabs(notes[i] - musicTime);
+				closestTime = fabs(_pNotes[i] - _musicTime);
 				closestIndex = i;
 			}
 		}
-		if(closestTime < maxMargin && IsKeyPressed(KEY_X))
+		if(closestTime < _maxMargin && IsKeyPressed(KEY_X))
 		{
-			amountNotes--;
-			for(int i = closestIndex; i < amountNotes; i++)
+			_amountNotes--;
+			for(int i = closestIndex; i < _amountNotes; i++)
 			{
-				notes[i] = notes[i+1];
+				_pNotes[i] = _pNotes[i+1];
 			}
-			float * tmp = malloc(sizeof(float) * amountNotes);
-			for(int i = 0; i < amountNotes; i++)
+			float * tmp = malloc(sizeof(float) * _amountNotes);
+			for(int i = 0; i < _amountNotes; i++)
 			{
-				tmp[i] = notes[i];
+				tmp[i] = _pNotes[i];
 			}
-			free(notes);
-			notes = tmp;
+			free(_pNotes);
+			_pNotes = tmp;
 		}
 
 		if(IsKeyPressed(KEY_Z))
 		{
-			amountNotes++;
-			float * tmp = calloc(amountNotes, sizeof(float));
-			for(int i = 0; i < amountNotes-1; i++)
+			_amountNotes++;
+			float * tmp = calloc(_amountNotes, sizeof(float));
+			for(int i = 0; i < _amountNotes-1; i++)
 			{
-				tmp[i] = notes[i];
+				tmp[i] = _pNotes[i];
 			}
-			for(int i = closestIndex; i < amountNotes - 1; i++)
+			for(int i = closestIndex; i < _amountNotes - 1; i++)
 			{
-				tmp[i+1] = notes[i];
+				tmp[i+1] = _pNotes[i];
 			}
 			
 			
-			free(notes);
-			notes = tmp;
-			notes[closestIndex] = musicTime;
+			free(_pNotes);
+			_pNotes = tmp;
+			_pNotes[closestIndex] = _musicTime;
 		}
 
 		if(IsKeyPressed(KEY_SPACE))
@@ -738,7 +727,7 @@ void fEditor ()
 		}
 
 
-		// if(GetKeyPressed() && noteIndex < amountNotes)
+		// if(GetKeyPressed() && noteIndex < _amountNotes)
 		// {
 		// 	//printf("keyPressed! \n");
 			
@@ -746,12 +735,12 @@ void fEditor ()
 		// 	fade = WHITE;
 		// 	float closestTime = 55;
 		// 	int closestIndex = 0;
-		// 	for(int i = noteIndex; i <= noteIndex + 1 && i < amountNotes; i++)
+		// 	for(int i = noteIndex; i <= noteIndex + 1 && i < _amountNotes; i++)
 		// 	{
-		// 		//printf("fabs: %f\n",fabs(notes[i] - musicTime));
-		// 		if(closestTime > fabs(notes[i] - musicTime))
+		// 		//printf("fabs: %f\n",fabs(_pNotes[i] - musicTime));
+		// 		if(closestTime > fabs(_pNotes[i] - musicTime))
 		// 		{
-		// 			closestTime = fabs(notes[i] - musicTime);
+		// 			closestTime = fabs(_pNotes[i] - musicTime);
 		// 			closestIndex = i;
 		// 		}
 		// 	}
@@ -789,9 +778,10 @@ void fEditor ()
 
 void fMainMenu()
 {
+	_musicPlaying = false;
 	BeginDrawing();
 		ClearBackground(BLACK);
-		DrawTextureTiled(background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = background.height, .width= background.width},
+		DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
 			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
 
 		int middle = GetScreenWidth()/2;
@@ -808,7 +798,8 @@ void fMainMenu()
 			//switching to playing map
 			loadMap(0);
 			printf("switching to playing map! \n");
-			gameplayFunction = &fCountDown;
+			
+		_pGameplayFunction = &fCountDown;
 		}
 
 		if(IsMouseButtonReleased(0) && mouseInRect(editorButton))
@@ -818,12 +809,13 @@ void fMainMenu()
 			startMusic();
 			// PlayMusicStream(music);  
 			// SetMusicVolume(music, 0.8);
-			health = 50;
-			score = 0;
-			noteIndex =1;
-			musicTime = 0;
+			_health = 50;
+			_score = 0;
+			_noteIndex =1;
+			_musicTime = 0;
 			printf("switching to editor map! \n");
-			gameplayFunction = &fEditor;
+			
+		_pGameplayFunction = &fEditor;
 		}
 
 		drawCursor();
@@ -845,10 +837,10 @@ int main (int argc, char **argv)
 	//rlDisableScissorTest();
 	HideCursor();
 	
-	heartTex = LoadTexture("heart.png");
-	healthBarTex = LoadTexture("healthBar.png");
-	noteTex = LoadTexture("note.png");
-	cursorTex = LoadTexture("cursor.png");
+	_heartTex = LoadTexture("heart.png");
+	_healthBarTex = LoadTexture("healthBar.png");
+	_noteTex = LoadTexture("note.png");
+	_cursorTex = LoadTexture("cursor.png");
 	resetBackGround();
 	
 	// hitSE = LoadSound("hit.mp3");
@@ -884,13 +876,16 @@ int main (int argc, char **argv)
 
 	// if(0)
 	// {
-	// 	gameplayFunction = &fRecording;
+	// 	
+	_pGameplayFunction = &fRecording;
 	// }else
 	// {
-	// 	gameplayFunction = &fPlaying;
+	// 	
+	_pGameplayFunction = &fPlaying;
 	// }
 	
-	gameplayFunction = &fMainMenu;
+	
+	_pGameplayFunction = &fMainMenu;
 	
 	//GetMusicTimePlayed(music)/GetMusicTimeLength(music) < 0.99
 	while (!WindowShouldClose()) {
@@ -907,7 +902,7 @@ int main (int argc, char **argv)
 		//ClearBackground(BLACK);
 		//while((frameTime - clock()) / CLOCKS_PER_SEC < 0.05)
 
-		(*gameplayFunction)();
+		(*_pGameplayFunction)();
 		
 		
 
@@ -918,7 +913,7 @@ int main (int argc, char **argv)
 	// 	saveFile(noteIndex);
 	// }
 
-	UnloadTexture(background);
+	UnloadTexture(_background);
 	CloseWindow();
 	return 0;
 
