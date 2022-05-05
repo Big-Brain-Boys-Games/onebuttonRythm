@@ -636,6 +636,9 @@ void fEditor ()
 		if(IsKeyPressed(KEY_DOWN)) _scrollSpeed /= 1.2;
 		if(_scrollSpeed == 0) _scrollSpeed = 0.01;
 	}
+
+	if(_musicTime < 0)
+		_musicTime = 0;
 	
 
 	BeginDrawing();
