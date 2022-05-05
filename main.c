@@ -45,17 +45,40 @@ void fMainMenu();
 
 int _musicFrameCount = 0;
 int _musicLength = 0;
-void* _pMusic;
 
+#define EFFECT_BUFFER_SIZE 48000*4*4
+void* _pMusic;
+void* _pEffectsBuffer;
+int _effectOffset;
+
+void* _pHitSE;
+int _hitSE_Size;
+
+void* _pMissHitSE;
+int _missHitSE_Size;
+
+void* _pMissSE;
+int _missSE_Size;
 
 void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount)
 {
-	if(!_musicPlaying)
-		return;
 
-	if(_musicLength > _musicFrameCount)
-		memcpy(pOutput, _pMusic+_musicFrameCount*sizeof(_Float32)*2, frameCount*sizeof(_Float32)*2);
-	_musicFrameCount += frameCount;
+	//music
+	if(_musicPlaying)
+	{
+		if(_musicLength > _musicFrameCount)
+			memcpy(pOutput, _pMusic+_musicFrameCount*sizeof(_Float32)*2, frameCount*sizeof(_Float32)*2);
+		_musicFrameCount += frameCount;
+	}
+	//sound effects
+
+	for(int i = 0; i < frameCount*2; i++)
+	{
+		((_Float32*)pOutput)[i] += ((_Float32*)_pEffectsBuffer)[(i+_effectOffset)%(4800*4)];
+		((_Float32*)_pEffectsBuffer)[(i+_effectOffset)%(4800*4)] = 0;
+	}
+	_effectOffset+=frameCount;
+
 
 
     (void)pInput;
@@ -78,6 +101,36 @@ void saveFile (int noteIndex)
 	printf("written map data\n");
 }
 
+void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
+{
+	ma_result result;
+	printf("loading sound effect %s\n", file);
+	ma_decoder_config decoder_config = ma_decoder_config_init(ma_format_f32, 2, 48000);
+	decoder_config.resampling.linear.lpfOrder = MA_MAX_FILTER_ORDER;
+	result = ma_decoder_init_file(file, &decoder_config, decoder);
+    if (result != MA_SUCCESS) {
+        printf("failed to open music file %s\n", file);
+		exit(0);
+    }
+	printf("ma_resample_algorithm %i\n", decoder_config.resampling.algorithm);
+	printf("decoder format %i   Sizeof %i\n", decoder->outputFormat, sizeof(_Float32));
+	int lastFrame = -1;
+	ma_decoder_get_length_in_pcm_frames(decoder, audioLength);
+	printf("audio length %i\n", *audioLength);
+	printf("audio samplerate: %i\n", decoder->outputSampleRate);
+	void * pAudio = calloc(sizeof(_Float32)*2*2, *audioLength); //added some patting to get around memory issue //todo fix this work around
+	void * pCursor = pAudio;
+	printf("doing resampling %i\n", decoder->converter.hasResampler);
+	while(decoder->readPointerInPCMFrames !=lastFrame)
+	{
+		lastFrame = decoder->readPointerInPCMFrames;
+		ma_decoder_read_pcm_frames(decoder, pCursor, 256, NULL);
+		pCursor += sizeof(_Float32)*2*256;
+	}
+	ma_decoder_uninit(decoder);
+	return pAudio;
+}
+
 void loadMusic(char * file)
 {
 	_musicPlaying = false;
@@ -85,32 +138,11 @@ void loadMusic(char * file)
 	{
 		//unload previous music
 		free(_pMusic);
-		ma_decoder_uninit(&_decoder);
-	}
-	ma_result result;
-
-	result = ma_decoder_init_file(file, NULL, &_decoder);
-    if (result != MA_SUCCESS) {
-        printf("failed to open music file %s\n", file);
-		exit(0);
-    }
-	printf("decoder format %i   Sizeof %i\n", _decoder.outputFormat, sizeof(_Float32));
-	int lastFrame = -1;
-	int musicSize = 10;
-	ma_decoder_get_length_in_pcm_frames(&_decoder, &_musicLength);
-	printf("Music length %i\n", _musicLength);
-	_pMusic = calloc(sizeof(_Float32)*2, _musicLength);
-	void * pCursor = _pMusic;
-	int frameCounter = 0;
-	while(_decoder.readPointerInPCMFrames !=lastFrame)
-	{
-		lastFrame = _decoder.readPointerInPCMFrames;
-		ma_decoder_read_pcm_frames(&_decoder, pCursor, 256, &frameCounter);
-		int size = 0;
-		// printf("size %i \t pCursor %i\n", size, *(int*)(pCursor + size));
-		pCursor += sizeof(_Float32)*2*256;
 	}
 
+	_pMusic = loadAudio(file, &_decoder, &_musicLength);
+
+	printf("yoo %i\n", _decoder.outputSampleRate);
 
 	_deviceConfig = ma_device_config_init(ma_device_type_playback);
     _deviceConfig.playback.format   = _decoder.outputFormat;
@@ -118,7 +150,16 @@ void loadMusic(char * file)
     _deviceConfig.sampleRate        = _decoder.outputSampleRate;
     _deviceConfig.dataCallback      = data_callback;
     _deviceConfig.pUserData         = &_decoder;
+	// _deviceConfig.periodSizeInMilliseconds = 300;
 	
+}
+
+void playAudioEffect(void * effect, int size)
+{
+	for(int i = 0; i < size; i++)
+	{
+		((_Float32*)_pEffectsBuffer)[(i+_effectOffset)%(4800*4)] += ((_Float32*)effect)[i];
+	}
 }
 
 void startMusic()
@@ -127,18 +168,15 @@ void startMusic()
 	{
 		//unload previous devices
 		ma_device_uninit(&_device);
-   		ma_decoder_uninit(&_decoder);
 	}
 	if (ma_device_init(NULL, &_deviceConfig, &_device) != MA_SUCCESS) {
 			printf("Failed to open playback device.\n");
-			ma_decoder_uninit(&_decoder);
 			return;
 	}
 
 	if (ma_device_start(&_device) != MA_SUCCESS) {
 		printf("Failed to start playback device.\n");
 		ma_device_uninit(&_device);
-		ma_decoder_uninit(&_decoder);
 		return;
 	}
 	_musicPlaying = true;
@@ -389,6 +427,7 @@ void fPlaying ()
 				_noteIndex++;
 				printf("new note index %i\n", _noteIndex);
 				// PlaySoundMulti(hitSE);
+				playAudioEffect(_pHitSE, _hitSE_Size);
 			}else
 			{
 				printf("missed note\n");
@@ -396,11 +435,15 @@ void fPlaying ()
 				_fade = RED;
 				_health -= _missPenalty;
 				// PlaySoundMulti(missHitSE);
+				playAudioEffect(_pMissHitSE, _missHitSE_Size);
 			}
 			ClearBackground(BLACK);
 			//printf("health %f \n", _health);
 		}
+<<<<<<< HEAD
 		//printf("health %f \n", _health);
+=======
+>>>>>>> 61da707c69581772cb426cb5163c5c1cda212f33
 
 		if(_health > 100)
 			_health = 100;
@@ -795,6 +838,9 @@ void fMainMenu()
 
 		Rectangle editorButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.5, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
 		drawButton(editorButton,"Editor");
+
+		Rectangle recordingButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.7, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
+		drawButton(recordingButton,"Record");
 		
 
 		if(IsMouseButtonReleased(0) && mouseInRect(playButton))
@@ -803,23 +849,35 @@ void fMainMenu()
 			loadMap(0);
 			printf("switching to playing map! \n");
 			
-		_pGameplayFunction = &fCountDown;
+			_pGameplayFunction = &fCountDown;
 		}
 
 		if(IsMouseButtonReleased(0) && mouseInRect(editorButton))
 		{
-			//switching to playing map
+			//switching to editing map
 			loadMap(0);
 			startMusic();
-			// PlayMusicStream(music);  
-			// SetMusicVolume(music, 0.8);
 			_health = 50;
 			_score = 0;
 			_noteIndex =1;
 			_musicTime = 0;
 			printf("switching to editor map! \n");
 			
-		_pGameplayFunction = &fEditor;
+			_pGameplayFunction = &fEditor;
+		}
+
+		if(IsMouseButtonReleased(0) && mouseInRect(recordingButton))
+		{
+			//switching to recording map
+			loadMap(0);
+			startMusic();
+			_health = 50;
+			_score = 0;
+			_noteIndex =1;
+			_musicTime = 0;
+			printf("switching to recording map! \n");
+			
+			_pGameplayFunction = &fRecording;
 		}
 
 		drawCursor();
@@ -829,16 +887,16 @@ void fMainMenu()
 
 int main (int argc, char **argv)
 {
+<<<<<<< HEAD
 	SetTargetFPS(60);
 	// printf("size of int: %i", sizeof(int));
 	// printf("size of float: %i", sizeof(float));
 	//if(argc == 3) limit = strtol(argv[2], &p, 10);
+=======
+>>>>>>> 61da707c69581772cb426cb5163c5c1cda212f33
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 600, "Simple rythm game");
-	// InitAudioDevice();
-	//rlDisableDepthTest();
-	//rlDisableBackfaceCulling();
-	//rlDisableScissorTest();
+
 	HideCursor();
 	
 	_heartTex = LoadTexture("heart.png");
@@ -854,69 +912,23 @@ int main (int argc, char **argv)
 	// missSE = LoadSound("missSE.mp3");
 	// SetSoundVolume(missSE, 1);
 	
-	
-
-	
-	// if(0)
-	// {
-	// 	file = fopen("testMap/map.data", "wb");
-	// 	notes = calloc(100000, sizeof(float));
-	// }else
-	// {
-	// 	file = fopen("testMap/map.data", "rb");
-	// 	float size;
-	// 	fread(&size, 1, sizeof(float), file);
-	// 	printf("size: %i", (int)size);
-	// 	notes = calloc(size, sizeof(float));
-	// 	rewind (file);
-	// 	fread(notes, size, sizeof(float), file);
-	// }
-	
-
-	//Shader shad = LoadShader(0, "fragment.shader");
-	//SetTargetFPS(20);
 	Vector2 mousePos;
-	
 
-	// if(0)
-	// {
-	// 	
-	_pGameplayFunction = &fRecording;
-	// }else
-	// {
-	// 	
-	_pGameplayFunction = &fPlaying;
-	// }
-	
+	//todo do this smarter
+	_pEffectsBuffer = calloc(sizeof(char), EFFECT_BUFFER_SIZE); //4 second long buffer
+	ma_decoder tmp;
+	_pHitSE = loadAudio("test.mp3", &tmp, &_hitSE_Size);
+	_pMissHitSE = loadAudio("missHit.mp3", &tmp, &_missHitSE_Size);
+	_pMissSE = loadAudio("missHit.mp3", &tmp, &_missSE_Size);
 	
 	_pGameplayFunction = &fMainMenu;
-	
-	//GetMusicTimePlayed(music)/GetMusicTimeLength(music) < 0.99
+
 	while (!WindowShouldClose()) {
 		mousePos = GetMousePosition();
-		
-		//printf("music lenght %f   index %i\n", GetMusicTimePlayed(music)/GetMusicTimeLength(music), noteIndex);
-
-		// if(IsKeyPressed(KEY_MINUS)) {limit /= 10; }
-		// if(IsKeyPressed(KEY_EQUAL)) {limit *= 10; }
-		//rentmp = renTex;
-		//renTex = ren2Tex;
-		//ren2Tex = rentmp;
-		
-		//ClearBackground(BLACK);
-		//while((frameTime - clock()) / CLOCKS_PER_SEC < 0.05)
 
 		(*_pGameplayFunction)();
 		
-		
-
 	}
-	// if(0 && GetMusicTimePlayed(music)/GetMusicTimeLength(music) >= 0.99)
-	// {
-	// 	notes[0] = noteIndex;
-	// 	saveFile(noteIndex);
-	// }
-
 	UnloadTexture(_background);
 	CloseWindow();
 	return 0;
