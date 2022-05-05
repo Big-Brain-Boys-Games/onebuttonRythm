@@ -1,39 +1,10 @@
 #include <stdio.h>
 //#include <stdlib.h>
-#include "raylib.h"
+
+#define MINIAUDIO_IMPLEMENTATION
 #include <miniaudio/miniaudio.h>
 
-struct rAudioBuffer {
-    ma_data_converter converter;    // Audio data converter
-
-    float volume;                   // Audio buffer volume
-    float pitch;                    // Audio buffer pitch
-
-    bool playing;                   // Audio buffer state: AUDIO_PLAYING
-    bool paused;                    // Audio buffer state: AUDIO_PAUSED
-    bool looping;                   // Audio buffer looping, always true for AudioStreams
-    int usage;                      // Audio buffer usage mode: STATIC or STREAM
-
-    bool isSubBufferProcessed[2];   // SubBuffer processed (virtual double buffer)
-    unsigned int sizeInFrames;      // Total buffer size in frames
-    unsigned int frameCursorPos;    // Frame cursor position
-    unsigned int framesProcessed;   // Total frames processed in this buffer (required for play timing)
-
-    unsigned char *data;            // Data buffer, on music stream keeps filling
-
-    rAudioBuffer *next;             // Next audio buffer on the list
-    rAudioBuffer *prev;             // Previous audio buffer on the list
-};
-
-typedef enum {
-    MUSIC_AUDIO_NONE = 0,   // No audio context loaded
-    MUSIC_AUDIO_WAV,        // WAV audio context
-    MUSIC_AUDIO_OGG,        // OGG audio context
-    MUSIC_AUDIO_FLAC,       // FLAC audio context
-    MUSIC_AUDIO_MP3,        // MP3 audio context
-    MUSIC_MODULE_XM,        // XM module audio context
-    MUSIC_MODULE_MOD        // MOD module audio context
-} MusicContextType;
+#include <raylib.h>
 
 
 #define GLSL_VERSION            330
@@ -43,8 +14,8 @@ float * notes;
 FILE * file;
 void (*gameplayFunction)();
 Texture2D background, heartTex, healthBarTex, noteTex, cursorTex;
-Music music;
-Sound hitSE, missHitSE, missSE;
+// Music music;
+// Sound hitSE, missHitSE, missSE;
 int noBackground = 0;
 float fadeOut= 0;
 float health = 50;
@@ -60,10 +31,40 @@ float scrollSpeed = 0.6;
 Color fade = WHITE;
 
 
+ma_decoder decoder;
+ma_device_config deviceConfig;
+ma_device device;
+
+bool musicPlaying;
+
+
 void fFail ();
 void fCountDown ();
 void fEndScreen ();
 void fMainMenu();
+
+
+int musicFrameCount = 0;
+int musicLength = 0;
+void* pMusic;
+void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount)
+{
+	if(!musicPlaying)
+		return;
+    ma_decoder* pDecoder = (ma_decoder*)pDevice->pUserData;
+    if (pDecoder == NULL) {
+        return;
+    }
+	if(musicLength > musicFrameCount)
+		memcpy(pOutput, pMusic+musicFrameCount*sizeof(_Float32)*2, frameCount*sizeof(_Float32)*2);
+	musicFrameCount += frameCount;
+
+
+   
+	printf("framecount %i  musicIndex %i musicLength %i\n", frameCount, musicFrameCount, musicLength);
+
+    (void)pInput;
+}
 
 void resetBackGround()
 {
@@ -83,7 +84,74 @@ void saveFile (int noteIndex)
 	printf("written map data\n");
 }
 
+void loadMusic(char * file)
+{
+	musicPlaying = false;
+	if(musicLength != 0)
+	{
+		//unload previous music
+		free(pMusic);
+		ma_decoder_uninit(&decoder);
+	}
+	ma_result result;
 
+	result = ma_decoder_init_file(file, NULL, &decoder);
+    if (result != MA_SUCCESS) {
+        printf("failed to open music file %s\n", file);
+		exit(0);
+    }
+	printf("decoder format %i   Sizeof %i\n", decoder.outputFormat, sizeof(_Float32));
+	int lastFrame = -1;
+	int musicSize = 10;
+	musicLength = ma_decoder_get_length_in_pcm_frames(&decoder);
+	printf("Music length %i\n", musicLength);
+	pMusic = calloc(sizeof(_Float32)*2, musicLength);
+	void * pCursor = pMusic;
+	while(decoder.readPointerInPCMFrames !=lastFrame)
+	{
+		lastFrame = decoder.readPointerInPCMFrames;
+		ma_decoder_read_pcm_frames(&decoder, pCursor, 256);
+		int size = 0;
+		while(*(int*)(pCursor + size) != 0)
+		{
+			size++;
+		}
+		// printf("size %i \t pCursor %i\n", size, *(int*)(pCursor + size));
+		pCursor += sizeof(_Float32)*2*256;
+	}
+
+
+	deviceConfig = ma_device_config_init(ma_device_type_playback);
+    deviceConfig.playback.format   = decoder.outputFormat;
+    deviceConfig.playback.channels = decoder.outputChannels;
+    deviceConfig.sampleRate        = decoder.outputSampleRate;
+    deviceConfig.dataCallback      = data_callback;
+    deviceConfig.pUserData         = &decoder;
+	
+}
+
+void startMusic()
+{
+	if(musicFrameCount != 0)
+	{
+		//unload previous devices
+		ma_device_uninit(&device);
+   		ma_decoder_uninit(&decoder);
+	}
+	if (ma_device_init(NULL, &deviceConfig, &device) != MA_SUCCESS) {
+			printf("Failed to open playback device.\n");
+			ma_decoder_uninit(&decoder);
+			return;
+	}
+
+	if (ma_device_start(&device) != MA_SUCCESS) {
+		printf("Failed to start playback device.\n");
+		ma_device_uninit(&device);
+		ma_decoder_uninit(&decoder);
+		return;
+	}
+	musicPlaying = true;
+}
 
 void loadMap (int fileType)
 {
@@ -93,7 +161,12 @@ void loadMap (int fileType)
 	background = LoadTexture(tmp);
 	strcpy(tmp, map);
 	strcat(tmp, "/music.mp3");
-	music = LoadMusicStream(tmp);
+
+	// ma_result result
+	// music = LoadMusicStream(tmp);
+	loadMusic(tmp);
+	
+
 	strcpy(tmp, map);
 	strcat(tmp, "/map.data");
 	if(fileType == 0)
@@ -125,6 +198,7 @@ void loadMap (int fileType)
 		noBackground = 1;
 	}
 
+	
 	
 }
 
@@ -166,7 +240,7 @@ void drawButton(Rectangle rect, char * text)
 
 void fRecording ()
 {
-	UpdateMusicStream(music);
+	// UpdateMusicStream(music);
 	BeginDrawing();
 		ClearBackground(BLACK);
 		if(!noBackground)
@@ -182,14 +256,16 @@ void fRecording ()
 		{
 			printf("keyPressed! \n");
 			
-			notes[noteIndex] = GetMusicTimePlayed(music);
+			//todo fix
+			notes[noteIndex] = 0;
+			//GetMusicTimePlayed(music);
 			
-			printf("written value %f  to index: %i, supposed to be %f\n", notes[noteIndex], noteIndex,  GetMusicTimePlayed(music));
+			// printf("written value %f  to index: %i, supposed to be %f\n", notes[noteIndex], noteIndex,  GetMusicTimePlayed(music));
 			noteIndex++;
-			fadeOut = GetMusicTimePlayed(music) + 0.1;
+			// fadeOut = GetMusicTimePlayed(music) + 0.1;
 			ClearBackground(BLACK);
 		}
-		DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=255,.g=255,.b=255,.a=noLessThanZero(fadeOut - GetMusicTimePlayed(music))*255});
+		// DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=255,.g=255,.b=255,.a=noLessThanZero(fadeOut - GetMusicTimePlayed(music))*255});
 
 	EndDrawing();
 }
@@ -228,19 +304,19 @@ void fPlaying ()
 {
 	static char *feedbackSayings [5];
 	static int feedbackIndex = 0;
-	UpdateMusicStream(music);
+	// UpdateMusicStream(music);
 	musicTime += GetFrameTime();
-	if(GetMusicTimePlayed(music) > musicTime)
-		musicTime = GetMusicTimePlayed(music);
-	if(GetMusicTimePlayed(music) < musicTime - 0.1)
-		musicTime = GetMusicTimePlayed(music);
-	if(GetMusicTimePlayed(music)/GetMusicTimeLength(music) > 0.99)
-	{
-		//goto endScreen
-		gameplayFunction = &fEndScreen;
-		StopMusicStream(music);
-		return;
-	}
+	// if(GetMusicTimePlayed(music) > musicTime)
+	// 	musicTime = GetMusicTimePlayed(music);
+	// if(GetMusicTimePlayed(music) < musicTime - 0.1)
+	// 	musicTime = GetMusicTimePlayed(music);
+	// if(GetMusicTimePlayed(music)/GetMusicTimeLength(music) > 0.99)
+	// {
+	// 	//goto endScreen
+	// 	gameplayFunction = &fEndScreen;
+	// 	StopMusicStream(music);
+	// 	return;
+	// }
 	BeginDrawing();
 		ClearBackground(BLACK);
 		
@@ -283,7 +359,7 @@ void fPlaying ()
 			noteIndex++;
 			health -= missPenalty;
 			printf("missed note %f  index %i   note: %f\n", musicTime, noteIndex, notes[noteIndex]);
-			fadeOut = GetMusicTimePlayed(music) + 0.1;
+			// fadeOut = GetMusicTimePlayed(music) + 0.1;
 			fade = RED;
 			feedback("miss!");
 		}
@@ -292,7 +368,7 @@ void fPlaying ()
 		{
 			//printf("keyPressed! \n");
 			
-			fadeOut = GetMusicTimePlayed(music) + 0.1;
+			// fadeOut = GetMusicTimePlayed(music) + 0.1;
 			fade = WHITE;
 			float closestTime = 55;
 			int closestIndex = 0;
@@ -330,14 +406,14 @@ void fPlaying ()
 			
 				noteIndex++;
 				printf("new note index %i\n", noteIndex);
-				PlaySoundMulti(hitSE);
+				// PlaySoundMulti(hitSE);
 			}else
 			{
 				printf("missed note\n");
 				feedback("miss!");
 				fade = RED;
 				health -= missPenalty;
-				PlaySoundMulti(missHitSE);
+				// PlaySoundMulti(missHitSE);
 			}
 			ClearBackground(BLACK);
 			printf("health %f \n", health);
@@ -358,13 +434,13 @@ void fPlaying ()
 		DrawTextureEx(heartTex, (Vector2){.x=GetScreenWidth() * 0.85, .y=GetScreenHeight() * (0.85 - health / 250)}, 0, heartScale,WHITE);
 		
 		
-		DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=fade.r,.g=fade.g,.b=fade.b,.a=noLessThanZero(fadeOut - GetMusicTimePlayed(music))*255});
+		// DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=fade.r,.g=fade.g,.b=fade.b,.a=noLessThanZero(fadeOut - GetMusicTimePlayed(music))*255});
 
 		if(health <= 0)
 		{
 			//goto fFail
 			gameplayFunction = &fFail;
-			StopMusicStream(music);
+			// StopMusicStream(music);
 		}
 
 	EndDrawing();
@@ -479,17 +555,19 @@ void fCountDown ()
 {
 	static float countDown  = 0;
 	if(countDown == 0) countDown = GetTime() + 3;
-	printf("countDown %f  getTime %f\n", countDown, GetTime());
+	// printf("countDown %f  getTime %f\n", countDown, GetTime());
 	if(countDown - GetTime() < 0)
 	{
 		countDown = 0;
 		//switching to playing map
 		printf("switching to playing map! \n");
 		gameplayFunction = &fPlaying;
+
+		startMusic();
 		
 		
-		PlayMusicStream(music);  
-		SetMusicVolume(music, 0.8);
+		// PlayMusicStream(music);  
+		// SetMusicVolume(music, 0.8);
 		health = 50;
 		score = 0;
 		noteIndex =1;
@@ -551,17 +629,22 @@ void fEditor ()
 {
 	static bool isPlaying = false;
 	static float scrollSpeed = 1;
+	musicPlaying = isPlaying;
+	printf("musicTime: %.2f \t rMusicTime: %.2f\n", musicTime, (float)musicFrameCount/(decoder.outputSampleRate));
 	if(isPlaying) {
-		UpdateMusicStreamCustom(music);
+		// UpdateMusicStreamCustom(music);
 		musicTime += GetFrameTime();
-		if(GetMusicTimePlayed(music) > musicTime)
-			musicTime = GetMusicTimePlayed(music);
-		if(GetMusicTimePlayed(music) < musicTime - 0.1)
-			musicTime = GetMusicTimePlayed(music);
-		if(GetMusicTimePlayed(music)/GetMusicTimeLength(music) > 0.99)
-		{
-			isPlaying = false;
-		}
+		// if(GetMusicTimePlayed(music) > musicTime)
+		// 	musicTime = GetMusicTimePlayed(music);
+		// if(GetMusicTimePlayed(music) < musicTime - 0.1)
+		// 	musicTime = GetMusicTimePlayed(music);
+		// if(GetMusicTimePlayed(music)/GetMusicTimeLength(music) > 0.99)
+		// {
+		// 	isPlaying = false;
+		// }
+	}else
+	{
+		musicFrameCount = musicTime*decoder.outputSampleRate;
 	}
 	if(IsKeyDown(KEY_RIGHT)) musicTime+= GetFrameTime()*scrollSpeed;
 	if(IsKeyDown(KEY_LEFT)) musicTime-= GetFrameTime()*scrollSpeed;
@@ -642,13 +725,13 @@ void fEditor ()
 			if(isPlaying)
 			{
 				//sets music audio to right time
-				printf("before framesProcessed %i     %f\n", music.stream.buffer->framesProcessed, GetMusicTimePlayed(music));
-				printf("before frameCursorPos %i     %f\n", music.stream.buffer->frameCursorPos, GetMusicTimePlayed(music));
-				printf("%lu\n", music.stream.buffer);
-				music.stream.buffer->framesProcessed = musicTime * music.stream.sampleRate;
-				printf("music buffer: %d\n", music.stream.buffer);
-				printf("after framesProcessed %i     %f\n", music.stream.buffer->framesProcessed, GetMusicTimePlayed(music));
-				printf("after frameCursorPos %i     %f\n", music.stream.buffer->frameCursorPos, GetMusicTimePlayed(music));
+				// printf("before framesProcessed %i     %f\n", music.stream.buffer->framesProcessed, GetMusicTimePlayed(music));
+				// printf("before frameCursorPos %i     %f\n", music.stream.buffer->frameCursorPos, GetMusicTimePlayed(music));
+				// printf("%lu\n", music.stream.buffer);
+				// music.stream.buffer->framesProcessed = musicTime * music.stream.sampleRate;
+				// printf("music buffer: %d\n", music.stream.buffer);
+				// printf("after framesProcessed %i     %f\n", music.stream.buffer->framesProcessed, GetMusicTimePlayed(music));
+				// printf("after frameCursorPos %i     %f\n", music.stream.buffer->frameCursorPos, GetMusicTimePlayed(music));
 			}
 
 
@@ -732,8 +815,9 @@ void fMainMenu()
 		{
 			//switching to playing map
 			loadMap(0);
-			PlayMusicStream(music);  
-			SetMusicVolume(music, 0.8);
+			startMusic();
+			// PlayMusicStream(music);  
+			// SetMusicVolume(music, 0.8);
 			health = 50;
 			score = 0;
 			noteIndex =1;
@@ -755,7 +839,7 @@ int main (int argc, char **argv)
 	//if(argc == 3) limit = strtol(argv[2], &p, 10);
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 600, "Simple rythm game");
-	InitAudioDevice();
+	// InitAudioDevice();
 	//rlDisableDepthTest();
 	//rlDisableBackfaceCulling();
 	//rlDisableScissorTest();
@@ -767,12 +851,12 @@ int main (int argc, char **argv)
 	cursorTex = LoadTexture("cursor.png");
 	resetBackGround();
 	
-	hitSE = LoadSound("hit.mp3");
-	SetSoundVolume(hitSE, 0.6f);
-	missHitSE = LoadSound("missHit.mp3");
-	SetSoundVolume(missHitSE, 1);
-	missSE = LoadSound("missSE.mp3");
-	SetSoundVolume(missSE, 1);
+	// hitSE = LoadSound("hit.mp3");
+	// SetSoundVolume(hitSE, 0.6f);
+	// missHitSE = LoadSound("missHit.mp3");
+	// SetSoundVolume(missHitSE, 1);
+	// missSE = LoadSound("missSE.mp3");
+	// SetSoundVolume(missSE, 1);
 	
 	
 
@@ -828,11 +912,11 @@ int main (int argc, char **argv)
 		
 
 	}
-	if(0 && GetMusicTimePlayed(music)/GetMusicTimeLength(music) >= 0.99)
-	{
-		notes[0] = noteIndex;
-		saveFile(noteIndex);
-	}
+	// if(0 && GetMusicTimePlayed(music)/GetMusicTimeLength(music) >= 0.99)
+	// {
+	// 	notes[0] = noteIndex;
+	// 	saveFile(noteIndex);
+	// }
 
 	UnloadTexture(background);
 	CloseWindow();
