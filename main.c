@@ -2,9 +2,9 @@
 //#include <stdlib.h>
 
 #define MINIAUDIO_IMPLEMENTATION
-#include <miniaudio/miniaudio.h>
 
-#include <raylib.h>
+#include "include/miniaudio.h"
+#include "include/raylib.h"
 
 
 #define GLSL_VERSION            330
@@ -98,19 +98,16 @@ void loadMusic(char * file)
 	printf("decoder format %i   Sizeof %i\n", _decoder.outputFormat, sizeof(_Float32));
 	int lastFrame = -1;
 	int musicSize = 10;
-	_musicLength = ma_decoder_get_length_in_pcm_frames(&_decoder);
+	ma_decoder_get_length_in_pcm_frames(&_decoder, &_musicLength);
 	printf("Music length %i\n", _musicLength);
 	_pMusic = calloc(sizeof(_Float32)*2, _musicLength);
 	void * pCursor = _pMusic;
+	int frameCounter = 0;
 	while(_decoder.readPointerInPCMFrames !=lastFrame)
 	{
 		lastFrame = _decoder.readPointerInPCMFrames;
-		ma_decoder_read_pcm_frames(&_decoder, pCursor, 256);
+		ma_decoder_read_pcm_frames(&_decoder, pCursor, 256, &frameCounter);
 		int size = 0;
-		while(*(int*)(pCursor + size) != 0)
-		{
-			size++;
-		}
 		// printf("size %i \t pCursor %i\n", size, *(int*)(pCursor + size));
 		pCursor += sizeof(_Float32)*2*256;
 	}

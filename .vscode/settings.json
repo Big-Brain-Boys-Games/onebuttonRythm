@@ -4,6 +4,8 @@
         "*.tcc": "c",
         "charconv": "c",
         "iomanip": "c",
-        "*.inc": "c"
+        "*.inc": "c",
+        "miniaudio.h": "c",
+        "raylib.h": "c"
     }
 }
