@@ -9,7 +9,7 @@
 
 #define GLSL_VERSION            330
 
-
+//Timestamp of all the notes
 float * _pNotes;
 FILE * _pFile;
 void (*_pGameplayFunction)();
@@ -45,6 +45,7 @@ void fMainMenu();
 
 int _musicFrameCount = 0;
 int _musicLength = 0;
+int bpm = 150;
 
 #define EFFECT_BUFFER_SIZE 48000*4*4
 void* _pMusic;
@@ -161,8 +162,16 @@ void loadMusic(char * file)
 	
 }
 
-int GetMusicDuration() {
+int getMusicDuration() {
 	return _musicLength / _decoder.outputSampleRate;
+}
+
+int getBarsCount() {
+	return bpm*getMusicDuration()/60/4;
+}
+
+int getBeatsCount() {
+	return bpm*getMusicDuration()/60;
 }
 
 void playAudioEffect(void * effect, int size)
@@ -671,7 +680,6 @@ void fCountDown ()
 
 void fEditor ()
 {
-	int bpm = 150;
 	static bool isPlaying = false;
 	static float _scrollSpeed = 5;
 	_musicPlaying = isPlaying;
@@ -692,7 +700,9 @@ void fEditor ()
 	if(_musicTime < 0)
 		_musicTime = 0;
 	
-	
+
+	printf("Bars: %i\t music length: %i\t current time: %f\n", getBarsCount(), _musicLength, _musicTime);
+
 	BeginDrawing();
 		ClearBackground(BLACK);
 		
@@ -713,7 +723,7 @@ void fEditor ()
 		float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
 
 		dNotes();
-
+		
 		float closestTime = 55;
 		int closestIndex = 0;
 		for(int i = 0; i < _amountNotes; i++)
@@ -766,6 +776,13 @@ void fEditor ()
 			isPlaying = !isPlaying;
 		}
 
+		//Draw the bars
+		for (int i = 0; i < getBarsCount(); i++)
+		{
+			float x = middle + middle / (_musicLength / getBarsCount() - _musicTime);
+			DrawRectangle(x,middle,5,1000,WHITE);
+			printf("X is: %f\t", x);
+		}
 
 	EndDrawing();
 	if(endOfMusic())
