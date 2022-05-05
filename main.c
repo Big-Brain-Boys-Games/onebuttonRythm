@@ -22,7 +22,8 @@ float _health = 50;
 int _noteIndex = 1, _amountNotes =0 ;
 int _score= 0;
 char * _pMap = "testMap";
-float _musicTime = 0;
+//Where is the current audio
+float _musicHead = 0;
 
 float _maxMargin = 0.1;
 int _hitPoints = 5;
@@ -145,10 +146,15 @@ void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
         printf("failed to open music file %s\n", file);
 		exit(0);
     }
+	printf("ma_resample_algorithm %i\n", decoder_config.resampling.algorithm);
+	printf("decoder format %i   Sizeof %i\n", decoder->outputFormat, sizeof(_Float32));
 	int lastFrame = -1;
 	ma_decoder_get_length_in_pcm_frames(decoder, audioLength);
+	printf("audio length %i\n", *audioLength);
+	printf("audio samplerate: %i\n", decoder->outputSampleRate);
 	void * pAudio = calloc(sizeof(_Float32)*2*2, *audioLength); //added some patting to get around memory issue //todo fix this work around
 	void * pCursor = pAudio;
+	printf("doing resampling %i\n", decoder->converter.hasResampler);
 	while(decoder->readPointerInPCMFrames !=lastFrame)
 	{
 		lastFrame = decoder->readPointerInPCMFrames;
@@ -193,8 +199,8 @@ float getMusicPosition() {
 
 void fixMusicTime()
 {
-	if(fabs(_musicTime - getMusicPosition()) > 0.1)
-		_musicTime = getMusicPosition();
+	if(fabs(_musicHead - getMusicPosition()) > 0.1)
+		_musicHead = getMusicPosition();
 }
 
 int getBarsCount() {
@@ -334,18 +340,6 @@ void loadMap (int fileType)
 	
 }
 
-void drawProgressBar()
-{
-	DrawRectangle( GetScreenWidth()*0.01, GetScreenHeight()*0.89, GetScreenWidth()*0.98, GetScreenHeight()*0.02, (Color){.r=255,.g=255,.b=255,.a=126});
-	//drop shadow
-
-	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.91, GetScreenWidth()*0.03, (Color){.r=0,.g=0,.b=0,.a=80});
-
-	// printf("progress %f\n", getMusicPosition()/ getMusicDuration());
-	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.9, GetScreenWidth()*0.025, WHITE);
-
-}
-
 void drawCursor ()
 {
 	static float lastClick;
@@ -382,7 +376,7 @@ void drawButton(Rectangle rect, char * text)
 
 void fRecording ()
 {
-	_musicTime += GetFrameTime();
+	_musicHead += GetFrameTime();
 	fixMusicTime();
 
 	// UpdateMusicStream(music);
@@ -397,13 +391,13 @@ void fRecording ()
 			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
 		}
 
-		if(GetKeyPressed() && _musicTime!=0)
+		if(GetKeyPressed() && _musicHead!=0)
 		{
 			printf("keyPressed! \n");
 			
 			//todo fix
-			_pNotes[_noteIndex] = _musicTime;
-			printf("music Time: %.2f\n", _musicTime);
+			_pNotes[_noteIndex] = _musicHead;
+			printf("music Time: %.2f\n", _musicHead);
 			//GetMusicTimePlayed(music);
 			
 			// printf("written value %f  to index: %i, supposed to be %f\n", notes[noteIndex], noteIndex,  GetMusicTimePlayed(music));
@@ -412,7 +406,7 @@ void fRecording ()
 			ClearBackground(BLACK);
 		}
 		// DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=255,.g=255,.b=255,.a=noLessThanZero(fadeOut - GetMusicTimePlayed(music))*255});
-		drawProgressBar();
+
 	EndDrawing();
 	if(endOfMusic())
 	{
@@ -424,7 +418,7 @@ void fRecording ()
 float musicTimeToScreen(float musicTime)
 {
 	float middle = GetScreenWidth() /2;
-	return middle + middle * (musicTime - _musicTime) * (1/_scrollSpeed);
+	return middle + middle * (musicTime - _musicHead) * (1/_scrollSpeed);
 }
 
 void dNotes () 
@@ -433,25 +427,24 @@ void dNotes ()
 	float middle = GetScreenWidth() /2;
 	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
 	
-	for(int i = _noteIndex; i >= 0 && _pNotes[i] + _scrollSpeed > _musicTime; i--)
+	for(int i = _noteIndex; i >= 0 && _pNotes[i] + _scrollSpeed > _musicHead; i--)
 	{
 		if(i < 0) continue;
-		//DrawCircle( middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
-		//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
-		float x = middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed);
-		//- _noteTex.width * scaleNotes / 2;
-		DrawTextureEx(_noteTex, (Vector2){.x=x, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,(Color){.r=128,.g=128,.b=128,.a= noLessThanZero(255-(255-(_pNotes[i] - _musicTime) * (255/_scrollSpeed)) / 2)});
+		//DrawCircle( middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
+		//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
+		float x = middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed) - _noteTex.width * scaleNotes / 2;
+		DrawTextureEx(_noteTex, (Vector2){.x=x, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,(Color){.r=128,.g=128,.b=128,.a= noLessThanZero(255-(255-(_pNotes[i] - _musicHead) * (255/_scrollSpeed)) / 2)});
 
 	}
 
 	if(_noteIndex < _amountNotes) //draw notes after line
 	{
 		//draw notes before line
-		for(int i = _noteIndex; i < _amountNotes && _pNotes[i] - _scrollSpeed < _musicTime; i++)
+		for(int i = _noteIndex; i < _amountNotes && _pNotes[i] - _scrollSpeed < _musicHead; i++)
 		{
-			//DrawCircle( middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
-			//DrawTextureEx(_noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
-			DrawTextureEx(_noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed) - _noteTex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,WHITE);
+			//DrawCircle( middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
+			//DrawTextureEx(_noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
+			DrawTextureEx(_noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed) - _noteTex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,WHITE);
 		}
 	}
 	DrawRectangle(middle - width / 2,0 , width, GetScreenHeight(), (Color){.r=255,.g=255,.b=255,.a=255/2});
@@ -462,7 +455,7 @@ void fPlaying ()
 {
 	static char *feedbackSayings [5];
 	static int feedbackIndex = 0;
-	_musicTime += GetFrameTime();
+	_musicHead += GetFrameTime();
 
 	fixMusicTime();
 
@@ -504,12 +497,12 @@ void fPlaying ()
 
 		
 		//printf("note %f   time: %f\n", notes[noteIndex], musicTime);
-		if(_noteIndex < _amountNotes && _musicTime - _maxMargin > _pNotes[_noteIndex])
+		if(_noteIndex < _amountNotes && _musicHead - _maxMargin > _pNotes[_noteIndex])
 		{
 			//passed note
 			_noteIndex++;
 			_health -= _missPenalty;
-			printf("missed note %f  index %i   note: %f\n", _musicTime, _noteIndex, _pNotes[_noteIndex]);
+			printf("missed note %f  index %i   note: %f\n", _musicHead, _noteIndex, _pNotes[_noteIndex]);
 			// fadeOut = GetMusicTimePlayed(music) + 0.1;
 			_fade = RED;
 			feedback("miss!");
@@ -526,9 +519,9 @@ void fPlaying ()
 			for(int i = _noteIndex; i <= _noteIndex + 1 && i < _amountNotes; i++)
 			{
 				//printf("fabs: %f\n",fabs(_pNotes[i] - musicTime));
-				if(closestTime > fabs(_pNotes[i] - _musicTime))
+				if(closestTime > fabs(_pNotes[i] - _musicHead))
 				{
-					closestTime = fabs(_pNotes[i] - _musicTime);
+					closestTime = fabs(_pNotes[i] - _musicHead);
 					closestIndex = i;
 				}
 			}
@@ -597,7 +590,7 @@ void fPlaying ()
 			_pGameplayFunction = &fFail;
 			// StopMusicStream(music);
 		}
-		drawProgressBar();
+
 	EndDrawing();
 }
 
@@ -732,7 +725,7 @@ void fCountDown ()
 		_health = 50;
 		_score = 0;
 		_noteIndex =1;
-		_musicTime = 0;
+		_musicHead = 0;
 	}
 	BeginDrawing();
 		ClearBackground(BLACK);
@@ -792,26 +785,30 @@ void fEditor ()
 	_musicPlaying = isPlaying;
 	if(isPlaying) {
 		// UpdateMusicStreamCustom(music);
-		_musicTime += GetFrameTime();
+		_musicHead += GetFrameTime();
 	}else
 	{
-		_musicFrameCount = _musicTime*_decoder.outputSampleRate;
-		if(IsKeyDown(KEY_RIGHT) || GetMouseWheelMove() > 0) _musicTime+= GetFrameTime()*_scrollSpeed;
-		if(IsKeyDown(KEY_LEFT) || GetMouseWheelMove() < 0) _musicTime-= GetFrameTime()*_scrollSpeed;
+		_musicFrameCount = _musicHead*_decoder.outputSampleRate;
+		if(IsKeyDown(KEY_RIGHT) || GetMouseWheelMove() > 0) _musicHead+= GetFrameTime()*_scrollSpeed;
+		if(IsKeyDown(KEY_LEFT) || GetMouseWheelMove() < 0) _musicHead-= GetFrameTime()*_scrollSpeed;
 		if(IsKeyPressed(KEY_UP)) _scrollSpeed *= 1.2;
 		if(IsKeyPressed(KEY_DOWN)) _scrollSpeed /= 1.2;
 		if(_scrollSpeed == 0) _scrollSpeed = 0.01;
 		//printf("Mousewheel: %f  \n Key Right: %d", GetMouseWheelMove(), IsKeyDown(KEY_RIGHT));
 	}
-	//printf("Framecount: %d\n MusicTime: %f\n SongLength: %d\n", _musicFrameCount, _musicTime, _musicLength);
-	if(_musicTime < 0)
-		_musicTime = 0;
+	//printf("Framecount: %d\n MusicTime: %f\n SongLength: %d\n", _musicFrameCount, _musicHead, _musicLength);
+	if(_musicHead < 0)
+		_musicHead = 0;
 
-	if(_musicTime > getMusicDuration())
-		_musicTime = getMusicDuration();
+	if(_musicHead > getMusicDuration())
+		_musicHead = getMusicDuration();
 	
 
+<<<<<<< HEAD
 	// printf("Bars: %i\t music length: %i\t current time: %f\n", getBarsCount(), _musicLength, _musicTime);
+=======
+	printf("Bars: %i\t music length: %i\t current time: %f\n", getBarsCount(), _musicLength, _musicHead);
+>>>>>>> bb97bfc853e8750524b44f1a31655028961d5f5f
 
 	BeginDrawing();
 		ClearBackground(BLACK);
@@ -838,9 +835,9 @@ void fEditor ()
 		int closestIndex = 0;
 		for(int i = 0; i < _amountNotes; i++)
 		{
-			if(closestTime > fabs(_pNotes[i] - _musicTime))
+			if(closestTime > fabs(_pNotes[i] - _musicHead))
 			{
-				closestTime = fabs(_pNotes[i] - _musicTime);
+				closestTime = fabs(_pNotes[i] - _musicHead);
 				closestIndex = i;
 			}
 		}
@@ -880,7 +877,7 @@ void fEditor ()
 			
 			free(_pNotes);
 			_pNotes = tmp;
-			_pNotes[closestIndex] = _musicTime;
+			_pNotes[closestIndex] = _musicHead;
 		}
 
 		if(IsKeyPressed(KEY_SPACE))
@@ -888,15 +885,16 @@ void fEditor ()
 			isPlaying = !isPlaying;
 		}
 
-
-		drawProgressBar();
-
 		//Draw the bars
 		for (int i = 0; i < getBarsCount(); i++)
 		{
+<<<<<<< HEAD
 			// float x = middle + middle * (_pNotes[i] - _musicTime) * (1/_scrollSpeed) - _noteTex.width * scaleNotes / 2;
 			float distBetweenBars = getMusicDuration() / getBarsCount();
 			float x = middle + middle*(distBetweenBars*i - _musicTime)*(1/_scrollSpeed);
+=======
+			float x = middle + middle / (_musicLength / getBarsCount() - _musicHead) * (1/_scrollSpeed);
+>>>>>>> bb97bfc853e8750524b44f1a31655028961d5f5f
 			DrawRectangle(x,middle,5,1000,WHITE);
 			// printf("X is: %f\t", x);
 		}
@@ -954,7 +952,7 @@ void fMainMenu()
 			_health = 50;
 			_score = 0;
 			_noteIndex =1;
-			_musicTime = 0;
+			_musicHead = 0;
 			printf("switching to editor map! \n");
 			
 			_pGameplayFunction = &fEditor;
@@ -968,7 +966,7 @@ void fMainMenu()
 			_health = 50;
 			_score = 0;
 			_noteIndex =1;
-			_musicTime = 0;
+			_musicHead = 0;
 			printf("switching to recording map! \n");
 			
 			_pGameplayFunction = &fRecording;
