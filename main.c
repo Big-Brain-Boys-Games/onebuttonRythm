@@ -154,6 +154,10 @@ void loadMusic(char * file)
 	
 }
 
+int GetMusicDuration() {
+	return _musicLength / _decoder.outputSampleRate;
+}
+
 void playAudioEffect(void * effect, int size)
 {
 	for(int i = 0; i < size; i++)
@@ -663,7 +667,6 @@ void fEditor ()
 	static bool isPlaying = false;
 	static float _scrollSpeed = 5;
 	_musicPlaying = isPlaying;
-
 	if(isPlaying) {
 		// UpdateMusicStreamCustom(music);
 		_musicTime += GetFrameTime();
