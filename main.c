@@ -622,18 +622,19 @@ void fEditor ()
 	static bool isPlaying = false;
 	static float _scrollSpeed = 1;
 	_musicPlaying = isPlaying;
-	printf("musicTime: %.2f \t rMusicTime: %.2f\n", _musicTime, (float)_musicFrameCount/(_decoder.outputSampleRate));
+	//printf("musicTime: %.2f \t rMusicTime: %.2f\n", _musicTime, (float)_musicFrameCount/(_decoder.outputSampleRate));
 	if(isPlaying) {
 		// UpdateMusicStreamCustom(music);
 		_musicTime += GetFrameTime();
 	}else
 	{
 		_musicFrameCount = _musicTime*_decoder.outputSampleRate;
-		if(IsKeyDown(KEY_RIGHT)) _musicTime+= GetFrameTime()*_scrollSpeed;
-		if(IsKeyDown(KEY_LEFT)) _musicTime-= GetFrameTime()*_scrollSpeed;
+		if(IsKeyDown(KEY_RIGHT) || GetMouseWheelMove() > 0) _musicTime+= GetFrameTime()*_scrollSpeed;
+		if(IsKeyDown(KEY_LEFT) || GetMouseWheelMove() < 0) _musicTime-= GetFrameTime()*_scrollSpeed;
 		if(IsKeyPressed(KEY_UP)) _scrollSpeed *= 1.2;
 		if(IsKeyPressed(KEY_DOWN)) _scrollSpeed /= 1.2;
 		if(_scrollSpeed == 0) _scrollSpeed = 0.01;
+		printf("Mousewheel: %f  \n Key Right: %d", GetMouseWheelMove(), IsKeyDown(KEY_RIGHT));	
 	}
 
 	if(_musicTime < 0)
@@ -671,8 +672,10 @@ void fEditor ()
 				closestIndex = i;
 			}
 		}
-		if(closestTime < _maxMargin && IsKeyPressed(KEY_X))
+		if (IsKeyPressed(KEY_X))
 		{
+			if(closestTime < _maxMargin)
+			{
 			_amountNotes--;
 			for(int i = closestIndex; i < _amountNotes; i++)
 			{
@@ -685,8 +688,8 @@ void fEditor ()
 			}
 			free(_pNotes);
 			_pNotes = tmp;
+			}
 		}
-
 		if(IsKeyPressed(KEY_Z))
 		{
 			_amountNotes++;
@@ -777,6 +780,7 @@ void fEditor ()
 
 void fMainMenu()
 {
+	
 	_musicPlaying = false;
 	BeginDrawing();
 		ClearBackground(BLACK);
@@ -824,7 +828,7 @@ void fMainMenu()
 
 int main (int argc, char **argv)
 {
-	
+	SetTargetFPS(60);
 	// printf("size of int: %i", sizeof(int));
 	// printf("size of float: %i", sizeof(float));
 	//if(argc == 3) limit = strtol(argv[2], &p, 10);
