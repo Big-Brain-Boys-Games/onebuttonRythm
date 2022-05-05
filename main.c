@@ -277,6 +277,7 @@ void loadMap (int fileType)
 		char line [1000];
 		enum FilePart mode = fpNone;
 		_amountNotes = 50;
+		_noteIndex = 0;
 		_pNotes = malloc(sizeof(float)*_amountNotes);
    		while(fgets(line,sizeof(line),_pFile)!= NULL)
 		{
@@ -401,14 +402,14 @@ void drawBars()
 	float distBetweenBars = getMusicDuration() / getBarsCount();
 	for (int i = screenToMusicTime(0)/distBetweenBars; i < screenToMusicTime(GetScreenWidth())/distBetweenBars; i++)
 	{
-		DrawRectangle(musicTimeToScreen(distBetweenBars*i),middle+GetScreenHeight()*0.1,GetScreenWidth()*0.01,GetScreenHeight()*0.3,(Color){.r=255,.g=255,.b=255,.a=180});
+		DrawRectangle(musicTimeToScreen(distBetweenBars*i),GetScreenHeight()*0.6,GetScreenWidth()*0.01,GetScreenHeight()*0.3,(Color){.r=255,.g=255,.b=255,.a=180});
 	}
 
 	float distBetweenBeats = getMusicDuration() / getBeatsCount();
 	for (int i = screenToMusicTime(0)/distBetweenBeats; i < screenToMusicTime(GetScreenWidth())/distBetweenBeats; i++)
 	{
 		if(i % 4 == 0) continue;
-		DrawRectangle(musicTimeToScreen(distBetweenBeats*i),middle+GetScreenHeight()*0.2,GetScreenWidth()*0.01,GetScreenHeight()*0.2,(Color){.r=255,.g=255,.b=255,.a=180});
+		DrawRectangle(musicTimeToScreen(distBetweenBeats*i),GetScreenHeight()*0.7,GetScreenWidth()*0.01,GetScreenHeight()*0.2,(Color){.r=255,.g=255,.b=255,.a=180});
 	}
 }
 
@@ -465,17 +466,18 @@ void dNotes ()
 	float middle = GetScreenWidth() /2;
 	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
 	
-	for(int i = _noteIndex; i >= 0 && _pNotes[i] + _scrollSpeed > _musicHead; i--)
-	{
-		if(i < 0) continue;
-		//DrawCircle( middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
-		//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
-		DrawTextureEx(_noteTex, (Vector2){.x=musicTimeToScreen(_pNotes[i])- _noteTex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,(Color){.r=128,.g=128,.b=128,.a=255*noteFadeOut(_pNotes[i])});
-
-	}
-
 	if(_noteIndex < _amountNotes) //draw notes after line
 	{
+		for(int i = _noteIndex; i >= 0 && _pNotes[i] + _scrollSpeed > _musicHead; i--)
+		{
+			if(i < 0) continue;
+			//DrawCircle( middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
+			//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
+			DrawTextureEx(_noteTex, (Vector2){.x=musicTimeToScreen(_pNotes[i])- _noteTex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,(Color){.r=128,.g=128,.b=128,.a=255*noteFadeOut(_pNotes[i])});
+
+		}
+
+	
 		//draw notes before line
 		for(int i = _noteIndex; i < _amountNotes && _pNotes[i] - _scrollSpeed < _musicHead; i++)
 		{
@@ -896,13 +898,16 @@ void fEditor ()
 		}
 		if(IsKeyPressed(KEY_Z))
 		{
+			printf("poggers making new note\n");
 			_amountNotes++;
 			float * tmp = calloc(_amountNotes, sizeof(float));
 			for(int i = 0; i < _amountNotes-1; i++)
 			{
 				tmp[i] = _pNotes[i];
+				if(tmp[i] < _musicHead)
+					closestIndex=i;
 			}
-			for(int i = closestIndex; i < _amountNotes - 1; i++)
+			for(int i = closestIndex+1; i < _amountNotes-1; i++)
 			{
 				tmp[i+1] = _pNotes[i];
 			}
@@ -911,6 +916,7 @@ void fEditor ()
 			free(_pNotes);
 			_pNotes = tmp;
 			_pNotes[closestIndex] = _musicHead;
+			printf("amount %i, new note %.2f index: %i\n", _amountNotes, _pNotes[closestIndex], closestIndex);
 		}
 
 		if(IsKeyPressed(KEY_SPACE))
