@@ -84,6 +84,13 @@ void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uin
     (void)pInput;
 }
 
+bool endOfMusic()
+{
+	if(_musicLength < _musicFrameCount)
+		return true;
+	return false;
+}
+
 void resetBackGround()
 {
 	_background = LoadTexture("background.png");
@@ -246,8 +253,6 @@ void drawCursor ()
 	DrawTextureEx(_cursorTex, (Vector2){.x=GetMouseX(), .y=GetMouseY()}, 0, size, WHITE);
 }
 
-
-
 bool mouseInRect (Rectangle rect)
 {
 	int x = GetMouseX();
@@ -301,6 +306,11 @@ void fRecording ()
 		// DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=255,.g=255,.b=255,.a=noLessThanZero(fadeOut - GetMusicTimePlayed(music))*255});
 
 	EndDrawing();
+	if(endOfMusic())
+	{
+		printf("eyo saving file boggers\n");
+		saveFile(_noteIndex);
+	}
 }
 
 
@@ -309,7 +319,7 @@ void dNotes ()
 	float width = GetScreenWidth() * 0.005;
 	float middle = GetScreenWidth() /2;
 	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
-	if(_noteIndex < _amountNotes)//draw notes after line
+	if(_noteIndex < _amountNotes) //draw notes after line
 	{
 		for(int i = _noteIndex; i >= 0 && _pNotes[i] + _scrollSpeed > _musicTime; i--)
 		{
@@ -419,9 +429,9 @@ void fPlaying ()
 				_health += healthAdded;
 				//feedback("hit!");
 				int scoreAdded = noLessThanZero(300 - closestTime * (300 / _maxMargin));
-				if(_score > 200) {
+				if(scoreAdded > 200) {
 					feedback("300!");
-				}else if (_score > 100) {
+				}else if (scoreAdded > 100) {
 					feedback("200!");
 				} else {
 					feedback("100!");
@@ -444,7 +454,6 @@ void fPlaying ()
 			ClearBackground(BLACK);
 			//printf("health %f \n", _health);
 		}
-		//printf("health %f \n", _health);
 
 		if(_health > 100)
 			_health = 100;
@@ -658,8 +667,7 @@ void fCountDown ()
 
 #define SUPPORT_FILEFORMAT_WAV
 #define SUPPORT_FILEFORMAT_MP3
-
-
+#define SUPPORT_FILEFORMAT_OGG
 
 void fEditor ()
 {
@@ -756,69 +764,14 @@ void fEditor ()
 		if(IsKeyPressed(KEY_SPACE))
 		{
 			isPlaying = !isPlaying;
-
-			if(isPlaying)
-			{
-				//sets music audio to right time
-				// printf("before framesProcessed %i     %f\n", music.stream.buffer->framesProcessed, GetMusicTimePlayed(music));
-				// printf("before frameCursorPos %i     %f\n", music.stream.buffer->frameCursorPos, GetMusicTimePlayed(music));
-				// printf("%lu\n", music.stream.buffer);
-				// music.stream.buffer->framesProcessed = musicTime * music.stream.sampleRate;
-				// printf("music buffer: %d\n", music.stream.buffer);
-				// printf("after framesProcessed %i     %f\n", music.stream.buffer->framesProcessed, GetMusicTimePlayed(music));
-				// printf("after frameCursorPos %i     %f\n", music.stream.buffer->frameCursorPos, GetMusicTimePlayed(music));
-			}
-
-
 		}
 
 
-		// if(GetKeyPressed() && noteIndex < _amountNotes)
-		// {
-		// 	//printf("keyPressed! \n");
-			
-		// 	fadeOut = GetMusicTimePlayed(music) + 0.1;
-		// 	fade = WHITE;
-		// 	float closestTime = 55;
-		// 	int closestIndex = 0;
-		// 	for(int i = noteIndex; i <= noteIndex + 1 && i < _amountNotes; i++)
-		// 	{
-		// 		//printf("fabs: %f\n",fabs(_pNotes[i] - musicTime));
-		// 		if(closestTime > fabs(_pNotes[i] - musicTime))
-		// 		{
-		// 			closestTime = fabs(_pNotes[i] - musicTime);
-		// 			closestIndex = i;
-		// 		}
-		// 	}
-		// 	//printf("closestTime: %f\n", closestTime);
-		// 	if(closestTime < maxMargin)
-		// 	{
-		// 		printf("hit note! %i\n", noteIndex);
-		// 		while(noteIndex < closestIndex)
-		// 		{
-		// 			noteIndex++;
-		// 			health -= missPenalty;
-		// 		}
-		// 		int healthAdded = noLessThanZero(hitPoints - closestTime * (hitPoints / maxMargin));
-		// 		health += healthAdded;			
-		// 		int scoreAdded = noLessThanZero(300 - closestTime * (300 / maxMargin));
-		// 		score += scoreAdded;
-			
-		// 		noteIndex++;
-		// 		printf("new note index %i\n", noteIndex);
-		// 		PlaySoundMulti(hitSE);
-		// 	}else
-		// 	{
-		// 		printf("missed note\n");			
-		// 		fade = RED;
-		// 		health -= missPenalty;
-		// 		PlaySoundMulti(missHitSE);
-		// 	}
-		// 	ClearBackground(BLACK);
-		// 	printf("health %f \n", health);
-		// }
-
 	EndDrawing();
+	if(endOfMusic())
+	{
+		saveFile(_amountNotes);
+	}
 }
 
 
