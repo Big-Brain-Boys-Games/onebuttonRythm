@@ -829,6 +829,9 @@ void fMainMenu()
 
 		Rectangle editorButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.5, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
 		drawButton(editorButton,"Editor");
+
+		Rectangle recordingButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.7, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
+		drawButton(recordingButton,"Record");
 		
 
 		if(IsMouseButtonReleased(0) && mouseInRect(playButton))
@@ -842,11 +845,9 @@ void fMainMenu()
 
 		if(IsMouseButtonReleased(0) && mouseInRect(editorButton))
 		{
-			//switching to playing map
+			//switching to editing map
 			loadMap(0);
 			startMusic();
-			// PlayMusicStream(music);  
-			// SetMusicVolume(music, 0.8);
 			_health = 50;
 			_score = 0;
 			_noteIndex =1;
@@ -854,6 +855,20 @@ void fMainMenu()
 			printf("switching to editor map! \n");
 			
 			_pGameplayFunction = &fEditor;
+		}
+
+		if(IsMouseButtonReleased(0) && mouseInRect(recordingButton))
+		{
+			//switching to recording map
+			loadMap(0);
+			startMusic();
+			_health = 50;
+			_score = 0;
+			_noteIndex =1;
+			_musicTime = 0;
+			printf("switching to recording map! \n");
+			
+			_pGameplayFunction = &fRecording;
 		}
 
 		drawCursor();
