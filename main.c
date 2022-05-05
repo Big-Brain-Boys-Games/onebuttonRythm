@@ -46,17 +46,27 @@ void fMainMenu();
 
 int _musicFrameCount = 0;
 int _musicLength = 0;
+
+#define EFFECT_BUFFER_SIZE 44140*4*4
 void* _pMusic;
+void* _pEffectsBuffer;
 
 
 void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount)
 {
-	if(!_musicPlaying)
-		return;
 
-	if(_musicLength > _musicFrameCount)
-		memcpy(pOutput, _pMusic+_musicFrameCount*sizeof(_Float32)*2, frameCount*sizeof(_Float32)*2);
-	_musicFrameCount += frameCount;
+	//music
+	if(_musicPlaying)
+	{
+		if(_musicLength > _musicFrameCount)
+			memcpy(pOutput, _pMusic+_musicFrameCount*sizeof(_Float32)*2, frameCount*sizeof(_Float32)*2);
+		_musicFrameCount += frameCount;
+	}
+	//sound effects
+	for(int i = 0; i < frameCount*2; i++)
+	{
+		((_Float32*)pOutput)[i] += ((_Float32*)_pEffectsBuffer)[i];
+	}
 
 
     (void)pInput;
@@ -825,16 +835,9 @@ void fMainMenu()
 
 int main (int argc, char **argv)
 {
-	
-	// printf("size of int: %i", sizeof(int));
-	// printf("size of float: %i", sizeof(float));
-	//if(argc == 3) limit = strtol(argv[2], &p, 10);
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 600, "Simple rythm game");
-	// InitAudioDevice();
-	//rlDisableDepthTest();
-	//rlDisableBackfaceCulling();
-	//rlDisableScissorTest();
+
 	HideCursor();
 	
 	_heartTex = LoadTexture("heart.png");
@@ -850,69 +853,19 @@ int main (int argc, char **argv)
 	// missSE = LoadSound("missSE.mp3");
 	// SetSoundVolume(missSE, 1);
 	
-	
-
-	
-	// if(0)
-	// {
-	// 	file = fopen("testMap/map.data", "wb");
-	// 	notes = calloc(100000, sizeof(float));
-	// }else
-	// {
-	// 	file = fopen("testMap/map.data", "rb");
-	// 	float size;
-	// 	fread(&size, 1, sizeof(float), file);
-	// 	printf("size: %i", (int)size);
-	// 	notes = calloc(size, sizeof(float));
-	// 	rewind (file);
-	// 	fread(notes, size, sizeof(float), file);
-	// }
-	
-
-	//Shader shad = LoadShader(0, "fragment.shader");
-	//SetTargetFPS(20);
 	Vector2 mousePos;
-	
 
-	// if(0)
-	// {
-	// 	
-	_pGameplayFunction = &fRecording;
-	// }else
-	// {
-	// 	
-	_pGameplayFunction = &fPlaying;
-	// }
-	
+	//todo do this smarter
+	_pEffectsBuffer = calloc(sizeof(char), EFFECT_BUFFER_SIZE); //4 second long buffer
 	
 	_pGameplayFunction = &fMainMenu;
-	
-	//GetMusicTimePlayed(music)/GetMusicTimeLength(music) < 0.99
+
 	while (!WindowShouldClose()) {
 		mousePos = GetMousePosition();
-		
-		//printf("music lenght %f   index %i\n", GetMusicTimePlayed(music)/GetMusicTimeLength(music), noteIndex);
-
-		// if(IsKeyPressed(KEY_MINUS)) {limit /= 10; }
-		// if(IsKeyPressed(KEY_EQUAL)) {limit *= 10; }
-		//rentmp = renTex;
-		//renTex = ren2Tex;
-		//ren2Tex = rentmp;
-		
-		//ClearBackground(BLACK);
-		//while((frameTime - clock()) / CLOCKS_PER_SEC < 0.05)
 
 		(*_pGameplayFunction)();
 		
-		
-
 	}
-	// if(0 && GetMusicTimePlayed(music)/GetMusicTimeLength(music) >= 0.99)
-	// {
-	// 	notes[0] = noteIndex;
-	// 	saveFile(noteIndex);
-	// }
-
 	UnloadTexture(_background);
 	CloseWindow();
 	return 0;
