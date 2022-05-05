@@ -30,7 +30,6 @@ int _missPenalty = 10;
 float _scrollSpeed = 0.6;
 Color _fade = WHITE;
 
-
 ma_decoder _decoder;
 ma_device_config _deviceConfig;
 ma_device _device;
