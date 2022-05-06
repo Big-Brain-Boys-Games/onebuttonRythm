@@ -403,6 +403,7 @@ void fEditor ()
 	if(endOfMusic())
 	{
 		loadMap(1);
+		saveFile(_amountNotes);
 		stopMusic();
 		_pGameplayFunction = &fMainMenu;
 		resetBackGround();
