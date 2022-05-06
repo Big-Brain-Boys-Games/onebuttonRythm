@@ -13,6 +13,7 @@
 float * _pNotes;
 FILE * _pFile;
 void (*_pGameplayFunction)();
+void (*_pFutureGamePlayFunction)();
 Texture2D _background, _heartTex, _healthBarTex, _noteTex, _cursorTex;
 // Music music;
 // Sound hitSE, missHitSE, missSE;
@@ -265,18 +266,6 @@ void loadMap (int fileType)
 	if(fileType == 0)
 	{
 		_pFile = fopen(pStr, "rb");
-		// float size;
-		// //fread(&size, 1, sizeof(float), _pFile);
-		// printf("size: %i", (int)size);
-		// if(_amountNotes != 0)
-		// {
-		// 	free(_pNotes);
-		// }
-		// _pNotes = calloc(size, sizeof(float));
-		// rewind (_pFile);
-		// fread(_pNotes, size, sizeof(float), _pFile);
-		// fclose(_pFile);
-		// _amountNotes = size;
 
 		//text file
 		char line [1000];
@@ -346,9 +335,6 @@ void loadMap (int fileType)
 		_background = LoadTexture("background.png");
 		_noBackground = 1;
 	}
-
-	
-	
 }
 
 void drawCursor ()
@@ -380,6 +366,7 @@ float fDistance(float x1, float y1, float x2, float y2)
 	return sqrtf(fabs(x*x+y*y));
 }
 
+
 void drawButton(Rectangle rect, char * text)
 {
 	Color color = WHITE;
@@ -410,7 +397,7 @@ void drawProgressBarI(bool interActable)
 	static bool isGrabbed = false;
 	DrawRectangle( GetScreenWidth()*0.01, GetScreenHeight()*0.93, GetScreenWidth()*0.98, GetScreenHeight()*0.02, (Color){.r=255,.g=255,.b=255,.a=126});
 	//drop shadow
-	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.95, GetScreenWidth()*0.03, (Color){.r=0,.g=0,.b=0,.a=80});
+	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.945, GetScreenWidth()*0.025, (Color){.r=0,.g=0,.b=0,.a=80});
 	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.94, GetScreenWidth()*0.025, WHITE);
 	char str[50];
 	sprintf(str, "%i:%i/%i:%i", (int)floor(getMusicPosition()/60), (int)getMusicPosition()%60, (int)floor(getMusicDuration()/60), (int)getMusicDuration()%60);
@@ -882,6 +869,180 @@ void fCountDown ()
 	EndDrawing();
 }
 
+struct Map{
+	char * folder;
+	char * name;
+	char * creator;
+	int difficulty;
+	int bpm;
+	Texture2D image;
+};
+typedef struct Map Map;
+
+void drawMapThumbnail(Rectangle rect, Map map)
+{
+	float imageRatio = 0.7;
+	Color color = WHITE;
+	if(mouseInRect(rect))
+		color = LIGHTGRAY;
+	if(mouseInRect(rect) && IsMouseButtonDown(0))
+		color = GRAY;
+
+	DrawRectangle(rect.x, rect.y, rect.width, rect.height, color);
+
+	DrawRectangle(rect.x, rect.y, rect.width, rect.height*imageRatio, BLACK);
+
+	//todo, proper scaling of thumbnails
+	// float imageScaling = rect.width/map.image.width;
+	// float imageOffset = rect.width - map.image.width*imageScaling/2;
+	// DrawTextureRec(map.image, (Rectangle){.x=0, .y=0, .width=map.image.width, .height=map.image.height}, (Vector2){.x=rect.x, .y=rect.y}, color);
+	DrawTexturePro(map.image, (Rectangle){.x=0, .y=0, .width=map.image.width, .height=map.image.height}, (Rectangle){.x=rect.x, .y=rect.y, .width=rect.width, .height=rect.height*imageRatio},
+			(Vector2){.x=0,.y=0}, 0, color);
+	
+	char text [100];
+	sprintf(text, "%s - %s", map.name, map.creator);
+	int textSize = MeasureText(text, GetScreenWidth() * 0.05);
+	DrawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + GetScreenHeight() * 0.01+rect.height*imageRatio, GetScreenWidth() * 0.04, BLACK);
+}
+
+Map loadMapInfo(char * file)
+{
+	Map map;
+	map.folder = malloc(100);
+	strcpy(map.folder, file);
+	char * pStr = malloc(strlen(file) + 12);
+	strcpy(pStr, file);
+	strcat(pStr, "/image.png");
+	map.image = LoadTexture(pStr);
+	
+	strcpy(pStr, file);
+	strcat(pStr, "/map.data");
+	FILE * f;
+	f = fopen(pStr, "rb");
+
+	//text file
+	char line [1000];
+	enum FilePart mode = fpNone;
+	while(fgets(line,sizeof(line),f)!= NULL)
+	{
+		int stringLenght = strlen(line);
+		bool emptyLine = true;
+		for(int i = 0; i < stringLenght; i++)
+			if(line[i] != ' ' && line[i] != '\n')
+				emptyLine = false;
+		
+		if(emptyLine)
+			continue;
+
+		if(strcmp(line, "[Name]\n") == 0)			{mode = fpName;			continue;}
+		if(strcmp(line, "[Creator]\n") == 0)		{mode = fpCreator;		continue;}
+		if(strcmp(line, "[Difficulty]\n") == 0)		{mode = fpDifficulty;	continue;}
+		if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;	continue;}
+		if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
+		printf("%i mode, %s", mode, line);
+		for(int i = 0; i < 100; i++)
+					if(line[i] == '\n') line[i]= '\0';
+		switch(mode)
+		{
+			case fpNone:
+				break;
+			case fpName:
+				map.name = malloc(100);
+				strcpy(map.name, line);
+				break;
+			case fpCreator:
+				map.creator = malloc(100);
+				strcpy(map.creator, line);
+				//todo save creator
+				break;
+			case fpDifficulty:
+				map.difficulty = atoi(line);
+				//todo save difficulty
+				break;
+			case fpBPM:
+				map.bpm = atoi(line);
+				break;
+			case fpNotes:
+				//neat, notes :P
+				break;
+		}
+	}
+	fclose(f);
+	free(pStr);
+
+	if(map.image.id == 0)
+	{
+		printf("no background texture found\n");
+		map.image = LoadTexture("background.png");
+		// _noBackground = 1;
+	}
+	return map;
+}
+
+//todo add support for more maps
+Map _pMaps [100];
+void fMapSelect()
+{
+	static int amount = 0;
+	static char ** files = 0;
+	if(files == 0)
+	{
+		files = GetDirectoryFiles("maps/", &amount);
+		// _pMaps = calloc(sizeof(_pMaps), amount);
+		int mapIndex = 0;
+		printf("\nmaps: \n");
+		for(int i = 0; i < amount; i++)
+		{
+			if(files[i][0] == '.')
+				continue;
+			printf("file %i - %s\n", i, files[i]);
+			char file [100];
+			strcpy(file, "maps/");
+			strcat(file, files[i]);
+			_pMaps[mapIndex] = loadMapInfo(&(file[0]));
+			mapIndex++;
+		}
+		amount = mapIndex;
+	}
+
+	_musicPlaying = false;
+	BeginDrawing();
+		ClearBackground(BLACK);
+		DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
+			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
+
+		int middle = GetScreenWidth()/2;
+
+		//draw map button
+		for(int i = 0; i < amount; i++)
+		{
+			//draw main menu
+			int x = GetScreenWidth()*0.05;
+			if(i % 2 == 1)
+				x = GetScreenWidth()*0.55;
+			Rectangle mapButton = (Rectangle){.x=x, .y=GetScreenHeight() * (0.3+0.4*floor(i/2)), .width=GetScreenWidth()*0.4,.height=GetScreenHeight()*0.3};
+			drawMapThumbnail(mapButton,_pMaps[i]);
+
+			if(IsMouseButtonReleased(0) && mouseInRect(mapButton))
+			{
+				_pMap = malloc(100);
+				strcpy(_pMap, _pMaps[i].folder);
+				//switching to playing map
+				if(_pFutureGamePlayFunction != &fRecording)
+					loadMap(0);
+				else
+					loadMap(1);
+				
+				if(_pFutureGamePlayFunction != &fCountDown)
+					startMusic();
+				printf("selected map!\n");
+				
+				_pGameplayFunction = _pFutureGamePlayFunction;
+			}
+		}
+		drawCursor();
+	EndDrawing();
+}
 
 #define SUPPORT_FILEFORMAT_WAV
 #define SUPPORT_FILEFORMAT_MP3
@@ -1016,31 +1177,29 @@ void fMainMenu()
 		if(IsMouseButtonReleased(0) && mouseInRect(playButton))
 		{
 			//switching to playing map
-			loadMap(0);
 			printf("switching to playing map! \n");
 			
-			_pGameplayFunction = &fCountDown;
+			_pFutureGamePlayFunction = &fCountDown;
+			_pGameplayFunction = &fMapSelect;
 		}
 
 		if(IsMouseButtonReleased(0) && mouseInRect(editorButton))
 		{
 			//switching to editing map
-			loadMap(0);
-			startMusic();
 			_health = 50;
 			_score = 0;
-			_noteIndex =1;
+			_noteIndex =0;
+			_amountNotes = 0;
 			_musicHead = 0;
 			printf("switching to editor map! \n");
 			
-			_pGameplayFunction = &fEditor;
+			_pFutureGamePlayFunction = &fEditor;
+			_pGameplayFunction = &fMapSelect;
 		}
 
 		if(IsMouseButtonReleased(0) && mouseInRect(recordingButton))
 		{
 			//switching to recording map
-			loadMap(1);
-			startMusic();
 			_health = 50;
 			_score = 0;
 			_noteIndex =0;
@@ -1049,7 +1208,8 @@ void fMainMenu()
 			_pNotes = calloc(sizeof(float), 1);
 			printf("switching to recording map! \n");
 			
-			_pGameplayFunction = &fRecording;
+			_pFutureGamePlayFunction = &fRecording;
+			_pGameplayFunction = &fMapSelect;
 		}
 
 		drawCursor();
@@ -1065,6 +1225,7 @@ int main (int argc, char **argv)
 	//if(argc == 3) limit = strtol(argv[2], &p, 10);
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 600, "Simple rythm game");
+
 
 	HideCursor();
 	
@@ -1095,6 +1256,7 @@ int main (int argc, char **argv)
 	_pMissSE = loadAudio("missHit.mp3", &tmp, &_missSE_Size);
 	
 	_pGameplayFunction = &fMainMenu;
+	// _pGameplayFunction = &fMapSelect;
 
 	while (!WindowShouldClose()) {
 		mousePos = GetMousePosition();
