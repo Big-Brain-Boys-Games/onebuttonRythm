@@ -283,8 +283,6 @@ void fEndScreen ()
 
 		Rectangle MMButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.85, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
 		drawButton(MMButton,"main menu", 0.05);
-		
-		
 
 		float textSize = MeasureText("Finished", GetScreenWidth() * 0.15);
 		DrawText("Finished", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.2, GetScreenWidth() * 0.15, WHITE);
@@ -308,7 +306,6 @@ void fEndScreen ()
 			//retrying map
 			printf("going to main Menu! \n");
 			unloadMap();
-			stopMusic();
 			_pGameplayFunction = &fMainMenu;
 			resetBackGround();
 		}
@@ -379,7 +376,7 @@ void fEditor ()
 			{
 				removeNote(closestIndex);
 			}
-			if(IsKeyPressed(KEY_Z) && closestTime > 0.1f)
+			if(IsKeyPressed(KEY_Z) && closestTime > 0.03f)
 			{
 				newNote(_musicHead);
 			}
@@ -407,7 +404,7 @@ void fEditor ()
 	{
 		loadMap(1);
 		stopMusic();
-		_pGameplayFunction = &fEndScreen;
+		_pGameplayFunction = &fMainMenu;
 		resetBackGround();
 	}
 }
@@ -466,6 +463,8 @@ void fPlaying ()
 	if(endOfMusic())
 	{
 		stopMusic();
+
+		// saveScore();
 		_pGameplayFunction = &fEndScreen;
 		return;
 	}
