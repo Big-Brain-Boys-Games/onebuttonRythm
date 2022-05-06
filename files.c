@@ -98,7 +98,6 @@ void saveFile (int noteAmount)
 		fprintf(_pFile, "%f\n", _pNotes[i]);
 	}
 	fclose(_pFile);
-	//fwrite(_pNotes, sizeof(float), noteIndex, _pFile);
 	
 }
 
@@ -113,15 +112,10 @@ void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
         printf("failed to open music file %s\n", file);
 		exit(0);
     }
-	printf("ma_resample_algorithm %i\n", decoder_config.resampling.algorithm);
-	printf("decoder format %i   Sizeof %i\n", decoder->outputFormat, sizeof(_Float32));
 	int lastFrame = -1;
 	ma_decoder_get_length_in_pcm_frames(decoder, audioLength);
-	printf("audio length %i\n", *audioLength);
-	printf("audio samplerate: %i\n", decoder->outputSampleRate);
 	void * pAudio = calloc(sizeof(_Float32)*2*2, *audioLength); //added some patting to get around memory issue //todo fix this work around
 	void * pCursor = pAudio;
-	printf("doing resampling %i\n", decoder->converter.hasResampler);
 	while(decoder->readPointerInPCMFrames !=lastFrame)
 	{
 		lastFrame = decoder->readPointerInPCMFrames;
