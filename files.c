@@ -57,7 +57,6 @@ Map loadMapInfo(char * file)
 		if(strcmp(line, "[Difficulty]\n") == 0)		{mode = fpDifficulty;	continue;}
 		if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;			continue;}
 		if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
-		printf("%i mode, %s", mode, line);
 		for(int i = 0; i < 100; i++)
 					if(line[i] == '\n') line[i]= '\0';
 		switch(mode)
@@ -166,7 +165,6 @@ void loadMap (int fileType)
 			if(strcmp(line, "[Difficulty]\n") == 0)		{mode = fpDifficulty;	continue;}
 			if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;			continue;}
 			if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
-			printf("%i mode, %s", mode, line);
 			switch(mode)
 			{
 				case fpNone:
@@ -182,7 +180,6 @@ void loadMap (int fileType)
 					break;
 				case fpBPM:
 					_bpm = atoi(line);
-					printf("set bpm: %i\n", _bpm);	
 					break;
 				case fpNotes:
 					
@@ -192,7 +189,6 @@ void loadMap (int fileType)
 						_pNotes = realloc(_pNotes, _amountNotes);
 					}
 					_pNotes[_noteIndex] = atof(line);
-					printf("note %i  %f\n", _noteIndex, _pNotes[_noteIndex]);
 					_noteIndex++;
 					break;
 			}

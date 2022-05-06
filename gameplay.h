@@ -19,7 +19,7 @@ void removeNote(int index);
 void newNote(float time);
 void fMainMenu();
 void fEditor();
-void fCountDowm();
+void fCountDown();
 void fRecording();
 void fPlaying();
 void fFail();

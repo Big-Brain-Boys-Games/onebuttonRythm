@@ -115,7 +115,10 @@ void fPause()
 		{
 			if(mouseInRect(continueButton))
 			{
-				_pGameplayFunction = _pNextGameplayFunction;
+				if(_pGameplayFunction == &fPlaying)
+					_pGameplayFunction = &fCountDown;
+				else
+					_pGameplayFunction = _pNextGameplayFunction;
 			}
 			if(mouseInRect(exitButton))
 			{
@@ -148,7 +151,7 @@ void fCountDown ()
 		_musicHead = 0;
 		return;
 	}
-	_musicHead = GetTime()-countDown;
+	if(_musicHead <= 0) _musicHead = GetTime()-countDown;
 
 	BeginDrawing();
 		ClearBackground(BLACK);
@@ -320,7 +323,7 @@ void fEditor ()
 
 	if(IsKeyPressed(KEY_ESCAPE)) {
 		_pGameplayFunction = &fPause;
-		_pNextGameplayFunction = &fPlaying;
+		_pNextGameplayFunction = &fEditor;
 	}
 
 	if(_musicHead > getMusicDuration())

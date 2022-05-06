@@ -124,6 +124,8 @@ void drawBackground()
 }
 void resetBackGround()
 {
+	if(_background.id != 0)
+		UnloadTexture(_background);
 	_background = LoadTexture("background.png");
 }
 void drawBars()
@@ -138,7 +140,6 @@ void drawBars()
 		DrawRectangle(musicTimeToScreen(distBetweenBars*i),GetScreenHeight()*0.6,GetScreenWidth()*0.01,GetScreenHeight()*0.3,(Color){.r=255,.g=255,.b=255,.a=180});
 	}
 
-	printf("dist bars %f \t dist beats *4%f\n", distBetweenBars, distBetweenBeats*4);
 	for (int i = screenToMusicTime(0)/distBetweenBeats; i < screenToMusicTime(GetScreenWidth())/distBetweenBeats; i++)
 	{
 		if(i % 4 == 0) continue;
