@@ -193,6 +193,11 @@ float getMusicPosition() {
 	return _musicFrameCount / (float)_decoder.outputSampleRate;
 }
 
+int getSamplePosition(float time)
+{
+	return time*_decoder.outputSampleRate;
+}
+
 void fixMusicTime()
 {
 	if(fabs(_musicHead - getMusicPosition()) > 0.02)
@@ -443,6 +448,36 @@ void drawBars()
 		if(i % 4 == 0) continue;
 		DrawRectangle(musicTimeToScreen(distBetweenBeats*i),GetScreenHeight()*0.8,GetScreenWidth()*0.01,GetScreenHeight()*0.1,(Color){.r=_UIColor.r,.g=_UIColor.g,.b=_UIColor.b,.a=180});
 	}
+}
+
+void drawMusicGraph(float transparent)
+{
+	if(_pMusic == NULL)
+		return;
+
+	//music stuff
+	float beginning = screenToMusicTime(0);
+	float end = screenToMusicTime(GetScreenWidth());
+	int amountBars = GetScreenWidth()/2;
+	float timePerBar = (end-beginning)/amountBars;
+	int samplesPerBar = getSamplePosition(timePerBar);
+	int sampleBegin = getSamplePosition(beginning);
+
+	//drawing stuff
+	int pixelsPerBar = GetScreenWidth()/amountBars;
+	float scaleBar = GetScreenHeight()*0.2;
+	//looping through all the bars / samples
+	for(int i = 0; i < amountBars; i++)
+	{
+		float highest = 0;
+		int sampleHead = sampleBegin + samplesPerBar*i;
+		for(int j = 0; j < samplesPerBar; j++)
+			if(sampleHead+j > 0 && fabs(((_Float32*)_pMusic)[sampleHead+j]) > highest)
+				highest = fabs(((_Float32*)_pMusic)[sampleHead+j]);
+		
+		DrawRectangle(i*pixelsPerBar, GetScreenHeight()-highest*scaleBar, pixelsPerBar, highest*scaleBar, ColorAlpha(WHITE, transparent));
+	}
+
 }
 
 void drawVignette()
@@ -1153,6 +1188,8 @@ void fEditor ()
 				isPlaying = !isPlaying;
 			}
 		}
+		
+		drawMusicGraph(0.7);
 		drawVignette();
 
 		drawCursor();
@@ -1235,9 +1272,9 @@ void fMainMenu()
 
 int main (int argc, char **argv)
 {
+	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 600, "One Button Rythm");
 	SetTargetFPS(60);
-	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	SetExitKey(0);
 
 	HideCursor();
