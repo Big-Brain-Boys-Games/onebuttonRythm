@@ -336,9 +336,18 @@ void loadMap (int fileType)
 	}
 }
 
+void unloadMap()
+{
+	free(_pNotes);
+	_amountNotes = 0;
+	_noteIndex = 0;
+}
+
 void drawCursor ()
 {
 	static float lastClick;
+	if(!IsCursorOnScreen())
+		return;
 	if(IsMouseButtonDown(0))
 	{
 		lastClick = GetTime();
@@ -479,6 +488,48 @@ void newNote(float time)
 	_pNotes[closestIndex] = time;
 }
 
+void fPause()
+{
+	_musicPlaying = false;
+	BeginDrawing();
+		ClearBackground(BLACK);
+		drawBackground();
+
+		if(GetKeyPressed() && _musicHead!=0)
+		{
+			newNote(_musicHead);
+			ClearBackground(BLACK);
+		}
+		dNotes();
+		drawVignette();
+		drawProgressBar();
+		DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=0,.g=0,.b=0,.a=128});
+
+		float middle = GetScreenWidth()/2;
+		Rectangle continueButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.3, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
+		drawButton(continueButton,"continue", 0.05);
+
+		Rectangle exitButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.5, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
+		drawButton(exitButton,"exit", 0.05);
+
+		if(IsMouseButtonReleased(0))
+		{
+			if(mouseInRect(continueButton))
+			{
+				_pGameplayFunction = _pNextGameplayFunction;
+			}
+			if(mouseInRect(exitButton))
+			{
+				stopMusic();
+				unloadMap();
+				_pGameplayFunction = &fMainMenu;
+				resetBackGround();
+			}
+		}
+		drawCursor();
+	EndDrawing();
+}
+
 void fRecording ()
 {
 	_musicHead += GetFrameTime();
@@ -494,6 +545,7 @@ void fRecording ()
 			newNote(_musicHead);
 			ClearBackground(BLACK);
 		}
+		dNotes();
 		drawVignette();
 		drawBars();
 		drawProgressBar();
@@ -501,7 +553,10 @@ void fRecording ()
 	if(endOfMusic())
 	{
 		saveFile(_amountNotes);
+		unloadMap();
+		stopMusic();
 		_pGameplayFunction = &fMainMenu;
+		resetBackGround();
 	}
 }
 
@@ -558,7 +613,7 @@ void fPlaying ()
 	static char *feedbackSayings [5];
 	static int feedbackIndex = 0;
 	_musicHead += GetFrameTime();
-
+	_musicPlaying = true;
 	fixMusicTime();
 
 	if(endOfMusic())
@@ -566,6 +621,11 @@ void fPlaying ()
 		stopMusic();
 		_pGameplayFunction = &fEndScreen;
 		return;
+	}
+	if(IsKeyPressed(KEY_ESCAPE))
+	{
+		_pGameplayFunction = &fPause;
+		_pNextGameplayFunction = &fPlaying;
 	}
 
 	BeginDrawing();
@@ -711,7 +771,8 @@ void fFail ()
 		{
 			//retrying map
 			printf("going to main Menu!\n");
-			
+			unloadMap();
+			stopMusic();
 			_pGameplayFunction = &fMainMenu;
 			resetBackGround();
 		}
@@ -760,8 +821,9 @@ void fEndScreen ()
 		{
 			//retrying map
 			printf("going to main Menu! \n");
-			
-		_pGameplayFunction = &fMainMenu;
+			unloadMap();
+			stopMusic();
+			_pGameplayFunction = &fMainMenu;
 			resetBackGround();
 		}
 		drawVignette();
@@ -845,7 +907,7 @@ void drawMapThumbnail(Rectangle rect, Map map)
 	Color color = WHITE;
 	if(mouseInRect(rect))
 		color = LIGHTGRAY;
-	if(mouseInRect(rect) && IsMouseButtonDown(0))
+	if(mouseInRect(rect) && IsMouseButtonReleased(0))
 		color = GRAY;
 
 	DrawRectangle(rect.x, rect.y, rect.width, rect.height, color);
@@ -1034,6 +1096,12 @@ void fEditor ()
 	if(_musicHead > getMusicDuration())
 		_musicHead = getMusicDuration();
 
+	if(IsKeyPressed(KEY_ESCAPE))
+	{
+		_pGameplayFunction = &fPause;
+		_pNextGameplayFunction = &fPlaying;
+	}
+
 	BeginDrawing();
 		ClearBackground(BLACK);
 		
@@ -1089,6 +1157,7 @@ void fEditor ()
 		loadMap(1);
 		saveFile(_amountNotes);
 		_pGameplayFunction = &fMainMenu;
+		resetBackGround();
 
 	}
 }
@@ -1159,10 +1228,10 @@ void fMainMenu()
 
 int main (int argc, char **argv)
 {
+	InitWindow(800, 600, "One Button Rythm");
 	SetTargetFPS(60);
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-	InitWindow(800, 600, "Simple rythm game");
-
+	SetExitKey(0);
 
 	HideCursor();
 	
