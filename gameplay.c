@@ -385,75 +385,44 @@ void fEditor ()
 
 		dNotes();
 		
-		float closestTime = 55;
-		int closestIndex = 0;
-		for(int i = 0; i < _amountNotes; i++)
+		if(GetKeyPressed())
 		{
-			if(closestTime > fabs(_pNotes[i] - _musicHead))
+			float closestTime = 55;
+			int closestIndex = 0;
+			for(int i = 0; i < _amountNotes; i++)
 			{
-				closestTime = fabs(_pNotes[i] - _musicHead);
-				closestIndex = i;
-			}
-		}
-		if (IsKeyPressed(KEY_X))
-		{
-			
-			if(closestTime < _maxMargin)
-			{
-				printf("old\n");
-				printAllNotes();
-				printf("new\n");
-				_amountNotes--;
-				float * tmp = malloc(sizeof(float) * _amountNotes);
-				for(int i = closestIndex; i < _amountNotes; i++)
+				if(closestTime > fabs(_pNotes[i] - _musicHead))
 				{
-					tmp[i] = _pNotes[i+1];
+					closestTime = fabs(_pNotes[i] - _musicHead);
+					closestIndex = i;
 				}
-				free(_pNotes);
-				_pNotes = tmp;
-				printAllNotes();
 			}
-			
-		}
-		if(IsKeyPressed(KEY_Z))
-		{
-			printf("poggers making new note\n");
-			_amountNotes++;
-			float * tmp = calloc(_amountNotes, sizeof(float));
-			for(int i = 0; i < _amountNotes-1; i++)
+			if (IsKeyPressed(KEY_X) && closestTime < _maxMargin)
 			{
-				tmp[i] = _pNotes[i];
-				if(tmp[i] < _musicHead)
-					closestIndex=i;
+				removeNote(closestIndex);
 			}
-			for(int i = closestIndex+1; i < _amountNotes-1; i++)
+			if(IsKeyPressed(KEY_Z) && closestTime > 0.1f)
 			{
-				tmp[i+1] = _pNotes[i];
+				newNote(_musicHead);
 			}
-			
-			
-			free(_pNotes);
-			_pNotes = tmp;
-			_pNotes[closestIndex] = _musicHead;
-			printf("amount %i, new note %.2f index: %i\n", _amountNotes, _pNotes[closestIndex], closestIndex);
-		}
 
-		if(IsKeyPressed(KEY_C))
-		{
-			//todo maybe not 4 subbeats?
-			float secondsPerBeat = getMusicDuration() / getBeatsCount()/4;
-			_musicHead = roundf(_musicHead/secondsPerBeat)*secondsPerBeat;
-		}
+			if(IsKeyPressed(KEY_C))
+			{
+				//todo maybe not 4 subbeats?
+				float secondsPerBeat = getMusicDuration() / getBeatsCount()/4;
+				_musicHead = roundf(_musicHead/secondsPerBeat)*secondsPerBeat;
+			}
 
-		if(IsKeyPressed(KEY_SPACE))
-		{
-			isPlaying = !isPlaying;
+			if(IsKeyPressed(KEY_SPACE))
+			{
+				isPlaying = !isPlaying;
+			}
 		}
-
 		drawMusicGraph(0.7);
 		drawVignette();
 		drawBars();
 		drawProgressBarI(true);
+		drawCursor();
 
 	EndDrawing();
 	if(endOfMusic())
