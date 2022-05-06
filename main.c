@@ -76,10 +76,11 @@ void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uin
 
 	for(int i = 0; i < frameCount*2; i++)
 	{
-		((_Float32*)pOutput)[i] += ((_Float32*)_pEffectsBuffer)[(i+_effectOffset)%(4800*4)];
-		((_Float32*)_pEffectsBuffer)[(i+_effectOffset)%(4800*4)] = 0;
+		((_Float32*)pOutput)[i] += ((_Float32*)_pEffectsBuffer)[(i+_effectOffset)%(48000*4)];
+		// printf("i %i \t actual position %i \t %.1f\n", i, i + _effectOffset, ((_Float32*)_pEffectsBuffer)[(i+_effectOffset)%(4800*4)]);
+		((_Float32*)_pEffectsBuffer)[(i+_effectOffset)%(48000*4)] = 0;
 	}
-	_effectOffset+=frameCount;
+	_effectOffset+=frameCount*2;
 
 
 
@@ -125,9 +126,13 @@ void saveFile (int noteAmount)
 	fprintf(_pFile, "%s\n", Creator);
 	fprintf(_pFile, "[Difficulty]\n");
 	fprintf(_pFile, "%i\n", Difficulty);
+	fprintf(_pFile, "[BPM]\n");
+	fprintf(_pFile, "%i\n", bpm);
 	fprintf(_pFile, "[Notes]\n");
 	for(int i = 0; i < noteAmount; i++)
 	{
+		if(_pNotes[i] == 0)
+			continue;
 		fprintf(_pFile, "%f\n", _pNotes[i]);
 	}
 	fclose(_pFile);
@@ -215,7 +220,7 @@ void playAudioEffect(void * effect, int size)
 {
 	for(int i = 0; i < size; i++)
 	{
-		((_Float32*)_pEffectsBuffer)[(i+_effectOffset)%(4800*4)] += ((_Float32*)effect)[i];
+		((_Float32*)_pEffectsBuffer)[(i+_effectOffset)%(48000*4)] += ((_Float32*)effect)[i];
 	}
 }
 
@@ -239,7 +244,7 @@ void startMusic()
 	_musicPlaying = true;
 }
 
-enum FilePart{fpNone, fpName, fpCreator, fpDifficulty, fpNotes};
+enum FilePart{fpNone, fpName, fpCreator, fpDifficulty, fpBPM, fpNotes};
 
 void loadMap (int fileType)
 {
@@ -293,8 +298,9 @@ void loadMap (int fileType)
 			if(strcmp(line, "[Name]\n") == 0)			{mode = fpName;			continue;}
 			if(strcmp(line, "[Creator]\n") == 0)		{mode = fpCreator;		continue;}
 			if(strcmp(line, "[Difficulty]\n") == 0)	{mode = fpDifficulty;	continue;}
+			if(strcmp(line, "[BPM]\n") == 0)	{mode = fpBPM;	continue;}
 			if(strcmp(line, "[Notes]\n") == 0)		{mode = fpNotes;		continue;}
-			printf("%i mode, %s\n", mode, line);
+			printf("%i mode, %s", mode, line);
 			switch(mode)
 			{
 				case fpNone:
@@ -308,8 +314,12 @@ void loadMap (int fileType)
 				case fpDifficulty:
 					//todo save difficulty
 					break;
+				case fpBPM:
+					bpm = atoi(line);
+					printf("set bpm: %i\n", bpm);	
+					break;
 				case fpNotes:
-					_noteIndex++;
+					
 					if(_noteIndex <= _amountNotes)
 					{
 						_amountNotes += 50;
@@ -317,6 +327,7 @@ void loadMap (int fileType)
 					}
 					_pNotes[_noteIndex] = atof(line);
 					printf("note %i  %f\n", _noteIndex, _pNotes[_noteIndex]);
+					_noteIndex++;
 					break;
 			}
 		}
@@ -326,7 +337,6 @@ void loadMap (int fileType)
 	}else
 	{
 		_pFile = fopen(pStr, "wb");
-		_pNotes = calloc(100000, sizeof(float));
 	}
 	free(pStr);
 
@@ -402,6 +412,9 @@ void drawProgressBarI(bool interActable)
 	//drop shadow
 	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.95, GetScreenWidth()*0.03, (Color){.r=0,.g=0,.b=0,.a=80});
 	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.94, GetScreenWidth()*0.025, WHITE);
+	char str[50];
+	sprintf(str, "%i:%i/%i:%i", (int)floor(getMusicPosition()/60), (int)getMusicPosition()%60, (int)floor(getMusicDuration()/60), (int)getMusicDuration()%60);
+	DrawText(str, GetScreenWidth()*0.85, GetScreenHeight()*0.85, GetScreenWidth()*0.03,WHITE);
 	if(interActable)
 	{
 		float x = getMusicPosition()/ getMusicDuration()*GetScreenWidth();
@@ -436,6 +449,44 @@ void drawBars()
 	}
 }
 
+void removeNote(int index)
+{
+	_amountNotes--;
+	float * tmp = malloc(sizeof(float) * _amountNotes);
+	memcpy(tmp, _pNotes, sizeof(float)*_amountNotes);
+	for(int i = index; i < _amountNotes; i++)
+	{
+		tmp[i] = _pNotes[i+1];
+	}
+	free(_pNotes);
+	_pNotes = tmp;
+}
+
+void newNote(float time)
+{
+	int closestIndex=0;
+	_amountNotes++;
+	float * tmp = calloc(_amountNotes, sizeof(float));
+	for(int i = 0; i < _amountNotes-1; i++)
+	{
+		tmp[i] = _pNotes[i];
+		if(tmp[i] < time)
+		{
+			printf("found new closest :%i   value %.2f musicHead %.2f\n", i, tmp[i], time);
+			closestIndex=i+1;
+		}
+	}
+	for(int i = closestIndex; i < _amountNotes-1; i++)
+	{
+		tmp[i+1] = _pNotes[i];
+	}
+	
+	
+	free(_pNotes);
+	_pNotes = tmp;
+	_pNotes[closestIndex] = time;
+}
+
 void fRecording ()
 {
 	_musicHead += GetFrameTime();
@@ -457,13 +508,8 @@ void fRecording ()
 		{
 			printf("keyPressed! \n");
 			
-			//todo fix
-			_pNotes[_noteIndex] = _musicHead;
+			newNote(_musicHead);
 			printf("music Time: %.2f\n", _musicHead);
-			//GetMusicTimePlayed(music);
-			
-			// printf("written value %f  to index: %i, supposed to be %f\n", notes[noteIndex], noteIndex,  GetMusicTimePlayed(music));
-			_noteIndex++;
 			// fadeOut = GetMusicTimePlayed(music) + 0.1;
 			ClearBackground(BLACK);
 		}
@@ -473,7 +519,7 @@ void fRecording ()
 	EndDrawing();
 	if(endOfMusic())
 	{
-		saveFile(_noteIndex);
+		saveFile(_amountNotes);
 		_pGameplayFunction = &fMainMenu;
 	}
 }
@@ -909,15 +955,7 @@ void fEditor ()
 					printf("old\n");
 					printAllNotes();
 					printf("new\n");
-					_amountNotes--;
-					float * tmp = malloc(sizeof(float) * _amountNotes);
-					memcpy(tmp, _pNotes, sizeof(float)*_amountNotes);
-					for(int i = closestIndex; i < _amountNotes; i++)
-					{
-						tmp[i] = _pNotes[i+1];
-					}
-					free(_pNotes);
-					_pNotes = tmp;
+					removeNote(closestIndex);
 					printAllNotes();
 				}
 				
@@ -925,26 +963,7 @@ void fEditor ()
 			if(IsKeyPressed(KEY_Z) && fabs(closestTime) > 0.1f)
 			{
 				printf("poggers making new note\n");
-				_amountNotes++;
-				float * tmp = calloc(_amountNotes, sizeof(float));
-				for(int i = 0; i < _amountNotes-1; i++)
-				{
-					tmp[i] = _pNotes[i];
-					if(tmp[i] < _musicHead)
-					{
-						printf("found new closest :%i   value %.2f musicHead %.2f\n", i, tmp[i], _musicHead);
-						closestIndex=i+1;
-					}
-				}
-				for(int i = closestIndex; i < _amountNotes-1; i++)
-				{
-					tmp[i+1] = _pNotes[i];
-				}
-				
-				
-				free(_pNotes);
-				_pNotes = tmp;
-				_pNotes[closestIndex] = _musicHead;
+				newNote(closestIndex);
 				printf("amount %i, new note %.2f index: %i\n", _amountNotes, _pNotes[closestIndex], closestIndex);
 				printAllNotes();
 				
@@ -952,6 +971,8 @@ void fEditor ()
 
 			if(IsKeyPressed(KEY_SPACE))
 			{
+				printf("pausing / continuing\n");
+				printAllNotes();
 				isPlaying = !isPlaying;
 			}
 		}
@@ -962,11 +983,9 @@ void fEditor ()
 	EndDrawing();
 	if(endOfMusic())
 	{
+		printf("gonna write them all\n");
 		printAllNotes();
-		char str [100];
-		strcpy(str, _pMap);
-		strcat(str, "/map.data");
-		_pFile = fopen(str, "wb");
+		loadMap(1);
 		saveFile(_amountNotes);
 		_pGameplayFunction = &fMainMenu;
 
@@ -1024,8 +1043,10 @@ void fMainMenu()
 			startMusic();
 			_health = 50;
 			_score = 0;
-			_noteIndex =1;
+			_noteIndex =0;
+			_amountNotes = 0;
 			_musicHead = 0;
+			_pNotes = calloc(sizeof(float), 1);
 			printf("switching to recording map! \n");
 			
 			_pGameplayFunction = &fRecording;
@@ -1064,8 +1085,12 @@ int main (int argc, char **argv)
 
 	//todo do this smarter
 	_pEffectsBuffer = calloc(sizeof(char), EFFECT_BUFFER_SIZE); //4 second long buffer
+	// for(int i = 0; i < EFFECT_BUFFER_SIZE/4; i++)
+	// {
+	// 	((_Float32*)_pEffectsBuffer)[i] = (_Float32)i;
+	// }
 	ma_decoder tmp;
-	_pHitSE = loadAudio("test.mp3", &tmp, &_hitSE_Size);
+	_pHitSE = loadAudio("hit.mp3", &tmp, &_hitSE_Size);
 	_pMissHitSE = loadAudio("missHit.mp3", &tmp, &_missHitSE_Size);
 	_pMissSE = loadAudio("missHit.mp3", &tmp, &_missSE_Size);
 	
