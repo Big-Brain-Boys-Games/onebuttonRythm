@@ -345,7 +345,9 @@ void drawCursor ()
 		lastClick = GetTime();
 	}
 	float size = (GetScreenWidth() * (0.06 - 0.1 * noLessThanZero(0.06 + (lastClick - GetTime())) )) / _cursorTex.width;
-	DrawTextureEx(_cursorTex, (Vector2){.x=GetMouseX(), .y=GetMouseY()}, 0, size, WHITE);
+	float xOffset = _cursorTex.width*size*0.3;
+	float yOffset = _cursorTex.height*size*0.2;
+	DrawTextureEx(_cursorTex, (Vector2){.x=GetMouseX()-xOffset, .y=GetMouseY()-yOffset}, 0, size, WHITE);
 }
 
 bool mouseInRect (Rectangle rect)
@@ -1060,11 +1062,12 @@ void fEditor ()
 		_musicFrameCount = _musicHead*_decoder.outputSampleRate;
 		if(IsKeyDown(KEY_RIGHT) || GetMouseWheelMove() > 0) _musicHead+= GetFrameTime()*_scrollSpeed;
 		if(IsKeyDown(KEY_LEFT) || GetMouseWheelMove() < 0) _musicHead-= GetFrameTime()*_scrollSpeed;
-		if(IsKeyPressed(KEY_UP)) _scrollSpeed *= 1.2;
-		if(IsKeyPressed(KEY_DOWN)) _scrollSpeed /= 1.2;
-		if(_scrollSpeed == 0) _scrollSpeed = 0.01;
+		
 		//printf("Mousewheel: %f  \n Key Right: %d", GetMouseWheelMove(), IsKeyDown(KEY_RIGHT));
 	}
+	if(IsKeyPressed(KEY_UP)) _scrollSpeed *= 1.2;
+	if(IsKeyPressed(KEY_DOWN)) _scrollSpeed /= 1.2;
+	if(_scrollSpeed == 0) _scrollSpeed = 0.01;
 	//printf("Framecount: %d\n MusicTime: %f\n SongLength: %d\n", _musicFrameCount, _musicHead, _musicLength);
 	if(_musicHead < 0)
 		_musicHead = 0;
