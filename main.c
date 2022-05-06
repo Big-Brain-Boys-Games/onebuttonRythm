@@ -242,6 +242,7 @@ void stopMusic()
 	_musicHead = 0;
 	_musicPlaying = false;
 	_musicLength = 0;
+	free(_pMusic);
 }
 
 enum FilePart{fpNone, fpName, fpCreator, fpDifficulty, fpBPM, fpNotes};
