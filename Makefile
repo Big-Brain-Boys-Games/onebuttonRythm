@@ -3,9 +3,9 @@ SRC_DIR := .
 INCLUDE_DIR := include
 SRC_FILES := $(wildcard *.c)
 OBJ_FILES := $(addprefix $(OBJ_DIR)/,$(patsubst %.c,%.o,$(SRC_FILES)))
-CFLAGS := -I$(INCLUDE_DIR)/ -I. -march=native -Ofast -g
+CFLAGS := -I$(INCLUDE_DIR)/ -I. -ggdb
 LDFLAGS := -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
-OUTEXE := oneButtonRhythm
+OUTEXE := Build/oneButtonRhythm
 
 .DEFAULT_GOAL := $(OUTEXE)
 

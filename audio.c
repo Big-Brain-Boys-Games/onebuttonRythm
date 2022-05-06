@@ -1,4 +1,5 @@
 #include "audio.h"
+#define MINIAUDIO_IMPLEMENTATION
 #include "include/miniaudio.h"
 
 #include <stdbool.h>
@@ -69,11 +70,6 @@ int getBeatsCount()
 
 void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
 {
-	ma_decoder tmp;
-	if(decoder == NULL)
-	{
-		decoder = &tmp;
-	}
 	ma_result result;
 	printf("loading sound effect %s\n", file);
 	ma_decoder_config decoder_config = ma_decoder_config_init(ma_format_f32, 2, 48000);
@@ -101,9 +97,10 @@ void audioInit()
 {
 		//todo do this smarter
 	_pEffectsBuffer = calloc(sizeof(char), EFFECT_BUFFER_SIZE); //4 second long buffer
-	_pHitSE = loadAudio("hit.mp3", NULL, &_hitSE_Size);
-	_pMissHitSE = loadAudio("missHit.mp3", NULL, &_missHitSE_Size);
-	_pMissSE = loadAudio("missHit.mp3", NULL, &_missSE_Size);
+	ma_decoder tmp;
+	_pHitSE = loadAudio("hit.mp3", &tmp, &_hitSE_Size);
+	_pMissHitSE = loadAudio("missHit.mp3", &tmp, &_missHitSE_Size);
+	_pMissSE = loadAudio("missHit.mp3", &tmp, &_missSE_Size);
 }
 
 void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount)
@@ -153,7 +150,7 @@ void loadMusic(char * file)
 
 bool endOfMusic()
 {
-	if (_musicLength/20 < _musicFrameCount)
+	if (_musicLength < _musicFrameCount)
 		return true;
 	return false;
 }
