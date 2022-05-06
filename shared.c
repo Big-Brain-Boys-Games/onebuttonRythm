@@ -15,6 +15,10 @@ void printAllNotes()
 	}
 }
 
+int getSamplePosition(float time) {
+	return time*_decoder.outputSampleRate;
+}
+
 float getMusicDuration()
 {
 	return _musicLength / (float)_decoder.outputSampleRate;

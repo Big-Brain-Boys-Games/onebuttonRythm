@@ -7,7 +7,7 @@
 //Where is the current audio
 float _musicHead = 0;
 float _scrollSpeed = 0.6;
-int _noteIndex = 1, _amountNotes =0 ;
+int _noteIndex = 0, _amountNotes =0 ;
 bool _musicPlaying;
 bool _noBackground = false;
 float _health = 50;
@@ -38,13 +38,14 @@ Color _fade = WHITE;
 
 //Timestamp of all the notes
 float * _pNotes;
-void (*_pFutureGamePlayFunction)();
+void (*_pNextGameplayFunction)();
 void (*_pGameplayFunction)();
 
 bool endOfMusic();
 void resetBackGround();
 void playAudioEffect();
 void startMusic();
+void StopMusic();
 bool mouseInRect(Rectangle rect);
 void removeNote(int index);
 void newNote(float time);

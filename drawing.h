@@ -25,7 +25,7 @@ void drawMapThumbnail (Rectangle rect, Map *map);
 void drawBars();
 void drawVignette();
 void drawProgressBar();
-void drawButton(Rectangle rect, char * text);
+void drawButton(Rectangle rect, char * text, float fontScale);
 void fMapSelect();
 
 #endif

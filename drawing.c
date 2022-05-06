@@ -8,6 +8,8 @@ float noteFadeOut(float note)
 void drawCursor ()
 {
 	static float lastClick;
+	if(!IsCursorOnScreen())
+		return;
 	if(IsMouseButtonDown(0))
 	{
 		lastClick = GetTime();
@@ -24,18 +26,17 @@ void dNotes ()
 	float middle = GetScreenWidth() /2;
 	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
 	
+	for(int i = _noteIndex; i >= 0 && _pNotes[i] + _scrollSpeed > _musicHead; i--)
+	{
+		if(i < 0) continue;
+		//DrawCircle( middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
+		//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
+		DrawTextureEx(_noteTex, (Vector2){.x=musicTimeToScreen(_pNotes[i])- _noteTex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,(Color){.r=128,.g=128,.b=128,.a=255*noteFadeOut(_pNotes[i])});
+
+	}
+
 	if(_noteIndex < _amountNotes) //draw notes after line
 	{
-		for(int i = _noteIndex; i >= 0 && _pNotes[i] + _scrollSpeed > _musicHead; i--)
-		{
-			if(i < 0) continue;
-			//DrawCircle( middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
-			//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
-			DrawTextureEx(_noteTex, (Vector2){.x=musicTimeToScreen(_pNotes[i])- _noteTex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,(Color){.r=128,.g=128,.b=128,.a=255*noteFadeOut(_pNotes[i])});
-
-		}
-
-	
 		//draw notes before line
 		for(int i = _noteIndex; i < _amountNotes && _pNotes[i] - _scrollSpeed < _musicHead; i++)
 		{
@@ -45,7 +46,7 @@ void dNotes ()
 
 		}
 	}
-	DrawRectangle(middle - width / 2,0 , width, GetScreenHeight(), (Color){.r=_UIColor.r,.g=_UIColor.g,.b=_UIColor.b,.a=255/2});
+	DrawRectangle(middle - width / 2,0 , width, GetScreenHeight(), (Color){.r=255,.g=255,.b=255,.a=255/2});
 }
 
 void drawMapThumbnail(Rectangle rect, Map *map)
@@ -54,7 +55,7 @@ void drawMapThumbnail(Rectangle rect, Map *map)
 	Color color = WHITE;
 	if(mouseInRect(rect))
 		color = LIGHTGRAY;
-	if(mouseInRect(rect) && IsMouseButtonDown(0))
+	if(mouseInRect(rect) && IsMouseButtonReleased(0))
 		color = GRAY;
 
 	DrawRectangle(rect.x, rect.y, rect.width, rect.height, color);
@@ -74,6 +75,21 @@ void drawMapThumbnail(Rectangle rect, Map *map)
 	DrawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + GetScreenHeight() * 0.01+rect.height*imageRatio, GetScreenWidth() * 0.04, BLACK);
 }
 
+void drawBackground()
+{
+	if(!_noBackground)
+	{
+		float scale = (float)GetScreenWidth() / (float)_background.width;
+		DrawTextureEx(_background, (Vector2){.x=0, .y=(GetScreenHeight() - _background.height * scale)/2}, 0, scale,WHITE);
+	}else{
+		DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
+		(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
+	}
+}
+void resetBackGround()
+{
+	_background = LoadTexture("background.png");
+}
 void drawBars()
 {
 	//Draw the bars
@@ -83,15 +99,45 @@ void drawBars()
 	float distBetweenBars = distBetweenBeats*4;
 	for (int i = screenToMusicTime(0)/distBetweenBars; i < screenToMusicTime(GetScreenWidth())/distBetweenBars; i++)
 	{
-		DrawRectangle(musicTimeToScreen(distBetweenBars*i),GetScreenHeight()*0.7,GetScreenWidth()*0.01,GetScreenHeight()*0.2,(Color){.r=_UIColor.r,.g=_UIColor.g,.b=_UIColor.b,.a=180});
+		DrawRectangle(musicTimeToScreen(distBetweenBars*i),GetScreenHeight()*0.6,GetScreenWidth()*0.01,GetScreenHeight()*0.3,(Color){.r=255,.g=255,.b=255,.a=180});
 	}
 
 	printf("dist bars %f \t dist beats *4%f\n", distBetweenBars, distBetweenBeats*4);
 	for (int i = screenToMusicTime(0)/distBetweenBeats; i < screenToMusicTime(GetScreenWidth())/distBetweenBeats; i++)
 	{
 		if(i % 4 == 0) continue;
-		DrawRectangle(musicTimeToScreen(distBetweenBeats*i),GetScreenHeight()*0.8,GetScreenWidth()*0.01,GetScreenHeight()*0.1,(Color){.r=_UIColor.r,.g=_UIColor.g,.b=_UIColor.b,.a=180});
+		DrawRectangle(musicTimeToScreen(distBetweenBeats*i),GetScreenHeight()*0.7,GetScreenWidth()*0.01,GetScreenHeight()*0.2,(Color){.r=255,.g=255,.b=255,.a=180});
 	}
+}
+
+void drawMusicGraph(float transparent)
+{
+	if(_pMusic == NULL)
+		return;
+
+	//music stuff
+	float beginning = screenToMusicTime(0);
+	float end = screenToMusicTime(GetScreenWidth());
+	int amountBars = GetScreenWidth()/2;
+	float timePerBar = (end-beginning)/amountBars;
+	int samplesPerBar = getSamplePosition(timePerBar);
+	int sampleBegin = getSamplePosition(beginning);
+
+	//drawing stuff
+	int pixelsPerBar = GetScreenWidth()/amountBars;
+	float scaleBar = GetScreenHeight()*0.2;
+	//looping through all the bars / samples
+	for(int i = 0; i < amountBars; i++)
+	{
+		float highest = 0;
+		int sampleHead = sampleBegin + samplesPerBar*i;
+		for(int j = 0; j < samplesPerBar; j++)
+			if(sampleHead+j > 0 && fabs(((_Float32*)_pMusic)[sampleHead+j]) > highest)
+				highest = fabs(((_Float32*)_pMusic)[sampleHead+j]);
+
+		DrawRectangle(i*pixelsPerBar, GetScreenHeight()-highest*scaleBar, pixelsPerBar, highest*scaleBar, ColorAlpha(WHITE, transparent));
+	}
+
 }
 
 void drawVignette()
@@ -129,7 +175,7 @@ void drawProgressBarI(bool interActable)
 	}
 }
 
-void drawButton(Rectangle rect, char * text)
+void drawButton(Rectangle rect, char * text, float fontScale)
 {
 	Color color = WHITE;
 	if(mouseInRect(rect))
@@ -137,6 +183,6 @@ void drawButton(Rectangle rect, char * text)
 	if(mouseInRect(rect) && IsMouseButtonDown(0))
 		color = GRAY;
 	DrawRectangle(rect.x, rect.y, rect.width, rect.height, color);
-	int textSize = MeasureText(text, GetScreenWidth() * 0.05);
-	DrawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + GetScreenHeight() * 0.01, GetScreenWidth() * 0.05, (color.r == GRAY.r) ? BLACK : DARKGRAY);
+	int textSize = MeasureText(text, GetScreenWidth() * fontScale);
+	DrawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + GetScreenHeight() * 0.01, GetScreenWidth() * fontScale, (color.r == GRAY.r) ? BLACK : DARKGRAY);
 }

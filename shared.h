@@ -25,5 +25,6 @@ int getBeatsCount();
 float fDistance(float x1, float y1, float x2, float y2);
 float musicTimeToScreen(float musicTime);
 float screenToMusicTime(float x);
+int getSamplePosition(float time);
 
 #endif

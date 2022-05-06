@@ -16,7 +16,7 @@ Build: main.c gameplay.c files.c drawing.c shared.c gameplay.h files.h shared.h 
 	#gcc -Iinclude shared.c -o Obj/shared.o -c
 	#gcc Obj/main.o Obj/gameplay.o Obj/files.o Obj/shared.o -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -o Build/oneButtonRhythm
 
-debug: main.c
+Debug: main.c
 	@if [ ! -d "Build" ]; then \
 	echo "Directory doesn't exist, making..."; \
 	mkdir Build; \

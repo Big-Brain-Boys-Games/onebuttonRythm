@@ -7,11 +7,6 @@ bool endOfMusic()
 	return false;
 }
 
-void resetBackGround()
-{
-	_background = LoadTexture("background.png");
-}
-
 void playAudioEffect(void *effect, int size)
 {
 	for (int i = 0; i < size; i++)
@@ -40,6 +35,23 @@ void startMusic()
 		return;
 	}
 	_musicPlaying = true;
+}
+
+void stopMusic()
+{
+	ma_device_uninit(&_device);
+	_musicFrameCount = 0;
+	_musicHead = 0;
+	_musicPlaying = false;
+	_musicLength = 0;
+	free(_pMusic);
+}
+
+void unloadMap()
+{
+	free(_pNotes);
+	_amountNotes = 0;
+	_noteIndex = 0;
 }
 
 bool mouseInRect(Rectangle rect)
@@ -89,6 +101,48 @@ void newNote(float time)
 	free(_pNotes);
 	_pNotes = tmp;
 	_pNotes[closestIndex] = time;
+}
+
+void fPause()
+{
+	_musicPlaying = false;
+	BeginDrawing();
+		ClearBackground(BLACK);
+		drawBackground();
+
+		if(GetKeyPressed() && _musicHead!=0)
+		{
+			newNote(_musicHead);
+			ClearBackground(BLACK);
+		}
+		dNotes();
+		drawVignette();
+		drawProgressBar();
+		DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=0,.g=0,.b=0,.a=128});
+
+		float middle = GetScreenWidth()/2;
+		Rectangle continueButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.3, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
+		drawButton(continueButton,"continue", 0.05);
+
+		Rectangle exitButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.5, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
+		drawButton(exitButton,"exit", 0.05);
+
+		if(IsMouseButtonReleased(0))
+		{
+			if(mouseInRect(continueButton))
+			{
+				_pGameplayFunction = _pNextGameplayFunction;
+			}
+			if(mouseInRect(exitButton))
+			{
+				stopMusic();
+				unloadMap();
+				_pGameplayFunction = &fMainMenu;
+				resetBackGround();
+			}
+		}
+		drawCursor();
+	EndDrawing();
 }
 
 void fCountDown ()
@@ -174,13 +228,13 @@ void fMainMenu()
 		int middle = GetScreenWidth()/2;
 		//draw main menu
 		Rectangle playButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.3, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-		drawButton(playButton,"play");
+		drawButton(playButton,"play", 0.05);
 
 		Rectangle editorButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.5, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-		drawButton(editorButton,"Editor");
+		drawButton(editorButton,"Editor", 0.05);
 
 		Rectangle recordingButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.7, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-		drawButton(recordingButton,"Record");
+		drawButton(recordingButton,"Record", 0.05);
 		
 
 		if(IsMouseButtonReleased(0) && mouseInRect(playButton))
@@ -188,7 +242,7 @@ void fMainMenu()
 			//switching to playing map
 			printf("switching to playing map! \n");
 			
-			_pFutureGamePlayFunction = &fCountDown;
+			_pNextGameplayFunction = &fCountDown;
 			_pGameplayFunction = &fMapSelect;
 		}
 
@@ -202,7 +256,7 @@ void fMainMenu()
 			_musicHead = 0;
 			printf("switching to editor map! \n");
 			
-			_pFutureGamePlayFunction = &fEditor;
+			_pNextGameplayFunction = &fEditor;
 			_pGameplayFunction = &fMapSelect;
 		}
 
@@ -217,10 +271,60 @@ void fMainMenu()
 			_pNotes = calloc(sizeof(float), 1);
 			printf("switching to recording map! \n");
 			
-			_pFutureGamePlayFunction = &fRecording;
+			_pNextGameplayFunction = &fRecording;
 			_pGameplayFunction = &fMapSelect;
 		}
 
+		drawCursor();
+
+	EndDrawing();
+}
+
+void fEndScreen ()
+{
+	_musicPlaying = false;
+	BeginDrawing();
+		ClearBackground(BLACK);
+		drawBackground();
+		DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=0,.g=0,.b=0,.a=128});
+
+		int middle = GetScreenWidth()/2;
+		//draw menu
+		Rectangle playButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.7, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
+		drawButton(playButton,"retry", 0.05);
+
+		Rectangle MMButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.85, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
+		drawButton(MMButton,"main menu", 0.05);
+		
+		
+
+		float textSize = MeasureText("Finished", GetScreenWidth() * 0.15);
+		DrawText("Finished", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.2, GetScreenWidth() * 0.15, WHITE);
+
+		//draw score
+		char * tmpString = malloc(9);
+		sprintf(tmpString, "%i", _score);
+		textSize = MeasureText(tmpString, GetScreenWidth() * 0.1);
+		DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.1, LIGHTGRAY);
+		free(tmpString);
+
+		if(IsMouseButtonReleased(0) && mouseInRect(playButton))
+		{
+			//retrying map
+			printf("retrying map! \n");
+			
+		_pGameplayFunction = &fCountDown;
+		}
+		if(IsMouseButtonReleased(0) && mouseInRect(MMButton))
+		{
+			//retrying map
+			printf("going to main Menu! \n");
+			unloadMap();
+			stopMusic();
+			_pGameplayFunction = &fMainMenu;
+			resetBackGround();
+		}
+		drawVignette();
 		drawCursor();
 
 	EndDrawing();
@@ -238,15 +342,19 @@ void fEditor ()
 		_musicFrameCount = _musicHead*_decoder.outputSampleRate;
 		if(IsKeyDown(KEY_RIGHT) || GetMouseWheelMove() > 0) _musicHead+= GetFrameTime()*_scrollSpeed;
 		if(IsKeyDown(KEY_LEFT) || GetMouseWheelMove() < 0) _musicHead-= GetFrameTime()*_scrollSpeed;
-		
+		if(IsKeyPressed(KEY_UP)) _scrollSpeed *= 1.2;
+		if(IsKeyPressed(KEY_DOWN)) _scrollSpeed /= 1.2;
+		if(_scrollSpeed == 0) _scrollSpeed = 0.01;
 		//printf("Mousewheel: %f  \n Key Right: %d", GetMouseWheelMove(), IsKeyDown(KEY_RIGHT));
 	}
-	if(IsKeyPressed(KEY_UP)) _scrollSpeed *= 1.2;
-	if(IsKeyPressed(KEY_DOWN)) _scrollSpeed /= 1.2;
-	if(_scrollSpeed == 0) _scrollSpeed = 0.01;
 	//printf("Framecount: %d\n MusicTime: %f\n SongLength: %d\n", _musicFrameCount, _musicHead, _musicLength);
 	if(_musicHead < 0)
 		_musicHead = 0;
+
+	if(IsKeyPressed(KEY_ESCAPE)) {
+		_pGameplayFunction = &fPause;
+		_pNextGameplayFunction = &fPlaying;
+	}
 
 	if(_musicHead > getMusicDuration())
 		_musicHead = getMusicDuration();
@@ -275,118 +383,84 @@ void fEditor ()
 
 		dNotes();
 		
-		if(GetKeyPressed())
+		float closestTime = 55;
+		int closestIndex = 0;
+		for(int i = 0; i < _amountNotes; i++)
 		{
-			float closestTime = 55;
-			int closestIndex = 0;
-			for(int i = 0; i < _amountNotes; i++)
+			if(closestTime > fabs(_pNotes[i] - _musicHead))
 			{
-				if(closestTime > fabs(_pNotes[i] - _musicHead))
-				{
-					closestTime = fabs(_pNotes[i] - _musicHead);
-					closestIndex = i;
-				}
-			}
-			if (IsKeyPressed(KEY_X))
-			{
-				
-				if(closestTime < _maxMargin)
-				{
-					printf("old\n");
-					printAllNotes();
-					printf("new\n");
-					removeNote(closestIndex);
-					printAllNotes();
-				}
-				
-			}
-			if(IsKeyPressed(KEY_Z) && fabs(closestTime) > 0.1f)
-			{
-				printf("poggers making new note\n");
-				newNote(_musicHead);
-				printf("amount %i, new note %.2f index: %i\n", _amountNotes, _pNotes[closestIndex], closestIndex);
-				printAllNotes();
-				
-			}
-
-			if(IsKeyPressed(KEY_SPACE))
-			{
-				printf("pausing / continuing\n");
-				printAllNotes();
-				isPlaying = !isPlaying;
+				closestTime = fabs(_pNotes[i] - _musicHead);
+				closestIndex = i;
 			}
 		}
-		drawVignette();
+		if (IsKeyPressed(KEY_X))
+		{
+			
+			if(closestTime < _maxMargin)
+			{
+				printf("old\n");
+				printAllNotes();
+				printf("new\n");
+				_amountNotes--;
+				float * tmp = malloc(sizeof(float) * _amountNotes);
+				for(int i = closestIndex; i < _amountNotes; i++)
+				{
+					tmp[i] = _pNotes[i+1];
+				}
+				free(_pNotes);
+				_pNotes = tmp;
+				printAllNotes();
+			}
+			
+		}
+		if(IsKeyPressed(KEY_Z))
+		{
+			printf("poggers making new note\n");
+			_amountNotes++;
+			float * tmp = calloc(_amountNotes, sizeof(float));
+			for(int i = 0; i < _amountNotes-1; i++)
+			{
+				tmp[i] = _pNotes[i];
+				if(tmp[i] < _musicHead)
+					closestIndex=i;
+			}
+			for(int i = closestIndex+1; i < _amountNotes-1; i++)
+			{
+				tmp[i+1] = _pNotes[i];
+			}
+			
+			
+			free(_pNotes);
+			_pNotes = tmp;
+			_pNotes[closestIndex] = _musicHead;
+			printf("amount %i, new note %.2f index: %i\n", _amountNotes, _pNotes[closestIndex], closestIndex);
+		}
 
-		drawCursor();
+		if(IsKeyPressed(KEY_C))
+		{
+			//todo maybe not 4 subbeats?
+			float secondsPerBeat = getMusicDuration() / getBeatsCount()/4;
+			_musicHead = roundf(_musicHead/secondsPerBeat)*secondsPerBeat;
+		}
+
+		if(IsKeyPressed(KEY_SPACE))
+		{
+			isPlaying = !isPlaying;
+		}
+
+		drawMusicGraph(0.7);
+		drawVignette();
 		drawBars();
-		drawProgressBarI(true);
+		drawProgressBar();
+
 	EndDrawing();
 	if(endOfMusic())
 	{
-		printf("gonna write them all\n");
-		printAllNotes();
 		loadMap(1);
-		saveFile(_amountNotes);
-		_pGameplayFunction = &fMainMenu;
-
+		stopMusic();
+		_pGameplayFunction = &fEndScreen;
+		resetBackGround();
 	}
-}
-
-void fEndScreen ()
-{
-	_musicPlaying = false;
-	BeginDrawing();
-		ClearBackground(BLACK);
-		if(!_noBackground)
-		{
-			float scale = (float)GetScreenWidth() / (float)_background.width;
-			DrawTextureEx(_background, (Vector2){.x=0, .y=(GetScreenHeight() - _background.height * scale)/2}, 0, scale,WHITE);
-		}else{
-			DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
-			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
-		}
-		DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=0,.g=0,.b=0,.a=128});
-
-		int middle = GetScreenWidth()/2;
-		//draw menu
-		Rectangle playButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.7, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-		drawButton(playButton,"retry");
-
-		Rectangle MMButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.85, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-		drawButton(MMButton,"main menu");
-		
-		
-
-		float textSize = MeasureText("Finished", GetScreenWidth() * 0.15);
-		DrawText("Finished", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.2, GetScreenWidth() * 0.15, WHITE);
-
-		//draw score
-		char * tmpString = malloc(9);
-		sprintf(tmpString, "%i", _score);
-		textSize = MeasureText(tmpString, GetScreenWidth() * 0.1);
-		DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.1, LIGHTGRAY);
-		free(tmpString);
-
-		if(IsMouseButtonReleased(0) && mouseInRect(playButton))
-		{
-			//retrying map
-			printf("retrying map! \n");
-			
-		_pGameplayFunction = &fCountDown;
-		}
-		if(IsMouseButtonReleased(0) && mouseInRect(MMButton))
-		{
-			//retrying map
-			printf("going to main Menu! \n");
-			
-		_pGameplayFunction = &fMainMenu;
-			resetBackGround();
-		}
-		drawVignette();
-		drawCursor();
-
-	EndDrawing();
 }
 
 void fRecording ()
@@ -416,6 +490,7 @@ void fRecording ()
 			ClearBackground(BLACK);
 		}
 		// DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=255,.g=255,.b=255,.a=noLessThanZero(fadeOut - GetMusicTimePlayed(music))*255});
+		dNotes();
 		drawVignette();
 		drawBars();
 		drawProgressBar();
@@ -423,7 +498,10 @@ void fRecording ()
 	if(endOfMusic())
 	{
 		saveFile(_amountNotes);
+		unloadMap();
+		stopMusic();
 		_pGameplayFunction = &fMainMenu;
+		resetBackGround();
 	}
 }
 
@@ -434,9 +512,16 @@ void fPlaying ()
 	static int feedbackIndex = 0;
 	_musicHead += GetFrameTime();
 
+	_musicPlaying = true;
 	fixMusicTime();
 
 	// _pGameplayFunction = &fEndScreen;
+
+	if(IsKeyPressed(KEY_ESCAPE))
+	{
+		_pGameplayFunction = &fPause;
+		_pNextGameplayFunction = &fPlaying;
+	}
 
 	BeginDrawing();
 		ClearBackground(BLACK);
@@ -564,7 +649,7 @@ void fPlaying ()
 		{
 			printf("goto fail\n");
 			//goto fFail
-			_pGameplayFunction = &fFail;
+			stopMusic();
 			// StopMusicStream(music);
 		}
 		drawVignette();
@@ -590,10 +675,10 @@ void fFail ()
 		int middle = GetScreenWidth()/2;
 		//draw menu
 		Rectangle playButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.7, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-		drawButton(playButton,"retry");
+		drawButton(playButton,"retry", 0.05);
 
 		Rectangle MMButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.85, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-		drawButton(MMButton,"main menu");
+		drawButton(MMButton,"main menu", 0.05);
 		
 		
 
@@ -617,7 +702,8 @@ void fFail ()
 		{
 			//retrying map
 			printf("going to main Menu! \n");
-			
+			unloadMap();
+			stopMusic();
 			_pGameplayFunction = &fMainMenu;
 			resetBackGround();
 		}
@@ -659,6 +745,15 @@ void fMapSelect()
 
 		int middle = GetScreenWidth()/2;
 
+		Rectangle backButton = (Rectangle){.x=GetScreenWidth()*0.05, .y=GetScreenHeight()*0.05, .width=GetScreenWidth()*0.1, .height=GetScreenHeight()*0.05};
+		drawButton(backButton, "back", 0.02);
+
+		if(mouseInRect(backButton) && IsMouseButtonDown(0))
+		{
+			EndDrawing();
+			_pGameplayFunction=&fMainMenu;
+			return;
+		}
 		//draw map button
 		for(int i = 0; i < amount; i++)
 		{
@@ -674,16 +769,16 @@ void fMapSelect()
 				_pMap = malloc(100);
 				strcpy(_pMap, _pMaps[i].folder);
 				//switching to playing map
-				if(_pFutureGamePlayFunction != &fRecording)
+				if(_pNextGameplayFunction != &fRecording)
 					loadMap(0);
 				else
 					loadMap(1);
 				
-				if(_pFutureGamePlayFunction != &fCountDown)
+				if(_pNextGameplayFunction != &fCountDown)
 					startMusic();
 				printf("selected map!\n");
 				
-				_pGameplayFunction = _pFutureGamePlayFunction;
+				_pGameplayFunction = _pNextGameplayFunction;
 			}
 		}
 		drawCursor();
