@@ -38,6 +38,8 @@ ma_device _device;
 
 bool _musicPlaying;
 
+Color _UIColor = WHITE;
+
 
 void fFail ();
 void fCountDown ();
@@ -286,9 +288,9 @@ void loadMap (int fileType)
 
 			if(strcmp(line, "[Name]\n") == 0)			{mode = fpName;			continue;}
 			if(strcmp(line, "[Creator]\n") == 0)		{mode = fpCreator;		continue;}
-			if(strcmp(line, "[Difficulty]\n") == 0)	{mode = fpDifficulty;	continue;}
-			if(strcmp(line, "[BPM]\n") == 0)	{mode = fpBPM;	continue;}
-			if(strcmp(line, "[Notes]\n") == 0)		{mode = fpNotes;		continue;}
+			if(strcmp(line, "[Difficulty]\n") == 0)		{mode = fpDifficulty;	continue;}
+			if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;			continue;}
+			if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
 			printf("%i mode, %s", mode, line);
 			switch(mode)
 			{
@@ -397,13 +399,13 @@ void drawProgressBar() {drawProgressBarI(false);}
 void drawProgressBarI(bool interActable)
 {
 	static bool isGrabbed = false;
-	DrawRectangle( GetScreenWidth()*0.01, GetScreenHeight()*0.93, GetScreenWidth()*0.98, GetScreenHeight()*0.02, (Color){.r=255,.g=255,.b=255,.a=126});
+	DrawRectangle( GetScreenWidth()*0.01, GetScreenHeight()*0.93, GetScreenWidth()*0.98, GetScreenHeight()*0.02, (Color){.r=_UIColor.r,.g=_UIColor.g,.b=_UIColor.b,.a=126});
 	//drop shadow
 	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.945, GetScreenWidth()*0.025, (Color){.r=0,.g=0,.b=0,.a=80});
-	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.94, GetScreenWidth()*0.025, WHITE);
+	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.94, GetScreenWidth()*0.025, _UIColor);
 	char str[50];
 	sprintf(str, "%i:%i/%i:%i", (int)floor(getMusicPosition()/60), (int)getMusicPosition()%60, (int)floor(getMusicDuration()/60), (int)getMusicDuration()%60);
-	DrawText(str, GetScreenWidth()*0.85, GetScreenHeight()*0.85, GetScreenWidth()*0.03,WHITE);
+	DrawText(str, GetScreenWidth()*0.85, GetScreenHeight()*0.85, GetScreenWidth()*0.03,_UIColor);
 	if(interActable)
 	{
 		float x = getMusicPosition()/ getMusicDuration()*GetScreenWidth();
@@ -424,18 +426,26 @@ void drawBars()
 {
 	//Draw the bars
 	float middle = GetScreenWidth()/2;
-	float distBetweenBars = getMusicDuration() / getBarsCount();
+	float distBetweenBeats = getMusicDuration() / getBeatsCount();
+
+	float distBetweenBars = distBetweenBeats*4;
 	for (int i = screenToMusicTime(0)/distBetweenBars; i < screenToMusicTime(GetScreenWidth())/distBetweenBars; i++)
 	{
-		DrawRectangle(musicTimeToScreen(distBetweenBars*i),GetScreenHeight()*0.6,GetScreenWidth()*0.01,GetScreenHeight()*0.3,(Color){.r=255,.g=255,.b=255,.a=180});
+		DrawRectangle(musicTimeToScreen(distBetweenBars*i),GetScreenHeight()*0.7,GetScreenWidth()*0.01,GetScreenHeight()*0.2,(Color){.r=_UIColor.r,.g=_UIColor.g,.b=_UIColor.b,.a=180});
 	}
 
-	float distBetweenBeats = getMusicDuration() / getBeatsCount();
+	printf("dist bars %f \t dist beats *4%f\n", distBetweenBars, distBetweenBeats*4);
 	for (int i = screenToMusicTime(0)/distBetweenBeats; i < screenToMusicTime(GetScreenWidth())/distBetweenBeats; i++)
 	{
 		if(i % 4 == 0) continue;
-		DrawRectangle(musicTimeToScreen(distBetweenBeats*i),GetScreenHeight()*0.7,GetScreenWidth()*0.01,GetScreenHeight()*0.2,(Color){.r=255,.g=255,.b=255,.a=180});
+		DrawRectangle(musicTimeToScreen(distBetweenBeats*i),GetScreenHeight()*0.8,GetScreenWidth()*0.01,GetScreenHeight()*0.1,(Color){.r=_UIColor.r,.g=_UIColor.g,.b=_UIColor.b,.a=180});
 	}
+}
+
+void drawVignette()
+{
+	DrawRectangleGradientV(0, 0, GetScreenWidth(), GetScreenHeight()*0.3, ColorAlpha(BLACK, 0.7), ColorAlpha(BLACK, 0));
+	DrawRectangleGradientV(0, GetScreenHeight()*0.7, GetScreenWidth(), GetScreenHeight()*0.3, ColorAlpha(BLACK, 0), ColorAlpha(BLACK, 0.7));
 }
 
 void removeNote(int index)
@@ -453,6 +463,7 @@ void removeNote(int index)
 
 void newNote(float time)
 {
+	printf("new note time %f\n", time);
 	int closestIndex=0;
 	_amountNotes++;
 	float * tmp = calloc(_amountNotes, sizeof(float));
@@ -503,6 +514,7 @@ void fRecording ()
 			ClearBackground(BLACK);
 		}
 		// DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=255,.g=255,.b=255,.a=noLessThanZero(fadeOut - GetMusicTimePlayed(music))*255});
+		drawVignette();
 		drawBars();
 		drawProgressBar();
 	EndDrawing();
@@ -545,7 +557,7 @@ void dNotes ()
 
 		}
 	}
-	DrawRectangle(middle - width / 2,0 , width, GetScreenHeight(), (Color){.r=255,.g=255,.b=255,.a=255/2});
+	DrawRectangle(middle - width / 2,0 , width, GetScreenHeight(), (Color){.r=_UIColor.r,.g=_UIColor.g,.b=_UIColor.b,.a=255/2});
 }
 
 #define feedback(newFeedback) feedbackSayings[feedbackIndex] = newFeedback; feedbackIndex++; if(feedbackIndex > 4) feedbackIndex = 0;
@@ -688,6 +700,7 @@ void fPlaying ()
 			_pGameplayFunction = &fFail;
 			// StopMusicStream(music);
 		}
+		drawVignette();
 		drawProgressBar();
 	EndDrawing();
 }
@@ -741,6 +754,7 @@ void fFail ()
 			_pGameplayFunction = &fMainMenu;
 			resetBackGround();
 		}
+		drawVignette();
 		drawCursor();
 
 	EndDrawing();
@@ -796,6 +810,7 @@ void fEndScreen ()
 		_pGameplayFunction = &fMainMenu;
 			resetBackGround();
 		}
+		drawVignette();
 		drawCursor();
 
 	EndDrawing();
@@ -868,6 +883,7 @@ void fCountDown ()
 		DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.3, GetScreenWidth() * 0.3, WHITE);
 
 		free(tmpString);
+		drawVignette();
 	EndDrawing();
 }
 
@@ -1127,7 +1143,7 @@ void fEditor ()
 			if(IsKeyPressed(KEY_Z) && fabs(closestTime) > 0.1f)
 			{
 				printf("poggers making new note\n");
-				newNote(closestIndex);
+				newNote(_musicHead);
 				printf("amount %i, new note %.2f index: %i\n", _amountNotes, _pNotes[closestIndex], closestIndex);
 				printAllNotes();
 				
@@ -1140,10 +1156,11 @@ void fEditor ()
 				isPlaying = !isPlaying;
 			}
 		}
+		drawVignette();
+
 		drawCursor();
 		drawBars();
 		drawProgressBarI(true);
-
 	EndDrawing();
 	if(endOfMusic())
 	{
