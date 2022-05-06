@@ -453,7 +453,7 @@ void fEditor ()
 		drawMusicGraph(0.7);
 		drawVignette();
 		drawBars();
-		drawProgressBar();
+		drawProgressBarI(true);
 
 	EndDrawing();
 	if(endOfMusic())
