@@ -13,7 +13,7 @@
 float * _pNotes;
 FILE * _pFile;
 void (*_pGameplayFunction)();
-void (*_pFutureGamePlayFunction)();
+void (*_pNextGameplayFunction)();
 Texture2D _background, _heartTex, _healthBarTex, _noteTex, _cursorTex;
 // Music music;
 // Sound hitSE, missHitSE, missSE;
@@ -45,6 +45,7 @@ void fFail ();
 void fCountDown ();
 void fEndScreen ();
 void fMainMenu();
+void fEditor ();
 
 
 int _musicFrameCount = 0;
@@ -207,7 +208,7 @@ float getMusicPosition() {
 
 void fixMusicTime()
 {
-	if(fabs(_musicHead - getMusicPosition()) > 0.1)
+	if(fabs(_musicHead - getMusicPosition()) > 0.02)
 		_musicHead = getMusicPosition();
 }
 
@@ -434,7 +435,6 @@ void drawBars()
 		DrawRectangle(musicTimeToScreen(distBetweenBars*i),GetScreenHeight()*0.7,GetScreenWidth()*0.01,GetScreenHeight()*0.2,(Color){.r=_UIColor.r,.g=_UIColor.g,.b=_UIColor.b,.a=180});
 	}
 
-	printf("dist bars %f \t dist beats *4%f\n", distBetweenBars, distBetweenBeats*4);
 	for (int i = screenToMusicTime(0)/distBetweenBeats; i < screenToMusicTime(GetScreenWidth())/distBetweenBeats; i++)
 	{
 		if(i % 4 == 0) continue;
@@ -472,7 +472,6 @@ void newNote(float time)
 		tmp[i] = _pNotes[i];
 		if(tmp[i] < time)
 		{
-			printf("found new closest :%i   value %.2f musicHead %.2f\n", i, tmp[i], time);
 			closestIndex=i+1;
 		}
 	}
@@ -495,14 +494,7 @@ void fRecording ()
 	// UpdateMusicStream(music);
 	BeginDrawing();
 		ClearBackground(BLACK);
-		if(!_noBackground)
-		{
-			float scale = (float)GetScreenWidth() / (float)_background.width;
-			DrawTextureEx(_background, (Vector2){.x=0, .y=(GetScreenHeight() - _background.height * scale)/2}, 0, scale,WHITE);
-		}else{
-			DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
-			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
-		}
+		drawBackground();
 
 		if(GetKeyPressed() && _musicHead!=0)
 		{
@@ -560,6 +552,18 @@ void dNotes ()
 	DrawRectangle(middle - width / 2,0 , width, GetScreenHeight(), (Color){.r=_UIColor.r,.g=_UIColor.g,.b=_UIColor.b,.a=255/2});
 }
 
+void drawBackground()
+{
+	if(!_noBackground)
+	{
+		float scale = (float)GetScreenWidth() / (float)_background.width;
+		DrawTextureEx(_background, (Vector2){.x=0, .y=(GetScreenHeight() - _background.height * scale)/2}, 0, scale,WHITE);
+	}else{
+		DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
+		(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
+	}
+}
+
 #define feedback(newFeedback) feedbackSayings[feedbackIndex] = newFeedback; feedbackIndex++; if(feedbackIndex > 4) feedbackIndex = 0;
 void fPlaying ()
 {
@@ -574,14 +578,7 @@ void fPlaying ()
 	BeginDrawing();
 		ClearBackground(BLACK);
 		
-		if(!_noBackground)
-		{
-			float scale = (float)GetScreenWidth() / (float)_background.width;
-			DrawTextureEx(_background, (Vector2){.x=0, .y=(GetScreenHeight() - _background.height * scale)/2}, 0, scale,WHITE);
-		}else{
-			DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
-			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
-		}
+		drawBackground();
 		//DrawFPS(500,0);
 
 		//draw notes
@@ -710,14 +707,7 @@ void fFail ()
 	_musicPlaying = false;
 	BeginDrawing();
 		ClearBackground(BLACK);
-		if(!_noBackground)
-		{
-			float scale = (float)GetScreenWidth() / (float)_background.width;
-			DrawTextureEx(_background, (Vector2){.x=0, .y=(GetScreenHeight() - _background.height * scale)/2}, 0, scale,WHITE);
-		}else{
-			DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
-			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
-		}
+		drawBackground();
 		DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=0,.g=0,.b=0,.a=128});
 
 		int middle = GetScreenWidth()/2;
@@ -765,14 +755,7 @@ void fEndScreen ()
 	_musicPlaying = false;
 	BeginDrawing();
 		ClearBackground(BLACK);
-		if(!_noBackground)
-		{
-			float scale = (float)GetScreenWidth() / (float)_background.width;
-			DrawTextureEx(_background, (Vector2){.x=0, .y=(GetScreenHeight() - _background.height * scale)/2}, 0, scale,WHITE);
-		}else{
-			DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
-			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
-		}
+		drawBackground();
 		DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=0,.g=0,.b=0,.a=128});
 
 		int middle = GetScreenWidth()/2;
@@ -816,19 +799,20 @@ void fEndScreen ()
 	EndDrawing();
 }
 
+
 void fCountDown ()
 {
 	_musicPlaying = false;
 	static float countDown  = 0;
 	if(countDown == 0) countDown = GetTime() + 3;
 	// printf("countDown %f  getTime %f\n", countDown, GetTime());
-	if(countDown - GetTime() < 0)
+	if(countDown - GetTime() +GetFrameTime() <= 0)
 	{
 		countDown = 0;
 		//switching to playing map
 		printf("switching to playing map! \n");
 		
-	_pGameplayFunction = &fPlaying;
+		_pGameplayFunction = _pNextGameplayFunction;
 
 		startMusic();
 		
@@ -839,17 +823,14 @@ void fCountDown ()
 		_score = 0;
 		_noteIndex =1;
 		_musicHead = 0;
+		return;
 	}
+	_musicHead = GetTime()-countDown;
+
 	BeginDrawing();
 		ClearBackground(BLACK);
-		if(!_noBackground)
-		{
-			float scale = (float)GetScreenWidth() / (float)_background.width;
-			DrawTextureEx(_background, (Vector2){.x=0, .y=(GetScreenHeight() - _background.height * scale)/2}, 0, scale,WHITE);
-		}else{
-			DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
-			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
-		}
+		drawBackground();
+		
 		//DrawFPS(500,0);
 
 		//drawing parts of UI to not be too jarring when countdown is over
@@ -857,6 +838,8 @@ void fCountDown ()
 		//draw notes
 		float width = GetScreenWidth() * 0.005;
 		float middle = GetScreenWidth() /2;
+
+		dNotes();
 		
 		
 		float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
@@ -881,7 +864,6 @@ void fCountDown ()
 		sprintf(tmpString, "%i", (int)(countDown - GetTime() + 1));
 		float textSize = MeasureText(tmpString, GetScreenWidth() * 0.3);
 		DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.3, GetScreenWidth() * 0.3, WHITE);
-
 		free(tmpString);
 		drawVignette();
 	EndDrawing();
@@ -1046,16 +1028,21 @@ void fMapSelect()
 				_pMap = malloc(100);
 				strcpy(_pMap, _pMaps[i].folder);
 				//switching to playing map
-				if(_pFutureGamePlayFunction != &fRecording)
+				if(_pNextGameplayFunction != &fRecording)
 					loadMap(0);
 				else
 					loadMap(1);
+				_pGameplayFunction = _pNextGameplayFunction;
 				
-				if(_pFutureGamePlayFunction != &fCountDown)
+				
+				if(_pNextGameplayFunction == &fPlaying || _pNextGameplayFunction == &fRecording)
+					_pGameplayFunction = &fCountDown;
+				
+				if(_pGameplayFunction == &fEditor)
 					startMusic();
 				printf("selected map!\n");
 				
-				_pGameplayFunction = _pFutureGamePlayFunction;
+				
 			}
 		}
 		drawCursor();
@@ -1097,14 +1084,7 @@ void fEditor ()
 	BeginDrawing();
 		ClearBackground(BLACK);
 		
-		if(!_noBackground)
-		{
-			float scale = (float)GetScreenWidth() / (float)_background.width;
-			DrawTextureEx(_background, (Vector2){.x=0, .y=(GetScreenHeight() - _background.height * scale)/2}, 0, scale,WHITE);
-		}else{
-			DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
-			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
-		}
+		drawBackground();
 		//DrawFPS(500,0);
 
 		//draw notes
@@ -1199,7 +1179,7 @@ void fMainMenu()
 			//switching to playing map
 			printf("switching to playing map! \n");
 			
-			_pFutureGamePlayFunction = &fCountDown;
+			_pNextGameplayFunction = &fPlaying;
 			_pGameplayFunction = &fMapSelect;
 		}
 
@@ -1213,7 +1193,7 @@ void fMainMenu()
 			_musicHead = 0;
 			printf("switching to editor map! \n");
 			
-			_pFutureGamePlayFunction = &fEditor;
+			_pNextGameplayFunction = &fEditor;
 			_pGameplayFunction = &fMapSelect;
 		}
 
@@ -1228,7 +1208,7 @@ void fMainMenu()
 			_pNotes = calloc(sizeof(float), 1);
 			printf("switching to recording map! \n");
 			
-			_pFutureGamePlayFunction = &fRecording;
+			_pNextGameplayFunction = &fRecording;
 			_pGameplayFunction = &fMapSelect;
 		}
 
