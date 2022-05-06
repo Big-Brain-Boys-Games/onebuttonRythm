@@ -1141,6 +1141,13 @@ void fEditor ()
 				newNote(_musicHead);
 			}
 
+			if(IsKeyPressed(KEY_C))
+			{
+				//todo maybe not 4 subbeats?
+				float secondsPerBeat = getMusicDuration() / getBeatsCount()/4;
+				_musicHead = roundf(_musicHead/secondsPerBeat)*secondsPerBeat;
+			}
+
 			if(IsKeyPressed(KEY_SPACE))
 			{
 				isPlaying = !isPlaying;
