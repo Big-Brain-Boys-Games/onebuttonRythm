@@ -1,10 +1,20 @@
 
-Build: main.c
+Build: main.c gameplay.c files.c drawing.c shared.c gameplay.h files.h shared.h drawing.h
 	@if [ ! -d "Build" ]; then \
-	echo "Directory doesn't exist, making..."; \
+	echo "Directory Build doesn't exist, making..."; \
 	mkdir Build; \
 	fi
-	gcc -w -g0 -I /opt/raylib/src -Iinclude  main.c -o Build/simpleRythmGame -s -w -I/opt/raylib/src -L/opt/raylib/release/libs/linux -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+	@if [ ! -d "Obj" ]; then \
+	echo "Directory Obj doesn't exist, making..."; \
+	mkdir Obj; \
+	fi
+	gcc -Iinclude main.c -o Build/simpleRythmGame -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+
+	#gcc -Iinclude main.c -o Obj/main.o -c
+	#gcc -Iinclude gameplay.c -o Obj/gameplay.o -c
+	#gcc -Iinclude files.c -o Obj/files.o -c
+	#gcc -Iinclude shared.c -o Obj/shared.o -c
+	#gcc Obj/main.o Obj/gameplay.o Obj/files.o Obj/shared.o -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -o Build/oneButtonRhythm
 
 debug: main.c
 	@if [ ! -d "Build" ]; then \
@@ -16,3 +26,7 @@ debug: main.c
 
 windows: main.c
 	x86_64-w64-mingw32-gcc main.c -static -o Build/simpleRythmGame.exe -s -w -Llib -Iinclude -Llib-mingw-w64 -l:libraylibdll.a -l:libraylib.a -lglfw3 -lopengl32 -lgdi32 -lwinmm -Wl,-allow-multiple-definition -Wl,--subsystem,windows
+
+clean:
+	rm -r Build
+	rm -r Obj
