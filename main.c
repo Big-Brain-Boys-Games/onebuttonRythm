@@ -139,8 +139,6 @@ void saveFile (int noteAmount)
 		fprintf(_pFile, "%f\n", _pNotes[i]);
 	}
 	fclose(_pFile);
-	//fwrite(_pNotes, sizeof(float), noteIndex, _pFile);
-	
 }
 
 void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
@@ -235,6 +233,15 @@ void startMusic()
 		return;
 	}
 	_musicPlaying = true;
+}
+
+void stopMusic()
+{
+	ma_device_uninit(&_device);
+	_musicFrameCount = 0;
+	_musicHead = 0;
+	_musicPlaying = false;
+	_musicLength = 0;
 }
 
 enum FilePart{fpNone, fpName, fpCreator, fpDifficulty, fpBPM, fpNotes};
@@ -360,7 +367,7 @@ float fDistance(float x1, float y1, float x2, float y2)
 }
 
 
-void drawButton(Rectangle rect, char * text)
+void drawButton(Rectangle rect, char * text, float fontScale)
 {
 	Color color = WHITE;
 	if(mouseInRect(rect))
@@ -368,8 +375,8 @@ void drawButton(Rectangle rect, char * text)
 	if(mouseInRect(rect) && IsMouseButtonDown(0))
 		color = GRAY;
 	DrawRectangle(rect.x, rect.y, rect.width, rect.height, color);
-	int textSize = MeasureText(text, GetScreenWidth() * 0.05);
-	DrawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + GetScreenHeight() * 0.01, GetScreenWidth() * 0.05, (color.r == GRAY.r) ? BLACK : DARKGRAY);
+	int textSize = MeasureText(text, GetScreenWidth() * fontScale);
+	DrawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + GetScreenHeight() * 0.01, GetScreenWidth() * fontScale, (color.r == GRAY.r) ? BLACK : DARKGRAY);
 }
 
 float musicTimeToScreen(float musicTime)
@@ -553,7 +560,12 @@ void fPlaying ()
 
 	fixMusicTime();
 
-	// _pGameplayFunction = &fEndScreen;
+	if(endOfMusic())
+	{
+		stopMusic();
+		_pGameplayFunction = &fEndScreen;
+		return;
+	}
 
 	BeginDrawing();
 		ClearBackground(BLACK);
@@ -654,6 +666,7 @@ void fPlaying ()
 		{
 			printf("goto fail\n");
 			//goto fFail
+			stopMusic();
 			_pGameplayFunction = &fFail;
 		}
 		drawVignette();
@@ -672,10 +685,10 @@ void fFail ()
 		int middle = GetScreenWidth()/2;
 		//draw menu
 		Rectangle playButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.7, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-		drawButton(playButton,"retry");
+		drawButton(playButton,"retry", 0.05);
 
 		Rectangle MMButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.85, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-		drawButton(MMButton,"main menu");
+		drawButton(MMButton,"main menu", 0.05);
 
 		float textSize = MeasureText("You Failed", GetScreenWidth() * 0.15);
 		DrawText("You Failed", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.2, GetScreenWidth() * 0.15, WHITE);
@@ -718,10 +731,10 @@ void fEndScreen ()
 		int middle = GetScreenWidth()/2;
 		//draw menu
 		Rectangle playButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.7, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-		drawButton(playButton,"retry");
+		drawButton(playButton,"retry", 0.05);
 
 		Rectangle MMButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.85, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-		drawButton(MMButton,"main menu");
+		drawButton(MMButton,"main menu", 0.05);
 		
 		
 
@@ -954,6 +967,16 @@ void fMapSelect()
 
 		int middle = GetScreenWidth()/2;
 
+		Rectangle backButton = (Rectangle){.x=GetScreenWidth()*0.05, .y=GetScreenHeight()*0.05, .width=GetScreenWidth()*0.1, .height=GetScreenHeight()*0.05};
+		drawButton(backButton, "back", 0.02);
+
+		if(mouseInRect(backButton) && IsMouseButtonDown(0))
+		{
+			EndDrawing();
+			_pGameplayFunction=&fMainMenu;
+			return;
+		}
+
 		//draw map button
 		for(int i = 0; i < amount; i++)
 		{
@@ -1081,13 +1104,13 @@ void fMainMenu()
 		int middle = GetScreenWidth()/2;
 		//draw main menu
 		Rectangle playButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.3, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-		drawButton(playButton,"play");
+		drawButton(playButton,"play", 0.05);
 
 		Rectangle editorButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.5, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-		drawButton(editorButton,"Editor");
+		drawButton(editorButton,"Editor", 0.05);
 
 		Rectangle recordingButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.7, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-		drawButton(recordingButton,"Record");
+		drawButton(recordingButton,"Record", 0.05);
 		
 
 		if(IsMouseButtonReleased(0) && mouseInRect(playButton))
@@ -1148,28 +1171,16 @@ int main (int argc, char **argv)
 	_cursorTex = LoadTexture("cursor.png");
 	resetBackGround();
 	
-	// hitSE = LoadSound("hit.mp3");
-	// SetSoundVolume(hitSE, 0.6f);
-	// missHitSE = LoadSound("missHit.mp3");
-	// SetSoundVolume(missHitSE, 1);
-	// missSE = LoadSound("missSE.mp3");
-	// SetSoundVolume(missSE, 1);
-	
 	Vector2 mousePos;
 
 	//todo do this smarter
 	_pEffectsBuffer = calloc(sizeof(char), EFFECT_BUFFER_SIZE); //4 second long buffer
-	// for(int i = 0; i < EFFECT_BUFFER_SIZE/4; i++)
-	// {
-	// 	((_Float32*)_pEffectsBuffer)[i] = (_Float32)i;
-	// }
 	ma_decoder tmp;
 	_pHitSE = loadAudio("hit.mp3", &tmp, &_hitSE_Size);
 	_pMissHitSE = loadAudio("missHit.mp3", &tmp, &_missHitSE_Size);
 	_pMissSE = loadAudio("missHit.mp3", &tmp, &_missSE_Size);
 	
 	_pGameplayFunction = &fMainMenu;
-	// _pGameplayFunction = &fMapSelect;
 
 	while (!WindowShouldClose()) {
 		mousePos = GetMousePosition();
