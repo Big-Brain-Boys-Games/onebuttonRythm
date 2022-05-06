@@ -363,6 +363,13 @@ bool mouseInRect (Rectangle rect)
 	return false;
 }
 
+float fDistance(float x1, float y1, float x2, float y2)
+{
+	float x = x1 - x2;
+	float y = y1 - y2;
+	return sqrtf(fabs(x*x+y*y));
+}
+
 void drawButton(Rectangle rect, char * text)
 {
 	Color color = WHITE;
@@ -386,13 +393,29 @@ float screenToMusicTime(float x)
 	float middle = GetScreenWidth() /2;
 	return (x-middle)/(middle*(1/_scrollSpeed))+_musicHead;
 }
+void drawProgressBar() {drawProgressBarI(false);}
 
-void drawProgressBar()
+void drawProgressBarI(bool interActable)
 {
+	static bool isGrabbed = false;
 	DrawRectangle( GetScreenWidth()*0.01, GetScreenHeight()*0.93, GetScreenWidth()*0.98, GetScreenHeight()*0.02, (Color){.r=255,.g=255,.b=255,.a=126});
 	//drop shadow
 	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.95, GetScreenWidth()*0.03, (Color){.r=0,.g=0,.b=0,.a=80});
 	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.94, GetScreenWidth()*0.025, WHITE);
+	if(interActable)
+	{
+		float x = getMusicPosition()/ getMusicDuration()*GetScreenWidth();
+		float y = GetScreenHeight()*0.94;
+		if(fDistance(x, y, GetMouseX(), GetMouseY()) < GetScreenWidth()*0.03 && IsMouseButtonDown(0) || isGrabbed)
+		{
+			printf("grabbed %.2f  ", _musicHead);
+			isGrabbed = true;
+			_musicHead = GetMouseX()/(float)GetScreenWidth()*getMusicDuration();
+			printf("%.2f \n", _musicHead);
+		}
+		if(!IsMouseButtonDown(0))
+			isGrabbed = false;
+	}
 }
 
 void drawBars()
@@ -866,67 +889,75 @@ void fEditor ()
 
 		dNotes();
 		
-		float closestTime = 55;
-		int closestIndex = 0;
-		for(int i = 0; i < _amountNotes; i++)
+		if(GetKeyPressed())
 		{
-			if(closestTime > fabs(_pNotes[i] - _musicHead))
+			float closestTime = 55;
+			int closestIndex = 0;
+			for(int i = 0; i < _amountNotes; i++)
 			{
-				closestTime = fabs(_pNotes[i] - _musicHead);
-				closestIndex = i;
-			}
-		}
-		if (IsKeyPressed(KEY_X))
-		{
-			
-			if(closestTime < _maxMargin)
-			{
-				printf("old\n");
-				printAllNotes();
-				printf("new\n");
-				_amountNotes--;
-				float * tmp = malloc(sizeof(float) * _amountNotes);
-				for(int i = closestIndex; i < _amountNotes; i++)
+				if(closestTime > fabs(_pNotes[i] - _musicHead))
 				{
-					tmp[i] = _pNotes[i+1];
+					closestTime = fabs(_pNotes[i] - _musicHead);
+					closestIndex = i;
 				}
+			}
+			if (IsKeyPressed(KEY_X))
+			{
+				
+				if(closestTime < _maxMargin)
+				{
+					printf("old\n");
+					printAllNotes();
+					printf("new\n");
+					_amountNotes--;
+					float * tmp = malloc(sizeof(float) * _amountNotes);
+					memcpy(tmp, _pNotes, sizeof(float)*_amountNotes);
+					for(int i = closestIndex; i < _amountNotes; i++)
+					{
+						tmp[i] = _pNotes[i+1];
+					}
+					free(_pNotes);
+					_pNotes = tmp;
+					printAllNotes();
+				}
+				
+			}
+			if(IsKeyPressed(KEY_Z) && fabs(closestTime) > 0.1f)
+			{
+				printf("poggers making new note\n");
+				_amountNotes++;
+				float * tmp = calloc(_amountNotes, sizeof(float));
+				for(int i = 0; i < _amountNotes-1; i++)
+				{
+					tmp[i] = _pNotes[i];
+					if(tmp[i] < _musicHead)
+					{
+						printf("found new closest :%i   value %.2f musicHead %.2f\n", i, tmp[i], _musicHead);
+						closestIndex=i+1;
+					}
+				}
+				for(int i = closestIndex; i < _amountNotes-1; i++)
+				{
+					tmp[i+1] = _pNotes[i];
+				}
+				
+				
 				free(_pNotes);
 				_pNotes = tmp;
+				_pNotes[closestIndex] = _musicHead;
+				printf("amount %i, new note %.2f index: %i\n", _amountNotes, _pNotes[closestIndex], closestIndex);
 				printAllNotes();
+				
 			}
-			
-		}
-		if(IsKeyPressed(KEY_Z))
-		{
-			printf("poggers making new note\n");
-			_amountNotes++;
-			float * tmp = calloc(_amountNotes, sizeof(float));
-			for(int i = 0; i < _amountNotes-1; i++)
-			{
-				tmp[i] = _pNotes[i];
-				if(tmp[i] < _musicHead)
-					closestIndex=i;
-			}
-			for(int i = closestIndex+1; i < _amountNotes-1; i++)
-			{
-				tmp[i+1] = _pNotes[i];
-			}
-			
-			
-			free(_pNotes);
-			_pNotes = tmp;
-			_pNotes[closestIndex] = _musicHead;
-			printf("amount %i, new note %.2f index: %i\n", _amountNotes, _pNotes[closestIndex], closestIndex);
-		}
 
-		if(IsKeyPressed(KEY_SPACE))
-		{
-			isPlaying = !isPlaying;
+			if(IsKeyPressed(KEY_SPACE))
+			{
+				isPlaying = !isPlaying;
+			}
 		}
-
-		
+		drawCursor();
 		drawBars();
-		drawProgressBar();
+		drawProgressBarI(true);
 
 	EndDrawing();
 	if(endOfMusic())
@@ -941,7 +972,6 @@ void fEditor ()
 
 	}
 }
-
 
 void fMainMenu()
 {
