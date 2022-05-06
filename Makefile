@@ -4,7 +4,7 @@ Build: main.c
 	echo "Directory doesn't exist, making..."; \
 	mkdir Build; \
 	fi
-	gcc -w -g0 -I /opt/raylib/src -Iinclude  main.c -o Build/simpleRythmGame -s -w -I/opt/raylib/src -L/opt/raylib/release/libs/linux -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+	gcc -Iinclude  main.c -o Build/simpleRythmGame -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
 Debug: main.c
 	@if [ ! -d "Build" ]; then \

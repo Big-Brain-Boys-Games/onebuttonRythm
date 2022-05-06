@@ -348,6 +348,50 @@ void unloadMap()
 	_noteIndex = 0;
 }
 
+void saveScore()
+{
+	FILE * file;
+	char str [100];
+	strcpy(str, "scores/");
+	strcat(str, _pMap);
+	if(!DirectoryExists("scores/"))
+		return;
+	file = fopen(str, "w");
+	//todo add combo
+	fprintf(file, "%i %i\n", _score, 0);
+	fclose(file);
+}
+
+bool readScore(char * map, int *score, int * combo)
+{
+	score = 0;
+	combo = 0;
+	FILE * file;
+	char str [100];
+	strcpy(str, "scores/");
+	strcat(str, _pMap);
+	if(!DirectoryExists("scores/"))
+		return;
+	if(!FileExists(str))
+		return;
+	file = fopen(str, "r");
+	//todo add combo
+	char line [1000];
+	while(fgets(line,sizeof(line),_pFile)!= NULL)
+	{
+		_score = atoi(line);
+		char * part = &line[0];
+		for(int i = 0; i < 1000; i++)
+		{
+			if(*part==' ');
+				break;
+			part++;
+		}
+		//combo = atoi(part);
+	}
+	fclose(file);
+}
+
 void drawCursor ()
 {
 	static float lastClick;
@@ -570,7 +614,6 @@ void fRecording ()
 	_musicHead += GetFrameTime();
 	fixMusicTime();
 
-	// UpdateMusicStream(music);
 	BeginDrawing();
 		ClearBackground(BLACK);
 		drawBackground();
@@ -581,6 +624,7 @@ void fRecording ()
 			ClearBackground(BLACK);
 		}
 		dNotes();
+		drawMusicGraph(0.7);
 		drawVignette();
 		drawBars();
 		drawProgressBar();
@@ -993,7 +1037,7 @@ Map loadMapInfo(char * file)
 		if(strcmp(line, "[Name]\n") == 0)			{mode = fpName;			continue;}
 		if(strcmp(line, "[Creator]\n") == 0)		{mode = fpCreator;		continue;}
 		if(strcmp(line, "[Difficulty]\n") == 0)		{mode = fpDifficulty;	continue;}
-		if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;	continue;}
+		if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;			continue;}
 		if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
 		for(int i = 0; i < 100; i++)
 					if(line[i] == '\n') line[i]= '\0';
@@ -1055,6 +1099,7 @@ void fMapSelect()
 			mapIndex++;
 		}
 		amount = mapIndex;
+		ClearDirectoryFiles();
 	}
 
 	_musicPlaying = false;
