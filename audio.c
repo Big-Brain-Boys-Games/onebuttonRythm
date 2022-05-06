@@ -1,0 +1,204 @@
+#include "audio.h"
+#include "include/miniaudio.h"
+
+#include <stdbool.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+extern int _amountNotes ,_musicLength, _musicFrameCount, _bpm;
+extern float _musicHead, _scrollSpeed;
+
+#define EFFECT_BUFFER_SIZE 48000 * 4 * 4
+
+ma_decoder _decoder;
+ma_device_config _deviceConfig;
+ma_device _device;
+
+void *_pHitSE;
+int _hitSE_Size;
+
+void *_pMissHitSE;
+int _missHitSE_Size;
+
+void *_pMissSE;
+int _missSE_Size;
+
+void *_pEffectsBuffer;
+int _effectOffset;
+
+//Where is the current audio
+float _musicHead = 0;
+bool _musicPlaying;
+
+int _musicFrameCount = 0;
+int _musicLength = 0;
+
+void *_pMusic;
+
+int getSamplePosition(float time) {
+	return time*_decoder.outputSampleRate;
+}
+
+float getMusicDuration()
+{
+	return _musicLength / (float)_decoder.outputSampleRate;
+}
+
+float getMusicPosition()
+{
+	return _musicFrameCount / (float)_decoder.outputSampleRate;
+}
+
+void fixMusicTime()
+{
+	if (fabs(_musicHead - getMusicPosition()) > 0.1)
+		_musicHead = getMusicPosition();
+}
+
+int getBarsCount()
+{
+	return _bpm * getMusicDuration() / 60 / 4;
+}
+
+int getBeatsCount()
+{
+	return _bpm * getMusicDuration() / 60;
+}
+
+void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
+{
+	ma_decoder tmp;
+	if(decoder == NULL)
+	{
+		decoder = &tmp;
+	}
+	ma_result result;
+	printf("loading sound effect %s\n", file);
+	ma_decoder_config decoder_config = ma_decoder_config_init(ma_format_f32, 2, 48000);
+	decoder_config.resampling.linear.lpfOrder = MA_MAX_FILTER_ORDER;
+	result = ma_decoder_init_file(file, &decoder_config, decoder);
+    if (result != MA_SUCCESS) {
+        printf("failed to open music file %s\n", file);
+		exit(0);
+    }
+	int lastFrame = -1;
+	ma_decoder_get_length_in_pcm_frames(decoder, (long long unsigned int *)audioLength);
+	void * pAudio = calloc(sizeof(_Float32)*2*2, *audioLength); //added some patting to get around memory issue //todo fix this work around
+	void * pCursor = pAudio;
+	while(decoder->readPointerInPCMFrames !=lastFrame)
+	{
+		lastFrame = decoder->readPointerInPCMFrames;
+		ma_decoder_read_pcm_frames(decoder, pCursor, 256, NULL);
+		pCursor += sizeof(_Float32)*2*256;
+	}
+	ma_decoder_uninit(decoder);
+	return pAudio;
+}
+
+void audioInit()
+{
+		//todo do this smarter
+	_pEffectsBuffer = calloc(sizeof(char), EFFECT_BUFFER_SIZE); //4 second long buffer
+	_pHitSE = loadAudio("hit.mp3", NULL, &_hitSE_Size);
+	_pMissHitSE = loadAudio("missHit.mp3", NULL, &_missHitSE_Size);
+	_pMissSE = loadAudio("missHit.mp3", NULL, &_missSE_Size);
+}
+
+void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount)
+{
+
+	// music
+	if (_musicPlaying)
+	{
+		if (_musicLength > _musicFrameCount)
+			memcpy(pOutput, _pMusic + _musicFrameCount * sizeof(_Float32) * 2, frameCount * sizeof(_Float32) * 2);
+		_musicFrameCount += frameCount;
+	}
+	// sound effects
+
+	for (int i = 0; i < frameCount * 2; i++)
+	{
+		((_Float32 *)pOutput)[i] += ((_Float32 *)_pEffectsBuffer)[(i + _effectOffset) % (48000 * 4)];
+		((_Float32 *)_pEffectsBuffer)[(i + _effectOffset) % (48000 * 4)] = 0;
+	}
+	_effectOffset += frameCount * 2;
+
+	(void)pInput;
+}
+
+void loadMusic(char * file)
+{
+	_musicPlaying = false;
+	if(_musicLength != 0)
+	{
+		//unload previous music
+		free(_pMusic);
+	}
+
+	_pMusic = loadAudio(file, &_decoder, &_musicLength);
+
+	printf("yoo %i\n", _decoder.outputSampleRate);
+
+	_deviceConfig = ma_device_config_init(ma_device_type_playback);
+    _deviceConfig.playback.format   = _decoder.outputFormat;
+    _deviceConfig.playback.channels = _decoder.outputChannels;
+    _deviceConfig.sampleRate        = _decoder.outputSampleRate;
+    _deviceConfig.dataCallback      = data_callback;
+    _deviceConfig.pUserData         = &_decoder;
+	// _deviceConfig.periodSizeInMilliseconds = 300;
+	
+}
+
+bool endOfMusic()
+{
+	if (_musicLength/20 < _musicFrameCount)
+		return true;
+	return false;
+}
+
+void playAudioEffect(void *effect, int size)
+{
+	for (int i = 0; i < size; i++)
+	{
+		((float *)_pEffectsBuffer)[(i + _effectOffset) % (48000 * 4)] += ((float *)effect)[i];
+	}
+}
+
+void startMusic()
+{
+	if (_musicFrameCount != 0)
+	{
+		// unload previous devices
+		ma_device_uninit(&_device);
+	}
+	if (ma_device_init(NULL, &_deviceConfig, &_device) != MA_SUCCESS)
+	{
+		printf("Failed to open playback device.\n");
+		return;
+	}
+
+	if (ma_device_start(&_device) != MA_SUCCESS)
+	{
+		printf("Failed to start playback device.\n");
+		ma_device_uninit(&_device);
+		return;
+	}
+	_musicPlaying = true;
+}
+
+void stopMusic()
+{
+	ma_device_uninit(&_device);
+	_musicFrameCount = 0;
+	_musicHead = 0;
+	_musicPlaying = false;
+	_musicLength = 0;
+	free(_pMusic);
+}
+
+void setMusicFrameCount()
+{
+    _musicFrameCount = _musicHead*_decoder.outputSampleRate;
+}

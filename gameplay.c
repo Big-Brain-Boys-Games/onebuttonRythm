@@ -1,60 +1,42 @@
 #ifndef MAINC
 #include "gameplay.h"
+#include "files.h"
+#include "drawing.h"
+#include "audio.h"
 #endif
 
-bool endOfMusic()
-{
-	if (_musicLength < _musicFrameCount)
-		return true;
-	return false;
-}
+#include "include/raylib.h"
+#include <stdbool.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-void playAudioEffect(void *effect, int size)
-{
-	for (int i = 0; i < size; i++)
-	{
-		((_Float32 *)_pEffectsBuffer)[(i + _effectOffset) % (48000 * 4)] += ((_Float32 *)effect)[i];
-	}
-}
+extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
+extern Color _fade;
+extern bool _musicPlaying;
+extern float _musicHead;
+extern void * _pHitSE, *_pMissHitSE;
+extern int _hitSE_Size, _missHitSE_Size;
 
-void startMusic()
-{
-	if (_musicFrameCount != 0)
-	{
-		// unload previous devices
-		ma_device_uninit(&_device);
-	}
-	if (ma_device_init(NULL, &_deviceConfig, &_device) != MA_SUCCESS)
-	{
-		printf("Failed to open playback device.\n");
-		return;
-	}
+extern Map _pMaps[100];
 
-	if (ma_device_start(&_device) != MA_SUCCESS)
-	{
-		printf("Failed to start playback device.\n");
-		ma_device_uninit(&_device);
-		return;
-	}
-	_musicPlaying = true;
-}
+float _scrollSpeed = 0.6;
+int _noteIndex = 0, _amountNotes =0 ;
+bool _noBackground = false;
+float _health = 50;
+int _score= 0;
+int _bpm = 100;
+float _maxMargin = 0.1;
+int _hitPoints = 5;
+int _missPenalty = 10;
+char *_pMap = "testMap";
+float _fadeOut = 0;
 
-void stopMusic()
-{
-	ma_device_uninit(&_device);
-	_musicFrameCount = 0;
-	_musicHead = 0;
-	_musicPlaying = false;
-	_musicLength = 0;
-	free(_pMusic);
-}
-
-void unloadMap()
-{
-	free(_pNotes);
-	_amountNotes = 0;
-	_noteIndex = 0;
-}
+//Timestamp of all the notes
+float * _pNotes;
+void (*_pNextGameplayFunction)();
+void (*_pGameplayFunction)();
 
 bool mouseInRect(Rectangle rect)
 {
@@ -324,7 +306,7 @@ void fEditor ()
 		_musicHead += GetFrameTime();
 	}else
 	{
-		_musicFrameCount = _musicHead*_decoder.outputSampleRate;
+		setMusicFrameCount();
 		if(IsKeyDown(KEY_RIGHT) || GetMouseWheelMove() > 0) _musicHead+= GetFrameTime()*_scrollSpeed;
 		if(IsKeyDown(KEY_LEFT) || GetMouseWheelMove() < 0) _musicHead-= GetFrameTime()*_scrollSpeed;
 		if(IsKeyPressed(KEY_UP)) _scrollSpeed *= 1.2;
@@ -465,7 +447,7 @@ void fPlaying ()
 	{
 		stopMusic();
 
-		// saveScore();
+		saveScore();
 		_pGameplayFunction = &fEndScreen;
 		return;
 	}
@@ -650,10 +632,7 @@ void fMapSelect()
 		{
 			if(files[i][0] == '.')
 				continue;
-			char file [100];
-			strcpy(file, "maps/");
-			strcat(file, files[i]);
-			_pMaps[mapIndex] = loadMapInfo(&(file[0]));
+			_pMaps[mapIndex] = loadMapInfo(&(files[i][0]));
 			mapIndex++;
 		}
 		amount = mapIndex;
@@ -691,6 +670,7 @@ void fMapSelect()
 			{
 				_pMap = malloc(100);
 				strcpy(_pMap, _pMaps[i].folder);
+				printf("map %s");
 				//switching to playing map
 				if(_pNextGameplayFunction != &fRecording)
 					loadMap(0);

@@ -1,0 +1,9 @@
+audio.o: audio.c audio.h include/miniaudio.h
+drawing.o: drawing.c drawing.h shared.h files.h gameplay.h audio.h \
+ include/raylib.h
+files.o: files.c files.h shared.h gameplay.h audio.h include/raylib.h
+gameplay.o: gameplay.c gameplay.h shared.h audio.h include/raylib.h \
+ files.h drawing.h
+main.o: main.c include/raylib.h shared.h files.h gameplay.h audio.h \
+ drawing.h
+shared.o: shared.c shared.h

@@ -2,17 +2,38 @@
 #include "files.h"
 #endif
 
+#include <stdbool.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "include/raylib.h"
+
+
+extern Texture2D _background;
+extern float * _pNotes;
+extern char * _pMap;
+extern int _amountNotes, _noteIndex, _bpm, _score;
+extern bool _noBackground;
+//TODO add support for more maps
+Map _pMaps [100];
+
+FILE * _pFile;
+
 Map loadMapInfo(char * file)
 {
+	char * mapStr = malloc(strlen(file) + 12);
+	strcpy(mapStr, "maps/");
+	strcat(mapStr, file);
 	Map map;
 	map.folder = malloc(100);
 	strcpy(map.folder, file);
-	char * pStr = malloc(strlen(file) + 12);
-	strcpy(pStr, file);
+	char * pStr = malloc(strlen(mapStr) + 12);
+	strcpy(pStr, mapStr);
 	strcat(pStr, "/image.png");
 	map.image = LoadTexture(pStr);
 	
-	strcpy(pStr, file);
+	strcpy(pStr, mapStr);
 	strcat(pStr, "/map.data");
 	FILE * f;
 	f = fopen(pStr, "rb");
@@ -20,7 +41,7 @@ Map loadMapInfo(char * file)
 	//text file
 	char line [1000];
 	enum FilePart mode = fpNone;
-	while(fgets(line,sizeof(line),f)!= NULL)
+	while(fgets(line,sizeof(line),f)!= 0)
 	{
 		int stringLenght = strlen(line);
 		bool emptyLine = true;
@@ -34,7 +55,7 @@ Map loadMapInfo(char * file)
 		if(strcmp(line, "[Name]\n") == 0)			{mode = fpName;			continue;}
 		if(strcmp(line, "[Creator]\n") == 0)		{mode = fpCreator;		continue;}
 		if(strcmp(line, "[Difficulty]\n") == 0)		{mode = fpDifficulty;	continue;}
-		if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;	continue;}
+		if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;			continue;}
 		if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
 		printf("%i mode, %s", mode, line);
 		for(int i = 0; i < 100; i++)
@@ -89,7 +110,7 @@ void saveFile (int noteAmount)
 	fprintf(_pFile, "[Difficulty]\n");
 	fprintf(_pFile, "%i\n", Difficulty);
 	fprintf(_pFile, "[BPM]\n");
-	fprintf(_pFile, "%i\n", bpm);
+	fprintf(_pFile, "%i\n", _bpm);
 	fprintf(_pFile, "[Notes]\n");
 	for(int i = 0; i < noteAmount; i++)
 	{
@@ -101,69 +122,23 @@ void saveFile (int noteAmount)
 	
 }
 
-void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
-{
-	ma_result result;
-	printf("loading sound effect %s\n", file);
-	ma_decoder_config decoder_config = ma_decoder_config_init(ma_format_f32, 2, 48000);
-	decoder_config.resampling.linear.lpfOrder = MA_MAX_FILTER_ORDER;
-	result = ma_decoder_init_file(file, &decoder_config, decoder);
-    if (result != MA_SUCCESS) {
-        printf("failed to open music file %s\n", file);
-		exit(0);
-    }
-	int lastFrame = -1;
-	ma_decoder_get_length_in_pcm_frames(decoder, audioLength);
-	void * pAudio = calloc(sizeof(_Float32)*2*2, *audioLength); //added some patting to get around memory issue //todo fix this work around
-	void * pCursor = pAudio;
-	while(decoder->readPointerInPCMFrames !=lastFrame)
-	{
-		lastFrame = decoder->readPointerInPCMFrames;
-		ma_decoder_read_pcm_frames(decoder, pCursor, 256, NULL);
-		pCursor += sizeof(_Float32)*2*256;
-	}
-	ma_decoder_uninit(decoder);
-	return pAudio;
-}
-
-void loadMusic(char * file)
-{
-	_musicPlaying = false;
-	if(_musicLength != 0)
-	{
-		//unload previous music
-		free(_pMusic);
-	}
-
-	_pMusic = loadAudio(file, &_decoder, &_musicLength);
-
-	printf("yoo %i\n", _decoder.outputSampleRate);
-
-	_deviceConfig = ma_device_config_init(ma_device_type_playback);
-    _deviceConfig.playback.format   = _decoder.outputFormat;
-    _deviceConfig.playback.channels = _decoder.outputChannels;
-    _deviceConfig.sampleRate        = _decoder.outputSampleRate;
-    _deviceConfig.dataCallback      = data_callback;
-    _deviceConfig.pUserData         = &_decoder;
-	// _deviceConfig.periodSizeInMilliseconds = 300;
-	
-}
-
 void loadMap (int fileType)
 {
-	char * pStr = malloc(strlen(_pMap) + 12);
-	strcpy(pStr, _pMap);
+	char * map = malloc(strlen(_pMap) + 12);
+	strcpy(map, "maps/");
+	strcat(map, _pMap);
+	char * pStr = malloc(strlen(map) + 12);
+	strcpy(pStr, map);
 	strcat(pStr, "/image.png");
 	_background = LoadTexture(pStr);
-	strcpy(pStr, _pMap);
+	strcpy(pStr, map);
 	strcat(pStr, "/song.mp3");
 
 	// ma_result result
-	// music = LoadMusicStream(pStr);
 	loadMusic(pStr);
 	
 
-	strcpy(pStr, _pMap);
+	strcpy(pStr, map);
 	strcat(pStr, "/map.data");
 	if(fileType == 0)
 	{
@@ -206,8 +181,8 @@ void loadMap (int fileType)
 					//todo save difficulty
 					break;
 				case fpBPM:
-					bpm = atoi(line);
-					printf("set bpm: %i\n", bpm);	
+					_bpm = atoi(line);
+					printf("set bpm: %i\n", _bpm);	
 					break;
 				case fpNotes:
 					
@@ -239,29 +214,6 @@ void loadMap (int fileType)
 	}
 }
 
-void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount)
-{
-
-	// music
-	if (_musicPlaying)
-	{
-		if (_musicLength > _musicFrameCount)
-			memcpy(pOutput, _pMusic + _musicFrameCount * sizeof(_Float32) * 2, frameCount * sizeof(_Float32) * 2);
-		_musicFrameCount += frameCount;
-	}
-	// sound effects
-
-	for (int i = 0; i < frameCount * 2; i++)
-	{
-		((_Float32 *)pOutput)[i] += ((_Float32 *)_pEffectsBuffer)[(i + _effectOffset) % (48000 * 4)];
-		// printf("i %i \t actual position %i \t %.1f\n", i, i + _effectOffset, ((_Float32*)_pEffectsBuffer)[(i+_effectOffset)%(4800*4)]);
-		((_Float32 *)_pEffectsBuffer)[(i + _effectOffset) % (48000 * 4)] = 0;
-	}
-	_effectOffset += frameCount * 2;
-
-	(void)pInput;
-}
-
 void saveScore()
 {
 	FILE * file;
@@ -270,6 +222,7 @@ void saveScore()
 	strcat(str, _pMap);
 	if(!DirectoryExists("scores/"))
 		return;
+	printf("str %s\n", str);
 	file = fopen(str, "w");
 	//todo add combo
 	fprintf(file, "%i %i\n", _score, 0);
@@ -285,9 +238,9 @@ bool readScore(char * map, int *score, int * combo)
 	strcpy(str, "scores/");
 	strcat(str, _pMap);
 	if(!DirectoryExists("scores/"))
-		return;
+		return false;
 	if(!FileExists(str))
-		return;
+		return false;
 	file = fopen(str, "r");
 	//todo add combo
 	char line [1000];
@@ -304,4 +257,12 @@ bool readScore(char * map, int *score, int * combo)
 		//combo = atoi(part);
 	}
 	fclose(file);
+	return true;
+}
+
+void unloadMap()
+{
+	free(_pNotes);
+	_amountNotes = 0;
+	_noteIndex = 0;
 }

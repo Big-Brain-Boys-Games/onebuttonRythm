@@ -1,32 +1,26 @@
+OBJ_DIR := Obj
+SRC_DIR := .
+INCLUDE_DIR := include
+SRC_FILES := $(wildcard *.c)
+OBJ_FILES := $(addprefix $(OBJ_DIR)/,$(patsubst %.c,%.o,$(SRC_FILES)))
+CFLAGS := -I$(INCLUDE_DIR)/ -I. -march=native -Ofast -g
+LDFLAGS := -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+OUTEXE := oneButtonRhythm
 
-Build: main.c gameplay.c files.c drawing.c shared.c gameplay.h files.h shared.h drawing.h
-	@if [ ! -d "Build" ]; then \
-	echo "Directory Build doesn't exist, making..."; \
-	mkdir Build; \
-	fi
-	@if [ ! -d "Obj" ]; then \
-	echo "Directory Obj doesn't exist, making..."; \
-	mkdir Obj; \
-	fi
-	gcc -Iinclude main.c -o Build/simpleRythmGame -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+.DEFAULT_GOAL := $(OUTEXE)
 
-	#gcc -Iinclude main.c -o Obj/main.o -c
-	#gcc -Iinclude gameplay.c -o Obj/gameplay.o -c
-	#gcc -Iinclude files.c -o Obj/files.o -c
-	#gcc -Iinclude shared.c -o Obj/shared.o -c
-	#gcc Obj/main.o Obj/gameplay.o Obj/files.o Obj/shared.o -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -o Build/oneButtonRhythm
+.depend: $(SRC_FILES)
+	rm -f .depend
+	gcc $(CFLAGS) -MM $^ | perl -p -e 's,^(.+?)\.o: (.+?)/\1\.c.*,$$2/$$&,;' >> .depend
 
-Debug: main.c
-	@if [ ! -d "Build" ]; then \
-	echo "Directory doesn't exist, making..."; \
-	mkdir Build; \
-	fi
-	gcc -ggdb -o Build/Debug main.c -g -Wall -I/opt/raylib/src -L/opt/raylib/release/libs/linux -lraylib -lGL -lm  -lpthread -ldl -lrt -lX11
-	#valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./Debug
+include .depend
 
-windows: main.c
-	x86_64-w64-mingw32-gcc main.c -static -o Build/simpleRythmGame.exe -s -w -Llib -Iinclude -Llib-mingw-w64 -l:libraylibdll.a -l:libraylib.a -lglfw3 -lopengl32 -lgdi32 -lwinmm -Wl,-allow-multiple-definition -Wl,--subsystem,windows
+$(OBJ_DIR)/%.o: %.c
+	gcc -c $(CFLAGS) $< -o $@
 
+$(OUTEXE): $(OBJ_FILES) .depend
+	gcc -o $(OUTEXE) $(OBJ_FILES) $(LDFLAGS) $(CFLAGS)
+
+.PHONY: clean
 clean:
-	rm -r Build
-	rm -r Obj
+	rm $(OBJ_FILES) .depend $(OUTEXE)

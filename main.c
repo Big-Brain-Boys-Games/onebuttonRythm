@@ -5,24 +5,28 @@
 #include <string.h>
 #include <math.h>
 
-#include "include/miniaudio.h"
+// #include "include/miniaudio.h"
 #include "include/raylib.h"
 
-#define MAINC
+// #define MAINC
 
 #include "shared.h"
 #include "files.h"
 #include "drawing.h"
 #include "gameplay.h"
 
-#include "shared.c"
-#include "drawing.c"
-#include "gameplay.c"
-#include "files.c"
+// #include "shared.c"
+// #include "drawing.c"
+// #include "gameplay.c"
+// #include "files.c"
+
+extern Texture2D _heartTex, _healthBarTex, _noteTex, _cursorTex, _background;
+extern void *_pEffectsBuffer, *_pHitSE, *_pMissHitSE, *_pMissSE;
+extern int _hitSE_Size, _missHitSE_Size, _missSE_Size;
+extern void (*_pGameplayFunction)();
 
 #define GLSL_VERSION 330
 
-#define EFFECT_BUFFER_SIZE 48000 * 4 * 4
 
 int main(int argc, char **argv)
 {
@@ -40,13 +44,7 @@ int main(int argc, char **argv)
 	resetBackGround();
 	
 	Vector2 mousePos;
-
-	//todo do this smarter
-	_pEffectsBuffer = calloc(sizeof(char), EFFECT_BUFFER_SIZE); //4 second long buffer
-	ma_decoder tmp;
-	_pHitSE = loadAudio("hit.mp3", &tmp, &_hitSE_Size);
-	_pMissHitSE = loadAudio("missHit.mp3", &tmp, &_missHitSE_Size);
-	_pMissSE = loadAudio("missHit.mp3", &tmp, &_missSE_Size);
+	audioInit();
 
 	_pGameplayFunction = &fMainMenu;
 

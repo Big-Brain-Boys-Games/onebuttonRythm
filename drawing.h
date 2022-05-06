@@ -3,31 +3,25 @@
 
 #ifndef MAINC
 #include "shared.h"
-#include "include/raylib.h"
 #include "files.h"
 #include "gameplay.h"
 #endif
 
-Texture2D _cursorTex;
-Texture2D _noteTex;
-Texture2D _healthBarTex;
-Texture2D _heartTex;
-Texture2D _background;
+#include "include/raylib.h"
 
-Color _UIColor = WHITE;
-
-struct Map;
-
-typedef struct Map Map;
-
+float musicTimeToScreen(float musicTime);
+float screenToMusicTime(float x);
 float noteFadeOut(float note);
 void drawCursor();
 void dNotes();
 void drawMapThumbnail (Rectangle rect, Map *map);
 void drawBars();
+void drawBackground();
 void drawVignette();
 void drawProgressBar();
+void drawProgressBarI(bool interactable);
 void drawButton(Rectangle rect, char * text, float fontScale);
 void fMapSelect();
+void drawMusicGraph(float transparent);
 
 #endif

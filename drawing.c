@@ -1,6 +1,40 @@
 #ifndef MAINC
 #include "drawing.h"
 #endif
+#include <stdbool.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "include/raylib.h"
+Texture2D _cursorTex;
+Texture2D _noteTex;
+Texture2D _healthBarTex;
+Texture2D _heartTex;
+Texture2D _background;
+
+Color _UIColor = WHITE;
+
+//TODO probably move this to drawing?
+Color _fade = WHITE;
+
+extern float _musicHead, _scrollSpeed, *_pNotes;
+extern int _noteIndex, _amountNotes;
+extern bool _noBackground;
+extern void * _pMusic;
+
+float musicTimeToScreen(float musicTime)
+{
+	float middle = GetScreenWidth() / 2;
+	return middle + middle * (musicTime - _musicHead) * (1 / _scrollSpeed);
+}
+
+float screenToMusicTime(float x)
+{
+	float middle = GetScreenWidth() / 2;
+	return (x - middle) / (middle * (1 / _scrollSpeed)) + _musicHead;
+}
 
 float noteFadeOut(float note)
 {
@@ -114,7 +148,7 @@ void drawBars()
 
 void drawMusicGraph(float transparent)
 {
-	if(_pMusic == NULL)
+	if(_pMusic == 0)
 		return;
 
 	//music stuff
@@ -134,8 +168,8 @@ void drawMusicGraph(float transparent)
 		float highest = 0;
 		int sampleHead = sampleBegin + samplesPerBar*i;
 		for(int j = 0; j < samplesPerBar; j++)
-			if(sampleHead+j > 0 && fabs(((_Float32*)_pMusic)[sampleHead+j]) > highest)
-				highest = fabs(((_Float32*)_pMusic)[sampleHead+j]);
+			if(sampleHead+j > 0 && fabs(((float*)_pMusic)[sampleHead+j]) > highest)
+				highest = fabs(((float*)_pMusic)[sampleHead+j]);
 
 		DrawRectangle(i*pixelsPerBar, GetScreenHeight()-highest*scaleBar, pixelsPerBar, highest*scaleBar, ColorAlpha(WHITE, transparent));
 	}

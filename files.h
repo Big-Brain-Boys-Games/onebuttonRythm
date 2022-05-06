@@ -5,6 +5,8 @@
 #include "shared.h"
 #include "gameplay.h"
 #endif
+#include <stdbool.h>
+#include "include/raylib.h"
 
 struct Map{
 	char * folder;
@@ -16,21 +18,14 @@ struct Map{
 };
 
 typedef struct Map Map;
-//TODO add support for more maps
-Map _pMaps [100];
 
-void *_pMusic;
-
-FILE * _pFile;
 
 enum FilePart{fpNone, fpName, fpCreator, fpDifficulty, fpBPM, fpNotes};
 
-void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount);
 Map loadMapInfo(char * file);
 void saveFile (int noteAmount);
-void * loadAudio(char * file, ma_decoder * decoder, int * audioLength);
-void loadMusic(char * file);
 void loadMap(int fileType);
+void unloadMap();
 void saveScore();
 bool readScore(char * map, int *score, int * combo);
 
