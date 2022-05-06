@@ -90,7 +90,7 @@ void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uin
 
 bool endOfMusic()
 {
-	if(_musicLength/20 < _musicFrameCount)
+	if(_musicLength < _musicFrameCount)
 		return true;
 	return false;
 }
