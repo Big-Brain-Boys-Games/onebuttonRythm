@@ -423,18 +423,24 @@ void fEditor ()
 			isPlaying = !isPlaying;
 		}
 	}
+
 	drawMusicGraph(0.7);
 	drawVignette();
+	
+	char bpm[10] = {0};
+	if(_map->bpm != 0)
+		sprintf(bpm, "%i", _map->bpm);
+	static bool bpmBoxSelected = false;
+	Rectangle bpmBox = (Rectangle){.x=GetScreenWidth()*0.8, .y=GetScreenHeight()*0.1, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
+	textBox(bpmBox, bpm, &bpmBoxSelected);
+	_map->bpm=atoi(bpm);
+	_map->bpm = fmin(fmax(_map->bpm, 0), 300);
+		
+
+	
 	drawBars();
 	drawProgressBarI(true);
 	drawCursor();
-	
-	// if(endOfMusic())
-	// {
-	// 	loadMap(1);
-	// 	saveFile(_amountNotes);
-	// 	gotoMainMenu();
-	// }
 }
 
 void fRecording ()
