@@ -512,14 +512,12 @@ void fPlaying ()
 			//passed note
 			_noteIndex++;
 			_health -= _missPenalty;
-			_fade = RED;
 			feedback("miss!");
 			playAudioEffect(_pMissSE, _missSE_Size);
 		}
 
 		if(GetKeyPressed() && _noteIndex < _amountNotes)
 		{
-			_fade = WHITE;
 			float closestTime = 55;
 			int closestIndex = 0;
 			for(int i = _noteIndex; i <= _noteIndex + 1 && i < _amountNotes; i++)
@@ -555,7 +553,6 @@ void fPlaying ()
 			{
 				printf("missed note\n");
 				feedback("miss!");
-				_fade = RED;
 				_health -= _missPenalty;
 				playAudioEffect(_pMissHitSE, _missHitSE_Size);
 			}
@@ -566,6 +563,10 @@ void fPlaying ()
 			_health = 100;
 		if(_health < 0)
 			_health = 0;
+
+		if(_health < 25)
+			_fade = ColorAlpha(RED, 1-_health/25);
+		else _fade = ColorAlpha(RED, 0);
 
 		if(feedbackIndex >= 5)
 			feedbackIndex = 0;
@@ -585,6 +586,7 @@ void fPlaying ()
 		}
 		drawVignette();
 		drawProgressBar();
+		DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), _fade);
 	EndDrawing();
 }
 
