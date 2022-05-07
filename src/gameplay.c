@@ -291,19 +291,22 @@ void fEndScreen ()
 	Rectangle MMButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.85, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
 	drawButton(MMButton,"main menu", 0.05);
 
-	char * tmpString = malloc(50);
-	sprintf(tmpString, "Finished%s", _highScore<_score ? "\nNew highscore!" : "");
 	float textSize = MeasureText("Finished", GetScreenWidth() * 0.15);
-	DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.05, GetScreenWidth() * 0.15, WHITE);
+	DrawText("Finished", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.05, GetScreenWidth() * 0.15, WHITE);
+
+	char * tmpString = malloc(50);
+	sprintf(tmpString, "%s", _highScore<_score ? "New highscore!" : "");
+	textSize = MeasureText(tmpString, GetScreenWidth() * 0.15);
+	DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.2, GetScreenWidth() * 0.1, WHITE);
 
 
 	//draw score
-	sprintf(tmpString, "Score: %i", _score);
+	sprintf(tmpString, "Score: %i Combo %i", _score, _highestCombo);
 	textSize = MeasureText(tmpString, GetScreenWidth() * 0.1);
-	DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.1, LIGHTGRAY);
+	DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.07, LIGHTGRAY);
 
 	//draw highscore
-	sprintf(tmpString, "Highscore: %i", _highScore);
+	sprintf(tmpString, "Highscore: %i Combo :%i", _highScore, _highScoreCombo);
 	textSize = MeasureText(tmpString, GetScreenWidth() * 0.05);
 	DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.6, GetScreenWidth() * 0.05, LIGHTGRAY);
 	free(tmpString);

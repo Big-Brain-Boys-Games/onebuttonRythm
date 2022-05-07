@@ -243,7 +243,7 @@ bool readScore(Map * map, int *score, int * combo)
 				break;
 			part++;
 		}
-		//combo = atoi(part);
+		*combo = atoi(part);
 	}
 	fclose(file);
 	return true;
