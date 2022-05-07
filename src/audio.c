@@ -38,8 +38,15 @@ int _clickPressSE_Size;
 void *_pClickRelease;
 int _clickReleaseSE_Size;
 
+void *_pFailSE;
+int _failSE_Size;
+
+void *_pFinishSE;
+int _finishSE_Size;
+
 void *_pEffectsBuffer;
 int _effectOffset;
+
 
 //Where is the current audio
 float _musicHead = 0;
@@ -153,6 +160,10 @@ void audioInit()
 
 	_pClickPress = loadAudio("clickPress.mp3", &tmp, &_clickPressSE_Size);
 	_pClickRelease = loadAudio("clickRelease.mp3", &tmp, &_clickReleaseSE_Size);
+
+	_pFinishSE = loadAudio("hit.mp3", &tmp, &_finishSE_Size);
+	_pFailSE = loadAudio("missHit.mp3", &tmp, &_failSE_Size);
+
 
 	loadMusic("menuMusic.mp3");
 

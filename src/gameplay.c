@@ -18,6 +18,12 @@ extern float _musicHead, _transition;
 extern void * _pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE;
 extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size, _musicFrameCount, _musicLength;
 
+extern void *_pFailSE;
+extern int _failSE_Size;
+
+extern void *_pFinishSE;
+extern int _finishSE_Size;
+
 
 extern Map _pMaps[100];
 
@@ -239,7 +245,7 @@ void fCountDown ()
 			_noteIndex =1;
 			_musicHead = 0;
 			contin = false;
-			_scrollSpeed = 500.0/_map->zoom;
+			_scrollSpeed = 4.2/_map->zoom;
 		}
 		return;
 	}
@@ -600,6 +606,7 @@ void fPlaying ()
 	fixMusicTime();
 
 
+	printf("scroll speed %f  zoom %i\n", _scrollSpeed, _map->zoom);
 
 
 	if(endOfMusic())
@@ -609,6 +616,7 @@ void fPlaying ()
 		if(_highScore < _score)
 			saveScore();
 		_pGameplayFunction = &fEndScreen;
+		playAudioEffect(_pFinishSE, _finishSE_Size);
 		_transition = 0.1;
 		return;
 	}
@@ -735,6 +743,7 @@ void fPlaying ()
 		//goto fFail
 		stopMusic();
 		_pGameplayFunction = &fFail;
+		playAudioEffect(_pFailSE, _failSE_Size);
 		_transition = 0.1;
 	}
 	drawVignette();
