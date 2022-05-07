@@ -29,9 +29,9 @@ extern void (*_pGameplayFunction)();
 
 int main(int argc, char **argv)
 {
+	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 600, "One Button Rythm");
 	SetTargetFPS(60);
-	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	SetExitKey(0);
 
 	HideCursor();

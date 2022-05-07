@@ -16,8 +16,8 @@ extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
 extern Color _fade;
 extern bool _musicPlaying;
 extern float _musicHead;
-extern void * _pHitSE, *_pMissHitSE, *_pButtonSE;
-extern int _hitSE_Size, _missHitSE_Size, _buttonSE_Size;
+extern void * _pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE;
+extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size;
 
 
 extern Map _pMaps[100];
@@ -258,6 +258,15 @@ void fMainMenu()
 			_pNextGameplayFunction = &fRecording;
 			_pGameplayFunction = &fMapSelect;
 		}
+
+		//gigantic ass title 
+		char * title = "One Button Rhythm";
+		float tSize = GetScreenWidth()*0.1;
+		int size = MeasureText(title, tSize);
+		//dropshadow
+		DrawText(title, middle-size/2+GetScreenWidth()*0.004, GetScreenHeight()*0.107, tSize, DARKGRAY);
+		//real title
+		DrawText(title, middle-size/2, GetScreenHeight()*0.1, tSize, WHITE);
 
 		drawCursor();
 
@@ -505,6 +514,7 @@ void fPlaying ()
 			_health -= _missPenalty;
 			_fade = RED;
 			feedback("miss!");
+			playAudioEffect(_pMissSE, _missSE_Size);
 		}
 
 		if(GetKeyPressed() && _noteIndex < _amountNotes)
