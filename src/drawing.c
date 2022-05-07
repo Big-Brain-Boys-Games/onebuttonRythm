@@ -155,7 +155,7 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo)
 		DrawRectangle(rect.x + rect.width*0.78, rect.y + 0.02*rect.height, rect.width*0.2, rect.height*0.16, ColorAlpha(BLACK, 0.4));
 		drawText(text, rect.x + rect.width*0.80, rect.y + 0.02*rect.height, GetScreenWidth() * 0.02, WHITE);
 		sprintf(text, "%i", combo);
-		drawText(text, rect.x + rect.width*0.80, rect.y + 0.08*rect.height, GetScreenWidth() * 0.02, WHITE);
+		drawText(text, rect.x + rect.width*0.82, rect.y + 0.08*rect.height, GetScreenWidth() * 0.02, WHITE);
 	}
 }
 

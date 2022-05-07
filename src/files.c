@@ -261,8 +261,11 @@ bool readScore(Map * map, int *score, int * combo)
 		char * part = &line[0];
 		for(int i = 0; i < 1000; i++)
 		{
-			if(*part==' ');
+			if(*part == 32)
+			{
+				part++;
 				break;
+			}
 			part++;
 		}
 		*combo = atoi(part);

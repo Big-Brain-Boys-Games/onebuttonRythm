@@ -289,10 +289,10 @@ void fMainMenu()
 
 	int middle = GetScreenWidth()/2;
 	//draw main menu
-	Rectangle playButton = drawInteractableButton("Play", 0.04, middle - GetScreenWidth()*0.10,GetScreenHeight() * 0.3,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
-	Rectangle editorButton = drawInteractableButton("Editor", 0.04, middle - GetScreenWidth()*0.10,GetScreenHeight() * 0.45,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
-	Rectangle SettingsButton = drawInteractableButton("Settings", 0.04, middle - GetScreenWidth()*0.10,GetScreenHeight() * 0.60,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
-	Rectangle recordingButton = drawInteractableButton("Record", 0.04, middle - GetScreenWidth()*0.10,GetScreenHeight() * 0.75,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
+	Rectangle playButton = drawInteractableButton("Play", 0.04, middle - GetScreenWidth()*0.3,GetScreenHeight() * 0.3,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
+	Rectangle editorButton = drawInteractableButton("Editor", 0.04, middle - GetScreenWidth()*0.32,GetScreenHeight() * 0.45,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
+	Rectangle SettingsButton = drawInteractableButton("Settings", 0.04, middle - GetScreenWidth()*0.34,GetScreenHeight() * 0.60,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
+	Rectangle recordingButton = drawInteractableButton("Record", 0.04, middle - GetScreenWidth()*0.36,GetScreenHeight() * 0.75,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
 	
 	//Rectangle playButton = (Rectangle){.x=middle - GetScreenWidth()*0.10, .y=GetScreenHeight() * 0.3, .width=GetScreenWidth()*0.2,.height=GetScreenHeight()*0.08};
 	// drawButton(playButton,"play", 0.04);
@@ -373,7 +373,8 @@ void fMainMenu()
 void fSettings() {
 	_musicPlaying = false;
 	ClearBackground(BLACK);
-	drawBackground();
+	DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
+		(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
 	int middle = GetScreenWidth()/2;
 	
 	//gigantic ass settings title 
@@ -384,6 +385,17 @@ void fSettings() {
 	DrawText(title, middle-size/2+GetScreenWidth()*0.004, GetScreenHeight()*0.107, tSize, DARKGRAY);
 	//real title
 	DrawText(title, middle-size/2, GetScreenHeight()*0.1, tSize, WHITE);
+
+	Rectangle backButton = (Rectangle){.x=GetScreenWidth()*0.05, .y=GetScreenHeight()*0.05, .width=GetScreenWidth()*0.1, .height=GetScreenHeight()*0.05};
+	drawButton(backButton, "back", 0.02);
+
+	if(mouseInRect(backButton) && IsMouseButtonDown(0))
+	{
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		_pGameplayFunction=&fMainMenu;
+		_transition = 0.1;
+		return;
+	}
 
 	drawCursor();
 }
