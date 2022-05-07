@@ -55,7 +55,7 @@ void *_pMusic = 0;
 int getSamplePosition(float time) {
 	return time*_decoder.outputSampleRate;
 }
-
+//Get duration of music in seconds
 float getMusicDuration()
 {
 	return _musicLength / (float)_decoder.outputSampleRate;
@@ -116,7 +116,6 @@ void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
 	ma_decoder_uninit(decoder);
 	return pAudio;
 }
-
 
 void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount)
 {

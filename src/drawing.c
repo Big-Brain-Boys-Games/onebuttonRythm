@@ -174,7 +174,7 @@ void drawMusicGraph(float transparent)
 
 	//music stuff
 	float beginning = screenToMusicTime(0);
-	float end = screenToMusicTime(GetScreenWidth());
+	float end = screenToMusicTime(getMusicDuration());
 	int amountBars = GetScreenWidth()/2;
 	float timePerBar = (end-beginning)/amountBars;
 	int samplesPerBar = getSamplePosition(timePerBar);
@@ -222,10 +222,10 @@ void drawProgressBarI(bool interActable)
 		float y = GetScreenHeight()*0.94;
 		if(fDistance(x, y, GetMouseX(), GetMouseY()) < GetScreenWidth()*0.03 && IsMouseButtonDown(0) || isGrabbed)
 		{
-			printf("grabbed %.2f  ", _musicHead);
+			//printf("grabbed %.2f  ", _musicHead);
 			isGrabbed = true;
-			_musicHead = GetMouseX()/(float)GetScreenWidth()*getMusicDuration();
-			printf("%.2f \n", _musicHead);
+			_musicHead = clamp(GetMouseX()/(float)GetScreenWidth()*getMusicDuration(), 0, getMusicDuration());
+			//printf("%.2f \n", _musicHead);
 		}
 		if(!IsMouseButtonDown(0))
 			isGrabbed = false;

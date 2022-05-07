@@ -29,6 +29,7 @@ int _score= 0, _highScore, _combo = 0, _highestCombo, _highScoreCombo = 0;
 float _maxMargin = 0.1;
 int _hitPoints = 5;
 int _missPenalty = 10;
+bool _inEditor = false;
 Map * _map;
 
 //Timestamp of all the notes
@@ -111,11 +112,19 @@ void fPause()
 	drawProgressBar();
 	DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=0,.g=0,.b=0,.a=128});
 
+	//TODO dynamically change seperation depending on the amount of buttons?
 	float middle = GetScreenWidth()/2;
 	Rectangle continueButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.3, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
 	drawButton(continueButton,"continue", 0.05);
 
-	Rectangle exitButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.5, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
+	Rectangle saveExitButton = (Rectangle){0,0,0,0};
+	if (_pNextGameplayFunction == &fEditor)
+	{
+		saveExitButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.5, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
+		drawButton(saveExitButton,"Save & exit", 0.05);
+	}
+	
+	Rectangle exitButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.7, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
 	drawButton(exitButton,"exit", 0.05);
 
 	if(IsMouseButtonReleased(0))
@@ -128,6 +137,14 @@ void fPause()
 			else
 				_pGameplayFunction = _pNextGameplayFunction;
 		}
+		if (mouseInRect(saveExitButton))
+		{
+			playAudioEffect(_pButtonSE, _buttonSE_Size);
+			loadMap(1);
+			saveFile(_amountNotes);
+			gotoMainMenu();
+		}
+		
 		if(mouseInRect(exitButton))
 		{
 			playAudioEffect(_pButtonSE, _buttonSE_Size);
@@ -336,6 +353,10 @@ void fEditor ()
 	_musicPlaying = isPlaying;
 	if(isPlaying) {
 		_musicHead += GetFrameTime();
+		if (endOfMusic())
+		{
+			_musicPlaying = false;
+		}
 	}else
 	{
 		setMusicFrameCount();
@@ -353,10 +374,9 @@ void fEditor ()
 		_pNextGameplayFunction = &fEditor;
 		return;
 	}
-
+	
 	if(_musicHead > getMusicDuration())
 		_musicHead = getMusicDuration();
-	
 
 	ClearBackground(BLACK);
 	
@@ -408,13 +428,13 @@ void fEditor ()
 	drawBars();
 	drawProgressBarI(true);
 	drawCursor();
-
-	if(endOfMusic())
-	{
-		loadMap(1);
-		saveFile(_amountNotes);
-		gotoMainMenu();
-	}
+	
+	// if(endOfMusic())
+	// {
+	// 	loadMap(1);
+	// 	saveFile(_amountNotes);
+	// 	gotoMainMenu();
+	// }
 }
 
 void fRecording ()

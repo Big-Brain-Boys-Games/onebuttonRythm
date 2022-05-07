@@ -139,7 +139,7 @@ void saveFile (int noteAmount)
 	fclose(_pFile);
 	
 }
-
+//Load the map. Use 1 parameter to only open the file
 void loadMap (int fileType)
 {
 	char * map = malloc(strlen(_map->folder) + 12);
