@@ -227,8 +227,8 @@ void saveScore()
 
 bool readScore(char * map, int *score, int * combo)
 {
-	score = 0;
-	combo = 0;
+	*score = 0;
+	*combo = 0;
 	FILE * file;
 	char str [100];
 	strcpy(str, "scores/");
@@ -242,7 +242,7 @@ bool readScore(char * map, int *score, int * combo)
 	char line [1000];
 	while(fgets(line,sizeof(line),_pFile)!= NULL)
 	{
-		_score = atoi(line);
+		*score = atoi(line);
 		char * part = &line[0];
 		for(int i = 0; i < 1000; i++)
 		{

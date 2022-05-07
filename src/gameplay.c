@@ -26,7 +26,7 @@ float _scrollSpeed = 0.6;
 int _noteIndex = 0, _amountNotes =0 ;
 bool _noBackground = false;
 float _health = 50;
-int _score= 0;
+int _score= 0, _highScore;
 int _bpm = 100;
 float _maxMargin = 0.1;
 int _hitPoints = 5;
@@ -285,14 +285,21 @@ void fEndScreen ()
 	Rectangle MMButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.85, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
 	drawButton(MMButton,"main menu", 0.05);
 
+	char * tmpString = malloc(50);
+	sprintf(tmpString, "Finished%s", _highScore<_score ? "\nNew highscore!" : "");
 	float textSize = MeasureText("Finished", GetScreenWidth() * 0.15);
-	DrawText("Finished", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.2, GetScreenWidth() * 0.15, WHITE);
+	DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.05, GetScreenWidth() * 0.15, WHITE);
+
 
 	//draw score
-	char * tmpString = malloc(9);
-	sprintf(tmpString, "%i", _score);
+	sprintf(tmpString, "Score: %i", _score);
 	textSize = MeasureText(tmpString, GetScreenWidth() * 0.1);
 	DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.1, LIGHTGRAY);
+
+	//draw highscore
+	sprintf(tmpString, "Highscore: %i", _highScore);
+	textSize = MeasureText(tmpString, GetScreenWidth() * 0.05);
+	DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.6, GetScreenWidth() * 0.05, LIGHTGRAY);
 	free(tmpString);
 
 	if(IsMouseButtonReleased(0) && mouseInRect(playButton))
@@ -452,8 +459,10 @@ void fPlaying ()
 	if(endOfMusic())
 	{
 		stopMusic();
-
-		saveScore();
+		int tmp;
+		readScore(_pMap, &_highScore, &tmp);
+		if(_highScore < _score)
+			saveScore();
 		_pGameplayFunction = &fEndScreen;
 		_transition = 0.1;
 		return;
@@ -474,7 +483,6 @@ void fPlaying ()
 	{
 		if(rippleEffectStrength[i] == 0)
 			continue;
-		printf("drawing ripple\n");
 		rippleEffect[i] += GetFrameTime()*1200*rippleEffectStrength[i];
 		rippleEffectStrength[i] = fmax(rippleEffectStrength[i] - GetFrameTime()*5, 0);
 		float size = rippleEffect[i];

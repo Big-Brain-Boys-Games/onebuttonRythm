@@ -47,6 +47,7 @@ int _musicFrameCount = 0;
 int _musicLength = 0;
 
 void *_pMusic = 0;
+ 
 
 int getSamplePosition(float time) {
 	return time*_decoder.outputSampleRate;
