@@ -171,15 +171,16 @@ void drawMusicGraph(float transparent)
 {
 	if(_pMusic == 0)
 		return;
-
+	
 	//music stuff
 	float beginning = screenToMusicTime(0);
-	float end = screenToMusicTime(getMusicDuration());
+	float end = screenToMusicTime(GetScreenWidth());
 	int amountBars = GetScreenWidth()/2;
 	float timePerBar = (end-beginning)/amountBars;
 	int samplesPerBar = getSamplePosition(timePerBar);
 	int sampleBegin = getSamplePosition(beginning);
 
+	//printf("beginning: %f \tend: %f\tamountBars: %i\ttimePerBar: %f\tsamplesPerBar: %i\tsampleBegin: %i\n",beginning,end,amountBars,timePerBar,samplesPerBar,sampleBegin);
 	//drawing stuff
 	int pixelsPerBar = GetScreenWidth()/amountBars;
 	float scaleBar = GetScreenHeight()*0.2;

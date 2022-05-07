@@ -4,7 +4,7 @@
 
 #include "files.h"
 
-#include <stdbool.h>
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,7 +53,7 @@ void *_pMusic = 0;
  
 
 int getSamplePosition(float time) {
-	return time*_decoder.outputSampleRate;
+	return time*_decoder.outputSampleRate*2;
 }
 //Get duration of music in seconds
 float getMusicDuration()
