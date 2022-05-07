@@ -159,7 +159,7 @@ void loadMap (int fileType)
 	if(_map->musicFile == 0)
 	{
 		_map->musicFile = malloc(100);
-		strcat(_map->musicFile, "/song.mp3");
+		strcpy(_map->musicFile, "/song.mp3");
 	}
 	strcat(pStr, _map->musicFile);
 
