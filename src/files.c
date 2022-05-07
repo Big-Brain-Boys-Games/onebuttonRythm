@@ -37,6 +37,7 @@ Map loadMapInfo(char * file)
 	strcpy(mapStr, "maps/");
 	strcat(mapStr, file);
 	Map map = {0};
+	map.zoom = 7;
 	map.folder = malloc(100);
 	strcpy(map.folder, file);
 	char * pStr = malloc(strlen(mapStr) + 12);
