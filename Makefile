@@ -1,8 +1,9 @@
 OBJ_DIR := Obj
-SRC_DIR := .
+SRC_DIR := src
 INCLUDE_DIR := include
-SRC_FILES := $(wildcard *.c)
-OBJ_FILES := $(addprefix $(OBJ_DIR)/,$(patsubst %.c,%.o,$(SRC_FILES)))
+SRC_FILES := $(wildcard $(SRC_DIR)/*.c)
+# OBJ_FILES := $(addprefix $(OBJ_DIR)/,$(patsubst %.c,%.o,$(SRC_FILES)))
+OBJ_FILES := $(SRC_FILES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 CFLAGS := -I$(INCLUDE_DIR)/ -I. -ggdb
 LDFLAGS := -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 OUTEXE := Build/oneButtonRhythm
@@ -15,7 +16,7 @@ OUTEXE := Build/oneButtonRhythm
 
 include .depend
 
-$(OBJ_DIR)/%.o: %.c
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	gcc -c $(CFLAGS) $< -o $@
 
 $(OUTEXE): $(OBJ_FILES) .depend
