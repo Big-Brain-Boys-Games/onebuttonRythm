@@ -451,11 +451,12 @@ void fRecording ()
 	}
 }
 #define RippleAmount 10
-#define feedback(newFeedback) feedbackSayings[feedbackIndex] = newFeedback; feedbackIndex++; if(feedbackIndex > 4) feedbackIndex = 0;
+#define feedback(newFeedback, size) feedbackSayings[feedbackIndex] = newFeedback; feedbackSize[feedbackIndex] = size; feedbackIndex++; if(feedbackIndex > 4) feedbackIndex = 0;
 #define addRipple(newRipple) rippleEffect[rippleEffectIndex] = 0; rippleEffectStrength[rippleEffectIndex] = newRipple; rippleEffectIndex = (rippleEffectIndex+1)%RippleAmount;
 void fPlaying ()
 {
 	static char *feedbackSayings [5];
+	static float feedbackSize [5];
 	static int feedbackIndex = 0;
 	static float rippleEffect[RippleAmount] = {0};
 	static float rippleEffectStrength[RippleAmount] = {0};
@@ -514,15 +515,15 @@ void fPlaying ()
 		for(int i = 0, j = feedbackIndex-1; i < 5; i++, j--)
 		{
 			if(j < 0) j = 4;
-			DrawText(feedbackSayings[j], GetScreenWidth() * 0.35, GetScreenHeight() * (0.6 + i * 0.1), GetScreenWidth() * 0.05, (Color){.r=255,.g=255,.b=255,.a=noLessThanZero(150 - i * 40)});
+			DrawText(feedbackSayings[j], GetScreenWidth() * 0.35, GetScreenHeight() * (0.6 + i * 0.1), GetScreenWidth() * 0.05*feedbackSize[j], (Color){.r=255,.g=255,.b=255,.a=noLessThanZero(150 - i * 40)});
 		}
 
 		if(_noteIndex < _amountNotes && _musicHead - _maxMargin > _pNotes[_noteIndex])
 		{
 			//passed note
 			_noteIndex++;
+			feedback("miss!", 1.3-_health/100);
 			_health -= _missPenalty;
-			feedback("miss!");
 			playAudioEffect(_pMissSE, _missSE_Size);
 		}
 
@@ -543,20 +544,20 @@ void fPlaying ()
 				while(_noteIndex < closestIndex)
 				{
 					_noteIndex++;
+					feedback("miss!", 1.3-_health/100);
 					_health -= _missPenalty;
-					feedback("miss!");
 				}
 				int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / _maxMargin));
 				_health += healthAdded;
 				int scoreAdded = noLessThanZero(300 - closestTime * (300 / _maxMargin));
 				if(scoreAdded > 200) {
-					feedback("300!");
+					feedback("300!", 1.2);
 					addRipple(1);
 				}else if (scoreAdded > 100) {
-					feedback("200!");
+					feedback("200!", 1);
 					addRipple(0.6);
 				} else {
-					feedback("100!");
+					feedback("100!", 0.8);
 					addRipple(0.3);
 				}
 				_score += scoreAdded;
@@ -565,7 +566,7 @@ void fPlaying ()
 			}else
 			{
 				printf("missed note\n");
-				feedback("miss!");
+				feedback("miss!", 1.3-_health/100);
 				_health -= _missPenalty;
 				playAudioEffect(_pMissHitSE, _missHitSE_Size);
 			}
