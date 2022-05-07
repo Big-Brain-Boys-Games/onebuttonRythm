@@ -18,7 +18,7 @@
 // #include "gameplay.c"
 // #include "files.c"
 
-extern Texture2D _heartTex, _healthBarTex, _noteTex, _cursorTex, _background;
+extern Texture2D _heartTex, _healthBarTex, _noteTex, _cursorTex, _background, _menuBackground;
 extern void *_pEffectsBuffer, *_pHitSE, *_pMissHitSE, *_pMissSE;
 extern int _hitSE_Size, _missHitSE_Size, _missSE_Size;
 extern void (*_pGameplayFunction)();
@@ -40,6 +40,8 @@ int main(int argc, char **argv)
 	_healthBarTex = LoadTexture("healthBar.png");
 	_noteTex = LoadTexture("note.png");
 	_cursorTex = LoadTexture("cursor.png");
+	_menuBackground = LoadTexture("background.png");
+	_background = _menuBackground;
 	resetBackGround();
 	
 	Vector2 mousePos;

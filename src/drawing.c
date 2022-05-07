@@ -11,7 +11,7 @@ Texture2D _cursorTex;
 Texture2D _noteTex;
 Texture2D _healthBarTex;
 Texture2D _heartTex;
-Texture2D _background;
+Texture2D _background, _menuBackground;
 
 Color _UIColor = WHITE;
 
@@ -144,9 +144,7 @@ void drawBackground()
 }
 void resetBackGround()
 {
-	if(_background.id != 0)
-		UnloadTexture(_background);
-	_background = LoadTexture("background.png");
+	_background = _menuBackground;
 }
 void drawBars()
 {

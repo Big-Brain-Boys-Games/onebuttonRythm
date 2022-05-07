@@ -20,7 +20,7 @@
 #endif
 
 
-extern Texture2D _background;
+extern Texture2D _background, _menuBackground;
 extern float * _pNotes;
 extern Map *_map;
 extern int _amountNotes, _noteIndex, _score, _highestCombo;
@@ -54,7 +54,7 @@ Map loadMapInfo(char * file)
 		map.image = LoadTexture(pStr);
 	else{
 		_noBackground = 1;
-		map.image = LoadTexture("background.png");
+		map.image = _menuBackground;
 	}
 	
 	
@@ -113,13 +113,6 @@ Map loadMapInfo(char * file)
 	}
 	fclose(f);
 	free(pStr);
-
-	if(map.image.id == 0)
-	{
-		printf("no background texture found\n");
-		map.image = LoadTexture("background.png");
-		// _noBackground = 1;
-	}
 	return map;
 }
 
