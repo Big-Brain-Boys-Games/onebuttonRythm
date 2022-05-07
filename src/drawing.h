@@ -23,5 +23,6 @@ void drawProgressBarI(bool interactable);
 void drawButton(Rectangle rect, char * text, float fontScale);
 void fMapSelect();
 void drawMusicGraph(float transparent);
+void drawTransition();
 
 #endif

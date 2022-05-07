@@ -23,7 +23,16 @@ extern float _musicHead, _scrollSpeed, *_pNotes;
 extern int _noteIndex, _amountNotes, _clickPressSE_Size, _clickReleaseSE_Size;
 extern bool _noBackground;
 extern void * _pMusic, *_pClickPress, *_pClickRelease;
+extern float _transition;
 
+
+void drawTransition()
+{
+	if(_transition < 1)
+		DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ColorAlpha(BLACK, GetFrameTime()*5));
+	else
+		DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ColorAlpha(BLACK, fmax(2-_transition, 0)));
+}
 
 float musicTimeToScreen(float musicTime)
 {

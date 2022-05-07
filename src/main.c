@@ -23,6 +23,7 @@ extern Texture2D _heartTex, _healthBarTex, _noteTex, _cursorTex, _background;
 extern void *_pEffectsBuffer, *_pHitSE, *_pMissHitSE, *_pMissSE;
 extern int _hitSE_Size, _missHitSE_Size, _missSE_Size;
 extern void (*_pGameplayFunction)();
+float _transition = 0;
 
 #define GLSL_VERSION 330
 
@@ -50,8 +51,18 @@ int main(int argc, char **argv)
 	while (!WindowShouldClose())
 	{
 		mousePos = GetMousePosition();
-
-		(*_pGameplayFunction)();
+		BeginDrawing();
+			if(_transition > 2)
+				_transition = 0;
+			if(_transition == 0 || _transition > 1)
+				(*_pGameplayFunction)();
+			
+			if(_transition!=0)
+			{
+				_transition+=GetFrameTime()*7;
+				drawTransition();
+			}
+		EndDrawing();
 	}
 	UnloadTexture(_background);
 	CloseWindow();
