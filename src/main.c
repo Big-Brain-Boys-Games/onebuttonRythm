@@ -22,6 +22,8 @@ extern Texture2D _heartTex, _healthBarTex, _noteTex, _cursorTex, _background, _m
 extern void *_pEffectsBuffer, *_pHitSE, *_pMissHitSE, *_pMissSE;
 extern int _hitSE_Size, _missHitSE_Size, _missSE_Size;
 extern void (*_pGameplayFunction)();
+extern Font _font;
+
 float _transition = 0;
 
 #define GLSL_VERSION 330
@@ -31,7 +33,7 @@ int main(int argc, char **argv)
 {
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 600, "One Button Rythm");
-	SetTargetFPS(60);
+	SetTargetFPS(120);
 	SetExitKey(0);
 
 	HideCursor();
@@ -41,8 +43,9 @@ int main(int argc, char **argv)
 	_noteTex = LoadTexture("note.png");
 	_cursorTex = LoadTexture("cursor.png");
 	_menuBackground = LoadTexture("background.png");
+	_font = LoadFontEx("nasalization.otf", 128, 0, 250);
+	SetTextureFilter(_font.texture, TEXTURE_FILTER_BILINEAR);
 	_background = _menuBackground;
-	resetBackGround();
 	
 	Vector2 mousePos;
 	audioInit();

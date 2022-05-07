@@ -200,7 +200,7 @@ void fCountDown ()
 	//draw score
 	char * tmpString = malloc(9);
 	sprintf(tmpString, "%i", _score);
-	DrawText(tmpString, GetScreenWidth() * 0.05, GetScreenHeight()*0.05, GetScreenWidth() * 0.05, WHITE);
+	drawText(tmpString, GetScreenWidth() * 0.05, GetScreenHeight()*0.05, GetScreenWidth() * 0.05, WHITE);
 	
 	drawCursor();
 	
@@ -212,8 +212,8 @@ void fCountDown ()
 	DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=0,.g=0,.b=0,.a=128});
 
 	sprintf(tmpString, "%i", (int)(countDown - GetTime() + 1));
-	float textSize = MeasureText(tmpString, GetScreenWidth() * 0.3);
-	DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.3, GetScreenWidth() * 0.3, WHITE);
+	float textSize = measureText(tmpString, GetScreenWidth() * 0.3);
+	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.3, GetScreenWidth() * 0.3, WHITE);
 	free(tmpString);
 	drawVignette();
 }
@@ -281,12 +281,12 @@ void fMainMenu()
 
 	//gigantic ass title 
 	char * title = "One Button Rhythm";
-	float tSize = GetScreenWidth()*0.1;
-	int size = MeasureText(title, tSize);
+	float tSize = GetScreenWidth()*0.07;
+	int size = measureText(title, tSize);
 	//dropshadow
-	DrawText(title, middle-size/2+GetScreenWidth()*0.004, GetScreenHeight()*0.107, tSize, DARKGRAY);
+	drawText(title, middle-size/2+GetScreenWidth()*0.004, GetScreenHeight()*0.107, tSize, DARKGRAY);
 	//real title
-	DrawText(title, middle-size/2, GetScreenHeight()*0.1, tSize, WHITE);
+	drawText(title, middle-size/2, GetScreenHeight()*0.1, tSize, WHITE);
 
 	drawCursor();
 
@@ -307,24 +307,24 @@ void fEndScreen ()
 	Rectangle MMButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.85, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
 	drawButton(MMButton,"main menu", 0.05);
 
-	float textSize = MeasureText("Finished", GetScreenWidth() * 0.15);
-	DrawText("Finished", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.05, GetScreenWidth() * 0.15, WHITE);
+	float textSize = measureText("Finished", GetScreenWidth() * 0.15);
+	drawText("Finished", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.05, GetScreenWidth() * 0.15, WHITE);
 
 	char * tmpString = malloc(50);
 	sprintf(tmpString, "%s", _highScore<_score ? "New highscore!" : "");
-	textSize = MeasureText(tmpString, GetScreenWidth() * 0.15);
-	DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.2, GetScreenWidth() * 0.1, WHITE);
+	textSize = measureText(tmpString, GetScreenWidth() * 0.15);
+	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.2, GetScreenWidth() * 0.1, WHITE);
 
 
 	//draw score
 	sprintf(tmpString, "Score: %i Combo %i", _score, _highestCombo);
-	textSize = MeasureText(tmpString, GetScreenWidth() * 0.1);
-	DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.07, LIGHTGRAY);
+	textSize = measureText(tmpString, GetScreenWidth() * 0.1);
+	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.07, LIGHTGRAY);
 
 	//draw highscore
 	sprintf(tmpString, "Highscore: %i Combo :%i", _highScore, _highScoreCombo);
-	textSize = MeasureText(tmpString, GetScreenWidth() * 0.05);
-	DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.6, GetScreenWidth() * 0.05, LIGHTGRAY);
+	textSize = measureText(tmpString, GetScreenWidth() * 0.05);
+	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.6, GetScreenWidth() * 0.05, LIGHTGRAY);
 	free(tmpString);
 
 	if(IsMouseButtonReleased(0) && mouseInRect(playButton))
@@ -539,7 +539,7 @@ void fPlaying ()
 	for(int i = 0, j = feedbackIndex-1; i < 5; i++, j--)
 	{
 		if(j < 0) j = 4;
-		DrawText(feedbackSayings[j], GetScreenWidth() * 0.35, GetScreenHeight() * (0.6 + i * 0.1), GetScreenWidth() * 0.05*feedbackSize[j], (Color){.r=255,.g=255,.b=255,.a=noLessThanZero(150 - i * 40)});
+		drawText(feedbackSayings[j], GetScreenWidth() * 0.35, GetScreenHeight() * (0.6 + i * 0.1), GetScreenWidth() * 0.05*feedbackSize[j], (Color){.r=255,.g=255,.b=255,.a=noLessThanZero(150 - i * 40)});
 	}
 
 	if(_noteIndex < _amountNotes && _musicHead - _maxMargin > _pNotes[_noteIndex])
@@ -634,11 +634,11 @@ void fPlaying ()
 	//draw score
 	char * tmpString = malloc(20);
 	sprintf(tmpString, "score: %i", _score);
-	DrawText(tmpString, GetScreenWidth() * 0.05, GetScreenHeight()*0.05, GetScreenWidth() * 0.05, WHITE);
+	drawText(tmpString, GetScreenWidth() * 0.05, GetScreenHeight()*0.05, GetScreenWidth() * 0.05, WHITE);
 
 	//draw combo
 	sprintf(tmpString, "combo: %i", _combo);
-	DrawText(tmpString, GetScreenWidth() * 0.70, GetScreenHeight()*0.05, GetScreenWidth() * 0.05, WHITE);
+	drawText(tmpString, GetScreenWidth() * 0.70, GetScreenHeight()*0.05, GetScreenWidth() * 0.05, WHITE);
 	free(tmpString);
 	drawProgressBar();
 	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), _fade);
@@ -668,14 +668,14 @@ void fFail ()
 	
 	
 
-	float textSize = MeasureText("You Failed", GetScreenWidth() * 0.15);
-	DrawText("You Failed", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.2, GetScreenWidth() * 0.15, WHITE);
+	float textSize = measureText("You Failed", GetScreenWidth() * 0.15);
+	drawText("You Failed", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.2, GetScreenWidth() * 0.15, WHITE);
 
 	//draw score
 	char * tmpString = malloc(9);
 	sprintf(tmpString, "%i", _score);
-	textSize = MeasureText(tmpString, GetScreenWidth() * 0.1);
-	DrawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.1, LIGHTGRAY);
+	textSize = measureText(tmpString, GetScreenWidth() * 0.1);
+	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.1, LIGHTGRAY);
 	free(tmpString);
 
 	if(IsMouseButtonReleased(0) && mouseInRect(playButton))
@@ -723,28 +723,6 @@ void fMapSelect()
 
 	int middle = GetScreenWidth()/2;
 
-	Rectangle backButton = (Rectangle){.x=GetScreenWidth()*0.05, .y=GetScreenHeight()*0.05, .width=GetScreenWidth()*0.1, .height=GetScreenHeight()*0.05};
-	drawButton(backButton, "back", 0.02);
-
-	if(mouseInRect(backButton) && IsMouseButtonDown(0))
-	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
-		_pGameplayFunction=&fMainMenu;
-		_transition = 0.1;
-		return;
-	}
-
-	Rectangle newMapButton = (Rectangle){.x=GetScreenWidth()*0.70, .y=GetScreenHeight()*0.80, .width=GetScreenWidth()*0.15, .height=GetScreenHeight()*0.1};
-	drawButton(newMapButton, "new map", 0.03);
-
-	if(mouseInRect(newMapButton) && IsMouseButtonDown(0))
-	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
-		_pGameplayFunction=&fNewMap;
-		_transition = 0.1;
-		return;
-	}
-
 	//draw map button
 	for(int i = 0; i < amount; i++)
 	{
@@ -752,7 +730,7 @@ void fMapSelect()
 		int x = GetScreenWidth()*0.05;
 		if(i % 2 == 1)
 			x = GetScreenWidth()*0.55;
-		Rectangle mapButton = (Rectangle){.x=x, .y=GetScreenHeight() * (0.3+0.4*floor(i/2)), .width=GetScreenWidth()*0.4,.height=GetScreenHeight()*0.3};
+		Rectangle mapButton = (Rectangle){.x=x, .y=GetScreenHeight() * (0.3+0.4*floor(i/2)), .width=GetScreenWidth()*0.4,.height=GetScreenHeight()*0.4};
 		drawMapThumbnail(mapButton,&_pMaps[i]);
 
 		if(IsMouseButtonReleased(0) && mouseInRect(mapButton))
@@ -778,6 +756,30 @@ void fMapSelect()
 			
 		}
 	}
+	drawVignette();
+
+	Rectangle backButton = (Rectangle){.x=GetScreenWidth()*0.05, .y=GetScreenHeight()*0.05, .width=GetScreenWidth()*0.1, .height=GetScreenHeight()*0.05};
+	drawButton(backButton, "back", 0.02);
+
+	if(mouseInRect(backButton) && IsMouseButtonDown(0))
+	{
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		_pGameplayFunction=&fMainMenu;
+		_transition = 0.1;
+		return;
+	}
+
+	Rectangle newMapButton = (Rectangle){.x=GetScreenWidth()*0.70, .y=GetScreenHeight()*0.9, .width=GetScreenWidth()*0.15, .height=GetScreenHeight()*0.07};
+	drawButton(newMapButton, "new map", 0.03);
+
+	if(mouseInRect(newMapButton) && IsMouseButtonDown(0))
+	{
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		_pGameplayFunction=&fNewMap;
+		_transition = 0.1;
+		return;
+	}
+
 	drawCursor();
 }
 
@@ -932,8 +934,17 @@ void fNewMap()
 	numberBox(difficultyBox, &newMap.difficulty, &difficultyBoxSelected);
 	
 
-	int textSize = MeasureText("Drop in .png, .wav or .mp3", GetScreenWidth() * 0.04);
-	DrawText("Drop in .png, .wav or .mp3", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.2, GetScreenWidth() * 0.04, WHITE);
+	int textSize = measureText("Drop in .png, .wav or .mp3", GetScreenWidth() * 0.04);
+	drawText("Drop in .png, .wav or .mp3", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.2, GetScreenWidth() * 0.04, WHITE);
+
+	textSize = measureText("missing music file", GetScreenWidth() * 0.03);
+	if(pMusic == 0)
+		drawText("missing music file", GetScreenWidth() * 0.2 - textSize / 2, GetScreenHeight()*0.6, GetScreenWidth() * 0.03, WHITE);
+	
+	textSize = measureText("missing image file", GetScreenWidth() * 0.03);
+	if(pImage == 0)
+		drawText("missing image file", GetScreenWidth() * 0.2 - textSize / 2, GetScreenHeight()*0.7, GetScreenWidth() * 0.03, WHITE);
+
 
 	drawCursor();
 
