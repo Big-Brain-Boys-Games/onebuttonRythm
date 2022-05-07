@@ -58,6 +58,67 @@ bool mouseInRect(Rectangle rect)
 	return false;
 }
 
+void textBox(Rectangle rect, char * str, bool * selected)
+{
+	drawButton(rect, str, 0.03);
+	if(mouseInRect(rect) && IsMouseButtonDown(0) || *selected)
+	{
+		*selected = true;
+		char c = GetCharPressed();
+		while(c != 0)
+		{
+			for(int i = 0; i < 99; i++)
+			{
+				if(str[i] == '\0')
+				{
+					str[i] = c;
+					str[i+1] = '\0';
+					break;
+				}
+			}
+			c = GetCharPressed();
+		}
+		if(IsKeyPressed(KEY_BACKSPACE))
+		{
+			for(int i = 1; i < 99; i++)
+			{
+				if(str[i] == '\0')
+				{
+					str[i-1] = '\0';
+					break;
+				}
+			}
+		}
+	}
+	if (!mouseInRect(rect) && IsMouseButtonDown(0))
+		*selected = false;
+}
+
+void numberBox(Rectangle rect, int * number, bool * selected)
+{
+	char str [10];
+	sprintf(str, "%i", *number);
+	drawButton(rect, str, 0.03);
+	if(mouseInRect(rect) && IsMouseButtonDown(0) || *selected)
+	{
+		*selected = true;
+		char c = GetCharPressed();
+		while(c != 0)
+		{
+			*number = c - '0';
+			c = GetCharPressed();
+		}
+	}
+	if (!mouseInRect(rect) && IsMouseButtonDown(0))
+		*selected = false;
+}
+
+Rectangle drawInteractableButton(char * text, float fontScale, float x, float y,float width,float height) {
+	Rectangle button = (Rectangle){.x=x, .y=y, .width=width, .height=height};
+	drawButton(button,text,fontScale);
+	return button;
+}
+
 void removeNote(int index)
 {
 	_amountNotes--;
@@ -228,14 +289,21 @@ void fMainMenu()
 
 	int middle = GetScreenWidth()/2;
 	//draw main menu
-	Rectangle playButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.3, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-	drawButton(playButton,"play", 0.05);
+	Rectangle playButton = drawInteractableButton("Play", 0.04, middle - GetScreenWidth()*0.10,GetScreenHeight() * 0.3,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
+	Rectangle editorButton = drawInteractableButton("Editor", 0.04, middle - GetScreenWidth()*0.10,GetScreenHeight() * 0.45,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
+	Rectangle SettingsButton = drawInteractableButton("Settings", 0.04, middle - GetScreenWidth()*0.10,GetScreenHeight() * 0.60,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
+	Rectangle recordingButton = drawInteractableButton("Record", 0.04, middle - GetScreenWidth()*0.10,GetScreenHeight() * 0.75,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
+	
+	//Rectangle playButton = (Rectangle){.x=middle - GetScreenWidth()*0.10, .y=GetScreenHeight() * 0.3, .width=GetScreenWidth()*0.2,.height=GetScreenHeight()*0.08};
+	// drawButton(playButton,"play", 0.04);
+	// Rectangle editorButton = (Rectangle){.x=middle - GetScreenWidth()*0.10, .y=GetScreenHeight() * 0.45, .width=GetScreenWidth()*0.2,.height=GetScreenHeight()*0.08};
+	// drawButton(editorButton,"Editor", 0.04);
+	// Rectangle SettingsButton = (Rectangle){.x=middle - GetScreenWidth()*0.10, .y=GetScreenHeight() * 0.60, .width=GetScreenWidth()*0.2,.height=GetScreenHeight()*0.08};
+	// drawButton(SettingsButton,"Settings", 0.04);
+	// Rectangle recordingButton = (Rectangle){.x=middle - GetScreenWidth()*0.10, .y=GetScreenHeight() * 0.75, .width=GetScreenWidth()*0.2,.height=GetScreenHeight()*0.08};
+	// drawButton(recordingButton,"Record", 0.04);
 
-	Rectangle editorButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.5, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-	drawButton(editorButton,"Editor", 0.05);
-
-	Rectangle recordingButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.7, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-	drawButton(recordingButton,"Record", 0.05);
+	
 	
 
 	if(IsMouseButtonReleased(0) && mouseInRect(playButton))
@@ -264,6 +332,14 @@ void fMainMenu()
 		_transition = 0.1;
 	}
 
+	if (IsMouseButtonReleased(0) && mouseInRect(SettingsButton))
+	{
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		//Switching to settings
+		_pGameplayFunction = &fSettings;
+		_transition = 0.1;
+	}
+
 	if(IsMouseButtonReleased(0) && mouseInRect(recordingButton))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
@@ -279,11 +355,12 @@ void fMainMenu()
 		_pGameplayFunction = &fMapSelect;
 		_transition = 0.1;
 	}
+	
 
 	//gigantic ass title 
 	char * title = "One Button Rhythm";
-	float tSize = GetScreenWidth()*0.07;
-	int size = measureText(title, tSize);
+	float tSize = GetScreenWidth()*0.05;
+	int size = MeasureText(title, tSize);
 	//dropshadow
 	drawText(title, middle-size/2+GetScreenWidth()*0.004, GetScreenHeight()*0.107, tSize, DARKGRAY);
 	//real title
@@ -291,6 +368,24 @@ void fMainMenu()
 
 	drawCursor();
 
+}
+
+void fSettings() {
+	_musicPlaying = false;
+	ClearBackground(BLACK);
+	drawBackground();
+	int middle = GetScreenWidth()/2;
+	
+	//gigantic ass settings title 
+	char * title = "Settings";
+	float tSize = GetScreenWidth()*0.05;
+	int size = MeasureText(title, tSize);
+	//dropshadow
+	DrawText(title, middle-size/2+GetScreenWidth()*0.004, GetScreenHeight()*0.107, tSize, DARKGRAY);
+	//real title
+	DrawText(title, middle-size/2, GetScreenHeight()*0.1, tSize, WHITE);
+
+	drawCursor();
 }
 
 void fEndScreen ()
@@ -787,61 +882,6 @@ void fMapSelect()
 	}
 
 	drawCursor();
-}
-
-void textBox(Rectangle rect, char * str, bool * selected)
-{
-	drawButton(rect, str, 0.03);
-	if(mouseInRect(rect) && IsMouseButtonDown(0) || *selected)
-	{
-		*selected = true;
-		char c = GetCharPressed();
-		while(c != 0)
-		{
-			for(int i = 0; i < 99; i++)
-			{
-				if(str[i] == '\0')
-				{
-					str[i] = c;
-					str[i+1] = '\0';
-					break;
-				}
-			}
-			c = GetCharPressed();
-		}
-		if(IsKeyPressed(KEY_BACKSPACE))
-		{
-			for(int i = 1; i < 99; i++)
-			{
-				if(str[i] == '\0')
-				{
-					str[i-1] = '\0';
-					break;
-				}
-			}
-		}
-	}
-	if (!mouseInRect(rect) && IsMouseButtonDown(0))
-		*selected = false;
-}
-
-void numberBox(Rectangle rect, int * number, bool * selected)
-{
-	char str [10];
-	sprintf(str, "%i", *number);
-	drawButton(rect, str, 0.03);
-	if(mouseInRect(rect) && IsMouseButtonDown(0) || *selected)
-	{
-		*selected = true;
-		char c = GetCharPressed();
-		while(c != 0)
-		{
-			*number = c - '0';
-			c = GetCharPressed();
-		}
-	}
-	if (!mouseInRect(rect) && IsMouseButtonDown(0))
-		*selected = false;
 }
 
 void fNewMap()

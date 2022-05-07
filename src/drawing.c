@@ -17,7 +17,6 @@ Font _font;
 
 Color _UIColor = WHITE;
 
-//TODO probably move this to drawing?
 Color _fade = WHITE;
 
 extern float _musicHead, _scrollSpeed, *_pNotes;
