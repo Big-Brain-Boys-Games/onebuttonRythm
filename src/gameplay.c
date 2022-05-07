@@ -934,12 +934,46 @@ void fNewMap()
 
 	drawCursor();
 
+
 	//file dropping
-	if(IsFileDropped())
+	if(IsFileDropped() || IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))
 	{
 		printf("yoo new file dropped boys\n");
 		int amount = 0;
-		char ** files = GetDroppedFiles(&amount);
+		char ** files;
+		bool keyOrDrop = true;
+		if(IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))
+		{
+			//copy paste
+			const char * str = GetClipboardText();
+
+			int file = 0;
+			char part [100] = {0};
+			int partIndex = 0;
+			//todo no hardcode, bad hardcode!
+			files = malloc(100);
+			for(int i = 0; str[i] != '\0'; i++)
+			{
+				part[partIndex++]=str[i];
+				if(str[i+1] == '\n' || str[i+1] == '\0')
+				{
+					i++;
+					part[partIndex+1] = '\0';
+					printf("file %i: %s\n", file, part);
+					if(FileExists(part))
+					{
+						printf("\tfile exists\n");
+						files[file] = malloc(partIndex);
+						strcpy(files[file], part);
+						file++;
+					}
+					partIndex=0;
+				}
+			}
+			amount = file;
+			keyOrDrop = false;
+		}
+		else files = GetDroppedFiles(&amount);
 		for(int i = 0; i < amount; i++)
 		{
 			const char * ext = GetFileExtension(files[i]);
@@ -993,6 +1027,12 @@ void fNewMap()
 			}
 			
 		}
-		ClearDroppedFiles();
+		if(!keyOrDrop)
+		{
+			for(int i = 0; i < amount; i++)
+				free(files[i]);
+			free(files);
+		}
+		else ClearDroppedFiles();
 	}
 }
