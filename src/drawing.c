@@ -11,7 +11,9 @@ Texture2D _cursorTex;
 Texture2D _noteTex;
 Texture2D _healthBarTex;
 Texture2D _heartTex;
-Texture2D _background;
+Texture2D _background, _menuBackground;
+
+Font _font;
 
 Color _UIColor = WHITE;
 
@@ -23,6 +25,16 @@ extern bool _noBackground;
 extern void * _pMusic, *_pClickPress, *_pClickRelease;
 extern float _transition;
 
+
+int measureText (char * text, int fontSize)
+{
+	return MeasureTextEx(_font, text, fontSize, fontSize*0.1).x;
+}
+
+void drawText(char * str, int x, int y, int fontSize, Color color)
+{
+	DrawTextEx(_font, str, (Vector2){.x=x, .y=y}, fontSize, fontSize*0.1, color);
+}
 
 void drawTransition()
 {
@@ -106,7 +118,7 @@ void dNotes ()
 
 void drawMapThumbnail(Rectangle rect, Map *map)
 {
-	float imageRatio = 0.7;
+	float imageRatio = 0.8;
 	Color color = WHITE;
 	if(mouseInRect(rect))
 		color = LIGHTGRAY;
@@ -117,17 +129,25 @@ void drawMapThumbnail(Rectangle rect, Map *map)
 
 	DrawRectangle(rect.x, rect.y, rect.width, rect.height*imageRatio, BLACK);
 
+	float ogImageRatio = map->image.width / map->image.height;
+	float newImageRatio = rect.width / (rect.height*imageRatio);
+	Vector2 imageScaling = {.x=rect.width,.y=rect.height*imageRatio}, imageOffset = {.x=0,.y=0};
+	if(ogImageRatio>newImageRatio)
+	{
+		imageScaling.y = ogImageRatio*imageScaling.x;
+	}else {
+		imageScaling.x = ogImageRatio*imageScaling.y;
+		imageOffset.x = rect.width/2-imageScaling.x/2;
+	}
+
 	//todo, proper scaling of thumbnails
-	// float imageScaling = rect.width/map.image.width;
-	// float imageOffset = rect.width - map.image.width*imageScaling/2;
-	// DrawTextureRec(map.image, (Rectangle){.x=0, .y=0, .width=map.image.width, .height=map.image.height}, (Vector2){.x=rect.x, .y=rect.y}, color);
-	DrawTexturePro(map->image, (Rectangle){.x=0, .y=0, .width=map->image.width, .height=map->image.height}, (Rectangle){.x=rect.x, .y=rect.y, .width=rect.width, .height=rect.height*imageRatio},
+	DrawTexturePro(map->image, (Rectangle){.x=0, .y=0, .width=map->image.width, .height=map->image.height}, (Rectangle){.x=rect.x+imageOffset.x, .y=rect.y+imageOffset.y, .width=imageScaling.x, .height=imageScaling.y},
 			(Vector2){.x=0,.y=0}, 0, color);
 	
 	char text [100];
 	sprintf(text, "%s - %s", map->name, map->creator);
-	int textSize = MeasureText(text, GetScreenWidth() * 0.05);
-	DrawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + GetScreenHeight() * 0.01+rect.height*imageRatio, GetScreenWidth() * 0.04, BLACK);
+	int textSize = measureText(text, GetScreenWidth() * 0.04);
+	drawText(text, rect.x + rect.width/2 - textSize / 2, rect.y + GetScreenHeight() * 0.01+rect.height*imageRatio, GetScreenWidth() * 0.04, DARKGRAY);
 }
 
 void drawBackground()
@@ -143,9 +163,7 @@ void drawBackground()
 }
 void resetBackGround()
 {
-	if(_background.id != 0)
-		UnloadTexture(_background);
-	_background = LoadTexture("background.png");
+	_background = _menuBackground;
 }
 void drawBars()
 {
@@ -199,8 +217,8 @@ void drawMusicGraph(float transparent)
 
 void drawVignette()
 {
-	DrawRectangleGradientV(0, 0, GetScreenWidth(), GetScreenHeight()*0.3, ColorAlpha(BLACK, 0.7), ColorAlpha(BLACK, 0));
-	DrawRectangleGradientV(0, GetScreenHeight()*0.7, GetScreenWidth(), GetScreenHeight()*0.3, ColorAlpha(BLACK, 0), ColorAlpha(BLACK, 0.7));
+	DrawRectangleGradientV(0, 0, GetScreenWidth(), GetScreenHeight()*0.3, ColorAlpha(BLACK, 0.5), ColorAlpha(BLACK, 0));
+	DrawRectangleGradientV(0, GetScreenHeight()*0.7, GetScreenWidth(), GetScreenHeight()*0.3, ColorAlpha(BLACK, 0), ColorAlpha(BLACK, 0.5));
 }
 
 //TODO don't do this, pls fix
@@ -215,7 +233,7 @@ void drawProgressBarI(bool interActable)
 	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.94, GetScreenWidth()*0.025, _UIColor);
 	char str[50];
 	sprintf(str, "%i:%i/%i:%i", (int)floor(getMusicPosition()/60), (int)getMusicPosition()%60, (int)floor(getMusicDuration()/60), (int)getMusicDuration()%60);
-	DrawText(str, GetScreenWidth()*0.85, GetScreenHeight()*0.85, GetScreenWidth()*0.03,_UIColor);
+	drawText(str, GetScreenWidth()*0.85, GetScreenHeight()*0.85, GetScreenWidth()*0.03,_UIColor);
 	if(interActable)
 	{
 		float x = getMusicPosition()/ getMusicDuration()*GetScreenWidth();
@@ -240,6 +258,6 @@ void drawButton(Rectangle rect, char * text, float fontScale)
 	if(mouseInRect(rect) && IsMouseButtonDown(0))
 		color = GRAY;
 	DrawRectangle(rect.x, rect.y, rect.width, rect.height, color);
-	int textSize = MeasureText(text, GetScreenWidth() * fontScale);
-	DrawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + GetScreenHeight() * 0.01, GetScreenWidth() * fontScale, (color.r == GRAY.r) ? BLACK : DARKGRAY);
+	int textSize = measureText(text, GetScreenWidth() * fontScale);
+	drawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + GetScreenHeight() * 0.01, GetScreenWidth() * fontScale, (color.r == GRAY.r) ? BLACK : DARKGRAY);
 }

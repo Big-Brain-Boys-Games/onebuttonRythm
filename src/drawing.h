@@ -7,6 +7,8 @@
 
 #include "include/raylib.h"
 
+int measureText (char * text, int fontSize);
+void drawText(char * str, int x, int y, int fontSize, Color color);
 float musicTimeToScreen(float musicTime);
 float screenToMusicTime(float x);
 float noteFadeOut(float note);

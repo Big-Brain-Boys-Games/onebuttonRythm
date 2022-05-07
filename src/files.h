@@ -12,13 +12,15 @@ struct Map{
 	char * creator;
 	int difficulty;
 	int bpm;
+	int zoom;
+	char * musicFile;
 	Texture2D image;
 };
 
 typedef struct Map Map;
 
 
-enum FilePart{fpNone, fpName, fpCreator, fpDifficulty, fpBPM, fpNotes};
+enum FilePart{fpNone, fpName, fpCreator, fpDifficulty, fpBPM, fpMusicFile, fpZoom, fpNotes};
 
 Map loadMapInfo(char * file);
 void saveFile (int noteAmount);

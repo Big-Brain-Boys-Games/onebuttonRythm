@@ -20,8 +20,8 @@
 #endif
 
 
-extern Texture2D _background;
-extern float * _pNotes;
+extern Texture2D _background, _menuBackground;
+extern float * _pNotes, _scrollSpeed;
 extern Map *_map;
 extern int _amountNotes, _noteIndex, _score, _highestCombo;
 extern bool _noBackground;
@@ -36,7 +36,8 @@ Map loadMapInfo(char * file)
 	char * mapStr = malloc(strlen(file) + 12);
 	strcpy(mapStr, "maps/");
 	strcat(mapStr, file);
-	Map map;
+	Map map = {0};
+	map.zoom = 7;
 	map.folder = malloc(100);
 	strcpy(map.folder, file);
 	char * pStr = malloc(strlen(mapStr) + 12);
@@ -54,7 +55,7 @@ Map loadMapInfo(char * file)
 		map.image = LoadTexture(pStr);
 	else{
 		_noBackground = 1;
-		map.image = LoadTexture("background.png");
+		map.image = _menuBackground;
 	}
 	
 	
@@ -78,6 +79,8 @@ Map loadMapInfo(char * file)
 		if(strcmp(line, "[Creator]\n") == 0)		{mode = fpCreator;		continue;}
 		if(strcmp(line, "[Difficulty]\n") == 0)		{mode = fpDifficulty;	continue;}
 		if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;			continue;}
+		if(strcmp(line, "[MusicFile]\n") == 0)		{mode = fpMusicFile;	continue;}
+		if(strcmp(line, "[Zoom]\n") == 0)			{mode = fpZoom;			continue;}
 		if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
 		for(int i = 0; i < 100; i++)
 					if(line[i] == '\n') line[i]= '\0';
@@ -101,6 +104,13 @@ Map loadMapInfo(char * file)
 			case fpBPM:
 				map.bpm = atoi(line);
 				break;
+			case fpMusicFile:
+				map.name = malloc(100);
+				strcpy(map.musicFile, line);
+				break;
+			case fpZoom:
+				map.zoom = atoi(line);
+				break;
 			case fpNotes:
 				//neat, notes :P
 				break;
@@ -108,13 +118,6 @@ Map loadMapInfo(char * file)
 	}
 	fclose(f);
 	free(pStr);
-
-	if(map.image.id == 0)
-	{
-		printf("no background texture found\n");
-		map.image = LoadTexture("background.png");
-		// _noBackground = 1;
-	}
 	return map;
 }
 
@@ -129,6 +132,10 @@ void saveFile (int noteAmount)
 	fprintf(_pFile, "%i\n", _map->difficulty);
 	fprintf(_pFile, "[BPM]\n");
 	fprintf(_pFile, "%i\n", _map->bpm);
+	fprintf(_pFile, "[MusicFile]\n");
+	fprintf(_pFile, "%s\n", _map->musicFile);
+	fprintf(_pFile, "[Zoom]\n");
+	fprintf(_pFile, "%i\n", _map->zoom);
 	fprintf(_pFile, "[Notes]\n");
 	for(int i = 0; i < noteAmount; i++)
 	{
@@ -147,8 +154,14 @@ void loadMap (int fileType)
 	strcat(map, _map->folder);
 	char * pStr = malloc(strlen(map) + 12);
 	_background = _map->image;
+
 	strcpy(pStr, map);
-	strcat(pStr, "/song.mp3");
+	if(_map->musicFile == 0)
+	{
+		_map->musicFile = malloc(100);
+		strcpy(_map->musicFile, "/song.mp3");
+	}
+	strcat(pStr, _map->musicFile);
 
 	// ma_result result
 	loadMusic(pStr);
@@ -177,10 +190,6 @@ void loadMap (int fileType)
 			if(emptyLine)
 				continue;
 
-			if(strcmp(line, "[Name]\n") == 0)			{mode = fpName;			continue;}
-			if(strcmp(line, "[Creator]\n") == 0)		{mode = fpCreator;		continue;}
-			if(strcmp(line, "[Difficulty]\n") == 0)		{mode = fpDifficulty;	continue;}
-			if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;			continue;}
 			if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
 			switch(mode)
 			{
