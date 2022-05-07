@@ -2,14 +2,17 @@
 #define MINIAUDIO_IMPLEMENTATION
 #include "include/miniaudio.h"
 
+#include "files.h"
+
 #include <stdbool.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-extern int _amountNotes ,_musicLength, _musicFrameCount, _bpm;
+extern int _amountNotes ,_musicLength, _musicFrameCount;
 extern float _musicHead, _scrollSpeed;
+extern Map * _map;
 
 #define EFFECT_BUFFER_SIZE 48000 * 4 * 4
 
@@ -71,12 +74,12 @@ void fixMusicTime()
 
 int getBarsCount()
 {
-	return _bpm * getMusicDuration() / 60 / 4;
+	return _map->bpm * getMusicDuration() / 60 / 4;
 }
 
 int getBeatsCount()
 {
-	return _bpm * getMusicDuration() / 60;
+	return _map->bpm * getMusicDuration() / 60;
 }
 
 void setMusicStart()
@@ -207,6 +210,7 @@ void playAudioEffect(void *effect, int size)
 void startMusic()
 {
 	_musicPlaying = true;
+	_musicFrameCount = 1;
 }
 
 void stopMusic()
@@ -214,7 +218,6 @@ void stopMusic()
 	_musicFrameCount = 0;
 	_musicHead = 0;
 	_musicPlaying = false;
-	_musicLength = 0;
 }
 
 void setMusicFrameCount()

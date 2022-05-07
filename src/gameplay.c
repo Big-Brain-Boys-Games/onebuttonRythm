@@ -14,10 +14,10 @@
 
 extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
 extern Color _fade;
-extern bool _musicPlaying;
+extern bool _musicPlaying, _musicLoops;
 extern float _musicHead, _transition;
 extern void * _pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE;
-extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size;
+extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size, _musicFrameCount, _musicLength;
 
 
 extern Map _pMaps[100];
@@ -26,13 +26,11 @@ float _scrollSpeed = 0.6;
 int _noteIndex = 0, _amountNotes =0 ;
 bool _noBackground = false;
 float _health = 50;
-int _score= 0, _highScore;
-int _bpm = 100;
+int _score= 0, _highScore, _combo = 0, _highestCombo, _highScoreCombo = 0;
 float _maxMargin = 0.1;
 int _hitPoints = 5;
 int _missPenalty = 10;
-char *_pMap = "testMap";
-float _fadeOut = 0;
+Map * _map;
 
 //Timestamp of all the notes
 float * _pNotes;
@@ -143,25 +141,32 @@ void fPause()
 
 void fCountDown ()
 {
+	_musicLoops = false;
 	_musicPlaying = false;
 	static float countDown  = 0;
+	static bool contin = false;
 	if(countDown == 0) countDown = GetTime() + 3;
 	if(countDown - GetTime() +GetFrameTime() <= 0)
 	{
 		countDown = 0;
-		//switching to playing map
-		printf("switching to playing map! \n");
 		_pGameplayFunction = _pNextGameplayFunction;
-		startMusic();
-		
-		_health = 50;
-		_score = 0;
-		_noteIndex =1;
-		_musicHead = 0;
+		if(!contin)
+		{
+			//switching to playing map
+			printf("switching to playing map! \n");
+			startMusic();
+			
+			_health = 50;
+			_combo = 0;
+			_score = 0;
+			_noteIndex =1;
+			_musicHead = 0;
+			contin = false;
+		}
 		return;
 	}
 	if(_musicHead <= 0) _musicHead = GetTime()-countDown;
-
+	else contin = true;
 	ClearBackground(BLACK);
 	drawBackground();
 	
@@ -199,6 +204,7 @@ void fCountDown ()
 
 void fMainMenu()
 {
+	_musicLoops = true;
 	ClearBackground(BLACK);
 	DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
 		(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
@@ -309,6 +315,7 @@ void fEndScreen ()
 		printf("retrying map! \n");
 		
 		_pGameplayFunction = &fCountDown;
+		_musicHead = 0;
 		_transition = 0.1;
 	}
 	if(IsMouseButtonReleased(0) && mouseInRect(MMButton))
@@ -456,11 +463,13 @@ void fPlaying ()
 	_musicPlaying = true;
 	fixMusicTime();
 
+
+
+
 	if(endOfMusic())
 	{
 		stopMusic();
-		int tmp;
-		readScore(_pMap, &_highScore, &tmp);
+		readScore(_map, &_highScore, &_highScoreCombo);
 		if(_highScore < _score)
 			saveScore();
 		_pGameplayFunction = &fEndScreen;
@@ -495,12 +504,8 @@ void fPlaying ()
 	dNotes();
 
 
-	//draw score
-	char * tmpString = malloc(9);
-	sprintf(tmpString, "%i", _score);
-	DrawText(tmpString, GetScreenWidth() * 0.05, GetScreenHeight()*0.05, GetScreenWidth() * 0.05, WHITE);
-	free(tmpString);
-
+	
+	if(_combo > _highestCombo) _highestCombo = _combo;
 
 	//draw feedback (300! 200! miss!)
 	for(int i = 0, j = feedbackIndex-1; i < 5; i++, j--)
@@ -515,6 +520,7 @@ void fPlaying ()
 		_noteIndex++;
 		feedback("miss!", 1.3-_health/100);
 		_health -= _missPenalty;
+		_combo = 0;
 		playAudioEffect(_pMissSE, _missSE_Size);
 	}
 
@@ -536,6 +542,7 @@ void fPlaying ()
 			{
 				_noteIndex++;
 				feedback("miss!", 1.3-_health/100);
+				_combo = 0;
 				_health -= _missPenalty;
 			}
 			int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / _maxMargin));
@@ -551,13 +558,15 @@ void fPlaying ()
 				feedback("100!", 0.8);
 				addRipple(0.3);
 			}
-			_score += scoreAdded;
+			_score += scoreAdded * (1+_combo/100);
 			_noteIndex++;
+			_combo++;
 			playAudioEffect(_pHitSE, _hitSE_Size);
 		}else
 		{
 			printf("missed note\n");
 			feedback("miss!", 1.3-_health/100);
+			_combo = 0;
 			_health -= _missPenalty;
 			playAudioEffect(_pMissHitSE, _missHitSE_Size);
 		}
@@ -593,6 +602,16 @@ void fPlaying ()
 		_transition = 0.1;
 	}
 	drawVignette();
+
+	//draw score
+	char * tmpString = malloc(20);
+	sprintf(tmpString, "score: %i", _score);
+	DrawText(tmpString, GetScreenWidth() * 0.05, GetScreenHeight()*0.05, GetScreenWidth() * 0.05, WHITE);
+
+	//draw combo
+	sprintf(tmpString, "combo: %i", _combo);
+	DrawText(tmpString, GetScreenWidth() * 0.70, GetScreenHeight()*0.05, GetScreenWidth() * 0.05, WHITE);
+	free(tmpString);
 	drawProgressBar();
 	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), _fade);
 }
@@ -637,6 +656,7 @@ void fFail ()
 		//retrying map
 		printf("retrying map! \n");
 		_pGameplayFunction = &fCountDown;
+		_musicHead = 0;
 		_transition = 0.7;
 	}
 	if(IsMouseButtonReleased(0) && mouseInRect(MMButton))
@@ -658,7 +678,6 @@ void fMapSelect()
 	if(files == 0)
 	{
 		files = GetDirectoryFiles("maps/", &amount);
-		// _pMaps = calloc(sizeof(_pMaps), amount);
 		int mapIndex = 0;
 		for(int i = 0; i < amount; i++)
 		{
@@ -699,9 +718,7 @@ void fMapSelect()
 		if(IsMouseButtonReleased(0) && mouseInRect(mapButton))
 		{
 			playAudioEffect(_pButtonSE, _buttonSE_Size);
-			_pMap = malloc(100);
-			strcpy(_pMap, _pMaps[i].folder);
-			printf("map %s");
+			_map = &_pMaps[i];
 			//switching to playing map
 			if(_pNextGameplayFunction != &fRecording)
 				loadMap(0);
@@ -710,7 +727,7 @@ void fMapSelect()
 			_pGameplayFunction = _pNextGameplayFunction;
 			
 			setMusicStart();
-			
+			_musicHead = 0;
 			if(_pNextGameplayFunction == &fPlaying || _pNextGameplayFunction == &fRecording)
 				_pGameplayFunction = &fCountDown;
 			

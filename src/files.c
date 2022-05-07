@@ -12,8 +12,8 @@
 
 extern Texture2D _background;
 extern float * _pNotes;
-extern char * _pMap;
-extern int _amountNotes, _noteIndex, _bpm, _score;
+extern Map *_map;
+extern int _amountNotes, _noteIndex, _score, _highestCombo;
 extern bool _noBackground;
 //TODO add support for more maps
 Map _pMaps [100];
@@ -99,17 +99,14 @@ Map loadMapInfo(char * file)
 void saveFile (int noteAmount)
 {
 	printf("written map data\n");
-	char * mapName = "Map1";
-	char * Creator = "Me";
-	int Difficulty = 3;
 	fprintf(_pFile, "[Name]\n");
-	fprintf(_pFile, "%s\n", mapName);
+	fprintf(_pFile, "%s\n", _map->name);
 	fprintf(_pFile, "[Creator]\n");
-	fprintf(_pFile, "%s\n", Creator);
+	fprintf(_pFile, "%s\n", _map->creator);
 	fprintf(_pFile, "[Difficulty]\n");
-	fprintf(_pFile, "%i\n", Difficulty);
+	fprintf(_pFile, "%i\n", _map->difficulty);
 	fprintf(_pFile, "[BPM]\n");
-	fprintf(_pFile, "%i\n", _bpm);
+	fprintf(_pFile, "%i\n", _map->bpm);
 	fprintf(_pFile, "[Notes]\n");
 	for(int i = 0; i < noteAmount; i++)
 	{
@@ -123,9 +120,9 @@ void saveFile (int noteAmount)
 
 void loadMap (int fileType)
 {
-	char * map = malloc(strlen(_pMap) + 12);
+	char * map = malloc(strlen(_map->folder) + 12);
 	strcpy(map, "maps/");
-	strcat(map, _pMap);
+	strcat(map, _map->folder);
 	char * pStr = malloc(strlen(map) + 12);
 	strcpy(pStr, map);
 	strcat(pStr, "/image.png");
@@ -170,16 +167,12 @@ void loadMap (int fileType)
 				case fpNone:
 					break;
 				case fpName:
-					//todo save name
 					break;
 				case fpCreator:
-					//todo save creator
 					break;
 				case fpDifficulty:
-					//todo save difficulty
 					break;
 				case fpBPM:
-					_bpm = atoi(line);
 					break;
 				case fpNotes:
 					
@@ -215,24 +208,24 @@ void saveScore()
 	FILE * file;
 	char str [100];
 	strcpy(str, "scores/");
-	strcat(str, _pMap);
+	strcat(str, _map->name);
 	if(!DirectoryExists("scores/"))
 		return;
 	printf("str %s\n", str);
 	file = fopen(str, "w");
 	//todo add combo
-	fprintf(file, "%i %i\n", _score, 0);
+	fprintf(file, "%i %i\n", _score, _highestCombo);
 	fclose(file);
 }
 
-bool readScore(char * map, int *score, int * combo)
+bool readScore(Map * map, int *score, int * combo)
 {
 	*score = 0;
 	*combo = 0;
 	FILE * file;
 	char str [100];
 	strcpy(str, "scores/");
-	strcat(str, _pMap);
+	strcat(str, map->name);
 	if(!DirectoryExists("scores/"))
 		return false;
 	if(!FileExists(str))

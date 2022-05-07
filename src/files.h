@@ -27,6 +27,6 @@ void saveFile (int noteAmount);
 void loadMap(int fileType);
 void unloadMap();
 void saveScore();
-bool readScore(char * map, int *score, int * combo);
+bool readScore(Map * map, int *score, int * combo);
 
 #endif
