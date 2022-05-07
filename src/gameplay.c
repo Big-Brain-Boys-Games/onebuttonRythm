@@ -423,18 +423,24 @@ void fEditor ()
 			isPlaying = !isPlaying;
 		}
 	}
+
 	drawMusicGraph(0.7);
 	drawVignette();
+	
+	char bpm[10] = {0};
+	if(_map->bpm != 0)
+		sprintf(bpm, "%i", _map->bpm);
+	static bool bpmBoxSelected = false;
+	Rectangle bpmBox = (Rectangle){.x=GetScreenWidth()*0.8, .y=GetScreenHeight()*0.1, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
+	textBox(bpmBox, bpm, &bpmBoxSelected);
+	_map->bpm=atoi(bpm);
+	_map->bpm = fmin(fmax(_map->bpm, 0), 300);
+		
+
+	
 	drawBars();
 	drawProgressBarI(true);
 	drawCursor();
-	
-	// if(endOfMusic())
-	// {
-	// 	loadMap(1);
-	// 	saveFile(_amountNotes);
-	// 	gotoMainMenu();
-	// }
 }
 
 void fRecording ()
@@ -928,12 +934,46 @@ void fNewMap()
 
 	drawCursor();
 
+
 	//file dropping
-	if(IsFileDropped())
+	if(IsFileDropped() || IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))
 	{
 		printf("yoo new file dropped boys\n");
 		int amount = 0;
-		char ** files = GetDroppedFiles(&amount);
+		char ** files;
+		bool keyOrDrop = true;
+		if(IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))
+		{
+			//copy paste
+			const char * str = GetClipboardText();
+
+			int file = 0;
+			char part [100] = {0};
+			int partIndex = 0;
+			//todo no hardcode, bad hardcode!
+			files = malloc(100);
+			for(int i = 0; str[i] != '\0'; i++)
+			{
+				part[partIndex++]=str[i];
+				if(str[i+1] == '\n' || str[i+1] == '\0')
+				{
+					i++;
+					part[partIndex+1] = '\0';
+					printf("file %i: %s\n", file, part);
+					if(FileExists(part))
+					{
+						printf("\tfile exists\n");
+						files[file] = malloc(partIndex);
+						strcpy(files[file], part);
+						file++;
+					}
+					partIndex=0;
+				}
+			}
+			amount = file;
+			keyOrDrop = false;
+		}
+		else files = GetDroppedFiles(&amount);
 		for(int i = 0; i < amount; i++)
 		{
 			const char * ext = GetFileExtension(files[i]);
@@ -987,6 +1027,12 @@ void fNewMap()
 			}
 			
 		}
-		ClearDroppedFiles();
+		if(!keyOrDrop)
+		{
+			for(int i = 0; i < amount; i++)
+				free(files[i]);
+			free(files);
+		}
+		else ClearDroppedFiles();
 	}
 }

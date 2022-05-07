@@ -21,5 +21,7 @@ void fPlaying();
 void fFail();
 void fNewMap();
 void fMapSelect();
+void textBox(Rectangle rect, char * str, bool * selected);
+void numberBox(Rectangle rect, int * number, bool * selected);
 
 #endif
