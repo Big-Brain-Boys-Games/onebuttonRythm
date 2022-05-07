@@ -426,14 +426,7 @@ void fRecording ()
 	// UpdateMusicStream(music);
 	BeginDrawing();
 		ClearBackground(BLACK);
-		if(!_noBackground)
-		{
-			float scale = (float)GetScreenWidth() / (float)_background.width;
-			DrawTextureEx(_background, (Vector2){.x=0, .y=(GetScreenHeight() - _background.height * scale)/2}, 0, scale,WHITE);
-		}else{
-			DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
-			(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
-		}
+		drawBackground();
 
 		if(GetKeyPressed() && _musicHead!=0)
 		{
@@ -457,12 +450,17 @@ void fRecording ()
 		gotoMainMenu();
 	}
 }
-
+#define RippleAmount 10
 #define feedback(newFeedback) feedbackSayings[feedbackIndex] = newFeedback; feedbackIndex++; if(feedbackIndex > 4) feedbackIndex = 0;
+#define addRipple(newRipple) rippleEffect[rippleEffectIndex] = 0; rippleEffectStrength[rippleEffectIndex] = newRipple; rippleEffectIndex = (rippleEffectIndex+1)%RippleAmount;
 void fPlaying ()
 {
 	static char *feedbackSayings [5];
 	static int feedbackIndex = 0;
+	static float rippleEffect[RippleAmount] = {0};
+	static float rippleEffectStrength[RippleAmount] = {0};
+	static int rippleEffectIndex = 0;
+	static float smoothHealth = 50;
 	_musicHead += GetFrameTime();
 	_musicPlaying = true;
 	fixMusicTime();
@@ -486,11 +484,24 @@ void fPlaying ()
 		
 		drawBackground();
 
-		//draw notes
+
+		//draw ripples
+		for(int i = 0; i < RippleAmount; i++)
+		{
+			if(rippleEffectStrength[i] == 0)
+				continue;
+			printf("drawing ripple\n");
+			rippleEffect[i] += GetFrameTime()*1200*rippleEffectStrength[i];
+			rippleEffectStrength[i] = fmax(rippleEffectStrength[i] - GetFrameTime()*5, 0);
+			float size = rippleEffect[i];
+			DrawRing((Vector2){.x=GetScreenWidth()/2, .y=GetScreenHeight()*0.42}, size, size*0.7, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i]));
+		}
+
 		float width = GetScreenWidth() * 0.005;
 		float middle = GetScreenWidth() /2;
 		
-		float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
+		dNotes();
+
 
 		//draw score
 		char * tmpString = malloc(9);
@@ -498,7 +509,6 @@ void fPlaying ()
 		DrawText(tmpString, GetScreenWidth() * 0.05, GetScreenHeight()*0.05, GetScreenWidth() * 0.05, WHITE);
 		free(tmpString);
 
-		dNotes();
 
 		//draw feedback (300! 200! miss!)
 		for(int i = 0, j = feedbackIndex-1; i < 5; i++, j--)
@@ -541,10 +551,13 @@ void fPlaying ()
 				int scoreAdded = noLessThanZero(300 - closestTime * (300 / _maxMargin));
 				if(scoreAdded > 200) {
 					feedback("300!");
+					addRipple(1);
 				}else if (scoreAdded > 100) {
 					feedback("200!");
+					addRipple(0.6);
 				} else {
 					feedback("100!");
+					addRipple(0.3);
 				}
 				_score += scoreAdded;
 				_noteIndex++;
@@ -568,6 +581,8 @@ void fPlaying ()
 			_fade = ColorAlpha(RED, 1-_health/25);
 		else _fade = ColorAlpha(RED, 0);
 
+		smoothHealth += (_health-smoothHealth)*GetFrameTime()*3;
+
 		if(feedbackIndex >= 5)
 			feedbackIndex = 0;
 
@@ -575,7 +590,7 @@ void fPlaying ()
 		float healthBarScale = (GetScreenHeight() * 0.4) / _healthBarTex.height;
 		DrawTextureEx(_healthBarTex, (Vector2){.x=GetScreenWidth() * 0.85 + (_heartTex.width / 2) * heartScale - (_healthBarTex.width / 2) * healthBarScale,
 			.y=GetScreenHeight() * 0.85 - _healthBarTex.height * healthBarScale + (_heartTex.height / 2) * heartScale}, 0, healthBarScale,WHITE);
-		DrawTextureEx(_heartTex, (Vector2){.x=GetScreenWidth() * 0.85, .y=GetScreenHeight() * (0.85 - _health / 250)}, 0, heartScale,WHITE);
+		DrawTextureEx(_heartTex, (Vector2){.x=GetScreenWidth() * 0.85, .y=GetScreenHeight() * (0.85 - smoothHealth / 250)}, 0, heartScale,WHITE);
 
 		if(_health <= 0)
 		{
