@@ -890,6 +890,9 @@ void fNewMap()
 		fwrite(pMusic, pMusicSize, 1, file);
 		fclose(file);
 
+		newMap.musicFile = malloc(100);
+		strcpy(newMap.musicFile, str);
+
 		strcpy(str, "maps/");
 		strcat(str, newMap.name);
 		strcat(str, "/image.png");

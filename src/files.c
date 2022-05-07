@@ -36,7 +36,7 @@ Map loadMapInfo(char * file)
 	char * mapStr = malloc(strlen(file) + 12);
 	strcpy(mapStr, "maps/");
 	strcat(mapStr, file);
-	Map map;
+	Map map = {0};
 	map.folder = malloc(100);
 	strcpy(map.folder, file);
 	char * pStr = malloc(strlen(mapStr) + 12);
@@ -78,6 +78,7 @@ Map loadMapInfo(char * file)
 		if(strcmp(line, "[Creator]\n") == 0)		{mode = fpCreator;		continue;}
 		if(strcmp(line, "[Difficulty]\n") == 0)		{mode = fpDifficulty;	continue;}
 		if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;			continue;}
+		if(strcmp(line, "[MusicFile]\n") == 0)		{mode = fpMusicFile;	continue;}
 		if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
 		for(int i = 0; i < 100; i++)
 					if(line[i] == '\n') line[i]= '\0';
@@ -100,6 +101,10 @@ Map loadMapInfo(char * file)
 				break;
 			case fpBPM:
 				map.bpm = atoi(line);
+				break;
+			case fpMusicFile:
+				map.name = malloc(100);
+				strcpy(map.musicFile, line);
 				break;
 			case fpNotes:
 				//neat, notes :P
@@ -129,6 +134,8 @@ void saveFile (int noteAmount)
 	fprintf(_pFile, "%i\n", _map->difficulty);
 	fprintf(_pFile, "[BPM]\n");
 	fprintf(_pFile, "%i\n", _map->bpm);
+	fprintf(_pFile, "[MusicFile]\n");
+	fprintf(_pFile, "%s\n", _map->musicFile);
 	fprintf(_pFile, "[Notes]\n");
 	for(int i = 0; i < noteAmount; i++)
 	{
@@ -147,8 +154,14 @@ void loadMap (int fileType)
 	strcat(map, _map->folder);
 	char * pStr = malloc(strlen(map) + 12);
 	_background = _map->image;
+
 	strcpy(pStr, map);
-	strcat(pStr, "/song.mp3");
+	if(_map->musicFile == 0)
+	{
+		_map->musicFile = malloc(100);
+		strcat(_map->musicFile, "/song.mp3");
+	}
+	strcat(pStr, _map->musicFile);
 
 	// ma_result result
 	loadMusic(pStr);
