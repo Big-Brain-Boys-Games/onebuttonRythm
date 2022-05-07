@@ -1,9 +1,8 @@
-#ifndef MAINC
+
 #include "gameplay.h"
 #include "files.h"
 #include "drawing.h"
 #include "audio.h"
-#endif
 
 #include "include/raylib.h"
 #include <stdbool.h>
@@ -687,7 +686,8 @@ void fMapSelect()
 			if(files[i][0] == '.')
 				continue;
 			_pMaps[mapIndex] = loadMapInfo(&(files[i][0]));
-			mapIndex++;
+			if(_pMaps[mapIndex].name != 0)
+				mapIndex++;
 		}
 		amount = mapIndex;
 	}
@@ -704,6 +704,17 @@ void fMapSelect()
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		_pGameplayFunction=&fMainMenu;
+		_transition = 0.1;
+		return;
+	}
+
+	Rectangle newMapButton = (Rectangle){.x=GetScreenWidth()*0.70, .y=GetScreenHeight()*0.80, .width=GetScreenWidth()*0.15, .height=GetScreenHeight()*0.1};
+	drawButton(newMapButton, "new map", 0.03);
+
+	if(mouseInRect(newMapButton) && IsMouseButtonDown(0))
+	{
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		_pGameplayFunction=&fNewMap;
 		_transition = 0.1;
 		return;
 	}
@@ -742,4 +753,220 @@ void fMapSelect()
 		}
 	}
 	drawCursor();
+}
+
+void textBox(Rectangle rect, char * str, bool * selected)
+{
+	drawButton(rect, str, 0.03);
+	if(mouseInRect(rect) && IsMouseButtonDown(0) || *selected)
+	{
+		*selected = true;
+		char c = GetCharPressed();
+		while(c != 0)
+		{
+			for(int i = 0; i < 99; i++)
+			{
+				if(str[i] == '\0')
+				{
+					str[i] = c;
+					str[i+1] = '\0';
+					break;
+				}
+			}
+			c = GetCharPressed();
+		}
+		if(IsKeyPressed(KEY_BACKSPACE))
+		{
+			for(int i = 1; i < 99; i++)
+			{
+				if(str[i] == '\0')
+				{
+					str[i-1] = '\0';
+					break;
+				}
+			}
+		}
+	}
+	if (!mouseInRect(rect) && IsMouseButtonDown(0))
+		*selected = false;
+}
+
+void numberBox(Rectangle rect, int * number, bool * selected)
+{
+	char str [10];
+	sprintf(str, "%i", *number);
+	drawButton(rect, str, 0.03);
+	if(mouseInRect(rect) && IsMouseButtonDown(0) || *selected)
+	{
+		*selected = true;
+		char c = GetCharPressed();
+		while(c != 0)
+		{
+			*number = c - '0';
+			c = GetCharPressed();
+		}
+	}
+	if (!mouseInRect(rect) && IsMouseButtonDown(0))
+		*selected = false;
+}
+
+void fNewMap()
+{
+	static Map newMap = {0};
+	static void * pMusic = 0;
+	static char pMusicExt [50];
+	static int pMusicSize = 0;
+	static void * pImage = 0;
+	static int imageSize = 0;
+	static char pBPM [100] = "100\0";
+
+	if(newMap.name == 0)
+	{
+		newMap.name = malloc(100);
+		strcpy(newMap.name, "name");
+		newMap.creator = malloc(100);
+		newMap.creator[0] = '\0';
+		strcpy(newMap.creator, "creator");
+		newMap.folder = malloc(100);
+		newMap.folder[0] = '\0';
+	}
+	ClearBackground(BLACK);
+	DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
+		(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
+
+	int middle = GetScreenWidth()/2;
+
+	Rectangle backButton = (Rectangle){.x=GetScreenWidth()*0.05, .y=GetScreenHeight()*0.05, .width=GetScreenWidth()*0.1, .height=GetScreenHeight()*0.05};
+	drawButton(backButton, "back", 0.02);
+	if(mouseInRect(backButton) && IsMouseButtonDown(0))
+	{
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		_pGameplayFunction=&fMapSelect;
+		_transition = 0.1;
+		return;
+	}
+
+	Rectangle finishButton = (Rectangle){.x=GetScreenWidth()*0.85, .y=GetScreenHeight()*0.85, .width=GetScreenWidth()*0.1, .height=GetScreenHeight()*0.05};
+	drawButton(finishButton, "finish", 0.02);
+	if(mouseInRect(finishButton) && IsMouseButtonDown(0))
+	{
+		if(pMusic == 0)
+			return;
+		if(pImage == 0)
+			return;
+		makeMap(&newMap);
+		char str [100];
+		strcpy(str, "maps/");
+		strcat(str, newMap.name);
+		strcat(str, "/song");
+		strcat(str, pMusicExt);
+		FILE * file = fopen(str, "w");
+		fwrite(pMusic, pMusicSize, 1, file);
+		fclose(file);
+
+		strcpy(str, "maps/");
+		strcat(str, newMap.name);
+		strcat(str, "/image.png");
+		file = fopen(str, "w");
+		fwrite(pImage, imageSize, 1, file);
+		fclose(file);
+
+		_pGameplayFunction=&fEditor;
+		_transition = 0.1;
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		newMap.folder = malloc(100);
+		strcpy(newMap.folder, newMap.name);
+		newMap.bpm = atoi(pBPM);
+		_map = &newMap;
+		loadMap(1);
+		saveFile(0);
+		loadMap(0);
+		_noBackground = 0;
+		return;
+	}
+
+	//text boxes
+	static bool nameBoxSelected = false;
+	Rectangle nameBox = (Rectangle){.x=middle, .y=GetScreenHeight()*0.5, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
+	textBox(nameBox, newMap.name, &nameBoxSelected);
+
+	static bool creatorBoxSelected = false;
+	Rectangle creatorBox = (Rectangle){.x=middle, .y=GetScreenHeight()*0.625, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
+	textBox(creatorBox, newMap.creator, &creatorBoxSelected);
+
+	static bool bpmBoxSelected = false;
+	Rectangle bpmBox = (Rectangle){.x=middle, .y=GetScreenHeight()*0.875, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
+	textBox(bpmBox, pBPM, &bpmBoxSelected);
+
+	static bool difficultyBoxSelected = false;
+	Rectangle difficultyBox = (Rectangle){.x=middle, .y=GetScreenHeight()*0.75, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
+	numberBox(difficultyBox, &newMap.difficulty, &difficultyBoxSelected);
+	
+
+	int textSize = MeasureText("Drop in .png, .wav or .mp3", GetScreenWidth() * 0.04);
+	DrawText("Drop in .png, .wav or .mp3", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.2, GetScreenWidth() * 0.04, WHITE);
+
+	drawCursor();
+
+	//file dropping
+	if(IsFileDropped())
+	{
+		printf("yoo new file dropped boys\n");
+		int amount = 0;
+		char ** files = GetDroppedFiles(&amount);
+		for(int i = 0; i < amount; i++)
+		{
+			const char * ext = GetFileExtension(files[i]);
+			printf("%s\n", ext);
+			if(strcmp(ext, ".png") == 0)
+			{
+				if(newMap.image.id != 0)
+					UnloadTexture(newMap.image);
+				newMap.image = LoadTexture(files[i]);
+
+				if(pImage != 0)
+					free(pImage);
+				FILE * file = fopen(files[i], "r");
+				fseek(file, 0L, SEEK_END);
+				int size = ftell(file);
+				rewind(file);
+				pImage = malloc(size);
+				fread(pImage, size, 1, file);
+				fclose(file);
+				imageSize = size;
+			}
+
+			if(strcmp(ext, ".mp3") == 0)
+			{
+				if(pMusic != 0)
+					free(pMusic);
+				FILE * file = fopen(files[i], "r");
+				fseek(file, 0L, SEEK_END);
+				int size = ftell(file);
+				rewind(file);
+				pMusic = malloc(size);
+				fread(pMusic, size, 1, file);
+				fclose(file);
+				strcpy(pMusicExt, ext);
+				pMusicSize = size;
+			}
+
+			if(strcmp(ext, ".wav") == 0)
+			{
+				if(pMusic != 0)
+					free(pMusic);
+				FILE * file = fopen(files[i], "r");
+				fseek(file, 0L, SEEK_END);
+				int size = ftell(file);
+				rewind(file);
+				pMusic = malloc(size);
+				fread(pMusic, size, 1, file);
+				strcpy(pMusicExt, ext);
+				fclose(file);
+				pMusicSize = size;
+			}
+			
+		}
+		ClearDroppedFiles();
+	}
 }

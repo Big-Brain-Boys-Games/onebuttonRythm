@@ -1,6 +1,5 @@
-#ifndef MAINC
+
 #include "drawing.h"
-#endif
 #include <stdbool.h>
 #include <math.h>
 #include <stdio.h>

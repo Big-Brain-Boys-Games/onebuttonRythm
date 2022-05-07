@@ -1,5 +1,6 @@
 OBJ_DIR := Obj
 SRC_DIR := src
+LIB_DIR := lib
 INCLUDE_DIR := include
 SRC_FILES := $(wildcard $(SRC_DIR)/*.c)
 # OBJ_FILES := $(addprefix $(OBJ_DIR)/,$(patsubst %.c,%.o,$(SRC_FILES)))

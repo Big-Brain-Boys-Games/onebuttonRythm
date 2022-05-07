@@ -7,12 +7,11 @@
 // #include "include/miniaudio.h"
 #include "include/raylib.h"
 
-// #define MAINC
-
 #include "shared.h"
 #include "files.h"
 #include "drawing.h"
 #include "gameplay.h"
+
 
 // #include "shared.c"
 // #include "drawing.c"
@@ -47,7 +46,7 @@ int main(int argc, char **argv)
 	audioInit();
 
 	_pGameplayFunction = &fMainMenu;
-
+	_transition = 1;
 	while (!WindowShouldClose())
 	{
 		mousePos = GetMousePosition();

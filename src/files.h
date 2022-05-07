@@ -1,10 +1,8 @@
 #ifndef GAME_FILE_HANDLING
 #define GAME_FILE_HANDLING
 
-#ifndef MAINC
 #include "shared.h"
 #include "gameplay.h"
-#endif
 #include <stdbool.h>
 #include "include/raylib.h"
 
@@ -28,5 +26,6 @@ void loadMap(int fileType);
 void unloadMap();
 void saveScore();
 bool readScore(Map * map, int *score, int * combo);
+void makeMap(Map * map);
 
 #endif

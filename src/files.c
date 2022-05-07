@@ -1,6 +1,5 @@
-#ifndef MAINC
+
 #include "files.h"
-#endif
 
 #include <stdbool.h>
 #include <math.h>
@@ -8,6 +7,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include "include/raylib.h"
+
+
+#ifdef _WIN32
+#include <windows.h>
+
+#define mkdir(dir) _mkdir(dir)
+#endif
+#ifdef __unix
+#include <sys/stat.h>
+#define mkdir(dir) mkdir(dir, 0777)
+#endif
 
 
 extern Texture2D _background;
@@ -20,6 +30,7 @@ Map _pMaps [100];
 
 FILE * _pFile;
 
+
 Map loadMapInfo(char * file)
 {
 	char * mapStr = malloc(strlen(file) + 12);
@@ -29,14 +40,25 @@ Map loadMapInfo(char * file)
 	map.folder = malloc(100);
 	strcpy(map.folder, file);
 	char * pStr = malloc(strlen(mapStr) + 12);
-	strcpy(pStr, mapStr);
-	strcat(pStr, "/image.png");
-	map.image = LoadTexture(pStr);
-	
+
 	strcpy(pStr, mapStr);
 	strcat(pStr, "/map.data");
+	if(!FileExists(pStr))
+		return (Map){.name=0};
 	FILE * f;
 	f = fopen(pStr, "rb");
+
+	strcpy(pStr, mapStr);
+	strcat(pStr, "/image.png");
+	if(FileExists(pStr))
+		map.image = LoadTexture(pStr);
+	else{
+		_noBackground = 1;
+		map.image = LoadTexture("background.png");
+	}
+	
+	
+	
 
 	//text file
 	char line [1000];
@@ -124,9 +146,7 @@ void loadMap (int fileType)
 	strcpy(map, "maps/");
 	strcat(map, _map->folder);
 	char * pStr = malloc(strlen(map) + 12);
-	strcpy(pStr, map);
-	strcat(pStr, "/image.png");
-	_background = LoadTexture(pStr);
+	_background = _map->image;
 	strcpy(pStr, map);
 	strcat(pStr, "/song.mp3");
 
@@ -194,13 +214,6 @@ void loadMap (int fileType)
 		_pFile = fopen(pStr, "wb");
 	}
 	free(pStr);
-
-	if(_background.id == 0)
-	{
-		printf("no background texture found\n");
-		_background = LoadTexture("background.png");
-		_noBackground = 1;
-	}
 }
 
 void saveScore()
@@ -247,6 +260,14 @@ bool readScore(Map * map, int *score, int * combo)
 	}
 	fclose(file);
 	return true;
+}
+
+void makeMap(Map * map)
+{
+	char * str = malloc(100);
+	strcpy(str, "maps/");
+	strcat(str, map->name);
+	mkdir(str);
 }
 
 void unloadMap()

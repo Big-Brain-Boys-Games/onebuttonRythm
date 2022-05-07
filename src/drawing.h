@@ -1,11 +1,9 @@
 #ifndef GAME_DRAW_OBJECTS
 #define GAME_DRAW_OBJECTS
 
-#ifndef MAINC
 #include "shared.h"
 #include "files.h"
 #include "gameplay.h"
-#endif
 
 #include "include/raylib.h"
 

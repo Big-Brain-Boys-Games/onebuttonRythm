@@ -2,10 +2,8 @@
 #define GAME_GAMEPLAY
 
 #include <stdbool.h>
-#ifndef MAINC
 #include "shared.h"
 #include "audio.h"
-#endif
 
 #include "include/raylib.h"
 
@@ -23,5 +21,6 @@ void fCountDown();
 void fRecording();
 void fPlaying();
 void fFail();
+void fNewMap();
 
 #endif
