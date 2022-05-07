@@ -30,3 +30,8 @@ float fDistance(float x1, float y1, float x2, float y2)
 	float y = y1 - y2;
 	return sqrtf(fabs(x * x + y * y));
 }
+
+double clamp(double d, double min, double max) {
+  const double t = d < min ? min : d;
+  return t > max ? max : t;
+}

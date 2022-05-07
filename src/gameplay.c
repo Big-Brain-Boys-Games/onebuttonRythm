@@ -354,6 +354,10 @@ void fEditor ()
 	_musicPlaying = isPlaying;
 	if(isPlaying) {
 		_musicHead += GetFrameTime();
+		if (endOfMusic())
+		{
+			_musicPlaying = false;
+		}
 	}else
 	{
 		setMusicFrameCount();
@@ -371,10 +375,9 @@ void fEditor ()
 		_pNextGameplayFunction = &fEditor;
 		return;
 	}
-
+	
 	if(_musicHead > getMusicDuration())
 		_musicHead = getMusicDuration();
-	
 
 	ClearBackground(BLACK);
 	
@@ -426,13 +429,13 @@ void fEditor ()
 	drawBars();
 	drawProgressBarI(true);
 	drawCursor();
-
-	if(endOfMusic())
-	{
-		loadMap(1);
-		saveFile(_amountNotes);
-		gotoMainMenu();
-	}
+	
+	// if(endOfMusic())
+	// {
+	// 	loadMap(1);
+	// 	saveFile(_amountNotes);
+	// 	gotoMainMenu();
+	// }
 }
 
 void fRecording ()

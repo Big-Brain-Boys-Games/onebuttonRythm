@@ -55,7 +55,7 @@ void *_pMusic = 0;
 int getSamplePosition(float time) {
 	return time*_decoder.outputSampleRate;
 }
-
+//Get duration of music in seconds
 float getMusicDuration()
 {
 	return _musicLength / (float)_decoder.outputSampleRate;
