@@ -11,7 +11,8 @@ int getBeatsCount();
 void setMusicFrameCount();
 
 void audioInit();
-
+void randomMusicPoint();
+void setMusicStart();
 
 int getSamplePosition(float time);
 

@@ -16,8 +16,9 @@ extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
 extern Color _fade;
 extern bool _musicPlaying;
 extern float _musicHead;
-extern void * _pHitSE, *_pMissHitSE;
-extern int _hitSE_Size, _missHitSE_Size;
+extern void * _pHitSE, *_pMissHitSE, *_pButtonSE;
+extern int _hitSE_Size, _missHitSE_Size, _buttonSE_Size;
+
 
 extern Map _pMaps[100];
 
@@ -37,6 +38,16 @@ float _fadeOut = 0;
 float * _pNotes;
 void (*_pNextGameplayFunction)();
 void (*_pGameplayFunction)();
+
+void gotoMainMenu()
+{
+	stopMusic();
+	loadMusic("menuMusic.mp3");
+	_musicPlaying = true;
+	randomMusicPoint();
+	_pGameplayFunction = &fMainMenu;
+	resetBackGround();
+}
 
 bool mouseInRect(Rectangle rect)
 {
@@ -115,6 +126,7 @@ void fPause()
 		{
 			if(mouseInRect(continueButton))
 			{
+				playAudioEffect(_pButtonSE, _buttonSE_Size);
 				if(_pGameplayFunction == &fPlaying)
 					_pGameplayFunction = &fCountDown;
 				else
@@ -122,10 +134,9 @@ void fPause()
 			}
 			if(mouseInRect(exitButton))
 			{
-				stopMusic();
+				playAudioEffect(_pButtonSE, _buttonSE_Size);
 				unloadMap();
-				_pGameplayFunction = &fMainMenu;
-				resetBackGround();
+				gotoMainMenu();
 			}
 		}
 		drawCursor();
@@ -192,7 +203,6 @@ void fCountDown ()
 
 void fMainMenu()
 {
-	_musicPlaying = false;
 	BeginDrawing();
 		ClearBackground(BLACK);
 		DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
@@ -212,15 +222,16 @@ void fMainMenu()
 
 		if(IsMouseButtonReleased(0) && mouseInRect(playButton))
 		{
+			playAudioEffect(_pButtonSE, _buttonSE_Size);
 			//switching to playing map
 			printf("switching to playing map!\n");
-			
 			_pNextGameplayFunction = &fPlaying;
 			_pGameplayFunction = &fMapSelect;
 		}
 
 		if(IsMouseButtonReleased(0) && mouseInRect(editorButton))
 		{
+			playAudioEffect(_pButtonSE, _buttonSE_Size);
 			//switching to editing map
 			_health = 50;
 			_score = 0;
@@ -228,13 +239,14 @@ void fMainMenu()
 			_amountNotes = 0;
 			_musicHead = 0;
 			printf("switching to editor map!\n");
-			
+			setMusicStart();
 			_pNextGameplayFunction = &fEditor;
 			_pGameplayFunction = &fMapSelect;
 		}
 
 		if(IsMouseButtonReleased(0) && mouseInRect(recordingButton))
 		{
+			playAudioEffect(_pButtonSE, _buttonSE_Size);
 			//switching to recording map
 			_health = 50;
 			_score = 0;
@@ -243,7 +255,6 @@ void fMainMenu()
 			_musicHead = 0;
 			_pNotes = calloc(sizeof(float), 1);
 			printf("switching to recording map! \n");
-			
 			_pNextGameplayFunction = &fRecording;
 			_pGameplayFunction = &fMapSelect;
 		}
@@ -281,6 +292,7 @@ void fEndScreen ()
 
 		if(IsMouseButtonReleased(0) && mouseInRect(playButton))
 		{
+			playAudioEffect(_pButtonSE, _buttonSE_Size);
 			//retrying map
 			printf("retrying map! \n");
 			
@@ -288,11 +300,9 @@ void fEndScreen ()
 		}
 		if(IsMouseButtonReleased(0) && mouseInRect(MMButton))
 		{
-			//retrying map
-			printf("going to main Menu! \n");
+			playAudioEffect(_pButtonSE, _buttonSE_Size);
 			unloadMap();
-			_pGameplayFunction = &fMainMenu;
-			resetBackGround();
+			gotoMainMenu();
 		}
 		drawVignette();
 		drawCursor();
@@ -324,6 +334,7 @@ void fEditor ()
 	if(IsKeyPressed(KEY_ESCAPE)) {
 		_pGameplayFunction = &fPause;
 		_pNextGameplayFunction = &fEditor;
+		return;
 	}
 
 	if(_musicHead > getMusicDuration())
@@ -389,14 +400,17 @@ void fEditor ()
 	{
 		loadMap(1);
 		saveFile(_amountNotes);
-		stopMusic();
-		_pGameplayFunction = &fMainMenu;
-		resetBackGround();
+		gotoMainMenu();
 	}
 }
 
 void fRecording ()
 {
+	if(IsKeyPressed(KEY_ESCAPE)) {
+		_pGameplayFunction = &fPause;
+		_pNextGameplayFunction = &fEditor;
+		return;
+	}
 	_musicHead += GetFrameTime();
 	fixMusicTime();
 
@@ -431,9 +445,7 @@ void fRecording ()
 	{
 		saveFile(_amountNotes);
 		unloadMap();
-		stopMusic();
-		_pGameplayFunction = &fMainMenu;
-		resetBackGround();
+		gotoMainMenu();
 	}
 }
 
@@ -603,18 +615,18 @@ void fFail ()
 
 		if(IsMouseButtonReleased(0) && mouseInRect(playButton))
 		{
+			playAudioEffect(_pButtonSE, _buttonSE_Size);
 			//retrying map
 			printf("retrying map! \n");
 			_pGameplayFunction = &fCountDown;
 		}
 		if(IsMouseButtonReleased(0) && mouseInRect(MMButton))
 		{
+			playAudioEffect(_pButtonSE, _buttonSE_Size);
 			//retrying map
 			printf("going to main Menu! \n");
 			unloadMap();
-			stopMusic();
-			_pGameplayFunction = &fMainMenu;
-			resetBackGround();
+			gotoMainMenu();
 		}
 		drawVignette();
 		drawCursor();
@@ -640,8 +652,6 @@ void fMapSelect()
 		}
 		amount = mapIndex;
 	}
-
-	_musicPlaying = false;
 	BeginDrawing();
 		ClearBackground(BLACK);
 		DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
@@ -654,6 +664,7 @@ void fMapSelect()
 
 		if(mouseInRect(backButton) && IsMouseButtonDown(0))
 		{
+			playAudioEffect(_pButtonSE, _buttonSE_Size);
 			EndDrawing();
 			_pGameplayFunction=&fMainMenu;
 			return;
@@ -671,6 +682,7 @@ void fMapSelect()
 
 			if(IsMouseButtonReleased(0) && mouseInRect(mapButton))
 			{
+				playAudioEffect(_pButtonSE, _buttonSE_Size);
 				_pMap = malloc(100);
 				strcpy(_pMap, _pMaps[i].folder);
 				printf("map %s");
@@ -681,6 +693,7 @@ void fMapSelect()
 					loadMap(1);
 				_pGameplayFunction = _pNextGameplayFunction;
 				
+				setMusicStart();
 				
 				if(_pNextGameplayFunction == &fPlaying || _pNextGameplayFunction == &fRecording)
 					_pGameplayFunction = &fCountDown;

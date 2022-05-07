@@ -26,17 +26,27 @@ int _missHitSE_Size;
 void *_pMissSE;
 int _missSE_Size;
 
+void *_pButtonSE;
+int _buttonSE_Size;
+
+void *_pClickPress;
+int _clickPressSE_Size;
+
+void *_pClickRelease;
+int _clickReleaseSE_Size;
+
 void *_pEffectsBuffer;
 int _effectOffset;
 
 //Where is the current audio
 float _musicHead = 0;
 bool _musicPlaying;
+bool _musicLoops = true;
 
 int _musicFrameCount = 0;
 int _musicLength = 0;
 
-void *_pMusic;
+void *_pMusic = 0;
 
 int getSamplePosition(float time) {
 	return time*_decoder.outputSampleRate;
@@ -68,6 +78,16 @@ int getBeatsCount()
 	return _bpm * getMusicDuration() / 60;
 }
 
+void setMusicStart()
+{
+	_musicFrameCount = 0;
+}
+
+void randomMusicPoint()
+{
+	_musicFrameCount = rand();
+}
+
 void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
 {
 	ma_result result;
@@ -93,15 +113,6 @@ void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
 	return pAudio;
 }
 
-void audioInit()
-{
-		//todo do this smarter
-	_pEffectsBuffer = calloc(sizeof(char), EFFECT_BUFFER_SIZE); //4 second long buffer
-	ma_decoder tmp;
-	_pHitSE = loadAudio("hit.mp3", &tmp, &_hitSE_Size);
-	_pMissHitSE = loadAudio("missHit.mp3", &tmp, &_missHitSE_Size);
-	_pMissSE = loadAudio("missHit.mp3", &tmp, &_missSE_Size);
-}
 
 void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount)
 {
@@ -111,6 +122,8 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 	{
 		if (_musicLength > _musicFrameCount)
 			memcpy(pOutput, _pMusic + _musicFrameCount * sizeof(_Float32) * 2, frameCount * sizeof(_Float32) * 2);
+		else if(_musicLoops)
+			_musicFrameCount = _musicFrameCount%_musicLength;
 		_musicFrameCount += frameCount;
 	}
 	// sound effects
@@ -125,27 +138,54 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 	(void)pInput;
 }
 
+void audioInit()
+{
+		//todo do this smarter
+	_pEffectsBuffer = calloc(sizeof(char), EFFECT_BUFFER_SIZE); //4 second long buffer
+	ma_decoder tmp;
+	_pHitSE = loadAudio("hit.mp3", &tmp, &_hitSE_Size);
+	_pMissHitSE = loadAudio("missHit.mp3", &tmp, &_missHitSE_Size);
+	_pMissSE = loadAudio("missHit.mp3", &tmp, &_missSE_Size);
+	_pButtonSE = loadAudio("button.mp3", &tmp, &_buttonSE_Size);
+
+	_pClickPress = loadAudio("clickPress.mp3", &tmp, &_clickPressSE_Size);
+	_pClickRelease = loadAudio("clickRelease.mp3", &tmp, &_clickReleaseSE_Size);
+
+	loadMusic("menuMusic.mp3");
+
+
+	_musicPlaying = true;
+	_deviceConfig = ma_device_config_init(ma_device_type_playback);
+    _deviceConfig.playback.format   = ma_format_f32;
+    _deviceConfig.playback.channels = 2;
+    _deviceConfig.sampleRate        = 48000;
+    _deviceConfig.dataCallback      = data_callback;
+	// _deviceConfig.periodSizeInMilliseconds = 300;
+	if (ma_device_init(NULL, &_deviceConfig, &_device) != MA_SUCCESS)
+	{
+		printf("Failed to open playback device.\n");
+		return;
+	}
+
+	if (ma_device_start(&_device) != MA_SUCCESS)
+	{
+		printf("Failed to start playback device.\n");
+		ma_device_uninit(&_device);
+		return;
+	}
+}
+
+
 void loadMusic(char * file)
 {
 	_musicPlaying = false;
-	if(_musicLength != 0)
+	if(_pMusic != 0)
 	{
 		//unload previous music
 		free(_pMusic);
 	}
 
 	_pMusic = loadAudio(file, &_decoder, &_musicLength);
-
-	printf("yoo %i\n", _decoder.outputSampleRate);
-
-	_deviceConfig = ma_device_config_init(ma_device_type_playback);
-    _deviceConfig.playback.format   = _decoder.outputFormat;
-    _deviceConfig.playback.channels = _decoder.outputChannels;
-    _deviceConfig.sampleRate        = _decoder.outputSampleRate;
-    _deviceConfig.dataCallback      = data_callback;
-    _deviceConfig.pUserData         = &_decoder;
-	// _deviceConfig.periodSizeInMilliseconds = 300;
-	
 }
 
 bool endOfMusic()
@@ -165,34 +205,15 @@ void playAudioEffect(void *effect, int size)
 
 void startMusic()
 {
-	if (_musicFrameCount != 0)
-	{
-		// unload previous devices
-		ma_device_uninit(&_device);
-	}
-	if (ma_device_init(NULL, &_deviceConfig, &_device) != MA_SUCCESS)
-	{
-		printf("Failed to open playback device.\n");
-		return;
-	}
-
-	if (ma_device_start(&_device) != MA_SUCCESS)
-	{
-		printf("Failed to start playback device.\n");
-		ma_device_uninit(&_device);
-		return;
-	}
 	_musicPlaying = true;
 }
 
 void stopMusic()
 {
-	ma_device_uninit(&_device);
 	_musicFrameCount = 0;
 	_musicHead = 0;
 	_musicPlaying = false;
 	_musicLength = 0;
-	free(_pMusic);
 }
 
 void setMusicFrameCount()

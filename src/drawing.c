@@ -20,9 +20,10 @@ Color _UIColor = WHITE;
 Color _fade = WHITE;
 
 extern float _musicHead, _scrollSpeed, *_pNotes;
-extern int _noteIndex, _amountNotes;
+extern int _noteIndex, _amountNotes, _clickPressSE_Size, _clickReleaseSE_Size;
 extern bool _noBackground;
-extern void * _pMusic;
+extern void * _pMusic, *_pClickPress, *_pClickRelease;
+
 
 float musicTimeToScreen(float musicTime)
 {
@@ -46,6 +47,15 @@ void drawCursor ()
 	static float lastClick;
 	if(!IsCursorOnScreen())
 		return;
+	if(IsMouseButtonPressed(0))
+	{
+		printf("pressed \n");
+		playAudioEffect(_pClickPress, _clickPressSE_Size);
+	}else if(IsMouseButtonReleased(0))
+	{
+		printf("released \n");
+		playAudioEffect(_pClickRelease, _clickReleaseSE_Size);
+	}
 	if(IsMouseButtonDown(0))
 	{
 		lastClick = GetTime();
