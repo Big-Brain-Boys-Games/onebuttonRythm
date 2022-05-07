@@ -255,7 +255,7 @@ bool readScore(Map * map, int *score, int * combo)
 	file = fopen(str, "r");
 	//todo add combo
 	char line [1000];
-	while(fgets(line,sizeof(line),_pFile)!= NULL)
+	while(fgets(line,sizeof(line),file)!= NULL)
 	{
 		*score = atoi(line);
 		char * part = &line[0];

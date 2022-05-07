@@ -704,6 +704,8 @@ void fMapSelect()
 {
 	static int amount = 0;
 	static char ** files = 0;
+	static int highScores[100];
+	static int combos[100];
 	if(files == 0)
 	{
 		files = GetDirectoryFiles("maps/", &amount);
@@ -714,7 +716,10 @@ void fMapSelect()
 				continue;
 			_pMaps[mapIndex] = loadMapInfo(&(files[i][0]));
 			if(_pMaps[mapIndex].name != 0)
+			{
+				readScore(&_pMaps[mapIndex], &(highScores[mapIndex]), &(combos[mapIndex]));
 				mapIndex++;
+			}
 		}
 		amount = mapIndex;
 	}
@@ -732,7 +737,7 @@ void fMapSelect()
 		if(i % 2 == 1)
 			x = GetScreenWidth()*0.55;
 		Rectangle mapButton = (Rectangle){.x=x, .y=GetScreenHeight() * (0.3+0.4*floor(i/2)), .width=GetScreenWidth()*0.4,.height=GetScreenHeight()*0.4};
-		drawMapThumbnail(mapButton,&_pMaps[i]);
+		drawMapThumbnail(mapButton,&_pMaps[i], highScores[i], combos[i]);
 
 		if(IsMouseButtonReleased(0) && mouseInRect(mapButton))
 		{

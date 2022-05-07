@@ -117,7 +117,7 @@ void dNotes ()
 	DrawRectangle(middle - width / 2,0 , width, GetScreenHeight(), (Color){.r=255,.g=255,.b=255,.a=255/2});
 }
 
-void drawMapThumbnail(Rectangle rect, Map *map)
+void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo)
 {
 	float imageRatio = 0.8;
 	Color color = WHITE;
@@ -149,6 +149,15 @@ void drawMapThumbnail(Rectangle rect, Map *map)
 	sprintf(text, "%s - %s", map->name, map->creator);
 	int textSize = measureText(text, GetScreenWidth() * 0.04);
 	drawText(text, rect.x + rect.width/2 - textSize / 2, rect.y + GetScreenHeight() * 0.01+rect.height*imageRatio, GetScreenWidth() * 0.04, DARKGRAY);
+	
+	sprintf(text, "%i", highScore);
+	if(highScore !=0)
+	{
+		DrawRectangle(rect.x + rect.width*0.78, rect.y + 0.02*rect.height, rect.width*0.2, rect.height*0.16, ColorAlpha(BLACK, 0.4));
+		drawText(text, rect.x + rect.width*0.80, rect.y + 0.02*rect.height, GetScreenWidth() * 0.02, WHITE);
+		sprintf(text, "%i", combo);
+		drawText(text, rect.x + rect.width*0.80, rect.y + 0.08*rect.height, GetScreenWidth() * 0.02, WHITE);
+	}
 }
 
 void drawBackground()

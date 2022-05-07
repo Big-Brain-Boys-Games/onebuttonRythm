@@ -14,7 +14,7 @@ float screenToMusicTime(float x);
 float noteFadeOut(float note);
 void drawCursor();
 void dNotes();
-void drawMapThumbnail (Rectangle rect, Map *map);
+void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo);
 void drawBars();
 void drawBackground();
 void resetBackGround();
