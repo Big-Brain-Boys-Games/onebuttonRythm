@@ -117,7 +117,6 @@ void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
 	return pAudio;
 }
 
-
 void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount)
 {
 

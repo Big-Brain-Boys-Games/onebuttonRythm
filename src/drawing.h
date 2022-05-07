@@ -17,6 +17,7 @@ void dNotes();
 void drawMapThumbnail (Rectangle rect, Map *map);
 void drawBars();
 void drawBackground();
+void resetBackGround();
 void drawVignette();
 void drawProgressBar();
 void drawProgressBarI(bool interactable);

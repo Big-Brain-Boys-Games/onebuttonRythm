@@ -175,7 +175,7 @@ void drawMusicGraph(float transparent)
 
 	//music stuff
 	float beginning = screenToMusicTime(0);
-	float end = screenToMusicTime(GetScreenWidth());
+	float end = screenToMusicTime(getMusicDuration());
 	int amountBars = GetScreenWidth()/2;
 	float timePerBar = (end-beginning)/amountBars;
 	int samplesPerBar = getSamplePosition(timePerBar);

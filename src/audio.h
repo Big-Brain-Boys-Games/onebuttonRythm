@@ -1,6 +1,8 @@
 #ifndef GAME_AUDIO_INTERFACE
 #define GAME_AUDIO_INTERFACE
 
+#include <stdbool.h>
+
 int getSamplePosition(float time);
 float getMusicDuration();
 float getMusicPosition();
@@ -9,8 +11,6 @@ int getBarsCount();
 int getBeatsCount();
 void setMusicStart();
 void randomMusicPoint();
-void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
-void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount)
 void audioInit();
 void loadMusic(char * file);
 bool endOfMusic();
