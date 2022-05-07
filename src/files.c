@@ -21,7 +21,7 @@
 
 
 extern Texture2D _background, _menuBackground;
-extern float * _pNotes;
+extern float * _pNotes, _scrollSpeed;
 extern Map *_map;
 extern int _amountNotes, _noteIndex, _score, _highestCombo;
 extern bool _noBackground;
@@ -79,6 +79,7 @@ Map loadMapInfo(char * file)
 		if(strcmp(line, "[Difficulty]\n") == 0)		{mode = fpDifficulty;	continue;}
 		if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;			continue;}
 		if(strcmp(line, "[MusicFile]\n") == 0)		{mode = fpMusicFile;	continue;}
+		if(strcmp(line, "[Zoom]\n") == 0)			{mode = fpZoom;			continue;}
 		if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
 		for(int i = 0; i < 100; i++)
 					if(line[i] == '\n') line[i]= '\0';
@@ -106,6 +107,9 @@ Map loadMapInfo(char * file)
 				map.name = malloc(100);
 				strcpy(map.musicFile, line);
 				break;
+			case fpZoom:
+				map.zoom = atoi(line);
+				break;
 			case fpNotes:
 				//neat, notes :P
 				break;
@@ -129,6 +133,8 @@ void saveFile (int noteAmount)
 	fprintf(_pFile, "%i\n", _map->bpm);
 	fprintf(_pFile, "[MusicFile]\n");
 	fprintf(_pFile, "%s\n", _map->musicFile);
+	fprintf(_pFile, "[Zoom]\n");
+	fprintf(_pFile, "%i\n", _map->zoom);
 	fprintf(_pFile, "[Notes]\n");
 	for(int i = 0; i < noteAmount; i++)
 	{
@@ -183,10 +189,6 @@ void loadMap (int fileType)
 			if(emptyLine)
 				continue;
 
-			if(strcmp(line, "[Name]\n") == 0)			{mode = fpName;			continue;}
-			if(strcmp(line, "[Creator]\n") == 0)		{mode = fpCreator;		continue;}
-			if(strcmp(line, "[Difficulty]\n") == 0)		{mode = fpDifficulty;	continue;}
-			if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;			continue;}
 			if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
 			switch(mode)
 			{

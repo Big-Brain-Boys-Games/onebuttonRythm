@@ -178,6 +178,7 @@ void fCountDown ()
 			_noteIndex =1;
 			_musicHead = 0;
 			contin = false;
+			_scrollSpeed = 500.0/_map->zoom;
 		}
 		return;
 	}
