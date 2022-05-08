@@ -89,6 +89,7 @@ void drawCursor ()
 
 void dNotes () 
 {
+	static float fade = 0;
 	float width = GetScreenWidth() * 0.005;
 	float middle = GetScreenWidth() /2;
 	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
@@ -115,7 +116,10 @@ void dNotes ()
 
 		}
 	}
-	DrawRectangle(middle - width / 2,0 , width, GetScreenHeight(), (Color){.r=255,.g=255,.b=255,.a=255/2});
+	DrawRectangle(middle - width / 2,0 , width, GetScreenHeight(), ColorAlpha(WHITE, 0.5*fade));
+	if(GetKeyPressed())
+		fade = 1;
+	fade -= GetFrameTime()*10;
 }
 
 void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo)
@@ -392,7 +396,7 @@ void initDrawing()
 	{
 		for(int x = 0; x < 3; x++)
 		{
-			char str[20];
+			char str[40];
 			strcpy(str, "assets/buttonTile_x.png");
 			str[18] = '1' + x+y*3;
 			_buttonTile[x][y] = LoadTexture(str);

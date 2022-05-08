@@ -1132,10 +1132,15 @@ void fNewMap()
 	textSize = measureText("missing music file", GetScreenWidth() * 0.03);
 	if(pMusic == 0)
 		drawText("missing music file", GetScreenWidth() * 0.2 - textSize / 2, GetScreenHeight()*0.6, GetScreenWidth() * 0.03, WHITE);
-	
+	else 
+		drawText("got music file", GetScreenWidth() * 0.2 - textSize / 2, GetScreenHeight()*0.6, GetScreenWidth() * 0.03, WHITE);
+
 	textSize = measureText("missing image file", GetScreenWidth() * 0.03);
 	if(pImage == 0)
 		drawText("missing image file", GetScreenWidth() * 0.2 - textSize / 2, GetScreenHeight()*0.7, GetScreenWidth() * 0.03, WHITE);
+	else
+		drawText("got image file", GetScreenWidth() * 0.2 - textSize / 2, GetScreenHeight()*0.7, GetScreenWidth() * 0.03, WHITE);
+
 
 
 	drawCursor();
