@@ -780,7 +780,14 @@ void fPlaying ()
 		playAudioEffect(_pMissSE, _missSE_Size);
 	}
 
-	if(GetKeyPressed() && _noteIndex < _amountNotes)
+	if((
+		GetKeyPressed() || 
+		IsMouseButtonPressed(0) || 
+		IsGamepadButtonPressed(0, GetGamepadButtonPressed()) ||
+		IsGamepadButtonPressed(1, GetGamepadButtonPressed()) ||
+		IsGamepadButtonPressed(2, GetGamepadButtonPressed()) ||
+		IsGamepadButtonPressed(3, GetGamepadButtonPressed())
+	) && _noteIndex < _amountNotes)
 	{
 		float closestTime = 55;
 		int closestIndex = 0;
