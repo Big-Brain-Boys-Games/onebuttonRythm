@@ -961,6 +961,17 @@ void fMapSelect()
 
 	int middle = GetScreenWidth()/2;
 
+	static float menuScroll = 0;
+	menuScroll += GetMouseWheelMove()*.04;
+	const float scrollSpeed = .03;
+	if(IsKeyDown(KEY_UP)) {
+		menuScroll += scrollSpeed;
+	}
+	if(IsKeyDown(KEY_DOWN)) {
+		menuScroll -= scrollSpeed;
+	}
+	menuScroll = clamp(menuScroll, -.5*floor(amount/2), 0);
+
 	//draw map button
 	for(int i = 0; i < amount; i++)
 	{
@@ -968,7 +979,7 @@ void fMapSelect()
 		int x = GetScreenWidth()*0.05;
 		if(i % 2 == 1)
 			x = GetScreenWidth()*0.55;
-		Rectangle mapButton = (Rectangle){.x=x, .y=GetScreenHeight() * (0.3+0.4*floor(i/2)), .width=GetScreenWidth()*0.4,.height=GetScreenHeight()*0.4};
+		Rectangle mapButton = (Rectangle){.x=x, .y=menuScroll*GetScreenHeight()+GetScreenHeight() * (0.3+0.5*floor(i/2)), .width=GetScreenWidth()*0.4,.height=GetScreenHeight()*0.4};
 		drawMapThumbnail(mapButton,&_pMaps[i], highScores[i], combos[i]);
 
 		if(IsMouseButtonReleased(0) && mouseInRect(mapButton))
