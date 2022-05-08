@@ -17,7 +17,7 @@ extern bool _musicPlaying, _musicLoops;
 extern float _musicHead, _transition;
 extern void * _pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE;
 extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size, _musicFrameCount, _musicLength;
-
+extern bool _isKeyPressed;
 
 extern void *_pFailSE;
 extern int _failSE_Size;
@@ -529,13 +529,13 @@ void fEndScreen ()
 
 	char * tmpString = malloc(50);
 	sprintf(tmpString, "%s", _highScore<_score ? "New highscore!" : "");
-	textSize = measureText(tmpString, GetScreenWidth() * 0.15);
+	textSize = measureText(tmpString, GetScreenWidth() * 0.1);
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.2, GetScreenWidth() * 0.1, WHITE);
 
 
 	//draw score
 	sprintf(tmpString, "Score: %i Combo %i", _score, _highestCombo);
-	textSize = measureText(tmpString, GetScreenWidth() * 0.1);
+	textSize = measureText(tmpString, GetScreenWidth() * 0.07);
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.07, LIGHTGRAY);
 
 	//draw highscore
@@ -612,7 +612,7 @@ void fEditor ()
 
 	dNotes();
 	
-	if(GetKeyPressed())
+	if(_isKeyPressed)
 	{
 		float closestTime = 55;
 		int closestIndex = 0;
@@ -687,7 +687,7 @@ void fRecording ()
 		ClearBackground(BLACK);
 		drawBackground();
 
-		if(GetKeyPressed() && getMusicHead!=0)
+		if(_isKeyPressed && getMusicHead!=0)
 		{
 			printf("keyPressed! \n");
 			
@@ -706,6 +706,16 @@ void fRecording ()
 		gotoMainMenu(true);
 	}
 }
+
+bool isAnyKeyDown() {
+	return GetKeyPressed() || 
+		IsMouseButtonPressed(0) || 
+		IsGamepadButtonPressed(0, GetGamepadButtonPressed()) ||
+		IsGamepadButtonPressed(1, GetGamepadButtonPressed()) ||
+		IsGamepadButtonPressed(2, GetGamepadButtonPressed()) ||
+		IsGamepadButtonPressed(3, GetGamepadButtonPressed());
+}
+
 #define RippleAmount 10
 #define feedback(newFeedback, size) feedbackSayings[feedbackIndex] = newFeedback; feedbackSize[feedbackIndex] = size; feedbackIndex++; if(feedbackIndex > 4) feedbackIndex = 0;
 #define addRipple(newRipple) rippleEffect[rippleEffectIndex] = 0; rippleEffectStrength[rippleEffectIndex] = newRipple; rippleEffectIndex = (rippleEffectIndex+1)%RippleAmount;
@@ -783,14 +793,7 @@ void fPlaying ()
 		playAudioEffect(_pMissSE, _missSE_Size);
 	}
 
-	if((
-		GetKeyPressed() || 
-		IsMouseButtonPressed(0) || 
-		IsGamepadButtonPressed(0, GetGamepadButtonPressed()) ||
-		IsGamepadButtonPressed(1, GetGamepadButtonPressed()) ||
-		IsGamepadButtonPressed(2, GetGamepadButtonPressed()) ||
-		IsGamepadButtonPressed(3, GetGamepadButtonPressed())
-	) && _noteIndex < _amountNotes)
+	if(_isKeyPressed && _noteIndex < _amountNotes)
 	{
 		float closestTime = 55;
 		int closestIndex = 0;
@@ -963,6 +966,39 @@ void fMapSelect()
 
 	int middle = GetScreenWidth()/2;
 
+	static float menuScroll = 0;
+	menuScroll += GetMouseWheelMove()*.04;
+	if(IsMouseButtonDown(0)) { //scroll by dragging 
+		menuScroll += GetMouseDelta().y / GetScreenHeight();
+	}
+	const float scrollSpeed = .03;
+	if(IsKeyDown(KEY_UP)) {
+		menuScroll += scrollSpeed;
+	}
+	if(IsKeyDown(KEY_DOWN)) {
+		menuScroll -= scrollSpeed;
+	}
+	menuScroll = clamp(menuScroll, -.5*floor(amount/2), 0);
+
+
+	if(interactableButton("Back", 0.03, GetScreenWidth()*0.05, GetScreenHeight()*0.05, GetScreenWidth()*0.1, GetScreenHeight()*0.05))
+	{
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		_pGameplayFunction=&fMainMenu;
+		_transition = 0.1;
+		return;
+	}
+
+	
+
+	if(interactableButton("New Map", 0.03, GetScreenWidth()*0.70, GetScreenHeight()*0.9, GetScreenWidth()*0.15, GetScreenHeight()*0.07))
+	{
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		_pGameplayFunction=&fNewMap;
+		_transition = 0.1;
+		return;
+	}
+
 	//draw map button
 	for(int i = 0; i < amount; i++)
 	{
@@ -970,7 +1006,7 @@ void fMapSelect()
 		int x = GetScreenWidth()*0.05;
 		if(i % 2 == 1)
 			x = GetScreenWidth()*0.55;
-		Rectangle mapButton = (Rectangle){.x=x, .y=GetScreenHeight() * (0.3+0.4*floor(i/2)), .width=GetScreenWidth()*0.4,.height=GetScreenHeight()*0.4};
+		Rectangle mapButton = (Rectangle){.x=x, .y=menuScroll*GetScreenHeight()+GetScreenHeight() * (0.3+0.5*floor(i/2)), .width=GetScreenWidth()*0.4,.height=GetScreenHeight()*0.4};
 		drawMapThumbnail(mapButton,&_pMaps[i], highScores[i], combos[i]);
 
 		if(IsMouseButtonReleased(0) && mouseInRect(mapButton))
@@ -999,24 +1035,10 @@ void fMapSelect()
 	}
 	drawVignette();
 	
-
-	if(interactableButton("Back", 0.03, GetScreenWidth()*0.05, GetScreenHeight()*0.05, GetScreenWidth()*0.1, GetScreenHeight()*0.05))
-	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
-		_pGameplayFunction=&fMainMenu;
-		_transition = 0.1;
-		return;
-	}
-
-	
-
-	if(interactableButton("New Map", 0.03, GetScreenWidth()*0.70, GetScreenHeight()*0.9, GetScreenWidth()*0.15, GetScreenHeight()*0.07))
-	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
-		_pGameplayFunction=&fNewMap;
-		_transition = 0.1;
-		return;
-	}
+	//draw them again, in case the maps are on top
+	//but the click code needs to be first because back needs to return before the click map function
+	interactableButton("Back", 0.03, GetScreenWidth()*0.05, GetScreenHeight()*0.05, GetScreenWidth()*0.1, GetScreenHeight()*0.05);
+	interactableButton("New Map", 0.03, GetScreenWidth()*0.70, GetScreenHeight()*0.9, GetScreenWidth()*0.15, GetScreenHeight()*0.07);
 
 	drawCursor();
 }

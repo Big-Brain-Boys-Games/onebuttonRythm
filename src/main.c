@@ -26,6 +26,8 @@ extern void (*_pGameplayFunction)();
 extern Font _font;
 extern bool _mapRefresh;
 
+bool _isKeyPressed = false;
+
 float _transition = 0;
 
 #define GLSL_VERSION 330
@@ -44,6 +46,7 @@ int main(int argc, char **argv)
 	_pNotes = malloc(sizeof(float)*50);
 	while (!WindowShouldClose())
 	{
+		_isKeyPressed = isAnyKeyDown();
 		if(_pGameplayFunction != &fMapSelect)
 			_mapRefresh = true;
 		mousePos = GetMousePosition();

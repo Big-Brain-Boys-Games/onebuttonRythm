@@ -22,7 +22,7 @@ Color _fade = WHITE;
 
 extern float _musicHead, _scrollSpeed, *_pNotes;
 extern int _noteIndex, _amountNotes, _clickPressSE_Size, _clickReleaseSE_Size;
-extern bool _noBackground;
+extern bool _noBackground, _isKeyPressed;
 extern void * _pMusic, *_pClickPress, *_pClickRelease;
 extern float _transition;
 extern Map * _map;
@@ -90,7 +90,7 @@ void drawCursor ()
 void dNotes () 
 {
 	static float fade = 0;
-	float width = GetScreenWidth() * 0.005;
+	float width = GetScreenWidth() * 0.01;
 	float middle = GetScreenWidth() /2;
 	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
 	
@@ -117,7 +117,7 @@ void dNotes ()
 		}
 	}
 	DrawRectangle(middle - width / 2,0 , width, GetScreenHeight(), ColorAlpha(WHITE, 0.5*fade));
-	if(GetKeyPressed())
+	if(_isKeyPressed)
 		fade = 1;
 	fade -= GetFrameTime()*10;
 }
@@ -135,7 +135,7 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo)
 
 	DrawRectangle(rect.x, rect.y, rect.width, rect.height*imageRatio, BLACK);
 
-	float ogImageRatio = map->image.width / map->image.height;
+	float ogImageRatio = map->image.width / (float)map->image.height;
 	float newImageRatio = rect.width / (rect.height*imageRatio);
 	Vector2 imageScaling = {.x=rect.width,.y=rect.height*imageRatio}, imageOffset = {.x=0,.y=0};
 	if(ogImageRatio>newImageRatio)
@@ -152,8 +152,23 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo)
 	
 	char text [100];
 	sprintf(text, "%s - %s", map->name, map->creator);
-	int textSize = measureText(text, GetScreenWidth() * 0.04);
-	drawText(text, rect.x + rect.width/2 - textSize / 2, rect.y + GetScreenHeight() * 0.01+rect.height*imageRatio, GetScreenWidth() * 0.04, DARKGRAY);
+	int length = strlen(text);
+	char* textPointer = &text;
+	if(length > 18)
+	{
+		if(mouseInRect(rect)) { //scroll the text when hovering
+			int offset = (int)floor(GetTime()*1.5)%(length-17);
+			textPointer += offset;
+			text[offset+17] = '\0';
+		} else {
+			text[16] = '.';
+			text[17] = '.';
+			text[18] = '.';
+			text[19] = '\0';
+		}
+	}
+	int textSize = measureText(textPointer, GetScreenWidth() * 0.04);
+	drawText(textPointer, rect.x + rect.width/2 - textSize / 2, rect.y + GetScreenHeight() * 0.01+rect.height*imageRatio, GetScreenWidth() * 0.04, DARKGRAY);
 	
 	sprintf(text, "%i", map->difficulty);
 	DrawRectangle(rect.x + rect.width*0.13, rect.y + 0.60*rect.height, rect.width*0.2, rect.height*0.20, ColorAlpha(BLACK, 0.4));
