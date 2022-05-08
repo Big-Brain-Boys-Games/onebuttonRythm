@@ -49,18 +49,18 @@ void drawTransition()
 float musicTimeToScreen(float musicTime)
 {
 	float middle = GetScreenWidth() / 2;
-	return middle + middle * (musicTime - _musicHead) * (1 / _scrollSpeed);
+	return middle + middle * (musicTime - getMusicHead()) * (1 / _scrollSpeed);
 }
 
 float screenToMusicTime(float x)
 {
 	float middle = GetScreenWidth() / 2;
-	return (x - middle) / (middle * (1 / _scrollSpeed)) + _musicHead;
+	return (x - middle) / (middle * (1 / _scrollSpeed)) + getMusicHead();
 }
 
 float noteFadeOut(float note)
 {
-	return fmin(1, fmax(0, (1-fabs(note - _musicHead) * (1/_scrollSpeed))*3));
+	return fmin(1, fmax(0, (1-fabs(note - getMusicHead()) * (1/_scrollSpeed))*3));
 }
 
 void drawCursor ()
@@ -95,11 +95,11 @@ void dNotes ()
 	
 
 	DrawRectangleGradientH(0,0 , middle - width / 2, GetScreenHeight(), ColorAlpha(BLACK, 0.6), ColorAlpha(BLACK, 0.3));
-	for(int i = _noteIndex; i >= 0 && _pNotes[i] + _scrollSpeed > _musicHead; i--)
+	for(int i = _noteIndex; i >= 0 && _pNotes[i] + _scrollSpeed > getMusicHead(); i--)
 	{
 		if(i < 0) continue;
-		//DrawCircle( middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
-		//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
+		//DrawCircle( middle + middle * (_pNotes[i] - getMusicHead()) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
+		//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - getMusicHead()) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
 		DrawTextureEx(_noteTex, (Vector2){.x=musicTimeToScreen(_pNotes[i])- _noteTex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,(Color){.r=128,.g=128,.b=128,.a=255*noteFadeOut(_pNotes[i])});
 
 	}
@@ -107,10 +107,10 @@ void dNotes ()
 	if(_noteIndex < _amountNotes) //draw notes after line
 	{
 		//draw notes before line
-		for(int i = _noteIndex; i < _amountNotes && _pNotes[i] - _scrollSpeed < _musicHead; i++)
+		for(int i = _noteIndex; i < _amountNotes && _pNotes[i] - _scrollSpeed < getMusicHead(); i++)
 		{
-			//DrawCircle( middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
-			//DrawTextureEx(_noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - _musicHead) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
+			//DrawCircle( middle + middle * (_pNotes[i] - getMusicHead()) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
+			//DrawTextureEx(_noteTex, (Vector2){.x=middle + middle * (_pNotes[i] - getMusicHead()) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
 			DrawTextureEx(_noteTex, (Vector2){.x=musicTimeToScreen(_pNotes[i])- _noteTex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 - _noteTex.height * scaleNotes}, 0,  scaleNotes,(Color){.r=255,.g=255,.b=255,.a=255*noteFadeOut(_pNotes[i])});
 
 		}

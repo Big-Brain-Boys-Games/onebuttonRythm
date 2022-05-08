@@ -59,3 +59,5 @@ vgcore*
 
 #exported zips
 *.zip
+#configs
+*.conf

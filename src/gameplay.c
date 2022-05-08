@@ -38,7 +38,7 @@ int _hitPoints = 5;
 int _missPenalty = 10;
 bool _inEditor = false;
 Map * _map;
-Settings _settings = (Settings){.volumeGlobal=100, .volumeMusic=100, .volumeSoundEffects=100, .zoom=7};
+Settings _settings = (Settings){.volumeGlobal=100, .volumeMusic=100, .volumeSoundEffects=100, .zoom=7, .offset=0};
 
 //Timestamp of all the notes
 float * _pNotes;
@@ -70,6 +70,13 @@ void gotoMainMenu()
 	randomMusicPoint();
 	_pGameplayFunction = &fMainMenu;
 	resetBackGround();
+}
+
+float getMusicHead()
+{
+	if(_musicPlaying)
+		return _musicHead - _settings.offset;
+	else return _musicHead;
 }
 
 bool mouseInRect(Rectangle rect)
@@ -194,11 +201,6 @@ void fPause()
 	ClearBackground(BLACK);
 	drawBackground();
 
-	if(GetKeyPressed() && _musicHead!=0)
-	{
-		newNote(_musicHead);
-		ClearBackground(BLACK);
-	}
 	dNotes();
 	drawVignette();
 	drawProgressBar();
@@ -374,6 +376,7 @@ void fMainMenu()
 		//Switching to settings
 		_pGameplayFunction = &fSettings;
 		_transition = 0.1;
+		_settings.offset = _settings.offset*1000;
 	}
 
 	if(IsMouseButtonReleased(0) && mouseInRect(recordingButton))
@@ -471,6 +474,18 @@ void fSettings() {
 	size = MeasureText("zoom", tSize);
 	drawText("zoom", zoomBox.x+zoomBox.width/2-size/2, zoomBox.y-GetScreenHeight()*0.05, tSize, WHITE);
 
+	char offset[10] = {0};
+	if(_settings.offset != 0)
+		sprintf(offset, "%i", (int)_settings.offset);
+	static bool offsetBoxSelected = false;
+	Rectangle offsetBox = (Rectangle){.x=GetScreenWidth()*0.4, .y=GetScreenHeight()*0.85, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
+	textBox(offsetBox, offset, &offsetBoxSelected);
+	_settings.offset = atoi(offset);
+	_settings.offset = fmin(fmax(_settings.offset, 0), 300);
+	tSize = GetScreenWidth()*0.03;
+	size = MeasureText("offset", tSize);
+	drawText("offset", offsetBox.x+offsetBox.width/2-size/2, offsetBox.y-GetScreenHeight()*0.05, tSize, WHITE);
+
 
 	static bool gvBoolSelected = false; 
 	Rectangle gvSlider = (Rectangle){.x=GetScreenWidth()*0.35, .y=GetScreenHeight()*0.3, .width=GetScreenWidth()*0.3, .height=GetScreenHeight()*0.03};
@@ -498,6 +513,7 @@ void fSettings() {
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		_pGameplayFunction=&fMainMenu;
 		_transition = 0.1;
+		_settings.offset = _settings.offset/1000;
 		saveSettings();
 		return;
 	}
@@ -609,9 +625,9 @@ void fEditor ()
 		int closestIndex = 0;
 		for(int i = 0; i < _amountNotes; i++)
 		{
-			if(closestTime > fabs(_pNotes[i] - _musicHead))
+			if(closestTime > fabs(_pNotes[i] - getMusicHead()))
 			{
-				closestTime = fabs(_pNotes[i] - _musicHead);
+				closestTime = fabs(_pNotes[i] - getMusicHead());
 				closestIndex = i;
 			}
 		}
@@ -621,10 +637,10 @@ void fEditor ()
 		}
 		if(IsKeyPressed(KEY_Z) && closestTime > 0.03f)
 		{
-			newNote(_musicHead);
+			newNote(getMusicHead());
 		}
 
-		if(IsKeyPressed(KEY_C))
+		if(IsKeyPressed(KEY_C) && isPlaying)
 		{
 			//todo maybe not 4 subbeats?
 			float secondsPerBeat = getMusicDuration() / getBeatsCount()/4;
@@ -682,8 +698,8 @@ void fRecording ()
 		{
 			printf("keyPressed! \n");
 			
-			newNote(_musicHead);
-			printf("music Time: %.2f\n", _musicHead);
+			newNote(getMusicHead());
+			printf("music Time: %.2f\n", getMusicHead());
 			ClearBackground(BLACK);
 		}
 		dNotes();
@@ -764,7 +780,7 @@ void fPlaying ()
 		drawText(feedbackSayings[j], GetScreenWidth() * 0.35, GetScreenHeight() * (0.6 + i * 0.1), GetScreenWidth() * 0.05*feedbackSize[j], (Color){.r=255,.g=255,.b=255,.a=noLessThanZero(150 - i * 40)});
 	}
 
-	if(_noteIndex < _amountNotes && _musicHead - _maxMargin > _pNotes[_noteIndex])
+	if(_noteIndex < _amountNotes && getMusicHead() - _maxMargin > _pNotes[_noteIndex])
 	{
 		//passed note
 		_noteIndex++;
@@ -780,9 +796,9 @@ void fPlaying ()
 		int closestIndex = 0;
 		for(int i = _noteIndex; i <= _noteIndex + 1 && i < _amountNotes; i++)
 		{
-			if(closestTime > fabs(_pNotes[i] - _musicHead))
+			if(closestTime > fabs(_pNotes[i] - getMusicHead()))
 			{
-				closestTime = fabs(_pNotes[i] - _musicHead);
+				closestTime = fabs(_pNotes[i] - getMusicHead());
 				closestIndex = i;
 			}
 		}
