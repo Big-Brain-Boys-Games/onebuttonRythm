@@ -77,7 +77,7 @@ float getMusicPosition()
 
 void fixMusicTime()
 {
-	if (fabs(_musicHead - getMusicPosition()) > 0.1)
+	if (fabs(getMusicHead() - getMusicPosition()) > 0.1)
 		_musicHead = getMusicPosition();
 }
 
@@ -242,5 +242,5 @@ void stopMusic()
 
 void setMusicFrameCount()
 {
-    _musicFrameCount = _musicHead*_decoder.outputSampleRate;
+    _musicFrameCount = getMusicHead()*_decoder.outputSampleRate;
 }

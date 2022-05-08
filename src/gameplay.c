@@ -296,7 +296,7 @@ void fCountDown ()
 		}
 		return;
 	}
-	if(_musicHead <= 0) _musicHead = GetTime()-countDown;
+	if(getMusicHead() <= 0) _musicHead = GetTime()-countDown;
 	else contin = true;
 	ClearBackground(BLACK);
 	drawBackground();
@@ -586,7 +586,7 @@ void fEditor ()
 		//todo new raylib version renable this
 		// if(IsMouseButtonDown(1)) _musicHead += GetMouseDelta(0).x*_scrollSpeed;
 	}
-	if(_musicHead < 0)
+	if(getMusicHead() < 0)
 		_musicHead = 0;
 
 	if(IsKeyPressed(KEY_ESCAPE)) {
@@ -595,7 +595,7 @@ void fEditor ()
 		return;
 	}
 	
-	if(_musicHead > getMusicDuration())
+	if(getMusicHead() > getMusicDuration())
 		_musicHead = getMusicDuration();
 
 	ClearBackground(BLACK);
@@ -635,7 +635,7 @@ void fEditor ()
 		{
 			//todo maybe not 4 subbeats?
 			float secondsPerBeat = getMusicDuration() / getBeatsCount()/4;
-			_musicHead = roundf(_musicHead/secondsPerBeat)*secondsPerBeat;
+			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
 		}
 
 		if(IsKeyPressed(KEY_SPACE))
@@ -685,7 +685,7 @@ void fRecording ()
 		ClearBackground(BLACK);
 		drawBackground();
 
-		if(GetKeyPressed() && _musicHead!=0)
+		if(GetKeyPressed() && getMusicHead!=0)
 		{
 			printf("keyPressed! \n");
 			
@@ -781,7 +781,14 @@ void fPlaying ()
 		playAudioEffect(_pMissSE, _missSE_Size);
 	}
 
-	if(GetKeyPressed() && _noteIndex < _amountNotes)
+	if((
+		GetKeyPressed() || 
+		IsMouseButtonPressed(0) || 
+		IsGamepadButtonPressed(0, GetGamepadButtonPressed()) ||
+		IsGamepadButtonPressed(1, GetGamepadButtonPressed()) ||
+		IsGamepadButtonPressed(2, GetGamepadButtonPressed()) ||
+		IsGamepadButtonPressed(3, GetGamepadButtonPressed())
+	) && _noteIndex < _amountNotes)
 	{
 		float closestTime = 55;
 		int closestIndex = 0;
