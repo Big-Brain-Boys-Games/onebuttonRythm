@@ -144,10 +144,41 @@ void numberBox(Rectangle rect, int * number, bool * selected)
 		*selected = false;
 }
 
-Rectangle drawInteractableButton(char * text, float fontScale, float x, float y,float width,float height) {
+
+void slider(Rectangle rect, bool * selected, int * value, int max, int min)
+{
+	if(*value > max)
+		*value = max;
+	if(*value < min)
+		*value = min;
+
+	Color color = WHITE;
+	if(*selected)
+		color = LIGHTGRAY;
+	
+	float sliderMapped = (*value-min) / (float)(max-min);
+	DrawRectangle(rect.x, rect.y, rect.width, rect.height, WHITE);
+	DrawCircle(rect.x+rect.width*sliderMapped, rect.y+rect.height*0.5, rect.height, color);
+
+	if((mouseInRect(rect) || *selected )&& IsMouseButtonDown(0))
+	{
+		*selected = true;
+		*value = ((GetMouseX()-rect.x)/rect.width)*(max-min)+min;
+	}
+
+	if(!IsMouseButtonDown(0))
+		*selected = false;
+}
+
+bool interactableButton(char * text, float fontScale, float x, float y,float width,float height) {
 	Rectangle button = (Rectangle){.x=x, .y=y, .width=width, .height=height};
 	drawButton(button,text,fontScale);
-	return button;
+
+	if (IsMouseButtonReleased(0) && mouseInRect(button))
+	{
+		return true;
+	}
+	return false;
 }
 
 void removeNote(int index)
@@ -206,43 +237,28 @@ void fPause()
 
 	//TODO dynamically change seperation depending on the amount of buttons?
 	float middle = GetScreenWidth()/2;
-	Rectangle continueButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.3, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-	drawButton(continueButton,"continue", 0.05);
 
-	Rectangle saveExitButton = (Rectangle){0,0,0,0};
-	if (_pNextGameplayFunction == &fEditor)
+	if(interactableButton("Continue", 0.05,middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.3, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
 	{
-		saveExitButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.5, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-		drawButton(saveExitButton,"Save & exit", 0.05);
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		if(_pGameplayFunction == &fPlaying)
+			_pGameplayFunction = &fCountDown;
+		else
+			_pGameplayFunction = _pNextGameplayFunction;
+	}
+	if (_pNextGameplayFunction == &fEditor && interactableButton("Save & Exit", 0.05, middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.5, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
+	{
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		loadMap(1);
+		saveFile(_amountNotes);
+		gotoMainMenu();
 	}
 	
-	Rectangle exitButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.7, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-	drawButton(exitButton,"exit", 0.05);
-
-	if(IsMouseButtonReleased(0))
+	if(interactableButton("Exit", 0.05, middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.7, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
 	{
-		if(mouseInRect(continueButton))
-		{
-			playAudioEffect(_pButtonSE, _buttonSE_Size);
-			if(_pGameplayFunction == &fPlaying)
-				_pGameplayFunction = &fCountDown;
-			else
-				_pGameplayFunction = _pNextGameplayFunction;
-		}
-		if (mouseInRect(saveExitButton))
-		{
-			playAudioEffect(_pButtonSE, _buttonSE_Size);
-			loadMap(1);
-			saveFile(_amountNotes);
-			gotoMainMenu();
-		}
-		
-		if(mouseInRect(exitButton))
-		{
-			playAudioEffect(_pButtonSE, _buttonSE_Size);
-			unloadMap();
-			gotoMainMenu();
-		}
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		unloadMap();
+		gotoMainMenu();
 	}
 	drawCursor();
 }
@@ -323,11 +339,11 @@ void fMainMenu()
 
 	int middle = GetScreenWidth()/2;
 	//draw main menu
-	Rectangle playButton = drawInteractableButton("Play", 0.04, middle - GetScreenWidth()*0.3,GetScreenHeight() * 0.3,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
-	Rectangle editorButton = drawInteractableButton("Editor", 0.04, middle - GetScreenWidth()*0.32,GetScreenHeight() * 0.45,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
-	Rectangle SettingsButton = drawInteractableButton("Settings", 0.04, middle - GetScreenWidth()*0.34,GetScreenHeight() * 0.60,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
-	Rectangle recordingButton = drawInteractableButton("Record", 0.04, middle - GetScreenWidth()*0.36,GetScreenHeight() * 0.75,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
-	Rectangle exportingButton = drawInteractableButton("Export", 0.04, middle - GetScreenWidth()*0.38,GetScreenHeight() * 0.90,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
+	
+	
+	
+	
+	
 	
 	//Rectangle playButton = (Rectangle){.x=middle - GetScreenWidth()*0.10, .y=GetScreenHeight() * 0.3, .width=GetScreenWidth()*0.2,.height=GetScreenHeight()*0.08};
 	// drawButton(playButton,"play", 0.04);
@@ -341,7 +357,7 @@ void fMainMenu()
 	
 	
 
-	if(IsMouseButtonReleased(0) && mouseInRect(playButton))
+	if(interactableButton("Play", 0.04, middle - GetScreenWidth()*0.3,GetScreenHeight() * 0.3,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//switching to playing map
@@ -351,7 +367,7 @@ void fMainMenu()
 		_transition = 0.1;
 	}
 
-	if(IsMouseButtonReleased(0) && mouseInRect(editorButton))
+	if(interactableButton("Editor", 0.04, middle - GetScreenWidth()*0.32,GetScreenHeight() * 0.45,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//switching to editing map
@@ -367,7 +383,7 @@ void fMainMenu()
 		_transition = 0.1;
 	}
 
-	if (IsMouseButtonReleased(0) && mouseInRect(SettingsButton))
+	if (interactableButton("Settings", 0.04, middle - GetScreenWidth()*0.34,GetScreenHeight() * 0.60,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//Switching to settings
@@ -375,7 +391,7 @@ void fMainMenu()
 		_transition = 0.1;
 	}
 
-	if(IsMouseButtonReleased(0) && mouseInRect(recordingButton))
+	if(interactableButton("Recording", 0.035, middle - GetScreenWidth()*0.36,GetScreenHeight() * 0.75,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//switching to recording map
@@ -391,7 +407,7 @@ void fMainMenu()
 		_transition = 0.1;
 	}
 
-	if (IsMouseButtonReleased(0) && mouseInRect(exportingButton))
+	if (interactableButton("Export", 0.04, middle - GetScreenWidth()*0.38,GetScreenHeight() * 0.90,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//Switching to export
@@ -414,31 +430,6 @@ void fMainMenu()
 
 }
 
-void slider(Rectangle rect, bool * selected, int * value, int max, int min)
-{
-	if(*value > max)
-		*value = max;
-	if(*value < min)
-		*value = min;
-
-	Color color = WHITE;
-	if(*selected)
-		color = LIGHTGRAY;
-	
-	float sliderMapped = (*value-min) / (float)(max-min);
-	DrawRectangle(rect.x, rect.y, rect.width, rect.height, WHITE);
-	DrawCircle(rect.x+rect.width*sliderMapped, rect.y+rect.height*0.5, rect.height, color);
-
-	if((mouseInRect(rect) || *selected )&& IsMouseButtonDown(0))
-	{
-		*selected = true;
-		*value = ((GetMouseX()-rect.x)/rect.width)*(max-min)+min;
-	}
-
-	if(!IsMouseButtonDown(0))
-		*selected = false;
-}
-
 void fSettings() {
 	_musicPlaying = false;
 	ClearBackground(BLACK);
@@ -455,15 +446,14 @@ void fSettings() {
 	//real title
 	drawText(title, middle-size/2, GetScreenHeight()*0.1, tSize, WHITE);
 
-	Rectangle backButton = (Rectangle){.x=GetScreenWidth()*0.05, .y=GetScreenHeight()*0.05, .width=GetScreenWidth()*0.1, .height=GetScreenHeight()*0.05};
-	drawButton(backButton, "back", 0.03);
-
 	char zoom[10] = {0};
 	if(_settings.zoom != 0)
 		sprintf(zoom, "%i", _settings.zoom);
 	static bool zoomBoxSelected = false;
+
 	Rectangle zoomBox = (Rectangle){.x=GetScreenWidth()*0.4, .y=GetScreenHeight()*0.7, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
 	textBox(zoomBox, zoom, &zoomBoxSelected);
+
 	_settings.zoom=atoi(zoom);
 	_settings.zoom = fmin(fmax(_settings.zoom, 0), 300);
 	tSize = GetScreenWidth()*0.03;
@@ -492,7 +482,7 @@ void fSettings() {
 	size = MeasureText("sound sffect volume", tSize);
 	drawText("sound Effect volume", aevSlider.x+aevSlider.width/2-size/2, aevSlider.y-GetScreenHeight()*0.05, tSize, WHITE);
 
-	if(mouseInRect(backButton) && IsMouseButtonDown(0))
+	if(interactableButton("Back", 0.03,GetScreenWidth()*0.05,GetScreenHeight()*0.05,GetScreenWidth()*0.1,GetScreenHeight()*0.05))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		_pGameplayFunction=&fMainMenu;
@@ -512,11 +502,7 @@ void fEndScreen ()
 
 	int middle = GetScreenWidth()/2;
 	//draw menu
-	Rectangle playButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.7, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-	drawButton(playButton,"retry", 0.05);
-
-	Rectangle MMButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.85, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-	drawButton(MMButton,"main menu", 0.05);
+	
 
 	float textSize = measureText("Finished", GetScreenWidth() * 0.15);
 	drawText("Finished", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.05, GetScreenWidth() * 0.15, WHITE);
@@ -538,7 +524,7 @@ void fEndScreen ()
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.6, GetScreenWidth() * 0.05, LIGHTGRAY);
 	free(tmpString);
 
-	if(IsMouseButtonReleased(0) && mouseInRect(playButton))
+	if(interactableButton("Retry", 0.05,middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.7, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//retrying map
@@ -548,7 +534,7 @@ void fEndScreen ()
 		_musicHead = 0;
 		_transition = 0.1;
 	}
-	if(IsMouseButtonReleased(0) && mouseInRect(MMButton))
+	if(interactableButton("Main Menu", 0.05,middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.85, GetScreenWidth()*0.3, GetScreenHeight()*0.1))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		unloadMap();
@@ -881,14 +867,7 @@ void fFail ()
 
 	int middle = GetScreenWidth()/2;
 	//draw menu
-	Rectangle playButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.7, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-	drawButton(playButton,"retry", 0.05);
-
-	Rectangle MMButton = (Rectangle){.x=middle - GetScreenWidth()*0.15, .y=GetScreenHeight() * 0.85, .width=GetScreenWidth()*0.3,.height=GetScreenHeight()*0.1};
-	drawButton(MMButton,"main menu", 0.05);
 	
-	
-
 	float textSize = measureText("You Failed", GetScreenWidth() * 0.15);
 	drawText("You Failed", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.2, GetScreenWidth() * 0.15, WHITE);
 
@@ -899,7 +878,7 @@ void fFail ()
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.1, LIGHTGRAY);
 	free(tmpString);
 
-	if(IsMouseButtonReleased(0) && mouseInRect(playButton))
+	if(interactableButton("Retry", 0.05, middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.7, GetScreenWidth()*0.3, GetScreenHeight()*0.1))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//retrying map
@@ -908,7 +887,7 @@ void fFail ()
 		_musicHead = 0;
 		_transition = 0.7;
 	}
-	if(IsMouseButtonReleased(0) && mouseInRect(MMButton))
+	if(interactableButton("Main Menu", 0.05, middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.85, GetScreenWidth()*0.3, GetScreenHeight()*0.1))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//retrying map
@@ -982,11 +961,9 @@ void fMapSelect()
 		}
 	}
 	drawVignette();
+	
 
-	Rectangle backButton = (Rectangle){.x=GetScreenWidth()*0.05, .y=GetScreenHeight()*0.05, .width=GetScreenWidth()*0.1, .height=GetScreenHeight()*0.05};
-	drawButton(backButton, "back", 0.03);
-
-	if(mouseInRect(backButton) && IsMouseButtonDown(0))
+	if(interactableButton("Back", 0.03, GetScreenWidth()*0.05, GetScreenHeight()*0.05, GetScreenWidth()*0.1, GetScreenHeight()*0.05))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		_pGameplayFunction=&fMainMenu;
@@ -994,10 +971,9 @@ void fMapSelect()
 		return;
 	}
 
-	Rectangle newMapButton = (Rectangle){.x=GetScreenWidth()*0.70, .y=GetScreenHeight()*0.9, .width=GetScreenWidth()*0.15, .height=GetScreenHeight()*0.07};
-	drawButton(newMapButton, "new map", 0.03);
+	
 
-	if(mouseInRect(newMapButton) && IsMouseButtonDown(0))
+	if(interactableButton("New Map", 0.03, GetScreenWidth()*0.70, GetScreenHeight()*0.9, GetScreenWidth()*0.15, GetScreenHeight()*0.07))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		_pGameplayFunction=&fNewMap;
@@ -1046,19 +1022,15 @@ void fNewMap()
 
 	int middle = GetScreenWidth()/2;
 
-	Rectangle backButton = (Rectangle){.x=GetScreenWidth()*0.05, .y=GetScreenHeight()*0.05, .width=GetScreenWidth()*0.1, .height=GetScreenHeight()*0.05};
-	drawButton(backButton, "back", 0.03);
-	if(mouseInRect(backButton) && IsMouseButtonDown(0))
+	if(interactableButton("Back", 0.03,GetScreenWidth()*0.05, GetScreenHeight()*0.05, GetScreenWidth()*0.1, GetScreenHeight()*0.05))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		_pGameplayFunction=&fMapSelect;
 		_transition = 0.1;
 		return;
 	}
-
-	Rectangle finishButton = (Rectangle){.x=GetScreenWidth()*0.85, .y=GetScreenHeight()*0.85, .width=GetScreenWidth()*0.1, .height=GetScreenHeight()*0.05};
-	drawButton(finishButton, "finish", 0.02);
-	if(mouseInRect(finishButton) && IsMouseButtonDown(0))
+	
+	if(interactableButton("Finish", 0.02, GetScreenWidth()*0.85, GetScreenHeight()*0.85, GetScreenWidth()*0.1, GetScreenHeight()*0.05))
 	{
 		if(pMusic == 0)
 			return;
