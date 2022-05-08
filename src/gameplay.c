@@ -4,7 +4,7 @@
 #include "drawing.h"
 #include "audio.h"
 
-#include "include/raylib.h"
+#include "deps/raylib/src/raylib.h"
 #include <stdbool.h>
 #include <math.h>
 #include <stdio.h>
@@ -584,7 +584,11 @@ void fEditor ()
 		if(IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL))) _scrollSpeed /= 1.2;
 		if(_scrollSpeed == 0) _scrollSpeed = 0.01;
 		//todo new raylib version renable this
-		// if(IsMouseButtonDown(1)) _musicHead += GetMouseDelta(0).x*_scrollSpeed;
+		if(IsMouseButtonDown(2)) 
+		{
+			printf("eyoo\n");
+			_musicHead -= GetMouseDelta().x/GetScreenWidth()*_scrollSpeed;
+		}
 	}
 	if(getMusicHead() < 0)
 		_musicHead = 0;

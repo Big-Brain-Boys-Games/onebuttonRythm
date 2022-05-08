@@ -5,7 +5,7 @@
 #include "shared.h"
 #include "audio.h"
 
-#include "include/raylib.h"
+#include "deps/raylib/src/raylib.h"
 
 void gotoMainMenu(bool mainOrSelect);
 bool mouseInRect(Rectangle rect);
