@@ -25,7 +25,7 @@ extern Texture2D _background, _menuBackground;
 extern float * _pNotes, _scrollSpeed;
 extern Map *_map;
 extern int _amountNotes, _noteIndex, _score, _highestCombo;
-extern bool _noBackground;
+extern bool _noBackground, _mapRefresh;
 extern Settings _settings;
 //TODO add support for more maps
 Map _pMaps [100];
@@ -354,8 +354,10 @@ void addZipMap(char * file)
 {
 	int arg = 2;
 	char str [100];
-
-	zip_extract(file, "maps/", on_extract_entry, &arg);	
+	strcpy(str, "maps/");
+	strcat(str, GetFileNameWithoutExt(file));
+	zip_extract(file, str, on_extract_entry, &arg);
+	_mapRefresh = true;
 }
 
 void makeMap(Map * map)

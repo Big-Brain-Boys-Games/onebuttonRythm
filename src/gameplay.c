@@ -191,6 +191,17 @@ bool interactableButton(char * text, float fontScale, float x, float y,float wid
 	return false;
 }
 
+bool interactableButtonNoSprite(char * text, float fontScale, float x, float y,float width,float height) {
+	Rectangle button = (Rectangle){.x=x, .y=y, .width=width, .height=height};
+	drawButtonNoSprite(button,text,fontScale);
+
+	if (IsMouseButtonReleased(0) && mouseInRect(button))
+	{
+		return true;
+	}
+	return false;
+}
+
 void removeNote(int index)
 {
 	_amountNotes--;
@@ -372,23 +383,7 @@ void fMainMenu()
 		_transition = 0.1;
 	}
 
-	if(interactableButton("Editor", 0.04, middle - GetScreenWidth()*0.32,GetScreenHeight() * 0.45,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
-	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
-		//switching to editing map
-		_health = 50;
-		_score = 0;
-		_noteIndex =0;
-		_amountNotes = 0;
-		_musicHead = 0;
-		printf("switching to editor map!\n");
-		setMusicStart();
-		_pNextGameplayFunction = &fEditor;
-		_pGameplayFunction = &fMapSelect;
-		_transition = 0.1;
-	}
-
-	if (interactableButton("Settings", 0.04, middle - GetScreenWidth()*0.34,GetScreenHeight() * 0.60,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
+	if (interactableButton("Settings", 0.04, middle - GetScreenWidth()*0.34,GetScreenHeight() * 0.45,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//Switching to settings
@@ -397,23 +392,7 @@ void fMainMenu()
 		_settings.offset = _settings.offset*1000;
 	}
 
-	if(interactableButton("Recording", 0.035, middle - GetScreenWidth()*0.36,GetScreenHeight() * 0.75,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
-	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
-		//switching to recording map
-		_health = 50;
-		_score = 0;
-		_noteIndex =0;
-		_amountNotes = 0;
-		_musicHead = 0;
-		_pNotes = calloc(sizeof(float), 1);
-		printf("switching to recording map! \n");
-		_pNextGameplayFunction = &fRecording;
-		_pGameplayFunction = &fMapSelect;
-		_transition = 0.1;
-	}
-
-	if (interactableButton("Export", 0.04, middle - GetScreenWidth()*0.38,GetScreenHeight() * 0.90,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
+	if (interactableButton("Export", 0.04, middle - GetScreenWidth()*0.38,GetScreenHeight() * 0.60,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//Switching to export
@@ -941,6 +920,12 @@ void fMapSelect()
 	static char ** files = 0;
 	static int highScores[100];
 	static int combos[100];
+	static int selectedMap = -1;
+	static float selectMapTransition = 1;
+	if(selectMapTransition < 1)
+		selectMapTransition += GetFrameTime()*10;
+	if(selectMapTransition > 1)
+		selectMapTransition = 1;
 	checkFileDropped();
 	if(_mapRefresh)
 	{
@@ -1008,34 +993,65 @@ void fMapSelect()
 		int x = GetScreenWidth()*0.05;
 		if(i % 2 == 1)
 			x = GetScreenWidth()*0.55;
-		Rectangle mapButton = (Rectangle){.x=x, .y=menuScrollSmooth*GetScreenHeight()+GetScreenHeight() * (0.3+0.5*floor(i/2)), .width=GetScreenWidth()*0.4,.height=GetScreenHeight()*0.4};
-		drawMapThumbnail(mapButton,&_pMaps[i], highScores[i], combos[i]);
-
-		if(IsMouseButtonReleased(0) && mouseInRect(mapButton))
+		Rectangle mapButton = (Rectangle){.x=x, .y=menuScrollSmooth*GetScreenHeight()+GetScreenHeight() * ((floor(i/2) > floor(selectedMap/2) && selectedMap != -1 ? 0.4: 0.3) + 0.45*floor(i/2)), .width=GetScreenWidth()*0.4,.height=GetScreenHeight()*0.4};
+		if(selectedMap == i)
 		{
-			playAudioEffect(_pButtonSE, _buttonSE_Size);
-			_map = &_pMaps[i];
-			//switching to playing map
-			
-			loadMap();
-			_pGameplayFunction = _pNextGameplayFunction;
-			if(_pNextGameplayFunction == &fRecording)
+			if(IsMouseButtonReleased(0) && mouseInRect(mapButton))
+				selectedMap = -1;
+			drawMapThumbnail(mapButton,&_pMaps[i], highScores[i], combos[i], true);
+			if(interactableButtonNoSprite("play", 0.03, mapButton.x, mapButton.y+mapButton.height, mapButton.width*(1/3.0)*1.01, mapButton.height*0.15*selectMapTransition))
 			{
+				_pNextGameplayFunction = &fPlaying;
+				_pGameplayFunction = &fCountDown;
+			}
+			if(interactableButtonNoSprite("editor", 0.03, mapButton.x+mapButton.width*(1/3.0), mapButton.y+mapButton.height, mapButton.width*(1/3.0)*1.01, mapButton.height*0.15*selectMapTransition))
+			{
+				_pNextGameplayFunction = &fEditor;
+				_pGameplayFunction = &fEditor;
+				startMusic();
+			}
+			if(interactableButtonNoSprite("record", 0.03, mapButton.x+mapButton.width*(1/3.0*2), mapButton.y+mapButton.height, mapButton.width*(1/3.0), mapButton.height*0.15*selectMapTransition))
+			{
+				_pNextGameplayFunction = &fRecording;
+				_pGameplayFunction = &fCountDown;
 				free(_pNotes);
 				_pNotes = calloc(sizeof(float), 50);
 			}
-			setMusicStart();
-			_musicHead = 0;
-			if(_pNextGameplayFunction == &fPlaying || _pNextGameplayFunction == &fRecording)
-				_pGameplayFunction = &fCountDown;
-			
-			if(_pGameplayFunction == &fEditor)
-				startMusic();
-			printf("selected map!\n");
-			_transition = 0.1;
+
+			Rectangle buttons = (Rectangle){.x=mapButton.x, .y=mapButton.y+mapButton.height, .width=mapButton.width, .height=mapButton.height*0.15*selectMapTransition};
+			if(mouseInRect(buttons) && IsMouseButtonReleased(0))
+			{
+				_map = &_pMaps[i];
+				loadMap();
+				setMusicStart();
+				_musicHead = 0;
+				printf("selected map!\n");
+				_transition = 0.1;
+			}
+			DrawRectangleGradientV(mapButton.x, mapButton.y+mapButton.height, mapButton.width, mapButton.height*0.05*selectMapTransition, ColorAlpha(BLACK, 0.3), ColorAlpha(BLACK, 0));
+		}else
+		{
+			drawMapThumbnail(mapButton,&_pMaps[i], highScores[i], combos[i], false);
+
+			if(IsMouseButtonReleased(0) && mouseInRect(mapButton))
+			{
+				playAudioEffect(_pButtonSE, _buttonSE_Size);
+				selectedMap = i;
+				selectMapTransition = 0;
+			}
 		}
 	}
 	drawVignette();
+
+	if(selectedMap != -1)
+	{
+		char str [100];
+		strcpy(str, _pMaps[selectedMap].name);
+		strcat(str, " - ");
+		strcat(str, _pMaps[selectedMap].creator);
+		int textSize = measureText(str, GetScreenWidth()*0.05);
+		drawText(str, GetScreenWidth()*0.9-textSize, GetScreenHeight()*0.01, GetScreenWidth()*0.05, WHITE);
+	}
 	
 	//draw them again, in case the maps are on top
 	//but the click code needs to be first because back needs to return before the click map function

@@ -122,7 +122,7 @@ void dNotes ()
 	fade -= GetFrameTime()*10;
 }
 
-void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo)
+void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, bool selected)
 {
 	float imageRatio = 0.8;
 	Color color = WHITE;
@@ -377,6 +377,22 @@ void drawButton(Rectangle rect, char * text, float fontScale)
 		color = GRAY;
 
 	drawBox(rect, color);
+	fontScale *= 1.3;
+	// DrawRectangle(rect.x, rect.y, rect.width, rect.height, ColorAlpha(color, 0.5));
+	int screenSize = GetScreenWidth() > GetScreenHeight() ? GetScreenHeight() : GetScreenWidth();
+	int textSize = measureText(text, screenSize * fontScale);
+	drawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + rect.height*0.2, screenSize * fontScale, (color.r == GRAY.r) ? BLACK : DARKGRAY);
+}
+
+void drawButtonNoSprite(Rectangle rect, char * text, float fontScale)
+{
+	Color color = WHITE;
+	if(mouseInRect(rect))
+		color = LIGHTGRAY;
+	if(mouseInRect(rect) && IsMouseButtonDown(0))
+		color = GRAY;
+
+	DrawRectangle(rect.x, rect.y, rect.width, rect.height, color);
 	fontScale *= 1.3;
 	// DrawRectangle(rect.x, rect.y, rect.width, rect.height, ColorAlpha(color, 0.5));
 	int screenSize = GetScreenWidth() > GetScreenHeight() ? GetScreenHeight() : GetScreenWidth();
