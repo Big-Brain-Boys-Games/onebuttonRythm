@@ -153,15 +153,22 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo)
 	char text [100];
 	sprintf(text, "%s - %s", map->name, map->creator);
 	int length = strlen(text);
+	char* textPointer = &text;
 	if(length > 18)
 	{
-		text[16] = '.';
-		text[17] = '.';
-		text[18] = '.';
-		text[19] = '\0';
+		if(mouseInRect(rect)) { //scroll the text when hovering
+			int offset = (int)floor(GetTime()*1.5)%(length-17);
+			textPointer += offset;
+			text[offset+17] = '\0';
+		} else {
+			text[16] = '.';
+			text[17] = '.';
+			text[18] = '.';
+			text[19] = '\0';
+		}
 	}
-	int textSize = measureText(text, GetScreenWidth() * 0.04);
-	drawText(text, rect.x + rect.width/2 - textSize / 2, rect.y + GetScreenHeight() * 0.01+rect.height*imageRatio, GetScreenWidth() * 0.04, DARKGRAY);
+	int textSize = measureText(textPointer, GetScreenWidth() * 0.04);
+	drawText(textPointer, rect.x + rect.width/2 - textSize / 2, rect.y + GetScreenHeight() * 0.01+rect.height*imageRatio, GetScreenWidth() * 0.04, DARKGRAY);
 	
 	sprintf(text, "%i", map->difficulty);
 	DrawRectangle(rect.x + rect.width*0.13, rect.y + 0.60*rect.height, rect.width*0.2, rect.height*0.20, ColorAlpha(BLACK, 0.4));
