@@ -297,7 +297,7 @@ void fCountDown ()
 		}
 		return;
 	}
-	if(_musicHead <= 0) _musicHead = GetTime()-countDown;
+	if(getMusicHead() <= 0) _musicHead = GetTime()-countDown;
 	else contin = true;
 	ClearBackground(BLACK);
 	drawBackground();
@@ -585,7 +585,7 @@ void fEditor ()
 		if(IsKeyPressed(KEY_DOWN)) _scrollSpeed /= 1.2;
 		if(_scrollSpeed == 0) _scrollSpeed = 0.01;
 	}
-	if(_musicHead < 0)
+	if(getMusicHead() < 0)
 		_musicHead = 0;
 
 	if(IsKeyPressed(KEY_ESCAPE)) {
@@ -594,7 +594,7 @@ void fEditor ()
 		return;
 	}
 	
-	if(_musicHead > getMusicDuration())
+	if(getMusicHead() > getMusicDuration())
 		_musicHead = getMusicDuration();
 
 	ClearBackground(BLACK);
@@ -634,7 +634,7 @@ void fEditor ()
 		{
 			//todo maybe not 4 subbeats?
 			float secondsPerBeat = getMusicDuration() / getBeatsCount()/4;
-			_musicHead = roundf(_musicHead/secondsPerBeat)*secondsPerBeat;
+			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
 		}
 
 		if(IsKeyPressed(KEY_SPACE))
@@ -684,7 +684,7 @@ void fRecording ()
 		ClearBackground(BLACK);
 		drawBackground();
 
-		if(GetKeyPressed() && _musicHead!=0)
+		if(GetKeyPressed() && getMusicHead!=0)
 		{
 			printf("keyPressed! \n");
 			
