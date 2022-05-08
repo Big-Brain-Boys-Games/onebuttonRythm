@@ -22,7 +22,7 @@ Color _fade = WHITE;
 
 extern float _musicHead, _scrollSpeed, *_pNotes;
 extern int _noteIndex, _amountNotes, _clickPressSE_Size, _clickReleaseSE_Size;
-extern bool _noBackground;
+extern bool _noBackground, _isKeyPressed;
 extern void * _pMusic, *_pClickPress, *_pClickRelease;
 extern float _transition;
 extern Map * _map;
@@ -117,7 +117,7 @@ void dNotes ()
 		}
 	}
 	DrawRectangle(middle - width / 2,0 , width, GetScreenHeight(), ColorAlpha(WHITE, 0.5*fade));
-	if(GetKeyPressed())
+	if(_isKeyPressed)
 		fade = 1;
 	fade -= GetFrameTime()*10;
 }

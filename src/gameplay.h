@@ -28,5 +28,6 @@ void fNewMap();
 void fMapSelect();
 void fExport();
 float getMusicHead();
+bool isAnyKeyDown();
 
 #endif

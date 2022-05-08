@@ -17,7 +17,7 @@ extern bool _musicPlaying, _musicLoops;
 extern float _musicHead, _transition;
 extern void * _pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE;
 extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size, _musicFrameCount, _musicLength;
-
+extern bool _isKeyPressed;
 
 extern void *_pFailSE;
 extern int _failSE_Size;
@@ -613,7 +613,7 @@ void fEditor ()
 
 	dNotes();
 	
-	if(GetKeyPressed())
+	if(_isKeyPressed)
 	{
 		float closestTime = 55;
 		int closestIndex = 0;
@@ -688,7 +688,7 @@ void fRecording ()
 		ClearBackground(BLACK);
 		drawBackground();
 
-		if(GetKeyPressed() && getMusicHead!=0)
+		if(_isKeyPressed && getMusicHead!=0)
 		{
 			printf("keyPressed! \n");
 			
@@ -707,6 +707,16 @@ void fRecording ()
 		gotoMainMenu(true);
 	}
 }
+
+bool isAnyKeyDown() {
+	return GetKeyPressed() || 
+		IsMouseButtonPressed(0) || 
+		IsGamepadButtonPressed(0, GetGamepadButtonPressed()) ||
+		IsGamepadButtonPressed(1, GetGamepadButtonPressed()) ||
+		IsGamepadButtonPressed(2, GetGamepadButtonPressed()) ||
+		IsGamepadButtonPressed(3, GetGamepadButtonPressed());
+}
+
 #define RippleAmount 10
 #define feedback(newFeedback, size) feedbackSayings[feedbackIndex] = newFeedback; feedbackSize[feedbackIndex] = size; feedbackIndex++; if(feedbackIndex > 4) feedbackIndex = 0;
 #define addRipple(newRipple) rippleEffect[rippleEffectIndex] = 0; rippleEffectStrength[rippleEffectIndex] = newRipple; rippleEffectIndex = (rippleEffectIndex+1)%RippleAmount;
@@ -784,14 +794,7 @@ void fPlaying ()
 		playAudioEffect(_pMissSE, _missSE_Size);
 	}
 
-	if((
-		GetKeyPressed() || 
-		IsMouseButtonPressed(0) || 
-		IsGamepadButtonPressed(0, GetGamepadButtonPressed()) ||
-		IsGamepadButtonPressed(1, GetGamepadButtonPressed()) ||
-		IsGamepadButtonPressed(2, GetGamepadButtonPressed()) ||
-		IsGamepadButtonPressed(3, GetGamepadButtonPressed())
-	) && _noteIndex < _amountNotes)
+	if(_isKeyPressed && _noteIndex < _amountNotes)
 	{
 		float closestTime = 55;
 		int closestIndex = 0;
