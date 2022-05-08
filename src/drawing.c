@@ -373,17 +373,17 @@ void initDrawing()
 
 	HideCursor();
 
-	_heartTex = LoadTexture("heart.png");
+	_heartTex = LoadTexture("assets/heart.png");
 	SetTextureFilter(_heartTex, TEXTURE_FILTER_TRILINEAR);
-	_healthBarTex = LoadTexture("healthBar.png");
+	_healthBarTex = LoadTexture("assets/healthBar.png");
 	SetTextureFilter(_healthBarTex, TEXTURE_FILTER_TRILINEAR);
-	_noteTex = LoadTexture("note.png");
+	_noteTex = LoadTexture("assets/note.png");
 	SetTextureFilter(_noteTex, TEXTURE_FILTER_TRILINEAR);
-	_cursorTex = LoadTexture("cursor.png");
+	_cursorTex = LoadTexture("assets/cursor.png");
 	SetTextureFilter(_cursorTex, TEXTURE_FILTER_TRILINEAR);
-	_menuBackground = LoadTexture("background.png");
+	_menuBackground = LoadTexture("assets/background.png");
 	SetTextureFilter(_menuBackground, TEXTURE_FILTER_TRILINEAR);
-	_font = LoadFontEx("nasalization.otf", 128, 0, 250);
+	_font = LoadFontEx("assets/nasalization.otf", 128, 0, 250);
 	SetTextureFilter(_font.texture, TEXTURE_FILTER_TRILINEAR);
 	_background = _menuBackground;
 
@@ -393,8 +393,8 @@ void initDrawing()
 		for(int x = 0; x < 3; x++)
 		{
 			char str[20];
-			strcpy(str, "buttonTile_x.png");
-			str[11] = '1' + x+y*3;
+			strcpy(str, "assets/buttonTile_x.png");
+			str[18] = '1' + x+y*3;
 			_buttonTile[x][y] = LoadTexture(str);
 		}
 	}

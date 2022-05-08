@@ -34,7 +34,7 @@ enum SettingsPart{spNone, spZoom, spVolGlobal, spVolMusic, spVolSE, spOffset};
 
 Map loadMapInfo(char * file);
 void saveFile (int noteAmount);
-void loadMap(int fileType);
+void loadMap();
 void unloadMap();
 void saveScore();
 bool readScore(Map * map, int *score, int * combo);

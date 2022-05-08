@@ -36,7 +36,7 @@ int _score= 0, _highScore, _combo = 0, _highestCombo, _highScoreCombo = 0;
 float _maxMargin = 0.1;
 int _hitPoints = 5;
 int _missPenalty = 10;
-bool _inEditor = false;
+bool _mapRefresh = true;
 Map * _map;
 Settings _settings = (Settings){.volumeGlobal=100, .volumeMusic=100, .volumeSoundEffects=100, .zoom=7, .offset=0};
 
@@ -65,7 +65,7 @@ bool checkFileDropped()
 void gotoMainMenu(bool mainOrSelect)
 {
 	stopMusic();
-	loadMusic("menuMusic.mp3");
+	loadMusic("assets/menuMusic.mp3");
 	_musicPlaying = true;
 	randomMusicPoint();
 	if(mainOrSelect)
@@ -254,7 +254,6 @@ void fPause()
 	if (_pNextGameplayFunction == &fEditor && interactableButton("Save & Exit", 0.05, middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.5, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
-		loadMap(1);
 		saveFile(_amountNotes);
 		gotoMainMenu(false);
 	}
@@ -581,9 +580,11 @@ void fEditor ()
 		setMusicFrameCount();
 		if(IsKeyDown(KEY_RIGHT) || GetMouseWheelMove() > 0) _musicHead+= GetFrameTime()*_scrollSpeed;
 		if(IsKeyDown(KEY_LEFT) || GetMouseWheelMove() < 0) _musicHead-= GetFrameTime()*_scrollSpeed;
-		if(IsKeyPressed(KEY_UP)) _scrollSpeed *= 1.2;
-		if(IsKeyPressed(KEY_DOWN)) _scrollSpeed /= 1.2;
+		if(IsKeyPressed(KEY_UP) || (GetMouseWheelMove() > 0 && IsKeyDown(KEY_LEFT_CONTROL))) _scrollSpeed *= 1.2;
+		if(IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL))) _scrollSpeed /= 1.2;
 		if(_scrollSpeed == 0) _scrollSpeed = 0.01;
+		//todo new raylib version renable this
+		// if(IsMouseButtonDown(1)) _musicHead += GetMouseDelta(0).x*_scrollSpeed;
 	}
 	if(_musicHead < 0)
 		_musicHead = 0;
@@ -929,7 +930,7 @@ void fMapSelect()
 	static int highScores[100];
 	static int combos[100];
 	checkFileDropped();
-	if(files == 0)
+	if(_mapRefresh)
 	{
 		files = GetDirectoryFiles("maps/", &amount);
 		int mapIndex = 0;
@@ -945,6 +946,7 @@ void fMapSelect()
 			}
 		}
 		amount = mapIndex;
+		_mapRefresh = false;
 	}
 	ClearBackground(BLACK);
 	DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
@@ -967,12 +969,14 @@ void fMapSelect()
 			playAudioEffect(_pButtonSE, _buttonSE_Size);
 			_map = &_pMaps[i];
 			//switching to playing map
-			if(_pNextGameplayFunction != &fRecording)
-				loadMap(0);
-			else
-				loadMap(1);
-			_pGameplayFunction = _pNextGameplayFunction;
 			
+			loadMap();
+			_pGameplayFunction = _pNextGameplayFunction;
+			if(_pNextGameplayFunction == &fRecording)
+			{
+				free(_pNotes);
+				_pNotes = calloc(sizeof(float), 50);
+			}
 			setMusicStart();
 			_musicHead = 0;
 			if(_pNextGameplayFunction == &fPlaying || _pNextGameplayFunction == &fRecording)
@@ -1087,9 +1091,8 @@ void fNewMap()
 		newMap.folder = malloc(100);
 		strcpy(newMap.folder, newMap.name);
 		_map = &newMap;
-		loadMap(1);
 		saveFile(0);
-		loadMap(0);
+		loadMap();
 		_noBackground = 0;
 		return;
 	}

@@ -58,7 +58,6 @@ Map loadMapInfo(char * file)
 	if(FileExists(pStr))
 		map.image = LoadTexture(pStr);
 	else{
-		_noBackground = 1;
 		map.image = _menuBackground;
 	}
 	SetTextureFilter(map.image, TEXTURE_FILTER_TRILINEAR);
@@ -135,6 +134,11 @@ Map loadMapInfo(char * file)
 
 void saveFile (int noteAmount)
 {
+	char str [100];
+	strcpy(str, "maps/");
+	strcat(str, _map->folder);
+	strcat(str, "/map.data");
+	_pFile = fopen(str, "");
 	printf("written map data\n");
 	fprintf(_pFile, "[Name]\n");
 	fprintf(_pFile, "%s\n", _map->name);
@@ -163,7 +167,7 @@ void saveFile (int noteAmount)
 	
 }
 //Load the map. Use 1 parameter to only open the file
-void loadMap (int fileType)
+void loadMap ()
 {
 	char * map = malloc(strlen(_map->folder) + 12);
 	strcpy(map, "maps/");
@@ -179,6 +183,10 @@ void loadMap (int fileType)
 	}
 	strcat(pStr, _map->musicFile);
 
+	_noBackground = 0;
+	if(_map->image.id == _menuBackground.id)
+		_noBackground = 1;
+
 	// ma_result result
 	loadMusic(pStr);
 	_map->musicLength = (int)getMusicDuration();
@@ -186,51 +194,44 @@ void loadMap (int fileType)
 
 	strcpy(pStr, map);
 	strcat(pStr, "/map.data");
-	if(fileType == 0)
-	{
-		_pFile = fopen(pStr, "rb");
+	_pFile = fopen(pStr, "rb");
 
-		//text file
-		char line [1000];
-		enum FilePart mode = fpNone;
-		_amountNotes = 50;
-		_noteIndex = 0;
-		_pNotes = malloc(sizeof(float)*_amountNotes);
-   		while(fgets(line,sizeof(line),_pFile)!= NULL)
+	//text file
+	char line [1000];
+	enum FilePart mode = fpNone;
+	_amountNotes = 50;
+	_noteIndex = 0;
+	while(fgets(line,sizeof(line),_pFile)!= NULL)
+	{
+		int stringLenght = strlen(line);
+		bool emptyLine = true;
+		for(int i = 0; i < stringLenght; i++)
+			if(line[i] != ' ' && line[i] != '\n')
+				emptyLine = false;
+		
+		if(emptyLine)
+			continue;
+
+		if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
+		switch(mode)
 		{
-			int stringLenght = strlen(line);
-			bool emptyLine = true;
-			for(int i = 0; i < stringLenght; i++)
-				if(line[i] != ' ' && line[i] != '\n')
-					emptyLine = false;
-			
-			if(emptyLine)
-				continue;
-
-			if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
-			switch(mode)
-			{
-				case fpNone:
-					break;
-				case fpNotes:
-					
-					if(_noteIndex <= _amountNotes)
-					{
-						_amountNotes += 50;
-						_pNotes = realloc(_pNotes, _amountNotes);
-					}
-					_pNotes[_noteIndex] = atof(line);
-					_noteIndex++;
-					break;
-			}
+			case fpNone:
+				break;
+			case fpNotes:
+				
+				if(_noteIndex <= _amountNotes)
+				{
+					_amountNotes += 50;
+					_pNotes = realloc(_pNotes, _amountNotes);
+				}
+				_pNotes[_noteIndex] = atof(line);
+				_noteIndex++;
+				break;
 		}
-		_amountNotes = _noteIndex;
-		_noteIndex = 0;
-		fclose(_pFile);
-	}else
-	{
-		_pFile = fopen(pStr, "wb");
 	}
+	_amountNotes = _noteIndex;
+	_noteIndex = 0;
+	fclose(_pFile);
 	free(pStr);
 }
 
@@ -346,7 +347,7 @@ void makeMap(Map * map)
 
 void unloadMap()
 {
-	free(_pNotes);
+	// free(_pNotes);
 	_amountNotes = 0;
 	_noteIndex = 0;
 }

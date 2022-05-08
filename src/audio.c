@@ -163,19 +163,19 @@ void audioInit()
 		//todo do this smarter
 	_pEffectsBuffer = calloc(sizeof(char), EFFECT_BUFFER_SIZE); //4 second long buffer
 	ma_decoder tmp;
-	_pHitSE = loadAudio("hit.mp3", &tmp, &_hitSE_Size);
-	_pMissHitSE = loadAudio("missHit.mp3", &tmp, &_missHitSE_Size);
-	_pMissSE = loadAudio("missHit.mp3", &tmp, &_missSE_Size);
-	_pButtonSE = loadAudio("button.mp3", &tmp, &_buttonSE_Size);
+	_pHitSE = loadAudio("assets/hit.mp3", &tmp, &_hitSE_Size);
+	_pMissHitSE = loadAudio("assets/missHit.mp3", &tmp, &_missHitSE_Size);
+	_pMissSE = loadAudio("assets/missHit.mp3", &tmp, &_missSE_Size);
+	_pButtonSE = loadAudio("assets/button.mp3", &tmp, &_buttonSE_Size);
 
-	_pClickPress = loadAudio("clickPress.mp3", &tmp, &_clickPressSE_Size);
-	_pClickRelease = loadAudio("clickRelease.mp3", &tmp, &_clickReleaseSE_Size);
+	_pClickPress = loadAudio("assets/clickPress.mp3", &tmp, &_clickPressSE_Size);
+	_pClickRelease = loadAudio("assets/clickRelease.mp3", &tmp, &_clickReleaseSE_Size);
 
-	_pFinishSE = loadAudio("hit.mp3", &tmp, &_finishSE_Size);
-	_pFailSE = loadAudio("missHit.mp3", &tmp, &_failSE_Size);
+	_pFinishSE = loadAudio("assets/hit.mp3", &tmp, &_finishSE_Size);
+	_pFailSE = loadAudio("assets/missHit.mp3", &tmp, &_failSE_Size);
 
 
-	loadMusic("menuMusic.mp3");
+	loadMusic("assets/menuMusic.mp3");
 
 
 	_musicPlaying = true;
