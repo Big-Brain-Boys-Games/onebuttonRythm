@@ -586,7 +586,6 @@ void fEditor ()
 		//todo new raylib version renable this
 		if(IsMouseButtonDown(2)) 
 		{
-			printf("eyoo\n");
 			_musicHead -= GetMouseDelta().x/GetScreenWidth()*_scrollSpeed;
 		}
 	}
