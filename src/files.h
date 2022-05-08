@@ -15,6 +15,7 @@ struct Map{
 	int zoom;
 	int offset;
 	char * musicFile;
+	int musicLength;
 	Texture2D image;
 };
 typedef struct Map Map;
@@ -27,7 +28,7 @@ struct Settings{
 };
 typedef struct Settings Settings;
 
-enum FilePart{fpNone, fpName, fpCreator, fpDifficulty, fpBPM, fpMusicFile, fpZoom, fpOffset, fpNotes};
+enum FilePart{fpNone, fpName, fpCreator, fpDifficulty, fpBPM, fpMusicFile, fpMusicLength, fpZoom, fpOffset, fpNotes};
 enum SettingsPart{spNone, spZoom, spVolGlobal, spVolMusic, spVolSE};
 
 Map loadMapInfo(char * file);
@@ -39,5 +40,7 @@ bool readScore(Map * map, int *score, int * combo);
 void makeMap(Map * map);
 void addZipMap(char * file);
 void makeMapZip(Map * map);
+void loadSettings();
+void saveSettings ();
 
 #endif

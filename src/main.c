@@ -35,7 +35,8 @@ int main(int argc, char **argv)
 	initDrawing();
 	Vector2 mousePos;
 	audioInit();
-
+	loadSettings();
+	
 	_pGameplayFunction = &fMainMenu;
 	_transition = 1;
 	while (!WindowShouldClose())

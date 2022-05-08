@@ -338,6 +338,7 @@ void fMainMenu()
 		(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
 
 	int middle = GetScreenWidth()/2;
+	drawVignette();
 	//draw main menu
 	
 	
@@ -487,6 +488,7 @@ void fSettings() {
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		_pGameplayFunction=&fMainMenu;
 		_transition = 0.1;
+		saveSettings();
 		return;
 	}
 
@@ -905,6 +907,7 @@ void fMapSelect()
 	static char ** files = 0;
 	static int highScores[100];
 	static int combos[100];
+	checkFileDropped();
 	if(files == 0)
 	{
 		files = GetDirectoryFiles("maps/", &amount);

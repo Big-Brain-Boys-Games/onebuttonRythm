@@ -151,6 +151,12 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo)
 	int textSize = measureText(text, GetScreenWidth() * 0.04);
 	drawText(text, rect.x + rect.width/2 - textSize / 2, rect.y + GetScreenHeight() * 0.01+rect.height*imageRatio, GetScreenWidth() * 0.04, DARKGRAY);
 	
+	sprintf(text, "%i", map->difficulty);
+	DrawRectangle(rect.x + rect.width*0.13, rect.y + 0.60*rect.height, rect.width*0.2, rect.height*0.20, ColorAlpha(BLACK, 0.4));
+	drawText(text, rect.x + rect.width*0.08, rect.y + 0.60*rect.height, GetScreenWidth() * 0.035, WHITE);
+	sprintf(text, "%i:%i", (int)floorf(map->musicLength/60), (int)floorf(map->musicLength-floorf(map->musicLength/60)*60));
+	drawText(text, rect.x + rect.width*0.06, rect.y + 0.68*rect.height, GetScreenWidth() * 0.035, WHITE);
+
 	sprintf(text, "%i", highScore);
 	if(highScore !=0)
 	{

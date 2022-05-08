@@ -42,6 +42,7 @@ Map loadMapInfo(char * file)
 	map.zoom = 7;
 	map.offset = 0;
 	map.folder = malloc(100);
+	map.musicLength = 0;
 	strcpy(map.folder, file);
 	char * pStr = malloc(strlen(mapStr) + 12);
 
@@ -85,6 +86,7 @@ Map loadMapInfo(char * file)
 		if(strcmp(line, "[Difficulty]\n") == 0)		{mode = fpDifficulty;	continue;}
 		if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;			continue;}
 		if(strcmp(line, "[MusicFile]\n") == 0)		{mode = fpMusicFile;	continue;}
+		if(strcmp(line, "[MusicLength]\n") == 0)	{mode = fpMusicLength;	continue;}
 		if(strcmp(line, "[Zoom]\n") == 0)			{mode = fpZoom;			continue;}
 		if(strcmp(line, "[Offset]\n") == 0)			{mode = fpOffset;		continue;}
 		if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
@@ -115,6 +117,9 @@ Map loadMapInfo(char * file)
 			case fpZoom:
 				map.zoom = atoi(line);
 				break;
+			case fpMusicLength:
+				map.musicLength = atoi(line);
+				break;
 			case fpOffset:
 				map.offset = atoi(line);
 				break;
@@ -141,6 +146,8 @@ void saveFile (int noteAmount)
 	fprintf(_pFile, "%i\n", _map->bpm);
 	fprintf(_pFile, "[MusicFile]\n");
 	fprintf(_pFile, "%s\n", _map->musicFile);
+	fprintf(_pFile, "[MusicLength]\n");
+	fprintf(_pFile, "%i\n", _map->musicLength);
 	fprintf(_pFile, "[Zoom]\n");
 	fprintf(_pFile, "%i\n", _map->zoom);
 	fprintf(_pFile, "[Offset]\n");
@@ -174,6 +181,7 @@ void loadMap (int fileType)
 
 	// ma_result result
 	loadMusic(pStr);
+	_map->musicLength = (int)getMusicDuration();
 	
 
 	strcpy(pStr, map);
@@ -395,13 +403,14 @@ void loadSettings()
 void saveSettings ()
 {
 	printf("written settings\n");
-	fprintf(_pFile, "[Volume Global]\n");
-	fprintf(_pFile, "%i\n", _settings.volumeGlobal);
-	fprintf(_pFile, "[Volume Music]\n");
-	fprintf(_pFile, "%i\n", _settings.volumeMusic);
-	fprintf(_pFile, "[Volume Sound Effects]\n");
-	fprintf(_pFile, "%i\n", _settings.volumeSoundEffects);
-	fprintf(_pFile, "[Zoom]\n");
-	fprintf(_pFile, "%i\n", _settings.zoom);
-	fclose(_pFile);
+	FILE * file = fopen("settings.conf", "w");
+	fprintf(file, "[Volume Global]\n");
+	fprintf(file, "%i\n", _settings.volumeGlobal);
+	fprintf(file, "[Volume Music]\n");
+	fprintf(file, "%i\n", _settings.volumeMusic);
+	fprintf(file, "[Volume Sound Effects]\n");
+	fprintf(file, "%i\n", _settings.volumeSoundEffects);
+	fprintf(file, "[Zoom]\n");
+	fprintf(file, "%i\n", _settings.zoom);
+	fclose(file);
 }

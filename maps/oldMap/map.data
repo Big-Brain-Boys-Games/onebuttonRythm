@@ -5,7 +5,15 @@ Me
 [Difficulty]
 3
 [BPM]
-153.25
+153
+[MusicFile]
+/song.mp3
+[MusicLength]
+54
+[Zoom]
+7
+[Offset]
+0
 [Notes]
 0.503243
 0.922812
