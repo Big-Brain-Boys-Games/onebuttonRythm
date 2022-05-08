@@ -1,11 +1,11 @@
 src/audio.o: src/audio.c src/audio.h include/miniaudio.h src/files.h \
  src/shared.h src/gameplay.h deps/raylib/src/raylib.h
 src/drawing.o: src/drawing.c src/drawing.h src/shared.h src/files.h \
- src/gameplay.h src/audio.h deps/raylib/src/raylib.h include/raylib.h
+ src/gameplay.h src/audio.h deps/raylib/src/raylib.h
 src/files.o: src/files.c src/files.h src/shared.h src/gameplay.h src/audio.h \
  deps/raylib/src/raylib.h deps/zip/src/zip.h
 src/gameplay.o: src/gameplay.c src/gameplay.h src/shared.h src/audio.h \
- deps/raylib/src/raylib.h src/files.h src/drawing.h include/raylib.h
+ deps/raylib/src/raylib.h src/files.h src/drawing.h
 src/main.o: src/main.c deps/raylib/src/raylib.h src/shared.h src/files.h \
- src/gameplay.h src/audio.h src/drawing.h include/raylib.h
+ src/gameplay.h src/audio.h src/drawing.h
 src/shared.o: src/shared.c src/shared.h

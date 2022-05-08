@@ -43,8 +43,9 @@ Map loadMapInfo(char * file)
 	map.offset = 0;
 	map.folder = malloc(100);
 	map.musicLength = 0;
+	map.musicFile = 0;
 	strcpy(map.folder, file);
-	char * pStr = malloc(strlen(mapStr) + 12);
+	char * pStr = malloc(strlen(mapStr) + 30);
 
 	strcpy(pStr, mapStr);
 	strcat(pStr, "/map.data");
@@ -53,19 +54,7 @@ Map loadMapInfo(char * file)
 	FILE * f;
 	f = fopen(pStr, "rb");
 
-	strcpy(pStr, mapStr);
-	strcat(pStr, "/image.png");
-	if(FileExists(pStr))
-		map.image = LoadTexture(pStr);
-	else{
-		map.image = _menuBackground;
-	}
-	SetTextureFilter(map.image, TEXTURE_FILTER_TRILINEAR);
-
 	
-	
-	
-
 	//text file
 	char line [1000];
 	enum FilePart mode = fpNone;
@@ -84,6 +73,7 @@ Map loadMapInfo(char * file)
 		if(strcmp(line, "[Creator]\n") == 0)		{mode = fpCreator;		continue;}
 		if(strcmp(line, "[Difficulty]\n") == 0)		{mode = fpDifficulty;	continue;}
 		if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;			continue;}
+		if(strcmp(line, "[Image]\n") == 0)			{mode = fpImage;		continue;}
 		if(strcmp(line, "[MusicFile]\n") == 0)		{mode = fpMusicFile;	continue;}
 		if(strcmp(line, "[MusicLength]\n") == 0)	{mode = fpMusicLength;	continue;}
 		if(strcmp(line, "[Zoom]\n") == 0)			{mode = fpZoom;			continue;}
@@ -109,6 +99,10 @@ Map loadMapInfo(char * file)
 			case fpBPM:
 				map.bpm = atoi(line);
 				break;
+			case fpImage:
+				map.imageFile = malloc(100);
+				strcpy(map.imageFile, line);
+				break;
 			case fpMusicFile:
 				map.musicFile = malloc(100);
 				strcpy(map.musicFile, line);
@@ -128,6 +122,23 @@ Map loadMapInfo(char * file)
 		}
 	}
 	fclose(f);
+	strcpy(pStr, mapStr);
+	if(map.imageFile != 0)
+		strcat(pStr, map.imageFile);
+	else
+		strcat(pStr, "/image.png");
+	if(FileExists(pStr))
+	{
+		printf("image: %s \n", pStr);
+		map.image = LoadTexture(pStr);
+		map.imageFile = malloc(100);
+		strcpy(map.imageFile, pStr);
+	}
+	else{
+		map.image = _menuBackground;
+	}
+	printf("map.image.id %i\n", map.image.id);
+	SetTextureFilter(map.image, TEXTURE_FILTER_TRILINEAR);
 	free(pStr);
 	return map;
 }
@@ -148,6 +159,11 @@ void saveFile (int noteAmount)
 	fprintf(_pFile, "%i\n", _map->difficulty);
 	fprintf(_pFile, "[BPM]\n");
 	fprintf(_pFile, "%i\n", _map->bpm);
+	if(_map->imageFile != 0)
+	{
+		fprintf(_pFile, "[Image]\n");
+		fprintf(_pFile, "%s\n", _map->imageFile);
+	}
 	fprintf(_pFile, "[MusicFile]\n");
 	fprintf(_pFile, "%s\n", _map->musicFile);
 	fprintf(_pFile, "[MusicLength]\n");
@@ -180,6 +196,11 @@ void loadMap ()
 	{
 		_map->musicFile = malloc(100);
 		strcpy(_map->musicFile, "/song.mp3");
+	}
+	if(_map->imageFile == 0)
+	{
+		_map->imageFile = malloc(100);
+		strcpy(_map->imageFile, "/image.png");
 	}
 	strcat(pStr, _map->musicFile);
 

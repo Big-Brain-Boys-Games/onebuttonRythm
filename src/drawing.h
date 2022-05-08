@@ -5,7 +5,7 @@
 #include "files.h"
 #include "gameplay.h"
 
-#include "include/raylib.h"
+#include "deps/raylib/src/raylib.h"
 
 int measureText (char * text, int fontSize);
 void drawText(char * str, int x, int y, int fontSize, Color color);

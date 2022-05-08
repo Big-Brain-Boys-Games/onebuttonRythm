@@ -34,4 +34,4 @@ deps:
 	mkdir deps/zip/build; \
 	fi
 	cd deps/zip/build && cmake -DBUILD_SHARED_LIBS=false .. && cmake --build .
-	cd deps/raylib/src && make PLATFORM=PLATFORM_DESKTOP
+	cd deps/raylib/src && make PLATFORM=PLATFORM_DESKTOP CFLAGS=-DSUPPORT_FILEFORMAT_JPG

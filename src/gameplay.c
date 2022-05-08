@@ -583,7 +583,6 @@ void fEditor ()
 		if(IsKeyPressed(KEY_UP) || (GetMouseWheelMove() > 0 && IsKeyDown(KEY_LEFT_CONTROL))) _scrollSpeed *= 1.2;
 		if(IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL))) _scrollSpeed /= 1.2;
 		if(_scrollSpeed == 0) _scrollSpeed = 0.01;
-		//todo new raylib version renable this
 		if(IsMouseButtonDown(2)) 
 		{
 			_musicHead -= GetMouseDelta().x/GetScreenWidth()*_scrollSpeed;
