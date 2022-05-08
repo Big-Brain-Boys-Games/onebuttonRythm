@@ -981,6 +981,25 @@ void fMapSelect()
 	}
 	menuScroll = clamp(menuScroll, -.5*floor(amount/2), 0);
 
+
+	if(interactableButton("Back", 0.03, GetScreenWidth()*0.05, GetScreenHeight()*0.05, GetScreenWidth()*0.1, GetScreenHeight()*0.05))
+	{
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		_pGameplayFunction=&fMainMenu;
+		_transition = 0.1;
+		return;
+	}
+
+	
+
+	if(interactableButton("New Map", 0.03, GetScreenWidth()*0.70, GetScreenHeight()*0.9, GetScreenWidth()*0.15, GetScreenHeight()*0.07))
+	{
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		_pGameplayFunction=&fNewMap;
+		_transition = 0.1;
+		return;
+	}
+
 	//draw map button
 	for(int i = 0; i < amount; i++)
 	{
@@ -1017,24 +1036,10 @@ void fMapSelect()
 	}
 	drawVignette();
 	
-
-	if(interactableButton("Back", 0.03, GetScreenWidth()*0.05, GetScreenHeight()*0.05, GetScreenWidth()*0.1, GetScreenHeight()*0.05))
-	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
-		_pGameplayFunction=&fMainMenu;
-		_transition = 0.1;
-		return;
-	}
-
-	
-
-	if(interactableButton("New Map", 0.03, GetScreenWidth()*0.70, GetScreenHeight()*0.9, GetScreenWidth()*0.15, GetScreenHeight()*0.07))
-	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
-		_pGameplayFunction=&fNewMap;
-		_transition = 0.1;
-		return;
-	}
+	//draw them again, in case the maps are on top
+	//but the click code needs to be first because back needs to return before the click map function
+	interactableButton("Back", 0.03, GetScreenWidth()*0.05, GetScreenHeight()*0.05, GetScreenWidth()*0.1, GetScreenHeight()*0.05);
+	interactableButton("New Map", 0.03, GetScreenWidth()*0.70, GetScreenHeight()*0.9, GetScreenWidth()*0.15, GetScreenHeight()*0.07);
 
 	drawCursor();
 }
