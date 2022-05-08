@@ -4,7 +4,7 @@
 #include "shared.h"
 #include "gameplay.h"
 #include <stdbool.h>
-#include "include/raylib.h"
+#include "deps/raylib/src/raylib.h"
 
 struct Map{
 	char * folder;

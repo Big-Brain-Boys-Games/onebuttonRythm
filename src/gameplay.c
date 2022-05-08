@@ -4,7 +4,7 @@
 #include "drawing.h"
 #include "audio.h"
 
-#include "include/raylib.h"
+#include "deps/raylib/src/raylib.h"
 #include <stdbool.h>
 #include <math.h>
 #include <stdio.h>
@@ -584,7 +584,10 @@ void fEditor ()
 		if(IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL))) _scrollSpeed /= 1.2;
 		if(_scrollSpeed == 0) _scrollSpeed = 0.01;
 		//todo new raylib version renable this
-		// if(IsMouseButtonDown(1)) _musicHead += GetMouseDelta(0).x*_scrollSpeed;
+		if(IsMouseButtonDown(2)) 
+		{
+			_musicHead -= GetMouseDelta().x/GetScreenWidth()*_scrollSpeed;
+		}
 	}
 	if(getMusicHead() < 0)
 		_musicHead = 0;
@@ -1143,10 +1146,15 @@ void fNewMap()
 	textSize = measureText("missing music file", GetScreenWidth() * 0.03);
 	if(pMusic == 0)
 		drawText("missing music file", GetScreenWidth() * 0.2 - textSize / 2, GetScreenHeight()*0.6, GetScreenWidth() * 0.03, WHITE);
-	
+	else 
+		drawText("got music file", GetScreenWidth() * 0.2 - textSize / 2, GetScreenHeight()*0.6, GetScreenWidth() * 0.03, WHITE);
+
 	textSize = measureText("missing image file", GetScreenWidth() * 0.03);
 	if(pImage == 0)
 		drawText("missing image file", GetScreenWidth() * 0.2 - textSize / 2, GetScreenHeight()*0.7, GetScreenWidth() * 0.03, WHITE);
+	else
+		drawText("got image file", GetScreenWidth() * 0.2 - textSize / 2, GetScreenHeight()*0.7, GetScreenWidth() * 0.03, WHITE);
+
 
 
 	drawCursor();
