@@ -90,7 +90,7 @@ void drawCursor ()
 void dNotes () 
 {
 	static float fade = 0;
-	float width = GetScreenWidth() * 0.005;
+	float width = GetScreenWidth() * 0.01;
 	float middle = GetScreenWidth() /2;
 	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
 	
