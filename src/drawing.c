@@ -146,14 +146,15 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo)
 		imageOffset.x = rect.width/2-imageScaling.x/2;
 	}
 
-	//todo, proper scaling of thumbnails
 	DrawTexturePro(map->image, (Rectangle){.x=0, .y=0, .width=map->image.width, .height=map->image.height}, (Rectangle){.x=rect.x+imageOffset.x, .y=rect.y+imageOffset.y, .width=imageScaling.x, .height=imageScaling.y},
 			(Vector2){.x=0,.y=0}, 0, color);
+
+	DrawRectangleGradientV(rect.x, rect.y+rect.height*0.4, rect.width, rect.height*imageRatio-rect.height*0.4, ColorAlpha(BLACK, 0), ColorAlpha(BLACK, 0.5));
 	
 	char text [100];
 	sprintf(text, "%s - %s", map->name, map->creator);
 	int length = strlen(text);
-	char* textPointer = &text;
+	char* textPointer = text;
 	if(length > 18)
 	{
 		if(mouseInRect(rect)) { //scroll the text when hovering
@@ -402,7 +403,7 @@ void initDrawing()
 	SetTextureFilter(_cursorTex, TEXTURE_FILTER_TRILINEAR);
 	_menuBackground = LoadTexture("assets/background.png");
 	SetTextureFilter(_menuBackground, TEXTURE_FILTER_TRILINEAR);
-	_font = LoadFontEx("assets/nasalization.otf", 128, 0, 250);
+	_font = LoadFontEx("assets/nasalization.otf", 1024, 0, 250);
 	SetTextureFilter(_font.texture, TEXTURE_FILTER_TRILINEAR);
 	_background = _menuBackground;
 
