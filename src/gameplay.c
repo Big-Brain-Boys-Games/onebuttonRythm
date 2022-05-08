@@ -498,6 +498,7 @@ void fSettings() {
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		_pGameplayFunction=&fMainMenu;
 		_transition = 0.1;
+		saveSettings();
 		return;
 	}
 
