@@ -529,13 +529,13 @@ void fEndScreen ()
 
 	char * tmpString = malloc(50);
 	sprintf(tmpString, "%s", _highScore<_score ? "New highscore!" : "");
-	textSize = measureText(tmpString, GetScreenWidth() * 0.15);
+	textSize = measureText(tmpString, GetScreenWidth() * 0.1);
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.2, GetScreenWidth() * 0.1, WHITE);
 
 
 	//draw score
 	sprintf(tmpString, "Score: %i Combo %i", _score, _highestCombo);
-	textSize = measureText(tmpString, GetScreenWidth() * 0.1);
+	textSize = measureText(tmpString, GetScreenWidth() * 0.07);
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.07, LIGHTGRAY);
 
 	//draw highscore
