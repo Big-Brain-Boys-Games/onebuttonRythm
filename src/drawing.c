@@ -135,7 +135,7 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo)
 
 	DrawRectangle(rect.x, rect.y, rect.width, rect.height*imageRatio, BLACK);
 
-	float ogImageRatio = map->image.width / map->image.height;
+	float ogImageRatio = map->image.width / (float)map->image.height;
 	float newImageRatio = rect.width / (rect.height*imageRatio);
 	Vector2 imageScaling = {.x=rect.width,.y=rect.height*imageRatio}, imageOffset = {.x=0,.y=0};
 	if(ogImageRatio>newImageRatio)
@@ -152,6 +152,14 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo)
 	
 	char text [100];
 	sprintf(text, "%s - %s", map->name, map->creator);
+	int length = strlen(text);
+	if(length > 18)
+	{
+		text[16] = '.';
+		text[17] = '.';
+		text[18] = '.';
+		text[19] = '\0';
+	}
 	int textSize = measureText(text, GetScreenWidth() * 0.04);
 	drawText(text, rect.x + rect.width/2 - textSize / 2, rect.y + GetScreenHeight() * 0.01+rect.height*imageRatio, GetScreenWidth() * 0.04, DARKGRAY);
 	
