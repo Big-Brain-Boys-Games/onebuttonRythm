@@ -38,6 +38,7 @@ Map loadMapInfo(char * file)
 	strcat(mapStr, file);
 	Map map = {0};
 	map.zoom = 7;
+	map.offset = 0;
 	map.folder = malloc(100);
 	strcpy(map.folder, file);
 	char * pStr = malloc(strlen(mapStr) + 12);
@@ -81,6 +82,7 @@ Map loadMapInfo(char * file)
 		if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;			continue;}
 		if(strcmp(line, "[MusicFile]\n") == 0)		{mode = fpMusicFile;	continue;}
 		if(strcmp(line, "[Zoom]\n") == 0)			{mode = fpZoom;			continue;}
+		if(strcmp(line, "[Offset]\n") == 0)			{mode = fpOffset;		continue;}
 		if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
 		for(int i = 0; i < 100; i++)
 					if(line[i] == '\n') line[i]= '\0';
@@ -105,11 +107,14 @@ Map loadMapInfo(char * file)
 				map.bpm = atoi(line);
 				break;
 			case fpMusicFile:
-				map.name = malloc(100);
+				map.musicFile = malloc(100);
 				strcpy(map.musicFile, line);
 				break;
 			case fpZoom:
 				map.zoom = atoi(line);
+				break;
+			case fpOffset:
+				map.offset = atoi(line);
 				break;
 			case fpNotes:
 				//neat, notes :P
@@ -136,6 +141,8 @@ void saveFile (int noteAmount)
 	fprintf(_pFile, "%s\n", _map->musicFile);
 	fprintf(_pFile, "[Zoom]\n");
 	fprintf(_pFile, "%i\n", _map->zoom);
+	fprintf(_pFile, "[Offset]\n");
+	fprintf(_pFile, "%i\n", _map->offset);
 	fprintf(_pFile, "[Notes]\n");
 	for(int i = 0; i < noteAmount; i++)
 	{
@@ -194,14 +201,6 @@ void loadMap (int fileType)
 			switch(mode)
 			{
 				case fpNone:
-					break;
-				case fpName:
-					break;
-				case fpCreator:
-					break;
-				case fpDifficulty:
-					break;
-				case fpBPM:
 					break;
 				case fpNotes:
 					

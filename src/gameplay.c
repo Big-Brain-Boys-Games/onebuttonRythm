@@ -18,6 +18,7 @@ extern float _musicHead, _transition;
 extern void * _pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE;
 extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size, _musicFrameCount, _musicLength;
 
+
 extern void *_pFailSE;
 extern int _failSE_Size;
 
@@ -549,6 +550,15 @@ void fEditor ()
 	textBox(bpmBox, bpm, &bpmBoxSelected);
 	_map->bpm=atoi(bpm);
 	_map->bpm = fmin(fmax(_map->bpm, 0), 300);
+
+	char begin[10] = {0};
+	if(_map->begin != 0)
+		sprintf(begin, "%i", _map->begin);
+	static bool beginBoxSelected = false;
+	Rectangle beginBox = (Rectangle){.x=GetScreenWidth()*0.8, .y=GetScreenHeight()*0.18, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
+	textBox(beginBox, begin, &beginBoxSelected);
+	_map->begin = atoi(begin);
+	_map->begin = fmin(fmax(_map->begin, 0), 5000);
 		
 
 	
@@ -605,8 +615,6 @@ void fPlaying ()
 	_musicPlaying = true;
 	fixMusicTime();
 
-
-	printf("scroll speed %f  zoom %i\n", _scrollSpeed, _map->zoom);
 
 
 	if(endOfMusic())
@@ -875,7 +883,6 @@ void fMapSelect()
 				startMusic();
 			printf("selected map!\n");
 			_transition = 0.1;
-			
 		}
 	}
 	drawVignette();

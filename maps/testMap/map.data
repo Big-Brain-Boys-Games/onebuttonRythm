@@ -6,6 +6,12 @@ Geoxor
 3
 [BPM]
 150
+[MusicFile]
+/song.mp3
+[Zoom]
+10
+[Offset]
+5
 [Notes]
 1.600509
 2.000637

@@ -130,8 +130,8 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 	// music
 	if (_musicPlaying)
 	{
-		if (_musicLength > _musicFrameCount)
-			memcpy(pOutput, _pMusic + _musicFrameCount * sizeof(_Float32) * 2, frameCount * sizeof(_Float32) * 2);
+		if (_musicLength > _musicFrameCount && _musicFrameCount > 0)
+			memcpy(pOutput, _pMusic + (_musicFrameCount) * sizeof(_Float32) * 2, frameCount * sizeof(_Float32) * 2);
 		else if(_musicLoops)
 			_musicFrameCount = _musicFrameCount%_musicLength;
 		_musicFrameCount += frameCount;
