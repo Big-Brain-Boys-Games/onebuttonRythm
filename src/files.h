@@ -17,11 +17,18 @@ struct Map{
 	char * musicFile;
 	Texture2D image;
 };
-
 typedef struct Map Map;
 
+struct Settings{
+	int zoom;
+	int volumeGlobal;
+	int volumeMusic;
+	int volumeSoundEffects;
+};
+typedef struct Settings Settings;
 
 enum FilePart{fpNone, fpName, fpCreator, fpDifficulty, fpBPM, fpMusicFile, fpZoom, fpOffset, fpNotes};
+enum SettingsPart{spNone, spZoom, spVolGlobal, spVolMusic, spVolSE};
 
 Map loadMapInfo(char * file);
 void saveFile (int noteAmount);

@@ -26,6 +26,7 @@ extern float * _pNotes, _scrollSpeed;
 extern Map *_map;
 extern int _amountNotes, _noteIndex, _score, _highestCombo;
 extern bool _noBackground;
+extern Settings _settings;
 //TODO add support for more maps
 Map _pMaps [100];
 
@@ -59,6 +60,8 @@ Map loadMapInfo(char * file)
 		_noBackground = 1;
 		map.image = _menuBackground;
 	}
+	SetTextureFilter(map.image, TEXTURE_FILTER_TRILINEAR);
+
 	
 	
 	
@@ -98,11 +101,9 @@ Map loadMapInfo(char * file)
 			case fpCreator:
 				map.creator = malloc(100);
 				strcpy(map.creator, line);
-				//todo save creator
 				break;
 			case fpDifficulty:
 				map.difficulty = atoi(line);
-				//todo save difficulty
 				break;
 			case fpBPM:
 				map.bpm = atoi(line);
@@ -340,4 +341,67 @@ void unloadMap()
 	free(_pNotes);
 	_amountNotes = 0;
 	_noteIndex = 0;
+}
+
+void loadSettings()
+{
+	if(!FileExists("settings.conf"))
+		return;
+	FILE * f;
+	f = fopen("settings.conf", "r");
+
+	//text file
+	char line [1000];
+	enum SettingsPart mode = spNone;
+	while(fgets(line,sizeof(line),f)!= 0)
+	{
+		int stringLenght = strlen(line);
+		bool emptyLine = true;
+		for(int i = 0; i < stringLenght; i++)
+			if(line[i] != ' ' && line[i] != '\n')
+				emptyLine = false;
+		
+		if(emptyLine)
+			continue;
+
+		if(strcmp(line, "[Volume Global]\n") == 0)			{mode = spVolGlobal;	continue;}
+		if(strcmp(line, "[Volume Music]\n") == 0)			{mode = spVolMusic;		continue;}
+		if(strcmp(line, "[Volume Sound Effects]\n") == 0)	{mode = spVolSE;		continue;}
+		if(strcmp(line, "[Zoom]\n") == 0)					{mode = spZoom;			continue;}
+		for(int i = 0; i < 100; i++)
+					if(line[i] == '\n') line[i]= '\0';
+		switch(mode)
+		{
+			case spNone:
+				break;
+			case spVolGlobal:
+				_settings.volumeGlobal = atoi(line);
+				break;
+			case spVolMusic:
+				_settings.volumeMusic = atoi(line);
+				break;
+			case spVolSE:
+				_settings.volumeSoundEffects = atoi(line);
+				break;
+			case spZoom:
+				_settings.zoom = atoi(line);
+				break;
+		}
+	}
+	fclose(f);
+	return;
+}
+
+void saveSettings ()
+{
+	printf("written settings\n");
+	fprintf(_pFile, "[Volume Global]\n");
+	fprintf(_pFile, "%i\n", _settings.volumeGlobal);
+	fprintf(_pFile, "[Volume Music]\n");
+	fprintf(_pFile, "%i\n", _settings.volumeMusic);
+	fprintf(_pFile, "[Volume Sound Effects]\n");
+	fprintf(_pFile, "%i\n", _settings.volumeSoundEffects);
+	fprintf(_pFile, "[Zoom]\n");
+	fprintf(_pFile, "%i\n", _settings.zoom);
+	fclose(_pFile);
 }

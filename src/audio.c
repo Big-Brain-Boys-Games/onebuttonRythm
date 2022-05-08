@@ -13,6 +13,7 @@
 extern int _amountNotes ,_musicLength, _musicFrameCount;
 extern float _musicHead, _scrollSpeed;
 extern Map * _map;
+extern Settings _settings;
 
 #define EFFECT_BUFFER_SIZE 48000 * 4 * 4
 
@@ -57,6 +58,7 @@ int _musicFrameCount = 0;
 int _musicLength = 0;
 
 void *_pMusic = 0;
+
  
 
 int getSamplePosition(float time) {
@@ -112,13 +114,13 @@ void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
     }
 	int lastFrame = -1;
 	ma_decoder_get_length_in_pcm_frames(decoder, (long long unsigned int *)audioLength);
-	void * pAudio = calloc(sizeof(_Float32)*2*2, *audioLength); //added some patting to get around memory issue //todo fix this work around
+	void * pAudio = calloc(sizeof(float)*2*2, *audioLength); //added some patting to get around memory issue //todo fix this work around
 	void * pCursor = pAudio;
 	while(decoder->readPointerInPCMFrames !=lastFrame)
 	{
 		lastFrame = decoder->readPointerInPCMFrames;
 		ma_decoder_read_pcm_frames(decoder, pCursor, 256, NULL);
-		pCursor += sizeof(_Float32)*2*256;
+		pCursor += sizeof(float)*2*256;
 	}
 	ma_decoder_uninit(decoder);
 	return pAudio;
@@ -126,12 +128,20 @@ void * loadAudio(char * file, ma_decoder * decoder, int * audioLength)
 
 void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount)
 {
-
+	float globalVolume = _settings.volumeGlobal/100.0;
+	float musicVolume = _settings.volumeMusic/100.0 * globalVolume;
+	float audioEffectVolume = _settings.volumeSoundEffects/100.0 * globalVolume;
 	// music
 	if (_musicPlaying)
 	{
 		if (_musicLength > _musicFrameCount && _musicFrameCount > 0)
-			memcpy(pOutput, _pMusic + (_musicFrameCount) * sizeof(_Float32) * 2, frameCount * sizeof(_Float32) * 2);
+		{
+			for (int i = 0; i < frameCount * 2; i++)
+			{
+				((float *)pOutput)[i] = ((float *)_pMusic)[i + _musicFrameCount*2]*musicVolume;
+			}
+			// memcpy(pOutput, _pMusic + (_musicFrameCount) * sizeof(float) * 2, frameCount * sizeof(float) * 2);
+		}
 		else if(_musicLoops)
 			_musicFrameCount = _musicFrameCount%_musicLength;
 		_musicFrameCount += frameCount;
@@ -140,8 +150,8 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 
 	for (int i = 0; i < frameCount * 2; i++)
 	{
-		((_Float32 *)pOutput)[i] += ((_Float32 *)_pEffectsBuffer)[(i + _effectOffset) % (48000 * 4)];
-		((_Float32 *)_pEffectsBuffer)[(i + _effectOffset) % (48000 * 4)] = 0;
+		((float *)pOutput)[i] += ((float *)_pEffectsBuffer)[(i + _effectOffset) % (48000 * 4)]*audioEffectVolume;
+		((float *)_pEffectsBuffer)[(i + _effectOffset) % (48000 * 4)] = 0;
 	}
 	_effectOffset += frameCount * 2;
 

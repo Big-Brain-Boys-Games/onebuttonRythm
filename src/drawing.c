@@ -368,12 +368,17 @@ void initDrawing()
 	HideCursor();
 
 	_heartTex = LoadTexture("heart.png");
+	SetTextureFilter(_heartTex, TEXTURE_FILTER_TRILINEAR);
 	_healthBarTex = LoadTexture("healthBar.png");
+	SetTextureFilter(_healthBarTex, TEXTURE_FILTER_TRILINEAR);
 	_noteTex = LoadTexture("note.png");
+	SetTextureFilter(_noteTex, TEXTURE_FILTER_TRILINEAR);
 	_cursorTex = LoadTexture("cursor.png");
+	SetTextureFilter(_cursorTex, TEXTURE_FILTER_TRILINEAR);
 	_menuBackground = LoadTexture("background.png");
+	SetTextureFilter(_menuBackground, TEXTURE_FILTER_TRILINEAR);
 	_font = LoadFontEx("nasalization.otf", 128, 0, 250);
-	SetTextureFilter(_font.texture, TEXTURE_FILTER_BILINEAR);
+	SetTextureFilter(_font.texture, TEXTURE_FILTER_TRILINEAR);
 	_background = _menuBackground;
 
 	//load button tile set

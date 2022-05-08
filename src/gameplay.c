@@ -38,6 +38,7 @@ int _hitPoints = 5;
 int _missPenalty = 10;
 bool _inEditor = false;
 Map * _map;
+Settings _settings = (Settings){.volumeGlobal=100, .volumeMusic=100, .volumeSoundEffects=100, .zoom=7};
 
 //Timestamp of all the notes
 float * _pNotes;
@@ -270,6 +271,8 @@ void fCountDown ()
 			_musicHead = 0;
 			contin = false;
 			_scrollSpeed = 4.2/_map->zoom;
+			if(_settings.zoom != 0)
+				_scrollSpeed = 4.2/_settings.zoom;
 		}
 		return;
 	}
@@ -411,6 +414,31 @@ void fMainMenu()
 
 }
 
+void slider(Rectangle rect, bool * selected, int * value, int max, int min)
+{
+	if(*value > max)
+		*value = max;
+	if(*value < min)
+		*value = min;
+
+	Color color = WHITE;
+	if(*selected)
+		color = LIGHTGRAY;
+	
+	float sliderMapped = (*value-min) / (float)(max-min);
+	DrawRectangle(rect.x, rect.y, rect.width, rect.height, WHITE);
+	DrawCircle(rect.x+rect.width*sliderMapped, rect.y+rect.height*0.5, rect.height, color);
+
+	if((mouseInRect(rect) || *selected )&& IsMouseButtonDown(0))
+	{
+		*selected = true;
+		*value = ((GetMouseX()-rect.x)/rect.width)*(max-min)+min;
+	}
+
+	if(!IsMouseButtonDown(0))
+		*selected = false;
+}
+
 void fSettings() {
 	_musicPlaying = false;
 	ClearBackground(BLACK);
@@ -423,12 +451,46 @@ void fSettings() {
 	float tSize = GetScreenWidth()*0.05;
 	int size = MeasureText(title, tSize);
 	//dropshadow
-	DrawText(title, middle-size/2+GetScreenWidth()*0.004, GetScreenHeight()*0.107, tSize, DARKGRAY);
+	drawText(title, middle-size/2+GetScreenWidth()*0.004, GetScreenHeight()*0.107, tSize, DARKGRAY);
 	//real title
-	DrawText(title, middle-size/2, GetScreenHeight()*0.1, tSize, WHITE);
+	drawText(title, middle-size/2, GetScreenHeight()*0.1, tSize, WHITE);
 
 	Rectangle backButton = (Rectangle){.x=GetScreenWidth()*0.05, .y=GetScreenHeight()*0.05, .width=GetScreenWidth()*0.1, .height=GetScreenHeight()*0.05};
 	drawButton(backButton, "back", 0.03);
+
+	char zoom[10] = {0};
+	if(_settings.zoom != 0)
+		sprintf(zoom, "%i", _settings.zoom);
+	static bool zoomBoxSelected = false;
+	Rectangle zoomBox = (Rectangle){.x=GetScreenWidth()*0.4, .y=GetScreenHeight()*0.7, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
+	textBox(zoomBox, zoom, &zoomBoxSelected);
+	_settings.zoom=atoi(zoom);
+	_settings.zoom = fmin(fmax(_settings.zoom, 0), 300);
+	tSize = GetScreenWidth()*0.03;
+	size = MeasureText("zoom", tSize);
+	drawText("zoom", zoomBox.x+zoomBox.width/2-size/2, zoomBox.y-GetScreenHeight()*0.05, tSize, WHITE);
+
+
+	static bool gvBoolSelected = false; 
+	Rectangle gvSlider = (Rectangle){.x=GetScreenWidth()*0.35, .y=GetScreenHeight()*0.3, .width=GetScreenWidth()*0.3, .height=GetScreenHeight()*0.03};
+	slider(gvSlider, &gvBoolSelected, &_settings.volumeGlobal, 100, 0);
+	tSize = GetScreenWidth()*0.03;
+	size = MeasureText("global volume", tSize);
+	drawText("global volume", gvSlider.x+gvSlider.width/2-size/2, gvSlider.y-GetScreenHeight()*0.05, tSize, WHITE);
+
+	static bool mvBoolSelected = false; 
+	Rectangle mvSlider = (Rectangle){.x=GetScreenWidth()*0.35, .y=GetScreenHeight()*0.45, .width=GetScreenWidth()*0.3, .height=GetScreenHeight()*0.03};
+	slider(mvSlider, &mvBoolSelected, &_settings.volumeMusic, 100, 0);
+	tSize = GetScreenWidth()*0.03;
+	size = MeasureText("music volume", tSize);
+	drawText("music volume", mvSlider.x+mvSlider.width/2-size/2, mvSlider.y-GetScreenHeight()*0.05, tSize, WHITE);
+
+	static bool aevBoolSelected = false; 
+	Rectangle aevSlider = (Rectangle){.x=GetScreenWidth()*0.35, .y=GetScreenHeight()*0.6, .width=GetScreenWidth()*0.3, .height=GetScreenHeight()*0.03};
+	slider(aevSlider, &aevBoolSelected, &_settings.volumeSoundEffects, 100, 0);
+	tSize = GetScreenWidth()*0.03;
+	size = MeasureText("sound sffect volume", tSize);
+	drawText("sound Effect volume", aevSlider.x+aevSlider.width/2-size/2, aevSlider.y-GetScreenHeight()*0.05, tSize, WHITE);
 
 	if(mouseInRect(backButton) && IsMouseButtonDown(0))
 	{
