@@ -30,5 +30,7 @@ void unloadMap();
 void saveScore();
 bool readScore(Map * map, int *score, int * combo);
 void makeMap(Map * map);
+void addZipMap(char * file);
+void makeMapZip(Map * map);
 
 #endif

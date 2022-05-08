@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "include/raylib.h"
+#include "deps/zip/src/zip.h"
 
 
 #ifdef _WIN32
@@ -271,6 +272,59 @@ bool readScore(Map * map, int *score, int * combo)
 	}
 	fclose(file);
 	return true;
+}
+
+int on_extract_entry(const char *filename, void *arg) {
+    static int i = 0;
+    int n = *(int *)arg;
+    printf("Extracted: %s (%d of %d)\n", filename, ++i, n);
+
+    return 0;
+}
+
+void makeMapZip(Map * map)
+{
+	char str[200];
+	strcpy(str, map->name);
+	strcat(str, ".zip");
+	struct zip_t *zip = zip_open(str, ZIP_DEFAULT_COMPRESSION_LEVEL, 'w');
+	strcpy(str, "maps/");
+	strcat(str, map->folder);
+	int amount = 0;
+	char ** files = GetDirectoryFiles(str, &amount);
+	for(int i = 0; i < amount; i++)
+	{
+		zip_entry_open(zip, files[i]);
+		{
+			strcpy(str, "maps/");
+			strcat(str, map->folder);
+			strcat(str, "/");
+			strcat(str, files[i]);
+			printf("compressing file %s\n", str);
+			if(!FileExists(str))
+				printf("wtf??\n");
+			FILE * file = fopen(str, "r");
+			fseek(file, 0L, SEEK_END);
+			int size = ftell(file);
+			rewind(file);
+			char * buff = malloc(size);
+			fread(buff, size, 1, file);
+			fclose(file);
+			zip_entry_write(zip, buff, size);
+			free(buff);
+		}
+		zip_entry_close(zip);
+	}
+	zip_close(zip);
+	ClearDirectoryFiles();
+}
+
+void addZipMap(char * file)
+{
+	int arg = 2;
+	char str [100];
+
+	zip_extract(file, "maps/", on_extract_entry, &arg);	
 }
 
 void makeMap(Map * map)

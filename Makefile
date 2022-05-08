@@ -6,7 +6,7 @@ SRC_FILES := $(wildcard $(SRC_DIR)/*.c)
 # OBJ_FILES := $(addprefix $(OBJ_DIR)/,$(patsubst %.c,%.o,$(SRC_FILES)))
 OBJ_FILES := $(SRC_FILES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 CFLAGS := -I$(INCLUDE_DIR)/ -I. -ggdb
-LDFLAGS := -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+LDFLAGS := -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -Ldeps/zip/build -l:libzip.a
 OUTEXE := Build/oneButtonRhythm
 
 .DEFAULT_GOAL := $(OUTEXE)
@@ -26,3 +26,11 @@ $(OUTEXE): $(OBJ_FILES) .depend
 .PHONY: clean
 clean:
 	rm $(OBJ_FILES) .depend $(OUTEXE)
+
+.PHONY: deps
+deps:
+	@if [ ! -d "deps/zip/build" ]; then \
+	echo "Directory doesn't exist, making..."; \
+	mkdir deps/zip/build; \
+	fi
+	cd deps/zip/build && cmake -DBUILD_SHARED_LIBS=false .. && cmake --build .

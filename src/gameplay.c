@@ -44,6 +44,23 @@ float * _pNotes;
 void (*_pNextGameplayFunction)();
 void (*_pGameplayFunction)();
 
+bool checkFileDropped()
+{
+	if(IsFileDropped())
+	{
+		int amount = 0;
+		char ** files = GetDroppedFiles(&amount);
+		for(int i = 0; i < amount; i++)
+		{
+			if(strcmp(GetFileExtension(files[i]), ".zip") == 0)
+			{
+				addZipMap(files[i]);
+			}
+		}
+		ClearDroppedFiles();
+	}
+}
+
 void gotoMainMenu()
 {
 	stopMusic();
@@ -289,6 +306,7 @@ void fCountDown ()
 
 void fMainMenu()
 {
+	checkFileDropped();
 	_musicLoops = true;
 	ClearBackground(BLACK);
 	DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
@@ -300,6 +318,7 @@ void fMainMenu()
 	Rectangle editorButton = drawInteractableButton("Editor", 0.04, middle - GetScreenWidth()*0.32,GetScreenHeight() * 0.45,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
 	Rectangle SettingsButton = drawInteractableButton("Settings", 0.04, middle - GetScreenWidth()*0.34,GetScreenHeight() * 0.60,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
 	Rectangle recordingButton = drawInteractableButton("Record", 0.04, middle - GetScreenWidth()*0.36,GetScreenHeight() * 0.75,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
+	Rectangle exportingButton = drawInteractableButton("Export", 0.04, middle - GetScreenWidth()*0.38,GetScreenHeight() * 0.90,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
 	
 	//Rectangle playButton = (Rectangle){.x=middle - GetScreenWidth()*0.10, .y=GetScreenHeight() * 0.3, .width=GetScreenWidth()*0.2,.height=GetScreenHeight()*0.08};
 	// drawButton(playButton,"play", 0.04);
@@ -359,6 +378,15 @@ void fMainMenu()
 		_pNotes = calloc(sizeof(float), 1);
 		printf("switching to recording map! \n");
 		_pNextGameplayFunction = &fRecording;
+		_pGameplayFunction = &fMapSelect;
+		_transition = 0.1;
+	}
+
+	if (IsMouseButtonReleased(0) && mouseInRect(exportingButton))
+	{
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		//Switching to export
+		_pNextGameplayFunction = &fExport;
 		_pGameplayFunction = &fMapSelect;
 		_transition = 0.1;
 	}
@@ -551,14 +579,14 @@ void fEditor ()
 	_map->bpm=atoi(bpm);
 	_map->bpm = fmin(fmax(_map->bpm, 0), 300);
 
-	char begin[10] = {0};
-	if(_map->begin != 0)
-		sprintf(begin, "%i", _map->begin);
-	static bool beginBoxSelected = false;
-	Rectangle beginBox = (Rectangle){.x=GetScreenWidth()*0.8, .y=GetScreenHeight()*0.18, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
-	textBox(beginBox, begin, &beginBoxSelected);
-	_map->begin = atoi(begin);
-	_map->begin = fmin(fmax(_map->begin, 0), 5000);
+	char offset[10] = {0};
+	if(_map->offset != 0)
+		sprintf(offset, "%i", _map->offset);
+	static bool offsetBoxSelected = false;
+	Rectangle offsetBox = (Rectangle){.x=GetScreenWidth()*0.8, .y=GetScreenHeight()*0.18, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
+	textBox(offsetBox, offset, &offsetBoxSelected);
+	_map->offset = atoi(offset);
+	_map->offset = fmin(fmax(_map->offset, 0), 5000);
 		
 
 	
@@ -910,6 +938,19 @@ void fMapSelect()
 	}
 
 	drawCursor();
+}
+
+void fExport()
+{
+	_pGameplayFunction = &fMainMenu;
+	makeMapZip(_map);
+	char str [300];
+	strcpy(str, GetWorkingDirectory());
+	strcat(str, "/");
+	strcat(str, _map->name);
+	strcat(str, ".zip");
+	SetClipboardText(str);
+	resetBackGround();
 }
 
 void fNewMap()

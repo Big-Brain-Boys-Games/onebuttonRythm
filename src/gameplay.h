@@ -25,5 +25,6 @@ void fPlaying();
 void fFail();
 void fNewMap();
 void fMapSelect();
+void fExport();
 
 #endif

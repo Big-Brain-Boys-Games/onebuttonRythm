@@ -56,3 +56,6 @@ Build/
 
 #fucking vgcore
 vgcore*
+
+#exported zips
+*.zip
