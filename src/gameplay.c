@@ -322,6 +322,7 @@ void fMainMenu()
 		(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
 
 	int middle = GetScreenWidth()/2;
+	drawVignette();
 	//draw main menu
 	Rectangle playButton = drawInteractableButton("Play", 0.04, middle - GetScreenWidth()*0.3,GetScreenHeight() * 0.3,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
 	Rectangle editorButton = drawInteractableButton("Editor", 0.04, middle - GetScreenWidth()*0.32,GetScreenHeight() * 0.45,GetScreenWidth()*0.2,GetScreenHeight()*0.08);
@@ -926,6 +927,7 @@ void fMapSelect()
 	static char ** files = 0;
 	static int highScores[100];
 	static int combos[100];
+	checkFileDropped();
 	if(files == 0)
 	{
 		files = GetDirectoryFiles("maps/", &amount);
