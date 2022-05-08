@@ -969,6 +969,9 @@ void fMapSelect()
 
 	static float menuScroll = 0;
 	menuScroll += GetMouseWheelMove()*.04;
+	if(IsMouseButtonDown(0)) { //scroll by dragging 
+		menuScroll += GetMouseDelta().y / GetScreenHeight();
+	}
 	const float scrollSpeed = .03;
 	if(IsKeyDown(KEY_UP)) {
 		menuScroll += scrollSpeed;
