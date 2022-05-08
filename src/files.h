@@ -25,11 +25,12 @@ struct Settings{
 	int volumeGlobal;
 	int volumeMusic;
 	int volumeSoundEffects;
+	float offset;
 };
 typedef struct Settings Settings;
 
 enum FilePart{fpNone, fpName, fpCreator, fpDifficulty, fpBPM, fpMusicFile, fpMusicLength, fpZoom, fpOffset, fpNotes};
-enum SettingsPart{spNone, spZoom, spVolGlobal, spVolMusic, spVolSE};
+enum SettingsPart{spNone, spZoom, spVolGlobal, spVolMusic, spVolSE, spOffset};
 
 Map loadMapInfo(char * file);
 void saveFile (int noteAmount);

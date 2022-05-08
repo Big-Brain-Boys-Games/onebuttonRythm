@@ -27,5 +27,6 @@ void fFail();
 void fNewMap();
 void fMapSelect();
 void fExport();
+float getMusicHead();
 
 #endif
