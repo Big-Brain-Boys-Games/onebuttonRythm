@@ -62,13 +62,16 @@ bool checkFileDropped()
 	}
 }
 
-void gotoMainMenu()
+void gotoMainMenu(bool mainOrSelect)
 {
 	stopMusic();
 	loadMusic("menuMusic.mp3");
 	_musicPlaying = true;
 	randomMusicPoint();
-	_pGameplayFunction = &fMainMenu;
+	if(mainOrSelect)
+		_pGameplayFunction = &fMainMenu;
+	else _pGameplayFunction = &fMapSelect;
+	
 	resetBackGround();
 }
 
@@ -240,10 +243,10 @@ void fPause()
 	//TODO dynamically change seperation depending on the amount of buttons?
 	float middle = GetScreenWidth()/2;
 
-	if(interactableButton("Continue", 0.05,middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.3, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
+	if(IsKeyPressed(KEY_ESCAPE) || interactableButton("Continue", 0.05,middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.3, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
-		if(_pGameplayFunction == &fPlaying)
+		if(_pNextGameplayFunction == &fPlaying)
 			_pGameplayFunction = &fCountDown;
 		else
 			_pGameplayFunction = _pNextGameplayFunction;
@@ -253,14 +256,14 @@ void fPause()
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		loadMap(1);
 		saveFile(_amountNotes);
-		gotoMainMenu();
+		gotoMainMenu(false);
 	}
 	
-	if(interactableButton("Exit", 0.05, middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.7, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
+	if(interactableButton("Exit", 0.05, middle - GetScreenWidth()*0.15, _pNextGameplayFunction == &fEditor ? GetScreenHeight() * 0.7 : GetScreenHeight() * 0.5, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		unloadMap();
-		gotoMainMenu();
+		gotoMainMenu(false);
 	}
 	drawCursor();
 }
@@ -470,7 +473,7 @@ void fSettings() {
 	static bool offsetBoxSelected = false;
 	Rectangle offsetBox = (Rectangle){.x=GetScreenWidth()*0.4, .y=GetScreenHeight()*0.85, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
 	textBox(offsetBox, offset, &offsetBoxSelected);
-	_settings.offset = atoi(offset);
+	_settings.offset = (float)atoi(offset);
 	_settings.offset = fmin(fmax(_settings.offset, 0), 300);
 	tSize = GetScreenWidth()*0.03;
 	size = MeasureText("offset", tSize);
@@ -503,7 +506,7 @@ void fSettings() {
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		_pGameplayFunction=&fMainMenu;
 		_transition = 0.1;
-		_settings.offset = _settings.offset/1000;
+		_settings.offset = _settings.offset*0.001;
 		saveSettings();
 		return;
 	}
@@ -556,7 +559,8 @@ void fEndScreen ()
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		unloadMap();
-		gotoMainMenu();
+		gotoMainMenu(false);
+		_pNextGameplayFunction = &fPlaying;
 	}
 	drawVignette();
 	drawCursor();
@@ -671,7 +675,7 @@ void fRecording ()
 {
 	if(IsKeyPressed(KEY_ESCAPE)) {
 		_pGameplayFunction = &fPause;
-		_pNextGameplayFunction = &fEditor;
+		_pNextGameplayFunction = &fRecording;
 		return;
 	}
 	_musicHead += GetFrameTime();
@@ -696,7 +700,7 @@ void fRecording ()
 	{
 		saveFile(_amountNotes);
 		unloadMap();
-		gotoMainMenu();
+		gotoMainMenu(true);
 	}
 }
 #define RippleAmount 10
@@ -905,13 +909,14 @@ void fFail ()
 		_musicHead = 0;
 		_transition = 0.7;
 	}
-	if(interactableButton("Main Menu", 0.05, middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.85, GetScreenWidth()*0.3, GetScreenHeight()*0.1))
+	if(interactableButton("Exit", 0.05, middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.85, GetScreenWidth()*0.3, GetScreenHeight()*0.1))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//retrying map
 		printf("going to main Menu! \n");
 		unloadMap();
-		gotoMainMenu();
+		gotoMainMenu(false);
+		_pNextGameplayFunction = &fPlaying;
 	}
 	drawVignette();
 	drawCursor();

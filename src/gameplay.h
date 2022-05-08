@@ -7,7 +7,7 @@
 
 #include "include/raylib.h"
 
-void gotoMainMenu();
+void gotoMainMenu(bool mainOrSelect);
 bool mouseInRect(Rectangle rect);
 void textBox(Rectangle rect, char * str, bool * selected);
 void numberBox(Rectangle rect, int * number, bool * selected);

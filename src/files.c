@@ -357,7 +357,7 @@ void loadSettings()
 		return;
 	FILE * f;
 	f = fopen("settings.conf", "r");
-
+	_settings.offset = 0;
 	//text file
 	char line [1000];
 	enum SettingsPart mode = spNone;
@@ -417,6 +417,6 @@ void saveSettings ()
 	fprintf(file, "[Zoom]\n");
 	fprintf(file, "%i\n", _settings.zoom);
 	fprintf(file, "[Offset]\n");
-	fprintf(file, "%i\n", _settings.offset);
+	fprintf(file, "%f\n", _settings.offset);
 	fclose(file);
 }
