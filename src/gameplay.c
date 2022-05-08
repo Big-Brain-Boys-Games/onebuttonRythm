@@ -400,6 +400,13 @@ void fMainMenu()
 		_pGameplayFunction = &fMapSelect;
 		_transition = 0.1;
 	}
+
+	if (interactableButton("New Map", 0.04, middle - GetScreenWidth()*0.38,GetScreenHeight() * 0.60,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
+	{
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		_pGameplayFunction=&fNewMap;
+		_transition = 0.1;
+	}
 	
 
 	//gigantic ass title 
@@ -976,16 +983,6 @@ void fMapSelect()
 		return;
 	}
 
-	
-
-	if(interactableButton("New Map", 0.03, GetScreenWidth()*0.70, GetScreenHeight()*0.9, GetScreenWidth()*0.15, GetScreenHeight()*0.07))
-	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
-		_pGameplayFunction=&fNewMap;
-		_transition = 0.1;
-		return;
-	}
-
 	//draw map button
 	for(int i = 0; i < amount; i++)
 	{
@@ -1056,7 +1053,6 @@ void fMapSelect()
 	//draw them again, in case the maps are on top
 	//but the click code needs to be first because back needs to return before the click map function
 	interactableButton("Back", 0.03, GetScreenWidth()*0.05, GetScreenHeight()*0.05, GetScreenWidth()*0.1, GetScreenHeight()*0.05);
-	interactableButton("New Map", 0.03, GetScreenWidth()*0.70, GetScreenHeight()*0.9, GetScreenWidth()*0.15, GetScreenHeight()*0.07);
 
 	drawCursor();
 }
@@ -1102,7 +1098,7 @@ void fNewMap()
 	if(interactableButton("Back", 0.03,GetScreenWidth()*0.05, GetScreenHeight()*0.05, GetScreenWidth()*0.1, GetScreenHeight()*0.05))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
-		_pGameplayFunction=&fMapSelect;
+		_pGameplayFunction=&fMainMenu;
 		_transition = 0.1;
 		return;
 	}
