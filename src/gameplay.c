@@ -114,6 +114,9 @@ void textBox(Rectangle rect, char * str, bool * selected)
 			}
 		}
 	}
+	if(*selected)
+		DrawRectangle(rect.x+rect.width*0.2, rect.y+rect.height*0.75, rect.width*0.6, rect.height*0.1, DARKGRAY);
+
 	if (!mouseInRect(rect) && IsMouseButtonDown(0))
 		*selected = false;
 }
@@ -133,6 +136,9 @@ void numberBox(Rectangle rect, int * number, bool * selected)
 			c = GetCharPressed();
 		}
 	}
+	if(*selected)
+		DrawRectangle(rect.x+rect.width*0.2, rect.y+rect.height*0.75, rect.width*0.6, rect.height*0.1, DARKGRAY);
+
 	if (!mouseInRect(rect) && IsMouseButtonDown(0))
 		*selected = false;
 }
@@ -422,7 +428,7 @@ void fSettings() {
 	DrawText(title, middle-size/2, GetScreenHeight()*0.1, tSize, WHITE);
 
 	Rectangle backButton = (Rectangle){.x=GetScreenWidth()*0.05, .y=GetScreenHeight()*0.05, .width=GetScreenWidth()*0.1, .height=GetScreenHeight()*0.05};
-	drawButton(backButton, "back", 0.02);
+	drawButton(backButton, "back", 0.03);
 
 	if(mouseInRect(backButton) && IsMouseButtonDown(0))
 	{
@@ -916,7 +922,7 @@ void fMapSelect()
 	drawVignette();
 
 	Rectangle backButton = (Rectangle){.x=GetScreenWidth()*0.05, .y=GetScreenHeight()*0.05, .width=GetScreenWidth()*0.1, .height=GetScreenHeight()*0.05};
-	drawButton(backButton, "back", 0.02);
+	drawButton(backButton, "back", 0.03);
 
 	if(mouseInRect(backButton) && IsMouseButtonDown(0))
 	{
@@ -961,7 +967,6 @@ void fNewMap()
 	static int pMusicSize = 0;
 	static void * pImage = 0;
 	static int imageSize = 0;
-	static char pBPM [100] = "100\0";
 
 	if(newMap.name == 0)
 	{
@@ -980,7 +985,7 @@ void fNewMap()
 	int middle = GetScreenWidth()/2;
 
 	Rectangle backButton = (Rectangle){.x=GetScreenWidth()*0.05, .y=GetScreenHeight()*0.05, .width=GetScreenWidth()*0.1, .height=GetScreenHeight()*0.05};
-	drawButton(backButton, "back", 0.02);
+	drawButton(backButton, "back", 0.03);
 	if(mouseInRect(backButton) && IsMouseButtonDown(0))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
@@ -1016,13 +1021,13 @@ void fNewMap()
 		file = fopen(str, "w");
 		fwrite(pImage, imageSize, 1, file);
 		fclose(file);
-
-		_pGameplayFunction=&fEditor;
+		if(newMap.bpm == 0)
+			newMap.bpm = 1;
+		_pGameplayFunction=&fRecording;
 		_transition = 0.1;
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		newMap.folder = malloc(100);
 		strcpy(newMap.folder, newMap.name);
-		newMap.bpm = atoi(pBPM);
 		_map = &newMap;
 		loadMap(1);
 		saveFile(0);
@@ -1040,9 +1045,13 @@ void fNewMap()
 	Rectangle creatorBox = (Rectangle){.x=middle, .y=GetScreenHeight()*0.625, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
 	textBox(creatorBox, newMap.creator, &creatorBoxSelected);
 
+	char str[100] = {'\0'};
+	if(newMap.bpm != 0)
+		sprintf(str, "%i", newMap.bpm);
 	static bool bpmBoxSelected = false;
 	Rectangle bpmBox = (Rectangle){.x=middle, .y=GetScreenHeight()*0.875, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
-	textBox(bpmBox, pBPM, &bpmBoxSelected);
+	textBox(bpmBox, str, &bpmBoxSelected);
+	newMap.bpm = fmin(fmax(atoi(str), 0), 500);
 
 	static bool difficultyBoxSelected = false;
 	Rectangle difficultyBox = (Rectangle){.x=middle, .y=GetScreenHeight()*0.75, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};

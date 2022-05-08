@@ -12,6 +12,7 @@ Texture2D _noteTex;
 Texture2D _healthBarTex;
 Texture2D _heartTex;
 Texture2D _background, _menuBackground;
+Texture2D _buttonTile[3][3];
 
 Font _font;
 
@@ -260,6 +261,87 @@ void drawProgressBarI(bool interActable)
 	}
 }
 
+
+void drawBox(Rectangle rect, Color color)
+{
+	float size = GetScreenWidth()*0.02;
+	while(rect.height < size*2)
+		size *=0.5;
+
+	int sectionsX = rect.width/size;
+	int sectionsY = rect.height/size;
+	float secSizeX = rect.width/sectionsX;
+	float secSizeY = rect.height/sectionsY;
+
+	//it's not done in a loop/ fully tiled because mid sections can be stretched making for better fits
+	//corners
+	Rectangle dest = (Rectangle){.x=rect.x, .y=rect.y, .width=secSizeX, .height=secSizeY};
+	Rectangle source = (Rectangle){.x=0, .y=0, .width=_buttonTile[0][0].width, .height=_buttonTile[0][0].height};
+	DrawTexturePro(_buttonTile[0][0], source, dest, (Vector2){.x=0, .y=0}, 0, color);
+
+	dest = (Rectangle){.x=rect.x+secSizeX*(sectionsX-1), .y=rect.y, .width=secSizeX, .height=secSizeY};
+	source = (Rectangle){.x=0, .y=0, .width=_buttonTile[0][0].width, .height=_buttonTile[0][0].height};
+	DrawTexturePro(_buttonTile[2][0], source, dest, (Vector2){.x=0, .y=0}, 0, color);
+
+	dest = (Rectangle){.x=rect.x, .y=rect.y+secSizeY*(sectionsY-1), .width=secSizeX, .height=secSizeY};
+	source = (Rectangle){.x=0, .y=0, .width=_buttonTile[0][0].width, .height=_buttonTile[0][0].height};
+	DrawTexturePro(_buttonTile[0][2], source, dest, (Vector2){.x=0, .y=0}, 0, color);
+
+	dest = (Rectangle){.x=rect.x+secSizeX*(sectionsX-1), .y=rect.y+secSizeY*(sectionsY-1), .width=secSizeX, .height=secSizeY};
+	source = (Rectangle){.x=0, .y=0, .width=_buttonTile[0][0].width, .height=_buttonTile[0][0].height};
+	DrawTexturePro(_buttonTile[2][2], source, dest, (Vector2){.x=0, .y=0}, 0, color);
+
+	//edges
+
+	dest = (Rectangle){.x=rect.x+secSizeX, .y=rect.y, .width=secSizeX*(sectionsX-2), .height=secSizeY};
+	source = (Rectangle){.x=0, .y=0, .width=_buttonTile[0][0].width, .height=_buttonTile[0][0].height};
+	DrawTexturePro(_buttonTile[1][0], source, dest, (Vector2){.x=0, .y=0}, 0, color);
+
+	dest = (Rectangle){.x=rect.x, .y=rect.y+secSizeY, .width=secSizeX, .height=secSizeY*(sectionsY-2)};
+	source = (Rectangle){.x=0, .y=0, .width=_buttonTile[0][0].width, .height=_buttonTile[0][0].height};
+	DrawTexturePro(_buttonTile[0][1], source, dest, (Vector2){.x=0, .y=0}, 0, color);
+
+	//bottom
+	dest = (Rectangle){.x=rect.x+secSizeX, .y=rect.y+secSizeY*(sectionsY-1), .width=secSizeX*(sectionsX-2), .height=secSizeY};
+	source = (Rectangle){.x=0, .y=0, .width=_buttonTile[0][0].width, .height=_buttonTile[0][0].height};
+	DrawTexturePro(_buttonTile[1][2], source, dest, (Vector2){.x=0, .y=0}, 0, color);
+
+	dest = (Rectangle){.x=rect.x+secSizeX*(sectionsX-1), .y=rect.y+secSizeY, .width=secSizeX, .height=secSizeY*(sectionsY-2)};
+	source = (Rectangle){.x=0, .y=0, .width=_buttonTile[0][0].width, .height=_buttonTile[0][0].height};
+	DrawTexturePro(_buttonTile[2][1], source, dest, (Vector2){.x=0, .y=0}, 0, color);
+
+	
+
+	//fill
+	dest = (Rectangle){.x=rect.x+secSizeX, .y=rect.y+secSizeY, .width=secSizeX*(sectionsX-2), .height=secSizeY*(sectionsY-2)};
+	source = (Rectangle){.x=0, .y=0, .width=_buttonTile[0][0].width, .height=_buttonTile[0][0].height};
+	DrawTexturePro(_buttonTile[1][1], source, dest, (Vector2){.x=0, .y=0}, 0, color);
+
+
+
+	//fully tiled method v
+
+	// printf("sections %i %i  \tsecSize: %.2f %.2f\n", sectionsX, sectionsY, secSizeX, secSizeY);
+	// for(int y = 0; y < sectionsY; y++)
+	// 	for(int x = 0; x < sectionsX; x++)
+	// 	{
+	// 		int sX = 1;
+	// 		int sY = 1;
+	// 		if(x == 0)
+	// 			sX = 0;
+	// 		if(x == sectionsX-1)
+	// 			sX = 2;
+	// 		if(y == 0)
+	// 			sY = 0;
+	// 		if(y == sectionsY-1)
+	// 			sY = 2;
+	// 		Rectangle source = (Rectangle){.x=0, .y=0, .width=_buttonTile[sX][sY].width, .height=_buttonTile[sX][sY].height};
+	// 		Rectangle dest = (Rectangle){.x=rect.x+secSizeX*x, .y=rect.y+secSizeY*y, .width=secSizeX, .height=secSizeY};
+	// 		// printf("dest %i %i\t %i %i\n", x, y, sX, sY);
+	// 		DrawTexturePro(_buttonTile[sX][sY], source, dest, (Vector2){.x=0, .y=0}, 0, color);
+	// 	}
+}
+
 void drawButton(Rectangle rect, char * text, float fontScale)
 {
 	Color color = WHITE;
@@ -267,7 +349,42 @@ void drawButton(Rectangle rect, char * text, float fontScale)
 		color = LIGHTGRAY;
 	if(mouseInRect(rect) && IsMouseButtonDown(0))
 		color = GRAY;
-	DrawRectangle(rect.x, rect.y, rect.width, rect.height, color);
-	int textSize = measureText(text, GetScreenWidth() * fontScale);
-	drawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + GetScreenHeight() * 0.01, GetScreenWidth() * fontScale, (color.r == GRAY.r) ? BLACK : DARKGRAY);
+
+	drawBox(rect, color);
+	fontScale *= 1.3;
+	// DrawRectangle(rect.x, rect.y, rect.width, rect.height, ColorAlpha(color, 0.5));
+	int screenSize = GetScreenWidth() > GetScreenHeight() ? GetScreenHeight() : GetScreenWidth();
+	int textSize = measureText(text, screenSize * fontScale);
+	drawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + rect.height*0.2, screenSize * fontScale, (color.r == GRAY.r) ? BLACK : DARKGRAY);
+}
+
+void initDrawing()
+{
+	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+	InitWindow(800, 600, "One Button Rythm");
+	SetTargetFPS(120);
+	SetExitKey(0);
+
+	HideCursor();
+
+	_heartTex = LoadTexture("heart.png");
+	_healthBarTex = LoadTexture("healthBar.png");
+	_noteTex = LoadTexture("note.png");
+	_cursorTex = LoadTexture("cursor.png");
+	_menuBackground = LoadTexture("background.png");
+	_font = LoadFontEx("nasalization.otf", 128, 0, 250);
+	SetTextureFilter(_font.texture, TEXTURE_FILTER_BILINEAR);
+	_background = _menuBackground;
+
+	//load button tile set
+	for(int y = 0; y < 3; y++)
+	{
+		for(int x = 0; x < 3; x++)
+		{
+			char str[20];
+			strcpy(str, "buttonTile_x.png");
+			str[11] = '1' + x+y*3;
+			_buttonTile[x][y] = LoadTexture(str);
+		}
+	}
 }

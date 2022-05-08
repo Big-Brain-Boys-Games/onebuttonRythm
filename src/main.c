@@ -31,22 +31,8 @@ float _transition = 0;
 
 int main(int argc, char **argv)
 {
-	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-	InitWindow(800, 600, "One Button Rythm");
-	SetTargetFPS(120);
-	SetExitKey(0);
-
-	HideCursor();
-
-	_heartTex = LoadTexture("heart.png");
-	_healthBarTex = LoadTexture("healthBar.png");
-	_noteTex = LoadTexture("note.png");
-	_cursorTex = LoadTexture("cursor.png");
-	_menuBackground = LoadTexture("background.png");
-	_font = LoadFontEx("nasalization.otf", 128, 0, 250);
-	SetTextureFilter(_font.texture, TEXTURE_FILTER_BILINEAR);
-	_background = _menuBackground;
 	
+	initDrawing();
 	Vector2 mousePos;
 	audioInit();
 

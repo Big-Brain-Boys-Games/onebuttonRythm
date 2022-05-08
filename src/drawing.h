@@ -25,5 +25,6 @@ void drawButton(Rectangle rect, char * text, float fontScale);
 void fMapSelect();
 void drawMusicGraph(float transparent);
 void drawTransition();
+void initDrawing();
 
 #endif
