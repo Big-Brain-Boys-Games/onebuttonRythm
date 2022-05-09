@@ -945,33 +945,44 @@ void fFail ()
 }
 
 struct mapInfoLoadingArgs{
-	int mapIndex;
-	char * file;
-	int * highscore, *combo;
+	int * amount;
+	int * highScores;
+	int * combos;
 };
 
 void mapInfoLoading(struct mapInfoLoadingArgs * args)
 {
+	int amount;
+	char ** files = GetDirectoryFiles("maps/", &amount);
+	int mapIndex = 0;
 	_loading++;
-	_pMaps[args->mapIndex] = loadMapInfo(args->file);
-	if(_pMaps[args->mapIndex].name != 0)
+	for(int i = 0; i < amount; i++)
 	{
-		readScore(&_pMaps[args->mapIndex], args->highscore, args->combo);
+		if(files[i][0] == '.')
+			continue;
+
+		_pMaps[mapIndex] = loadMapInfo(files[i]);
+		if(_pMaps[mapIndex].name != 0)
+		{
+			readScore(&_pMaps[mapIndex], &args->highScores[mapIndex], &args->combos[mapIndex]);
+		}
+		
+		mapIndex++;		
 	}
-	free(args->file);
 	_loading--;
+	ClearDirectoryFiles();
+	*args->amount = amount;
 }
 
 void fMapSelect()
 {
 	static int amount = 0;
-	static char ** files = 0;
 	static int highScores[100];
 	static int combos[100];
 	static int selectedMap = -1;
 	static float selectMapTransition = 1;
-	static pthread_t threads[100] = {0};
-	static struct mapInfoLoadingArgs args[100] = {0};
+	static pthread_t thread = {0};
+	static struct mapInfoLoadingArgs args = {0};
 
 	if(selectMapTransition < 1)
 		selectMapTransition += GetFrameTime()*10;
@@ -980,21 +991,10 @@ void fMapSelect()
 	checkFileDropped();
 	if(_mapRefresh)
 	{
-		files = GetDirectoryFiles("maps/", &amount);
-		int mapIndex = 0;
-		for(int i = 0; i < amount; i++)
-		{
-			if(files[i][0] == '.')
-				continue;
-			args[mapIndex].combo = &combos[mapIndex];
-			args[mapIndex].highscore = &highScores[mapIndex];
-			args[mapIndex].mapIndex = mapIndex;
-			args[mapIndex].file = malloc(100);
-			strcpy(args[mapIndex].file, files[i]);
-			pthread_create(&threads[i], NULL, mapInfoLoading, &args[mapIndex]);
-			mapIndex++;		
-		}
-		amount = mapIndex;
+		args.amount = &amount;
+		args.combos = combos;
+		args.highScores = highScores;
+		pthread_create(&thread, NULL, mapInfoLoading, &args);
 		_mapRefresh = false;
 	}
 	ClearBackground(BLACK);
