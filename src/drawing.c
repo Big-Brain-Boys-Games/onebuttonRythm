@@ -235,7 +235,7 @@ void drawBars()
 
 void drawMusicGraph(float transparent)
 {
-	if(_pMusic == 0 || *_pMusic)
+	if(_pMusic == 0 || *_pMusic == 0)
 		return;
 	
 	//music stuff
