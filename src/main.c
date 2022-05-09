@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 	audioInit();
 	loadSettings();
 	
-	_pGameplayFunction = &fMainMenu;
+	_pGameplayFunction = &fIntro;
 	_transition = 1;
 	_pNotes = malloc(sizeof(float)*50);
 	while (!WindowShouldClose())

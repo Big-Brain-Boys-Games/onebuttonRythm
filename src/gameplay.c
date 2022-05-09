@@ -1369,3 +1369,16 @@ void fNewMap()
 		else ClearDroppedFiles();
 	}
 }
+
+void fIntro()
+{
+	static float time = 0;
+	fMainMenu();
+	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ColorAlpha(BLACK, (1-time)*0.7));
+	DrawRing((Vector2){.x=GetScreenWidth()/2, .y=GetScreenHeight()/2}, time*GetScreenWidth()*1, time*GetScreenWidth()*0.8, 0, 360, 360, ColorAlpha(WHITE, 1-time));
+	time += fmin(GetFrameTime()/2, 0.016);
+	if(time > 1)
+	{
+		_pGameplayFunction = &fMainMenu;
+	}
+}
