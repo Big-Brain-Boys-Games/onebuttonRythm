@@ -14,7 +14,7 @@
 extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
 extern Color _fade;
 extern float _musicPlaying;
-extern bool _musicLoops;
+extern bool _musicLoops, _playMenuMusic;
 extern float _musicHead, _transition;
 extern void * _pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE;
 extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size, _musicFrameCount, _musicLength;
@@ -71,7 +71,7 @@ void gotoMainMenu(bool mainOrSelect)
 {
 	stopMusic();
 	loadMusic("assets/menuMusic.mp3");
-	_musicPlaying = true;
+	_playMenuMusic = true;
 	randomMusicPoint();
 	if(mainOrSelect)
 		_pGameplayFunction = &fMainMenu;
