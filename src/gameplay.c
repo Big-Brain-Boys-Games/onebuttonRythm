@@ -624,8 +624,9 @@ void fEditor ()
 			newNote(getMusicHead());
 		}
 
-		if(IsKeyPressed(KEY_C) && isPlaying)
+		if(IsKeyPressed(KEY_C) && !isPlaying)
 		{
+			printf("Snapping to grid");
 			//todo maybe not 4 subbeats?
 			float secondsPerBeat = getMusicDuration() / getBeatsCount()/4;
 			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
