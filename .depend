@@ -1,4 +1,4 @@
-src/audio.o: src/audio.c src/audio.h include/miniaudio.h src/files.h \
+src/audio.o: src/audio.c src/audio.h deps/miniaudio/miniaudio.h src/files.h \
  src/shared.h src/gameplay.h deps/raylib/src/raylib.h
 src/drawing.o: src/drawing.c src/drawing.h src/shared.h src/files.h \
  src/gameplay.h src/audio.h deps/raylib/src/raylib.h
