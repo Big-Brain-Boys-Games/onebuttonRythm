@@ -73,6 +73,7 @@ int main(int argc, char **argv)
 			if(_loadingFade != 0){
 				drawLoadScreen();
 			}
+			DrawFPS(0,0);
 		EndDrawing();
 	}
 	UnloadTexture(_background);

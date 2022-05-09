@@ -16,8 +16,8 @@ extern Color _fade;
 extern float _musicPlaying;
 extern bool _musicLoops, _playMenuMusic;
 extern float _musicHead, _transition;
-extern void * _pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE;
-extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size, _musicFrameCount, _musicLength;
+extern void * _pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE, **_pMusic;
+extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size, _musicFrameCount, *_musicLength;
 extern bool _isKeyPressed;
 
 extern void *_pFailSE;
@@ -70,7 +70,6 @@ bool checkFileDropped()
 void gotoMainMenu(bool mainOrSelect)
 {
 	stopMusic();
-	loadMusic("assets/menuMusic.mp3");
 	_playMenuMusic = true;
 	randomMusicPoint();
 	if(mainOrSelect)
@@ -1018,6 +1017,8 @@ void fMapSelect()
 	static int combos[100];
 	static int selectedMap = -1;
 	static float selectMapTransition = 1;
+	static int hoverMap = -1;
+	static float hoverPeriod = 0;
 	static pthread_t thread = {0};
 	static struct mapInfoLoadingArgs args = {0};
 
@@ -1065,6 +1066,16 @@ void fMapSelect()
 		return;
 	}
 
+	printf("hover period: %.2f %i\n", hoverPeriod, hoverMap);
+	if(hoverMap == -1)
+		_musicFrameCount = 1;
+	else
+	{
+		_loading = 0;
+		hoverPeriod += GetFrameTime();
+		if(!_musicLength || !*_musicLength)
+			_musicFrameCount = 1;
+	}
 	//draw map button
 	for(int i = 0; i < amount; i++)
 	{
@@ -1073,6 +1084,25 @@ void fMapSelect()
 		if(i % 2 == 1)
 			x = GetScreenWidth()*0.55;
 		Rectangle mapButton = (Rectangle){.x=x, .y=menuScrollSmooth*GetScreenHeight()+GetScreenHeight() * ((floor(i/2) > floor(selectedMap/2) && selectedMap != -1 ? 0.4: 0.3) + 0.45*floor(i/2)), .width=GetScreenWidth()*0.4,.height=GetScreenHeight()*0.4};
+		if(mouseInRect(mapButton) || selectedMap == i)
+		{
+			if(hoverPeriod > 1 && hoverPeriod < 2)
+			{
+				//play music
+				char str [100];
+				loadMusic(&_pMaps[i]);
+				_playMenuMusic = false;
+				_musicPlaying = true;
+				hoverPeriod++;
+			}
+			hoverMap = i;
+		}else if(!mouseInRect(mapButton) && hoverMap == i)
+		{
+			hoverMap = -1;
+			_playMenuMusic = true;
+			_musicPlaying = false;
+			hoverPeriod = 0;
+		}
 		if(selectedMap == i)
 		{
 			if(IsMouseButtonReleased(0) && mouseInRect(mapButton))

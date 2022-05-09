@@ -23,7 +23,7 @@ Color _fade = WHITE;
 extern float _musicHead, _scrollSpeed, *_pNotes;
 extern int _noteIndex, _amountNotes, _clickPressSE_Size, _clickReleaseSE_Size;
 extern bool _noBackground, _isKeyPressed;
-extern void * _pMusic, *_pClickPress, *_pClickRelease;
+extern void ** _pMusic, *_pClickPress, *_pClickRelease;
 extern float _transition, _loadingFade;
 extern Map * _map;
 
@@ -235,7 +235,7 @@ void drawBars()
 
 void drawMusicGraph(float transparent)
 {
-	if(_pMusic == 0)
+	if(_pMusic == 0 || *_pMusic)
 		return;
 	
 	//music stuff
@@ -256,8 +256,8 @@ void drawMusicGraph(float transparent)
 		float highest = 0;
 		int sampleHead = sampleBegin + samplesPerBar*i;
 		for(int j = 0; j < samplesPerBar; j++)
-			if(sampleHead+j > 0 && fabs(((float*)_pMusic)[sampleHead+j]) > highest)
-				highest = fabs(((float*)_pMusic)[sampleHead+j]);
+			if(sampleHead+j > 0 && fabs(((float*)*_pMusic)[sampleHead+j]) > highest)
+				highest = fabs(((float*)*_pMusic)[sampleHead+j]);
 
 		DrawRectangle(i*pixelsPerBar, GetScreenHeight()-highest*scaleBar, pixelsPerBar, highest*scaleBar, ColorAlpha(WHITE, transparent));
 	}
