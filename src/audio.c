@@ -297,5 +297,5 @@ void stopMusic()
 
 void setMusicFrameCount()
 {
-    _musicFrameCount = _musicFrameCount*48000;
+    _musicFrameCount = _musicHead*48000;
 }
