@@ -48,6 +48,7 @@ Map loadMapInfo(char * file)
 	map.musicLength = 0;
 	map.musicFile = 0;
 	map.music = 0;
+	map.beats = 4;
 	strcpy(map.folder, file);
 	char * pStr = malloc(strlen(mapStr) + 30);
 
@@ -82,6 +83,7 @@ Map loadMapInfo(char * file)
 		if(strcmp(line, "[MusicLength]\n") == 0)	{mode = fpMusicLength;	continue;}
 		if(strcmp(line, "[Zoom]\n") == 0)			{mode = fpZoom;			continue;}
 		if(strcmp(line, "[Offset]\n") == 0)			{mode = fpOffset;		continue;}
+		if(strcmp(line, "[Beats]\n") == 0)			{mode = fpBeats;		continue;}
 		if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
 		for(int i = 0; i < 100; i++)
 					if(line[i] == '\n') line[i]= '\0';
@@ -119,6 +121,9 @@ Map loadMapInfo(char * file)
 				break;
 			case fpOffset:
 				map.offset = atoi(line);
+				break;
+			case fpBeats:
+				map.beats = atof(line);
 				break;
 			case fpNotes:
 				//neat, notes :P
@@ -204,6 +209,8 @@ void saveFile (int noteAmount)
 	fprintf(_pFile, "%i\n", _map->zoom);
 	fprintf(_pFile, "[Offset]\n");
 	fprintf(_pFile, "%i\n", _map->offset);
+	fprintf(_pFile, "[Beats]\n");
+	fprintf(_pFile, "%f\n", _map->beats);
 	fprintf(_pFile, "[Notes]\n");
 	for(int i = 0; i < noteAmount; i++)
 	{

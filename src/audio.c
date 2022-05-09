@@ -255,6 +255,8 @@ void loadMusic(Map * map)
 {
 	_musicPlaying = false;
 	char str[100];
+	if(map->folder == NULL || map->musicFile == NULL)
+		return;
 	strcpy(str, "maps/");
 	strcat(str, map->folder);
 	strcat(str, map->musicFile);

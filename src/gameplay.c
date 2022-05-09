@@ -391,14 +391,14 @@ void fMainMenu()
 		_settings.offset = _settings.offset*1000;
 	}
 
-	if (interactableButton("Export", 0.04, middle - GetScreenWidth()*0.38,GetScreenHeight() * 0.60,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
-	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
-		//Switching to export
-		_pNextGameplayFunction = &fExport;
-		_pGameplayFunction = &fMapSelect;
-		_transition = 0.1;
-	}
+	// if (interactableButton("Export", 0.04, middle - GetScreenWidth()*0.38,GetScreenHeight() * 0.60,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
+	// {
+	// 	playAudioEffect(_pButtonSE, _buttonSE_Size);
+	// 	//Switching to export
+	// 	_pNextGameplayFunction = &fExport;
+	// 	_pGameplayFunction = &fMapSelect;
+	// 	_transition = 0.1;
+	// }
 
 	if (interactableButton("New Map", 0.04, middle - GetScreenWidth()*0.38,GetScreenHeight() * 0.60,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
 	{
@@ -958,7 +958,7 @@ struct mapInfoLoadingArgs{
 	int * combos;
 };
 
-char filesCaching[100][100] = {'\0'};
+char filesCaching[100][100] = {0};
 
 void mapInfoLoading(struct mapInfoLoadingArgs * args)
 {
@@ -975,6 +975,8 @@ void mapInfoLoading(struct mapInfoLoadingArgs * args)
 		bool cacheHit = false;
 		for(int j = 0; j < 100; j++)
 		{
+			if(!filesCaching[j][0])
+				continue;
 			if(strcmp(filesCaching[j], files[i]) == 0)
 			{
 				//cache hit
@@ -1145,12 +1147,9 @@ void fMapSelect()
 				startMusic();
 				_musicPlaying = false;
 			}
-			if(interactableButtonNoSprite("record", 0.03, mapButton.x+mapButton.width*(1/3.0*2), mapButton.y+mapButton.height, mapButton.width*(1/3.0), mapButton.height*0.15*selectMapTransition))
+			if(interactableButtonNoSprite("export", 0.03, mapButton.x+mapButton.width*(1/3.0*2), mapButton.y+mapButton.height, mapButton.width*(1/3.0), mapButton.height*0.15*selectMapTransition))
 			{
-				_pNextGameplayFunction = &fRecording;
-				_pGameplayFunction = &fCountDown;
-				free(_pNotes);
-				_pNotes = calloc(sizeof(float), 50);
+				_pGameplayFunction = &fExport;
 			}
 			DrawRectangleGradientV(mapButton.x, mapButton.y+mapButton.height, mapButton.width, mapButton.height*0.05*selectMapTransition, ColorAlpha(BLACK, 0.3), ColorAlpha(BLACK, 0));
 		}else
@@ -1169,12 +1168,13 @@ void fMapSelect()
 	}
 	drawVignette();
 
-	if(selectedMap != -1)
+	if(hoverMap != -1 || selectedMap != -1)
 	{
+		int selMap = selectedMap != -1 ? selectedMap :hoverMap;
 		char str [100];
-		strcpy(str, _pMaps[selectedMap].name);
+		strcpy(str, _pMaps[selMap].name);
 		strcat(str, " - ");
-		strcat(str, _pMaps[selectedMap].creator);
+		strcat(str, _pMaps[selMap].creator);
 		int textSize = measureText(str, GetScreenWidth()*0.05);
 		drawText(str, GetScreenWidth()*0.9-textSize, GetScreenHeight()*0.01, GetScreenWidth()*0.05, WHITE);
 	}
