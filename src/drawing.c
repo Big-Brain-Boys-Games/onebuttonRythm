@@ -128,7 +128,11 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, bool s
 	{
 		//load map image onto gpu(cant be loaded in sperate thread because opengl >:( )
 		if(map->cpuImage.width != 0)
+		{
 			map->image = LoadTextureFromImage(map->cpuImage);
+			UnloadImage(map->cpuImage);
+			//biggest memory leak fixed boys
+		}
 		if(map->image.id == 0)
 			map->image.id = -1; 
 		else

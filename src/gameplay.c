@@ -950,17 +950,49 @@ struct mapInfoLoadingArgs{
 	int * combos;
 };
 
+char filesCaching[100][100] = {'\0'};
+
 void mapInfoLoading(struct mapInfoLoadingArgs * args)
 {
 	_loading++;
 	int amount;
 	char ** files = GetDirectoryFiles("maps/", &amount);
+	
 	int mapIndex = 0;
 	for(int i = 0; i < amount; i++)
 	{
 		if(files[i][0] == '.')
 			continue;
+		//check for cache
+		bool cacheHit = false;
+		for(int j = 0; j < 100; j++)
+		{
+			if(strcmp(filesCaching[j], files[i]) == 0)
+			{
+				//cache hit
+				printf("cache hit! %s\n", files[i]);
+				cacheHit = true;
+				if(mapIndex == j)
+				{
+					break;
+				}
+				char str[100];
+				strcpy(filesCaching[mapIndex], filesCaching[j]);
+				_pMaps[mapIndex] = _pMaps[j];
+				_pMaps[j] = (Map){0};
+				break;
+			}
+		}
+		if(cacheHit)
+		{
+			mapIndex++;
+			continue;
+		}
+		printf("cache miss %s\n", files[i]);
+		//cache miss
+		
 
+		//todo memory leak v
 		_pMaps[mapIndex] = loadMapInfo(files[i]);
 		if(_pMaps[mapIndex].name != 0)
 		{
@@ -969,6 +1001,9 @@ void mapInfoLoading(struct mapInfoLoadingArgs * args)
 				&(args->combos[mapIndex]));
 		}
 		
+		//caching
+		strcpy(filesCaching[mapIndex], files[i]);
+
 		mapIndex++;		
 	}
 	_loading--;
