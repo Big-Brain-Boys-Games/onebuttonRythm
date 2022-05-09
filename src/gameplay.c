@@ -1099,6 +1099,7 @@ void fMapSelect()
 				_pNextGameplayFunction = &fEditor;
 				_pGameplayFunction = &fEditor;
 				startMusic();
+				_musicPlaying = false;
 			}
 			if(interactableButtonNoSprite("record", 0.03, mapButton.x+mapButton.width*(1/3.0*2), mapButton.y+mapButton.height, mapButton.width*(1/3.0), mapButton.height*0.15*selectMapTransition))
 			{
