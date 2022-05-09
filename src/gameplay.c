@@ -1067,7 +1067,6 @@ void fMapSelect()
 		return;
 	}
 
-	printf("hover period: %.2f %i\n", hoverPeriod, hoverMap);
 	if(hoverMap == -1)
 		_musicFrameCount = 1;
 	else
