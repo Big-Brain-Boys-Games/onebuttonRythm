@@ -1103,6 +1103,7 @@ void fMapSelect()
 			_playMenuMusic = true;
 			_musicPlaying = false;
 			hoverPeriod = 0;
+			_musicFrameCount = 1;
 		}
 		if(selectedMap == i)
 		{
@@ -1151,6 +1152,8 @@ void fMapSelect()
 				playAudioEffect(_pButtonSE, _buttonSE_Size);
 				selectedMap = i;
 				selectMapTransition = 0;
+				hoverPeriod = 0;
+				_musicFrameCount = 1;
 			}
 		}
 	}
