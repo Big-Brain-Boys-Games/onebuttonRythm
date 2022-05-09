@@ -2,7 +2,6 @@
 #define GAME_FILE_HANDLING
 
 #include "shared.h"
-#include "gameplay.h"
 #include <stdbool.h>
 #include "deps/raylib/src/raylib.h"
 
@@ -16,6 +15,8 @@ struct Map{
 	int offset;
 	char * imageFile;
 	char * musicFile;
+	void * music;
+	int musicLengthFrames;
 	int musicLength;
 	Texture2D image;
 	Image cpuImage;

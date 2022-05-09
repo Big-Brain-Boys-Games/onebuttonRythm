@@ -26,6 +26,7 @@ extern void (*_pGameplayFunction)();
 extern Font _font;
 extern bool _mapRefresh;
 
+bool _disableLoadingScreen = false;
 int _loading = 0;
 float _loadingFade = 0;
 
@@ -43,7 +44,7 @@ int main(int argc, char **argv)
 	audioInit();
 	loadSettings();
 	
-	_pGameplayFunction = &fMainMenu;
+	_pGameplayFunction = &fIntro;
 	_transition = 1;
 	_pNotes = malloc(sizeof(float)*50);
 	while (!WindowShouldClose())
@@ -57,7 +58,7 @@ int main(int argc, char **argv)
 		if(_pGameplayFunction != &fMapSelect)
 			_mapRefresh = true;
 		BeginDrawing();
-			if(_loadingFade != 1)
+			if(_loadingFade != 1 || _disableLoadingScreen)
 			{
 				if(_transition > 2)
 					_transition = 0;
@@ -70,9 +71,10 @@ int main(int argc, char **argv)
 					drawTransition();
 				}
 			}
-			if(_loadingFade != 0){
+			if(_loadingFade != 0 && !_disableLoadingScreen){
 				drawLoadScreen();
 			}
+			DrawFPS(0,0);
 		EndDrawing();
 	}
 	UnloadTexture(_background);

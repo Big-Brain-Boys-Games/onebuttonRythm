@@ -23,7 +23,7 @@ Color _fade = WHITE;
 extern float _musicHead, _scrollSpeed, *_pNotes;
 extern int _noteIndex, _amountNotes, _clickPressSE_Size, _clickReleaseSE_Size;
 extern bool _noBackground, _isKeyPressed;
-extern void * _pMusic, *_pClickPress, *_pClickRelease;
+extern void ** _pMusic, *_pClickPress, *_pClickRelease;
 extern float _transition, _loadingFade;
 extern Map * _map;
 
@@ -235,7 +235,7 @@ void drawBars()
 
 void drawMusicGraph(float transparent)
 {
-	if(_pMusic == 0)
+	if(_pMusic == 0 || *_pMusic)
 		return;
 	
 	//music stuff
@@ -256,8 +256,8 @@ void drawMusicGraph(float transparent)
 		float highest = 0;
 		int sampleHead = sampleBegin + samplesPerBar*i;
 		for(int j = 0; j < samplesPerBar; j++)
-			if(sampleHead+j > 0 && fabs(((float*)_pMusic)[sampleHead+j]) > highest)
-				highest = fabs(((float*)_pMusic)[sampleHead+j]);
+			if(sampleHead+j > 0 && fabs(((float*)*_pMusic)[sampleHead+j]) > highest)
+				highest = fabs(((float*)*_pMusic)[sampleHead+j]);
 
 		DrawRectangle(i*pixelsPerBar, GetScreenHeight()-highest*scaleBar, pixelsPerBar, highest*scaleBar, ColorAlpha(WHITE, transparent));
 	}
@@ -403,6 +403,8 @@ void drawLoadScreen()
 	DrawTextureTiled(_menuBackground, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
 		(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, ColorAlpha(WHITE, _loadingFade));
 	DrawRing((Vector2){.x=GetScreenWidth()/2, .y=GetScreenHeight()/2}, GetScreenWidth()*0.1, GetScreenWidth()*0.15, angle, angle+170, 50, ColorAlpha(WHITE, _loadingFade));
+	if(_loadingFade== 1)
+		drawVignette();
 }
 
 void drawButtonNoSprite(Rectangle rect, char * text, float fontScale)

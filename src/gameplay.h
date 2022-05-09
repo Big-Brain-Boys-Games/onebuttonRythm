@@ -29,5 +29,6 @@ void fMapSelect();
 void fExport();
 float getMusicHead();
 bool isAnyKeyDown();
+void fIntro();
 
 #endif

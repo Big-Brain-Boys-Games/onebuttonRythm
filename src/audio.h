@@ -2,6 +2,7 @@
 #define GAME_AUDIO_INTERFACE
 
 #include <stdbool.h>
+#include "files.h"
 
 int getSamplePosition(float time);
 float getMusicDuration();
@@ -12,7 +13,7 @@ int getBeatsCount();
 void setMusicStart();
 void randomMusicPoint();
 void audioInit();
-void loadMusic(char * file);
+void loadMusic(Map * map);
 bool endOfMusic();
 void playAudioEffect(void *effect, int size);
 void startMusic();

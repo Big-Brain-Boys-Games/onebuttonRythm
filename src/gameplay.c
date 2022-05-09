@@ -16,9 +16,9 @@ extern Color _fade;
 extern float _musicPlaying;
 extern bool _musicLoops, _playMenuMusic;
 extern float _musicHead, _transition;
-extern void * _pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE;
-extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size, _musicFrameCount, _musicLength;
-extern bool _isKeyPressed;
+extern void * _pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE, **_pMusic;
+extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size, _musicFrameCount, *_musicLength;
+extern bool _isKeyPressed, _disableLoadingScreen;
 
 extern void *_pFailSE;
 extern int _failSE_Size;
@@ -70,7 +70,6 @@ bool checkFileDropped()
 void gotoMainMenu(bool mainOrSelect)
 {
 	stopMusic();
-	loadMusic("assets/menuMusic.mp3");
 	_playMenuMusic = true;
 	randomMusicPoint();
 	if(mainOrSelect)
@@ -1027,6 +1026,8 @@ void fMapSelect()
 	static int combos[100];
 	static int selectedMap = -1;
 	static float selectMapTransition = 1;
+	static int hoverMap = -1;
+	static float hoverPeriod = 0;
 	static pthread_t thread = {0};
 	static struct mapInfoLoadingArgs args = {0};
 
@@ -1071,9 +1072,19 @@ void fMapSelect()
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		_pGameplayFunction=&fMainMenu;
 		_transition = 0.1;
+		_disableLoadingScreen = false;
 		return;
 	}
 
+	if(hoverMap == -1)
+		_musicFrameCount = 1;
+	else
+	{
+		_disableLoadingScreen = true;
+		hoverPeriod += GetFrameTime();
+		if(!_musicLength || !*_musicLength)
+			_musicFrameCount = 1;
+	}
 	//draw map button
 	for(int i = 0; i < amount; i++)
 	{
@@ -1082,6 +1093,27 @@ void fMapSelect()
 		if(i % 2 == 1)
 			x = GetScreenWidth()*0.55;
 		Rectangle mapButton = (Rectangle){.x=x, .y=menuScrollSmooth*GetScreenHeight()+GetScreenHeight() * ((floor(i/2) > floor(selectedMap/2) && selectedMap != -1 ? 0.4: 0.3) + 0.45*floor(i/2)), .width=GetScreenWidth()*0.4,.height=GetScreenHeight()*0.4};
+		if(mouseInRect(mapButton) || selectedMap == i)
+		{
+			if(hoverPeriod > 1 && hoverPeriod < 2)
+			{
+				//play music
+				char str [100];
+				loadMusic(&_pMaps[i]);
+				_playMenuMusic = false;
+				_musicPlaying = true;
+				hoverPeriod++;
+			}
+			hoverMap = i;
+			_disableLoadingScreen = true;
+		}else if(!mouseInRect(mapButton) && hoverMap == i)
+		{
+			hoverMap = -1;
+			_playMenuMusic = true;
+			_musicPlaying = false;
+			hoverPeriod = 0;
+			_musicFrameCount = 1;
+		}
 		if(selectedMap == i)
 		{
 			if(IsMouseButtonReleased(0) && mouseInRect(mapButton))
@@ -1096,6 +1128,7 @@ void fMapSelect()
 				_musicHead = 0;
 				printf("selected map!\n");
 				_transition = 0.1;
+				_disableLoadingScreen = false;
 			}
 
 			drawMapThumbnail(mapButton,&_pMaps[i], highScores[i], combos[i], true);
@@ -1128,6 +1161,8 @@ void fMapSelect()
 				playAudioEffect(_pButtonSE, _buttonSE_Size);
 				selectedMap = i;
 				selectMapTransition = 0;
+				hoverPeriod = 0;
+				_musicFrameCount = 1;
 			}
 		}
 	}
@@ -1376,5 +1411,18 @@ void fNewMap()
 			free(files);
 		}
 		else ClearDroppedFiles();
+	}
+}
+
+void fIntro()
+{
+	static float time = 0;
+	fMainMenu();
+	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ColorAlpha(BLACK, (1-time)*0.7));
+	DrawRing((Vector2){.x=GetScreenWidth()/2, .y=GetScreenHeight()/2}, time*GetScreenWidth()*1, time*GetScreenWidth()*0.8, 0, 360, 360, ColorAlpha(WHITE, 1-time));
+	time += fmin(GetFrameTime()/2, 0.016);
+	if(time > 1)
+	{
+		_pGameplayFunction = &fMainMenu;
 	}
 }

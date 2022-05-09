@@ -8,6 +8,8 @@
 #include <string.h>
 #include "deps/raylib/src/raylib.h"
 #include "deps/zip/src/zip.h"
+#include "gameplay.h"
+
 
 
 #ifdef _WIN32
@@ -27,6 +29,7 @@ extern Map *_map;
 extern int _amountNotes, _noteIndex, _score, _highestCombo;
 extern bool _noBackground, _mapRefresh;
 extern Settings _settings;
+extern void ** _pMusic;
 //TODO add support for more maps
 Map _pMaps [100];
 
@@ -44,6 +47,7 @@ Map loadMapInfo(char * file)
 	map.folder = malloc(100);
 	map.musicLength = 0;
 	map.musicFile = 0;
+	map.music = 0;
 	strcpy(map.folder, file);
 	char * pStr = malloc(strlen(mapStr) + 30);
 
@@ -237,7 +241,9 @@ void loadMap ()
 		_noBackground = 1;
 
 	// ma_result result
-	loadMusic(pStr);
+	if(_map->music!=0)
+		loadMusic(_map);
+	_pMusic = &_map->music;
 	_map->musicLength = (int)getMusicDuration();
 	
 

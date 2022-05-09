@@ -1,6 +1,6 @@
 #include "audio.h"
 #define MINIAUDIO_IMPLEMENTATION
-#include "include/miniaudio.h"
+#include "deps/miniaudio/miniaudio.h"
 
 #include "files.h"
 
@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern int _amountNotes ,_musicLength, _musicFrameCount, _loading;
+extern int _amountNotes, _loading;
 extern float _musicHead, _scrollSpeed;
 extern Map * _map;
 extern Settings _settings;
@@ -55,9 +55,9 @@ float _musicPlaying = 0;
 bool _musicLoops = true, _playMenuMusic = true;
 
 int _musicFrameCount = 0;
-int _musicLength = 0;
+int * _musicLength = 0;
 
-void *_pMusic = 0;
+void **_pMusic = 0;
 
 void *_pMenuMusic = 0;
 int _menuMusicFrameCount = 0;
@@ -70,7 +70,7 @@ int getSamplePosition(float time) {
 //Get duration of music in seconds
 float getMusicDuration()
 {
-	return _musicLength / (float)48000;
+	return *_musicLength / (float)48000;
 }
 
 float getMusicPosition()
@@ -166,18 +166,17 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 	float audioEffectVolume = _settings.volumeSoundEffects/100.0 * globalVolume;
 
 	// music
-	if (_musicPlaying)
+	if (_musicPlaying && _pMusic && *_pMusic && _musicLength)
 	{
-		if (_pMusic && _musicLength >0 && _musicLength > _musicFrameCount && _musicFrameCount > 0)
+		if (*_musicLength >0 && *_musicLength > _musicFrameCount && _musicFrameCount > 0)
 		{
 			for (int i = 0; i < frameCount * 2; i++)
 			{
-				((float *)pOutput)[i] = ((float *)_pMusic)[i + _musicFrameCount*2]*musicVolume*_musicPlaying;
+				((float *)pOutput)[i] = ((float *)*_pMusic)[i + _musicFrameCount*2]*musicVolume*_musicPlaying;
 			}
-			// memcpy(pOutput, _pMusic + (_musicFrameCount) * sizeof(float) * 2, frameCount * sizeof(float) * 2);
 		}
-		else if(_musicLoops)
-			_musicFrameCount = _musicFrameCount%_musicLength;
+		else if(_musicLoops && *_musicLength > 0)
+			_musicFrameCount = _musicFrameCount%*_musicLength;
 		_musicFrameCount += frameCount;
 	}
 	if (_pMenuMusic && _menuMusicLength >0 && _menuMusicLength > _menuMusicFrameCount && _menuMusicFrameCount > 0)
@@ -251,21 +250,22 @@ void audioInit()
 }
 
 
-void loadMusic(char * file)
+void loadMusic(Map * map)
 {
 	_musicPlaying = false;
-	if(_pMusic != 0)
-	{
-		//unload previous music
-		free(_pMusic);
-	}
-
-	loadAudio(&_pMusic, file, &_musicLength);
+	char str[100];
+	strcpy(str, "maps/");
+	strcat(str, map->folder);
+	strcat(str, map->musicFile);
+	if(map->music == 0)
+		loadAudio(&map->music, str, &map->musicLengthFrames);
+	_musicLength = &map->musicLengthFrames;
+	_pMusic = &map->music;
 }
 
 bool endOfMusic()
 {
-	if (_musicLength < _musicFrameCount)
+	if (*_musicLength < _musicFrameCount)
 		return true;
 	return false;
 }
