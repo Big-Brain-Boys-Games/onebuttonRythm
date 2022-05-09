@@ -52,7 +52,7 @@ int _effectOffset;
 //Where is the current audio
 float _musicHead = 0;
 float _musicPlaying = 0;
-bool _musicLoops = true;
+bool _musicLoops = true, _playMenuMusic = true;
 
 int _musicFrameCount = 0;
 int _musicLength = 0;
@@ -184,7 +184,7 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 	{
 		for (int i = 0; i < frameCount * 2; i++)
 		{
-			((float *)pOutput)[i] += ((float *)_pMenuMusic)[i + _menuMusicFrameCount*2]*musicVolume*(1-_musicPlaying);
+			((float *)pOutput)[i] += ((float *)_pMenuMusic)[i + _menuMusicFrameCount*2]*musicVolume*(1-_musicPlaying)*_playMenuMusic;
 		}
 	}
 	if(_menuMusicLength!=0)
@@ -284,6 +284,7 @@ void startMusic()
 {
 	_musicPlaying = true;
 	_musicFrameCount = 1;
+	_playMenuMusic = false;
 }
 
 void stopMusic()
@@ -291,6 +292,7 @@ void stopMusic()
 	_musicFrameCount = 0;
 	_musicHead = 0;
 	_musicPlaying = false;
+	_playMenuMusic = true;
 }
 
 void setMusicFrameCount()
