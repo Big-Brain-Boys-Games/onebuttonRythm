@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 
 extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
 extern Color _fade;
@@ -40,6 +41,7 @@ float _maxMargin = 0.1;
 int _hitPoints = 5;
 int _missPenalty = 10;
 bool _mapRefresh = true;
+int _barMeasureCount = 2;
 Map * _map;
 Settings _settings = (Settings){.volumeGlobal=50, .volumeMusic=100, .volumeSoundEffects=100, .zoom=7, .offset=0};
 
@@ -558,17 +560,19 @@ void fEditor ()
 {
 	static bool isPlaying = false;
 	_musicPlaying = isPlaying;
-	float secondsPerBeat = getMusicDuration() / getBeatsCount()/4;
+	float secondsPerBeat = getMusicDuration() / getBeatsCount()/_barMeasureCount;
+
+	
 	if(isPlaying) {
 		_musicHead += GetFrameTime();
 		if (endOfMusic())
 		{
 			_musicPlaying = false;
 		}
+		
 	}else
 	{
 		setMusicFrameCount();
-		
 		if (IsKeyPressed(KEY_RIGHT)) {
 			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
 			_musicHead += secondsPerBeat;
@@ -625,19 +629,28 @@ void fEditor ()
 				closestIndex = i;
 			}
 		}
-		if (IsKeyPressed(KEY_X) && closestTime < _maxMargin)
-		{
-			removeNote(closestIndex);
-		}
 		if(IsKeyPressed(KEY_Z) && closestTime > 0.03f)
 		{
 			newNote(getMusicHead());
+		}
+
+		if (IsKeyPressed(KEY_X) && closestTime < _maxMargin)
+		{
+			removeNote(closestIndex);
 		}
 
 		if(IsKeyPressed(KEY_C) && !isPlaying)
 		{
 			//todo maybe not 4 subbeats?
 			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
+		}
+		if (IsKeyPressed(KEY_E)  && _barMeasureCount <= 32)
+		{
+			_barMeasureCount = _barMeasureCount * 2;
+		}
+		if (IsKeyPressed(KEY_Q) && _barMeasureCount >= 2)
+		{
+			_barMeasureCount = _barMeasureCount / 2;	
 		}
 
 		if(IsKeyPressed(KEY_SPACE))
@@ -646,7 +659,6 @@ void fEditor ()
 		}
 	}
 
-	drawMusicGraph(0.7);
 	drawVignette();
 	
 	if (interactableButton("Song settings",0.025, GetScreenWidth()*0.8, GetScreenHeight()*0.05,GetScreenWidth()*0.2,GetScreenHeight()*0.07))
