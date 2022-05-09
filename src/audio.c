@@ -3,6 +3,7 @@
 #include "deps/miniaudio/miniaudio.h"
 
 #include "files.h"
+#include "gameplay.h"
 
 
 #include <math.h>
@@ -155,7 +156,7 @@ void loadAudio(void ** buffer, char * file, int * audioLength)
 	args[threadIndex].buffer=buffer;
 	args[threadIndex].file=malloc(strlen(file)+1);
 	strcpy(args[threadIndex].file, file);
-	pthread_create(&threads[threadIndex], NULL, decodeAudio, &(args[threadIndex]));
+	pthread_create(&threads[threadIndex], NULL, (void *(*)(void *))decodeAudio, &(args[threadIndex]));
 	threadIndex++;
 }
 
