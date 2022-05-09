@@ -38,7 +38,7 @@ int _hitPoints = 5;
 int _missPenalty = 10;
 bool _mapRefresh = true;
 Map * _map;
-Settings _settings = (Settings){.volumeGlobal=100, .volumeMusic=100, .volumeSoundEffects=100, .zoom=7, .offset=0};
+Settings _settings = (Settings){.volumeGlobal=50, .volumeMusic=100, .volumeSoundEffects=100, .zoom=7, .offset=0};
 
 bool showSettings;
 
