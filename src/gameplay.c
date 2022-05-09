@@ -40,6 +40,8 @@ bool _mapRefresh = true;
 Map * _map;
 Settings _settings = (Settings){.volumeGlobal=100, .volumeMusic=100, .volumeSoundEffects=100, .zoom=7, .offset=0};
 
+bool showSettings;
+
 //Timestamp of all the notes
 float * _pNotes;
 void (*_pNextGameplayFunction)();
@@ -635,25 +637,43 @@ void fEditor ()
 	drawMusicGraph(0.7);
 	drawVignette();
 	
-	char bpm[10] = {0};
-	if(_map->bpm != 0)
-		sprintf(bpm, "%i", _map->bpm);
-	static bool bpmBoxSelected = false;
-	Rectangle bpmBox = (Rectangle){.x=GetScreenWidth()*0.8, .y=GetScreenHeight()*0.1, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
-	textBox(bpmBox, bpm, &bpmBoxSelected);
-	_map->bpm=atoi(bpm);
-	_map->bpm = fmin(fmax(_map->bpm, 0), 300);
+	if (interactableButton("Song settings",0.025, GetScreenWidth()*0.8, GetScreenHeight()*0.05,GetScreenWidth()*0.2,GetScreenHeight()*0.07))
+	{
+		showSettings = !showSettings;
+	}
+	
+	if(showSettings) {
+		DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=0,.g=0,.b=0,.a=128});
+		char bpm[10] = {0};
+		if(_map->bpm != 0)
+			sprintf(bpm, "%i", _map->bpm);
+		static bool bpmBoxSelected = false;
+		Rectangle bpmBox = (Rectangle){.x=GetScreenWidth()*0.2, .y=GetScreenHeight()*0.1, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
+		textBox(bpmBox, bpm, &bpmBoxSelected);
+		_map->bpm=atoi(bpm);
+		_map->bpm = fmin(fmax(_map->bpm, 0), 300);
 
-	char offset[10] = {0};
-	if(_map->offset != 0)
-		sprintf(offset, "%i", _map->offset);
-	static bool offsetBoxSelected = false;
-	Rectangle offsetBox = (Rectangle){.x=GetScreenWidth()*0.8, .y=GetScreenHeight()*0.18, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
-	textBox(offsetBox, offset, &offsetBoxSelected);
-	_map->offset = atoi(offset);
-	_map->offset = fmin(fmax(_map->offset, 0), 5000);
+		char offset[10] = {0};
+		if(_map->offset != 0)
+			sprintf(offset, "%i", _map->offset);
+		static bool offsetBoxSelected = false;
+		Rectangle offsetBox = (Rectangle){.x=GetScreenWidth()*0.2, .y=GetScreenHeight()*0.18, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
+		textBox(offsetBox, offset, &offsetBoxSelected);
 		
+		char * text = "BPM:";
+		float tSize = GetScreenWidth()*0.025;
+		int size = measureText(text, tSize);
+		drawText(text,GetScreenWidth()*0.1-size/2,GetScreenHeight()*0.12,tSize,WHITE);
 
+		text = "Song Offset:";
+		tSize = GetScreenWidth()*0.025;
+		size = measureText(text, tSize);
+		drawText(text,GetScreenWidth()*0.1-size/2,GetScreenHeight()*0.20,tSize,WHITE);
+		
+		_map->offset = atoi(offset);
+		_map->offset = fmin(fmax(_map->offset, 0), 5000);
+	}
+	
 	
 	drawBars();
 	drawProgressBarI(true);
