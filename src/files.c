@@ -241,7 +241,7 @@ void loadMap ()
 		_noBackground = 1;
 
 	// ma_result result
-	if(_map->music!=0)
+	if(_map->music==0)
 		loadMusic(_map);
 	_pMusic = &_map->music;
 	_map->musicLength = (int)getMusicDuration();
