@@ -38,6 +38,7 @@ Map loadMapInfo(char * file);
 void saveFile (int noteAmount);
 void loadMap();
 void unloadMap();
+void freeMap(Map * map);
 void saveScore();
 bool readScore(Map * map, int *score, int * combo);
 void makeMap(Map * map);

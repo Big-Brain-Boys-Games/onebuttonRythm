@@ -144,6 +144,33 @@ Map loadMapInfo(char * file)
 	return map;
 }
 
+void freeMap(Map * map)
+{
+	if(map->cpuImage.width!=0)
+	{
+		UnloadImage(map->cpuImage);
+	}
+	if(map->image.id != 0 && map->image.id != _menuBackground.id)
+	{
+		UnloadTexture(map->image);
+	}
+	if(map->name != 0)
+		free(map->name);
+	if(map->creator != 0)
+		free(map->creator);
+	if(map->folder != 0)
+		free(map->folder);
+	if(map->imageFile != 0)
+		free(map->imageFile);
+	if(map->musicFile != 0)
+		free(map->musicFile);
+	map->bpm = 0;
+	map->difficulty = 0;
+	map->zoom = 7;
+	map->offset = 0;
+	map->musicLength = 0;
+}
+
 void saveFile (int noteAmount)
 {
 	char str [100];

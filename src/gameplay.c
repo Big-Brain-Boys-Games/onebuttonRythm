@@ -965,7 +965,7 @@ void mapInfoLoading(struct mapInfoLoadingArgs * args)
 			continue;
 		//check for cache
 		bool cacheHit = false;
-		for(int j = 0; j < 100; j++)
+		for(int j = 0; j < 0; j++)
 		{
 			if(strcmp(filesCaching[j], files[i]) == 0)
 			{
@@ -991,8 +991,7 @@ void mapInfoLoading(struct mapInfoLoadingArgs * args)
 		printf("cache miss %s\n", files[i]);
 		//cache miss
 		
-
-		//todo memory leak v
+		freeMap(&_pMaps[mapIndex]);
 		_pMaps[mapIndex] = loadMapInfo(files[i]);
 		if(_pMaps[mapIndex].name != 0)
 		{
