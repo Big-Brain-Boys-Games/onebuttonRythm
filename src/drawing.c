@@ -124,10 +124,11 @@ void dNotes ()
 
 void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, bool selected)
 {
-	if(map->image.id == 0 && map->folder != 0)
+	if(map->image.id == 0)
 	{
-		//load map image (cant be loaded in sperate thread)
-		map->image = LoadTexture(map->imageFile);
+		//load map image onto gpu(cant be loaded in sperate thread because opengl >:( )
+		if(map->cpuImage.width != 0)
+			map->image = LoadTextureFromImage(map->cpuImage);
 		if(map->image.id == 0)
 			map->image.id = -1; 
 		else

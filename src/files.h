@@ -18,6 +18,7 @@ struct Map{
 	char * musicFile;
 	int musicLength;
 	Texture2D image;
+	Image cpuImage;
 };
 typedef struct Map Map;
 

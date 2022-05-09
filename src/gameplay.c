@@ -952,10 +952,10 @@ struct mapInfoLoadingArgs{
 
 void mapInfoLoading(struct mapInfoLoadingArgs * args)
 {
+	_loading++;
 	int amount;
 	char ** files = GetDirectoryFiles("maps/", &amount);
 	int mapIndex = 0;
-	_loading++;
 	for(int i = 0; i < amount; i++)
 	{
 		if(files[i][0] == '.')
@@ -964,14 +964,16 @@ void mapInfoLoading(struct mapInfoLoadingArgs * args)
 		_pMaps[mapIndex] = loadMapInfo(files[i]);
 		if(_pMaps[mapIndex].name != 0)
 		{
-			readScore(&_pMaps[mapIndex], &args->highScores[mapIndex], &args->combos[mapIndex]);
+			readScore(&_pMaps[mapIndex], 
+				&(args->highScores[mapIndex]),
+				&(args->combos[mapIndex]));
 		}
 		
 		mapIndex++;		
 	}
 	_loading--;
 	ClearDirectoryFiles();
-	*args->amount = amount;
+	*args->amount = mapIndex;
 }
 
 void fMapSelect()

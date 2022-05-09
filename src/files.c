@@ -131,11 +131,13 @@ Map loadMapInfo(char * file)
 	{
 		printf("image: %s \n", pStr);
 		// map.image = LoadTexture(pStr);
+		map.cpuImage = LoadImage(pStr);
 		map.imageFile = malloc(100);
 		strcpy(map.imageFile, pStr);
 	}
 	else{
 		map.image = _menuBackground;
+		map.cpuImage.width = 0;
 	}
 	SetTextureFilter(map.image, TEXTURE_FILTER_BILINEAR);
 	free(pStr);
