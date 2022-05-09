@@ -26,6 +26,7 @@ extern bool _noBackground, _isKeyPressed;
 extern void ** _pMusic, *_pClickPress, *_pClickRelease;
 extern float _transition, _loadingFade;
 extern Map * _map;
+extern int _barMeasureCount;
 
 
 int measureText (char * text, int fontSize)
@@ -218,7 +219,7 @@ void drawBars()
 {
 	//Draw the bars
 	float middle = GetScreenWidth()/2;
-	float distBetweenBeats = getMusicDuration() / getBeatsCount();
+	float distBetweenBeats = getMusicDuration() / getBeatsCount() / _barMeasureCount;
 
 	float distBetweenBars = distBetweenBeats*4;
 	for (int i = (screenToMusicTime(0)-_map->offset/1000.0)/distBetweenBars; i < (screenToMusicTime(GetScreenWidth())-_map->offset/1000.0)/distBetweenBars; i++)
