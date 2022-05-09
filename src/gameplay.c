@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 
 extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
 extern Color _fade;
@@ -50,6 +51,8 @@ float * _pNotes;
 void (*_pNextGameplayFunction)();
 void (*_pGameplayFunction)();
 
+char _notfication[100];
+
 bool checkFileDropped()
 {
 	if(IsFileDropped())
@@ -61,6 +64,7 @@ bool checkFileDropped()
 			if(strcmp(GetFileExtension(files[i]), ".zip") == 0)
 			{
 				addZipMap(files[i]);
+				strcpy(_notfication, "map imported");
 			}
 		}
 		ClearDroppedFiles();
@@ -359,11 +363,6 @@ void fMainMenu()
 	drawVignette();
 	//draw main menu
 	
-	
-	
-	
-	
-	
 	//Rectangle playButton = (Rectangle){.x=middle - GetScreenWidth()*0.10, .y=GetScreenHeight() * 0.3, .width=GetScreenWidth()*0.2,.height=GetScreenHeight()*0.08};
 	// drawButton(playButton,"play", 0.04);
 	// Rectangle editorButton = (Rectangle){.x=middle - GetScreenWidth()*0.10, .y=GetScreenHeight() * 0.45, .width=GetScreenWidth()*0.2,.height=GetScreenHeight()*0.08};
@@ -372,9 +371,6 @@ void fMainMenu()
 	// drawButton(SettingsButton,"Settings", 0.04);
 	// Rectangle recordingButton = (Rectangle){.x=middle - GetScreenWidth()*0.10, .y=GetScreenHeight() * 0.75, .width=GetScreenWidth()*0.2,.height=GetScreenHeight()*0.08};
 	// drawButton(recordingButton,"Record", 0.04);
-
-	
-	
 
 	if(interactableButton("Play", 0.04, middle - GetScreenWidth()*0.3,GetScreenHeight() * 0.3,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
 	{
@@ -420,6 +416,9 @@ void fMainMenu()
 	drawText(title, middle-size/2+GetScreenWidth()*0.004, GetScreenHeight()*0.107, tSize, DARKGRAY);
 	//real title
 	drawText(title, middle-size/2, GetScreenHeight()*0.1, tSize, WHITE);
+
+	drawText(_notfication, GetScreenWidth()*0.6, GetScreenHeight()*0.7, GetScreenWidth()*0.02, WHITE);
+
 
 	drawCursor();
 
@@ -974,7 +973,7 @@ void mapInfoLoading(struct mapInfoLoadingArgs * args)
 			continue;
 		//check for cache
 		bool cacheHit = false;
-		for(int j = 0; j < 0; j++)
+		for(int j = 0; j < 100; j++)
 		{
 			if(strcmp(filesCaching[j], files[i]) == 0)
 			{
@@ -1041,7 +1040,7 @@ void fMapSelect()
 		args.amount = &amount;
 		args.combos = combos;
 		args.highScores = highScores;
-		pthread_create(&thread, NULL, mapInfoLoading, &args);
+		pthread_create(&thread, NULL, (void *(*)(void*))mapInfoLoading, &args);
 		_mapRefresh = false;
 	}
 	ClearBackground(BLACK);
@@ -1073,6 +1072,8 @@ void fMapSelect()
 		_pGameplayFunction=&fMainMenu;
 		_transition = 0.1;
 		_disableLoadingScreen = false;
+		_musicPlaying = false;
+		_playMenuMusic = true;
 		return;
 	}
 
@@ -1095,7 +1096,7 @@ void fMapSelect()
 		Rectangle mapButton = (Rectangle){.x=x, .y=menuScrollSmooth*GetScreenHeight()+GetScreenHeight() * ((floor(i/2) > floor(selectedMap/2) && selectedMap != -1 ? 0.4: 0.3) + 0.45*floor(i/2)), .width=GetScreenWidth()*0.4,.height=GetScreenHeight()*0.4};
 		if(mouseInRect(mapButton) || selectedMap == i)
 		{
-			if(hoverPeriod > 1 && hoverPeriod < 2)
+			if(hoverPeriod > 1 && hoverPeriod < 2 || !_musicPlaying)
 			{
 				//play music
 				char str [100];
@@ -1196,6 +1197,7 @@ void fExport()
 	strcat(str, ".zip");
 	SetClipboardText(str);
 	resetBackGround();
+	strcpy(_notfication, "exported map");
 }
 
 void fNewMap()

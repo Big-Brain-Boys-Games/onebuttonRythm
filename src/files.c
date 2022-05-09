@@ -300,7 +300,6 @@ void saveScore()
 		return;
 	printf("str %s\n", str);
 	file = fopen(str, "w");
-	//todo add combo
 	fprintf(file, "%i %i\n", _score, _highestCombo);
 	fclose(file);
 }
@@ -318,7 +317,6 @@ bool readScore(Map * map, int *score, int * combo)
 	if(!FileExists(str))
 		return false;
 	file = fopen(str, "r");
-	//todo add combo
 	char line [1000];
 	while(fgets(line,sizeof(line),file)!= NULL)
 	{
