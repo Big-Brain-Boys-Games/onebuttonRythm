@@ -158,7 +158,6 @@ void numberBox(Rectangle rect, int * number, bool * selected)
 		*selected = false;
 }
 
-
 void slider(Rectangle rect, bool * selected, int * value, int max, int min)
 {
 	if(*value > max)
@@ -559,6 +558,7 @@ void fEditor ()
 {
 	static bool isPlaying = false;
 	_musicPlaying = isPlaying;
+	float secondsPerBeat = getMusicDuration() / getBeatsCount()/4;
 	if(isPlaying) {
 		_musicHead += GetFrameTime();
 		if (endOfMusic())
@@ -568,8 +568,19 @@ void fEditor ()
 	}else
 	{
 		setMusicFrameCount();
-		if(IsKeyDown(KEY_RIGHT) || GetMouseWheelMove() > 0) _musicHead+= GetFrameTime()*_scrollSpeed;
-		if(IsKeyDown(KEY_LEFT) || GetMouseWheelMove() < 0) _musicHead-= GetFrameTime()*_scrollSpeed;
+		
+		if (IsKeyPressed(KEY_RIGHT)) {
+			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
+			_musicHead += secondsPerBeat;
+		}
+			
+		if (IsKeyPressed(KEY_LEFT)) {
+			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
+			_musicHead -= secondsPerBeat;	
+		}
+	
+		if(GetMouseWheelMove() > 0) _musicHead+= GetFrameTime()*(_scrollSpeed * 2);
+		if(GetMouseWheelMove() < 0) _musicHead-= GetFrameTime()*(_scrollSpeed * 2);
 		if(IsKeyPressed(KEY_UP) || (GetMouseWheelMove() > 0 && IsKeyDown(KEY_LEFT_CONTROL))) _scrollSpeed *= 1.2;
 		if(IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL))) _scrollSpeed /= 1.2;
 		if(_scrollSpeed == 0) _scrollSpeed = 0.01;
@@ -625,9 +636,7 @@ void fEditor ()
 
 		if(IsKeyPressed(KEY_C) && !isPlaying)
 		{
-			printf("Snapping to grid");
 			//todo maybe not 4 subbeats?
-			float secondsPerBeat = getMusicDuration() / getBeatsCount()/4;
 			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
 		}
 
