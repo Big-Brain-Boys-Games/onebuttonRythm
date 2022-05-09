@@ -24,7 +24,7 @@ extern float _musicHead, _scrollSpeed, *_pNotes;
 extern int _noteIndex, _amountNotes, _clickPressSE_Size, _clickReleaseSE_Size;
 extern bool _noBackground, _isKeyPressed;
 extern void * _pMusic, *_pClickPress, *_pClickRelease;
-extern float _transition;
+extern float _transition, _loadingFade;
 extern Map * _map;
 
 
@@ -124,6 +124,15 @@ void dNotes ()
 
 void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, bool selected)
 {
+	if(map->image.id == 0 && map->folder != 0)
+	{
+		//load map image (cant be loaded in sperate thread)
+		map->image = LoadTexture(map->imageFile);
+		if(map->image.id == 0)
+			map->image.id = -1; 
+		else
+			SetTextureFilter(map->image, TEXTURE_FILTER_BILINEAR);
+	}
 	float imageRatio = 0.8;
 	Color color = WHITE;
 	if(mouseInRect(rect))
@@ -384,6 +393,15 @@ void drawButton(Rectangle rect, char * text, float fontScale)
 	drawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + rect.height*0.2, screenSize * fontScale, (color.r == GRAY.r) ? BLACK : DARKGRAY);
 }
 
+void drawLoadScreen()
+{
+	static float angle = 0;
+	angle += GetFrameTime()*(sinf(GetTime()*4)+1.5)*300;
+	DrawTextureTiled(_menuBackground, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
+		(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, ColorAlpha(WHITE, _loadingFade));
+	DrawRing((Vector2){.x=GetScreenWidth()/2, .y=GetScreenHeight()/2}, GetScreenWidth()*0.1, GetScreenWidth()*0.15, angle, angle+170, 50, ColorAlpha(WHITE, _loadingFade));
+}
+
 void drawButtonNoSprite(Rectangle rect, char * text, float fontScale)
 {
 	Color color = WHITE;
@@ -410,17 +428,17 @@ void initDrawing()
 	HideCursor();
 
 	_heartTex = LoadTexture("assets/heart.png");
-	SetTextureFilter(_heartTex, TEXTURE_FILTER_TRILINEAR);
+	SetTextureFilter(_heartTex, TEXTURE_FILTER_BILINEAR);
 	_healthBarTex = LoadTexture("assets/healthBar.png");
-	SetTextureFilter(_healthBarTex, TEXTURE_FILTER_TRILINEAR);
+	SetTextureFilter(_healthBarTex, TEXTURE_FILTER_BILINEAR);
 	_noteTex = LoadTexture("assets/note.png");
-	SetTextureFilter(_noteTex, TEXTURE_FILTER_TRILINEAR);
+	SetTextureFilter(_noteTex, TEXTURE_FILTER_BILINEAR);
 	_cursorTex = LoadTexture("assets/cursor.png");
-	SetTextureFilter(_cursorTex, TEXTURE_FILTER_TRILINEAR);
+	SetTextureFilter(_cursorTex, TEXTURE_FILTER_BILINEAR);
 	_menuBackground = LoadTexture("assets/background.png");
-	SetTextureFilter(_menuBackground, TEXTURE_FILTER_TRILINEAR);
+	SetTextureFilter(_menuBackground, TEXTURE_FILTER_BILINEAR);
 	_font = LoadFontEx("assets/nasalization.otf", 1024, 0, 250);
-	SetTextureFilter(_font.texture, TEXTURE_FILTER_TRILINEAR);
+	SetTextureFilter(_font.texture, TEXTURE_FILTER_BILINEAR);
 	_background = _menuBackground;
 
 	//load button tile set

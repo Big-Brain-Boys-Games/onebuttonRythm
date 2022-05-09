@@ -13,7 +13,8 @@
 
 extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
 extern Color _fade;
-extern bool _musicPlaying, _musicLoops;
+extern float _musicPlaying;
+extern bool _musicLoops;
 extern float _musicHead, _transition;
 extern void * _pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE;
 extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size, _musicFrameCount, _musicLength;
@@ -24,6 +25,8 @@ extern int _failSE_Size;
 
 extern void *_pFinishSE;
 extern int _finishSE_Size;
+
+extern int _loading;
 
 
 extern Map _pMaps[100];
@@ -941,6 +944,24 @@ void fFail ()
 	drawCursor();
 }
 
+struct mapInfoLoadingArgs{
+	int mapIndex;
+	char * file;
+	int * highscore, *combo;
+};
+
+void mapInfoLoading(struct mapInfoLoadingArgs * args)
+{
+	_loading++;
+	_pMaps[args->mapIndex] = loadMapInfo(args->file);
+	if(_pMaps[args->mapIndex].name != 0)
+	{
+		readScore(&_pMaps[args->mapIndex], args->highscore, args->combo);
+	}
+	free(args->file);
+	_loading--;
+}
+
 void fMapSelect()
 {
 	static int amount = 0;
@@ -949,6 +970,9 @@ void fMapSelect()
 	static int combos[100];
 	static int selectedMap = -1;
 	static float selectMapTransition = 1;
+	static pthread_t threads[100] = {0};
+	static struct mapInfoLoadingArgs args[100] = {0};
+
 	if(selectMapTransition < 1)
 		selectMapTransition += GetFrameTime()*10;
 	if(selectMapTransition > 1)
@@ -962,12 +986,13 @@ void fMapSelect()
 		{
 			if(files[i][0] == '.')
 				continue;
-			_pMaps[mapIndex] = loadMapInfo(&(files[i][0]));
-			if(_pMaps[mapIndex].name != 0)
-			{
-				readScore(&_pMaps[mapIndex], &(highScores[mapIndex]), &(combos[mapIndex]));
-				mapIndex++;
-			}
+			args[mapIndex].combo = &combos[mapIndex];
+			args[mapIndex].highscore = &highScores[mapIndex];
+			args[mapIndex].mapIndex = mapIndex;
+			args[mapIndex].file = malloc(100);
+			strcpy(args[mapIndex].file, files[i]);
+			pthread_create(&threads[i], NULL, mapInfoLoading, &args[mapIndex]);
+			mapIndex++;		
 		}
 		amount = mapIndex;
 		_mapRefresh = false;
@@ -1015,6 +1040,18 @@ void fMapSelect()
 		{
 			if(IsMouseButtonReleased(0) && mouseInRect(mapButton))
 				selectedMap = -1;
+			
+			Rectangle buttons = (Rectangle){.x=mapButton.x, .y=mapButton.y+mapButton.height, .width=mapButton.width, .height=mapButton.height*0.15*selectMapTransition};
+			if(mouseInRect(buttons) && IsMouseButtonReleased(0))
+			{
+				_map = &_pMaps[i];
+				loadMap();
+				setMusicStart();
+				_musicHead = 0;
+				printf("selected map!\n");
+				_transition = 0.1;
+			}
+
 			drawMapThumbnail(mapButton,&_pMaps[i], highScores[i], combos[i], true);
 			if(interactableButtonNoSprite("play", 0.03, mapButton.x, mapButton.y+mapButton.height, mapButton.width*(1/3.0)*1.01, mapButton.height*0.15*selectMapTransition))
 			{
@@ -1033,17 +1070,6 @@ void fMapSelect()
 				_pGameplayFunction = &fCountDown;
 				free(_pNotes);
 				_pNotes = calloc(sizeof(float), 50);
-			}
-
-			Rectangle buttons = (Rectangle){.x=mapButton.x, .y=mapButton.y+mapButton.height, .width=mapButton.width, .height=mapButton.height*0.15*selectMapTransition};
-			if(mouseInRect(buttons) && IsMouseButtonReleased(0))
-			{
-				_map = &_pMaps[i];
-				loadMap();
-				setMusicStart();
-				_musicHead = 0;
-				printf("selected map!\n");
-				_transition = 0.1;
 			}
 			DrawRectangleGradientV(mapButton.x, mapButton.y+mapButton.height, mapButton.width, mapButton.height*0.05*selectMapTransition, ColorAlpha(BLACK, 0.3), ColorAlpha(BLACK, 0));
 		}else

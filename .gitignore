@@ -62,3 +62,4 @@ vgcore*
 #configs
 *.conf
 scores/*
+*~

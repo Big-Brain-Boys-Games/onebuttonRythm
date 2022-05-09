@@ -130,15 +130,14 @@ Map loadMapInfo(char * file)
 	if(FileExists(pStr))
 	{
 		printf("image: %s \n", pStr);
-		map.image = LoadTexture(pStr);
+		// map.image = LoadTexture(pStr);
 		map.imageFile = malloc(100);
 		strcpy(map.imageFile, pStr);
 	}
 	else{
 		map.image = _menuBackground;
 	}
-	printf("map.image.id %i\n", map.image.id);
-	SetTextureFilter(map.image, TEXTURE_FILTER_TRILINEAR);
+	SetTextureFilter(map.image, TEXTURE_FILTER_BILINEAR);
 	free(pStr);
 	return map;
 }
@@ -185,10 +184,10 @@ void saveFile (int noteAmount)
 //Load the map. Use 1 parameter to only open the file
 void loadMap ()
 {
-	char * map = malloc(strlen(_map->folder) + 12);
+	char * map = malloc(100);
 	strcpy(map, "maps/");
 	strcat(map, _map->folder);
-	char * pStr = malloc(strlen(map) + 12);
+	char * pStr = malloc(100);
 	_background = _map->image;
 
 	strcpy(pStr, map);

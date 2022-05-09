@@ -26,6 +26,9 @@ extern void (*_pGameplayFunction)();
 extern Font _font;
 extern bool _mapRefresh;
 
+int _loading = 0;
+float _loadingFade = 0;
+
 bool _isKeyPressed = false;
 
 float _transition = 0;
@@ -37,7 +40,6 @@ int main(int argc, char **argv)
 {
 	
 	initDrawing();
-	Vector2 mousePos;
 	audioInit();
 	loadSettings();
 	
@@ -46,20 +48,30 @@ int main(int argc, char **argv)
 	_pNotes = malloc(sizeof(float)*50);
 	while (!WindowShouldClose())
 	{
+		_loadingFade += fmax(((_loading != 0 ? 1 : 0)-_loadingFade) * GetFrameTime()*15, -0.1);
+		if(_loadingFade < 0)
+			_loadingFade = 0;
+		if(_loadingFade < _loading)
+			_loadingFade = 1;
 		_isKeyPressed = isAnyKeyDown();
 		if(_pGameplayFunction != &fMapSelect)
 			_mapRefresh = true;
-		mousePos = GetMousePosition();
 		BeginDrawing();
-			if(_transition > 2)
-				_transition = 0;
-			if(_transition == 0 || _transition > 1)
-				(*_pGameplayFunction)();
-			
-			if(_transition!=0)
+			if(_loadingFade != 1)
 			{
-				_transition+=GetFrameTime()*7;
-				drawTransition();
+				if(_transition > 2)
+					_transition = 0;
+				if(_transition == 0 || _transition > 1)
+					(*_pGameplayFunction)();
+				
+				if(_transition!=0)
+				{
+					_transition+=GetFrameTime()*7;
+					drawTransition();
+				}
+			}
+			if(_loadingFade != 0){
+				drawLoadScreen();
 			}
 		EndDrawing();
 	}

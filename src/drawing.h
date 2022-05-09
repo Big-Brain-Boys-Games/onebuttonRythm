@@ -27,5 +27,6 @@ void fMapSelect();
 void drawMusicGraph(float transparent);
 void drawTransition();
 void initDrawing();
+void drawLoadScreen();
 
 #endif
