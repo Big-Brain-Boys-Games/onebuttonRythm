@@ -9,32 +9,9 @@
 #include "../deps/raylib/src/raylib.h"
 #include "windowsDefs.h"
 #include "../deps/zip/src/zip.h"
-typedef unsigned long DWORD;
-typedef unsigned short WORD;
-typedef signed long LONG;
-typedef struct tagMSG *LPMSG;
-typedef struct tagBITMAPINFOHEADER {
-  DWORD biSize;
-  LONG  biWidth;
-  LONG  biHeight;
-  WORD  biPlanes;
-  WORD  biBitCount;
-  DWORD biCompression;
-  DWORD biSizeImage;
-  LONG  biXPelsPerMeter;
-  LONG  biYPelsPerMeter;
-  DWORD biClrUsed;
-  DWORD biClrImportant;
-} BITMAPINFOHEADER, *PBITMAPINFOHEADER;
+
 #include "gameplay.h"
 
-
-
-// #ifdef _WIN32
-// #include <windows.h>
-
-// #define mkdir(dir) _mkdir(dir)
-// #endif
 #ifdef __unix
 #include <sys/stat.h>
 #define mkdir(dir) mkdir(dir, 0777)

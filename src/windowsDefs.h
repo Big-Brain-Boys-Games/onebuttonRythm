@@ -1,3 +1,5 @@
+#ifndef WINDOWSDEFS_H
+#define WINDOWSDEFS_H
 // #define NOGDICAPMASKS     // CC_*, LC_*, PC_*, CP_*, TC_*, RC_
 // #define NOVIRTUALKEYCODES // VK_*
 // #define NOWINMESSAGES     // WM_*, EM_*, LB_*, CB_*
@@ -37,3 +39,21 @@
 // #define NOPROFILER        // Profiler interface.
 // #define NODEFERWINDOWPOS  // DeferWindowPos routines
 // #define NOMCX             // Modem Configuration Extensions
+typedef unsigned long DWORD;
+typedef unsigned short WORD;
+typedef signed long LONG;
+typedef struct tagMSG *LPMSG;
+typedef struct tagBITMAPINFOHEADER {
+  DWORD biSize;
+  LONG  biWidth;
+  LONG  biHeight;
+  WORD  biPlanes;
+  WORD  biBitCount;
+  DWORD biCompression;
+  DWORD biSizeImage;
+  LONG  biXPelsPerMeter;
+  LONG  biYPelsPerMeter;
+  DWORD biClrUsed;
+  DWORD biClrImportant;
+} BITMAPINFOHEADER, *PBITMAPINFOHEADER;
+#endif

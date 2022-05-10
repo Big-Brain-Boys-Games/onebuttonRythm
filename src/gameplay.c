@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "thread.h"
 
 extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
 extern Color _fade;
@@ -970,7 +971,12 @@ struct mapInfoLoadingArgs{
 
 char filesCaching[100][100] = {0};
 
+#ifdef __unix
 void mapInfoLoading(struct mapInfoLoadingArgs * args)
+#else
+DWORD WINAPI * mapInfoLoading(struct mapInfoLoadingArgs * args)
+// DWORD WINAPI * decodeAudio(struct decodeAudioArgs * args)
+#endif
 {
 	_loading++;
 	int amount;
@@ -1028,6 +1034,7 @@ void mapInfoLoading(struct mapInfoLoadingArgs * args)
 	_loading--;
 	ClearDirectoryFiles();
 	*args->amount = mapIndex;
+	free(args);
 }
 
 void fMapSelect()
@@ -1039,7 +1046,6 @@ void fMapSelect()
 	static float selectMapTransition = 1;
 	static int hoverMap = -1;
 	static float hoverPeriod = 0;
-	static struct mapInfoLoadingArgs args = {0};
 
 	if(selectMapTransition < 1)
 		selectMapTransition += GetFrameTime()*10;
@@ -1048,10 +1054,11 @@ void fMapSelect()
 	checkFileDropped();
 	if(_mapRefresh)
 	{
-		args.amount = &amount;
-		args.combos = combos;
-		args.highScores = highScores;
-		mapInfoLoading( &args);
+		struct mapInfoLoadingArgs * args = malloc(sizeof(struct mapInfoLoadingArgs));
+		args->amount = &amount;
+		args->combos = combos;
+		args->highScores = highScores;
+		createThread(mapInfoLoading, args);
 		_mapRefresh = false;
 	}
 	ClearBackground(BLACK);

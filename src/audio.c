@@ -1,28 +1,12 @@
 #include "audio.h"
 #include "windowsDefs.h"
-#include "../deps/miniaudio/miniaudio.h"
-typedef unsigned long DWORD;
-typedef unsigned short WORD;
-typedef signed long LONG;
-typedef struct tagMSG *LPMSG;
-typedef struct tagBITMAPINFOHEADER {
-  DWORD biSize;
-  LONG  biWidth;
-  LONG  biHeight;
-  WORD  biPlanes;
-  WORD  biBitCount;
-  DWORD biCompression;
-  DWORD biSizeImage;
-  LONG  biXPelsPerMeter;
-  LONG  biYPelsPerMeter;
-  DWORD biClrUsed;
-  DWORD biClrImportant;
-} BITMAPINFOHEADER, *PBITMAPINFOHEADER;
 #define MINIAUDIO_IMPLEMENTATION
+#include "../deps/miniaudio/miniaudio.h"
+
 
 #include "files.h"
 #include "gameplay.h"
-
+#include "thread.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -131,7 +115,11 @@ struct decodeAudioArgs
 	int * audioLength;
 };
 
+#ifdef __unix
 void decodeAudio(struct decodeAudioArgs * args)
+#else
+DWORD WINAPI * decodeAudio(struct decodeAudioArgs * args)
+#endif
 {
 	_loading++;
 	ma_result result;
@@ -166,20 +154,20 @@ void decodeAudio(struct decodeAudioArgs * args)
 	_loading--;
 	*args->audioLength = audioLength;
 	free(args->file);
+	free(args);
 }
 
 void loadAudio(void ** buffer, char * file, int * audioLength)
 {
-	static struct decodeAudioArgs args[100];
-	// static pthread_t threads[100];
 	static int threadIndex = 0;
 
 	*audioLength = 0;
-	args[threadIndex].audioLength=audioLength;
-	args[threadIndex].buffer=buffer;
-	args[threadIndex].file=malloc(strlen(file)+1);
-	strcpy(args[threadIndex].file, file);
-	decodeAudio( &(args[threadIndex]));
+	struct decodeAudioArgs * args = malloc(sizeof(struct decodeAudioArgs));
+	args->audioLength=audioLength;
+	args->buffer=buffer;
+	args->file=malloc(strlen(file)+5);
+	strcpy(args->file, file);
+	createThread(decodeAudio,args);
 	threadIndex++;
 }
 
@@ -298,7 +286,6 @@ bool endOfMusic()
 
 void playAudioEffect(void *effect, int size)
 {
-	return;
 	if(!effect || !size)
 		return;
 	for (int i = 0; i < size; i++)
