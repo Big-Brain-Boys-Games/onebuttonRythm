@@ -42,6 +42,7 @@ int _hitPoints = 5;
 int _missPenalty = 10;
 bool _mapRefresh = true;
 int _barMeasureCount = 2;
+
 Map * _map;
 Settings _settings = (Settings){.volumeGlobal=50, .volumeMusic=100, .volumeSoundEffects=100, .zoom=7, .offset=0};
 
@@ -559,7 +560,6 @@ void fEditor ()
 	static bool isPlaying = false;
 	_musicPlaying = isPlaying;
 	float secondsPerBeat = getMusicDuration() / getBeatsCount()/_barMeasureCount;
-
 	
 	if(isPlaying) {
 		_musicHead += GetFrameTime();
@@ -570,6 +570,7 @@ void fEditor ()
 		
 	}else
 	{
+		//Disable some keybinds during playback
 		setMusicFrameCount();
 		if (IsKeyPressed(KEY_RIGHT)) {
 			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
@@ -591,6 +592,12 @@ void fEditor ()
 			_musicHead -= GetMouseDelta().x/GetScreenWidth()*_scrollSpeed;
 		}
 	}
+
+	if (IsMouseButtonPressed(0))
+	{
+		printf("Note at: %f\n", findClosest(_pNotes, _amountNotes/2, screenToMusicTime(GetMouseX())));
+	}
+	
 	if(getMusicHead() < 0)
 		_musicHead = 0;
 
@@ -824,16 +831,19 @@ void fPlaying ()
 	if(_isKeyPressed && _noteIndex < _amountNotes)
 	{
 		float closestTime = 55;
+		float closestNote = 9999999;
 		int closestIndex = 0;
 		for(int i = _noteIndex; i <= _noteIndex + 1 && i < _amountNotes; i++)
 		{
-			if(closestTime > fabs(_pNotes[i] - getMusicHead()))
+			if(closestNote > _pNotes[i] - getMusicHead() - _maxMargin)
 			{
+				closestNote = _pNotes[i] - getMusicHead() - _maxMargin;
 				closestTime = fabs(_pNotes[i] - getMusicHead());
 				closestIndex = i;
 			}
 		}
-		if(closestTime < _maxMargin)
+		printf("%.2f\t%.2f\n", fabs(closestTime), _maxMargin);
+		if(fabs(closestTime) < _maxMargin)
 		{
 			while(_noteIndex < closestIndex)
 			{
