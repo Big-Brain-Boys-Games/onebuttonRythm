@@ -30,6 +30,7 @@ extern int _amountNotes, _noteIndex, _score, _highestCombo;
 extern bool _noBackground, _mapRefresh;
 extern Settings _settings;
 extern void ** _pMusic;
+extern float _averageAccuracy;
 //TODO add support for more maps
 Map _pMaps [100];
 
@@ -307,11 +308,11 @@ void saveScore()
 		return;
 	printf("str %s\n", str);
 	file = fopen(str, "w");
-	fprintf(file, "%i %i\n", _score, _highestCombo);
+	fprintf(file, "%i %i\n", _score, _highestCombo, 100*(1-_averageAccuracy));
 	fclose(file);
 }
 
-bool readScore(Map * map, int *score, int * combo)
+bool readScore(Map * map, int *score, int * combo, float * accuracy)
 {
 	*score = 0;
 	*combo = 0;
@@ -339,6 +340,16 @@ bool readScore(Map * map, int *score, int * combo)
 			part++;
 		}
 		*combo = atoi(part);
+		for(int i = 0; i < 1000; i++)
+		{
+			if(*part == 32)
+			{
+				part++;
+				break;
+			}
+			part++;
+		}
+		*accuracy = atoi(part);
 	}
 	fclose(file);
 	return true;

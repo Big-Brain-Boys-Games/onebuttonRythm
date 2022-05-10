@@ -781,7 +781,8 @@ void fPlaying ()
 	if(endOfMusic())
 	{
 		stopMusic();
-		readScore(_map, &_highScore, &_highScoreCombo);
+		float tmp = 0;
+		readScore(_map, &_highScore, &_highScoreCombo, &tmp);
 		if(_highScore < _score)
 			saveScore();
 		_pGameplayFunction = &fEndScreen;
@@ -861,7 +862,8 @@ void fPlaying ()
 				_health -= _missPenalty;
 				_notesMissed++;
 			}
-			_averageAccuracy += closestTime/_amountNotes;
+			_averageAccuracy += closestTime/_amountNotes / (1/_maxMargin);
+			// _averageAccuracy = 0.5/_amountNotes;
 			int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / _maxMargin));
 			_health += healthAdded;
 			int scoreAdded = noLessThanZero(300 - closestTime * (300 / _maxMargin));
@@ -933,7 +935,8 @@ void fPlaying ()
 
 	//draw acc
 	// sprintf(tmpString, "acc: %.5f", (int)(100*_averageAccuracy*(_amountNotes/(_noteIndex+1))));
-	sprintf(tmpString, "acc: %.2f", 100*(1-_averageAccuracy*(_amountNotes/(_noteIndex+1))));
+	printf("%.2f   %.2f\n", _averageAccuracy, ((float)_amountNotes/(_noteIndex+1)));
+	sprintf(tmpString, "acc: %.2f", 100*(1-_averageAccuracy* ((float)_amountNotes/(_noteIndex+1))));
 	drawText(tmpString, GetScreenWidth() * 0.70, GetScreenHeight()*0.1, GetScreenWidth() * 0.04, WHITE);
 	free(tmpString);
 	drawProgressBar();
@@ -993,6 +996,7 @@ struct mapInfoLoadingArgs{
 	int * amount;
 	int * highScores;
 	int * combos;
+	float * accuracy;
 };
 
 char filesCaching[100][100] = {0};
@@ -1044,7 +1048,8 @@ void mapInfoLoading(struct mapInfoLoadingArgs * args)
 		{
 			readScore(&_pMaps[mapIndex], 
 				&(args->highScores[mapIndex]),
-				&(args->combos[mapIndex]));
+				&(args->combos[mapIndex]),
+				&(args->accuracy[mapIndex]));
 		}
 		
 		//caching
@@ -1062,6 +1067,7 @@ void fMapSelect()
 	static int amount = 0;
 	static int highScores[100];
 	static int combos[100];
+	static float accuracy[100];
 	static int selectedMap = -1;
 	static float selectMapTransition = 1;
 	static int hoverMap = -1;
@@ -1079,6 +1085,7 @@ void fMapSelect()
 		args.amount = &amount;
 		args.combos = combos;
 		args.highScores = highScores;
+		args.accuracy = accuracy;
 		pthread_create(&thread, NULL, (void *(*)(void*))mapInfoLoading, &args);
 		_mapRefresh = false;
 	}
@@ -1171,7 +1178,7 @@ void fMapSelect()
 				_disableLoadingScreen = false;
 			}
 
-			drawMapThumbnail(mapButton,&_pMaps[i], highScores[i], combos[i], true);
+			drawMapThumbnail(mapButton,&_pMaps[i], highScores[i], combos[i], accuracy[i], true);
 			if(interactableButtonNoSprite("play", 0.03, mapButton.x, mapButton.y+mapButton.height, mapButton.width*(1/3.0)*1.01, mapButton.height*0.15*selectMapTransition))
 			{
 				_pNextGameplayFunction = &fPlaying;
@@ -1191,7 +1198,7 @@ void fMapSelect()
 			DrawRectangleGradientV(mapButton.x, mapButton.y+mapButton.height, mapButton.width, mapButton.height*0.05*selectMapTransition, ColorAlpha(BLACK, 0.3), ColorAlpha(BLACK, 0));
 		}else
 		{
-			drawMapThumbnail(mapButton,&_pMaps[i], highScores[i], combos[i], false);
+			drawMapThumbnail(mapButton,&_pMaps[i], highScores[i], combos[i], accuracy[i], false);
 
 			if(IsMouseButtonReleased(0) && mouseInRect(mapButton))
 			{

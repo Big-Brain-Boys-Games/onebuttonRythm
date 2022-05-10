@@ -42,7 +42,7 @@ void loadMap();
 void unloadMap();
 void freeMap(Map * map);
 void saveScore();
-bool readScore(Map * map, int *score, int * combo);
+bool readScore(Map * map, int *score, int * combo, float * accuracy);
 void makeMap(Map * map);
 void addZipMap(char * file);
 void makeMapZip(Map * map);

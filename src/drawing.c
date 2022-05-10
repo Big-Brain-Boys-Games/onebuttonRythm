@@ -123,7 +123,7 @@ void dNotes ()
 	fade -= GetFrameTime()*10;
 }
 
-void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, bool selected)
+void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float accuracy, bool selected)
 {
 	if(map->image.id == 0)
 	{
@@ -197,6 +197,8 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, bool s
 		drawText(text, rect.x + rect.width*0.80, rect.y + 0.02*rect.height, GetScreenWidth() * 0.02, WHITE);
 		sprintf(text, "%i", combo);
 		drawText(text, rect.x + rect.width*0.82, rect.y + 0.08*rect.height, GetScreenWidth() * 0.02, WHITE);
+		sprintf(text, "%.2f", accuracy);
+		drawText(text, rect.x + rect.width*0.84, rect.y + 0.08*rect.height, GetScreenWidth() * 0.02, WHITE);
 	}
 }
 
