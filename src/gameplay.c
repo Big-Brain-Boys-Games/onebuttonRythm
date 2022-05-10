@@ -39,9 +39,12 @@ float _health = 50;
 int _score= 0, _highScore, _combo = 0, _highestCombo, _highScoreCombo = 0;
 float _maxMargin = 0.1;
 int _hitPoints = 5;
+int _notesMissed = 0;
+float _averageAccuracy = 0;
 int _missPenalty = 10;
 bool _mapRefresh = true;
 int _barMeasureCount = 2;
+
 Map * _map;
 Settings _settings = (Settings){.volumeGlobal=50, .volumeMusic=100, .volumeSoundEffects=100, .zoom=7, .offset=0};
 
@@ -307,6 +310,8 @@ void fCountDown ()
 			_combo = 0;
 			_score = 0;
 			_noteIndex =1;
+			_notesMissed = 0;
+			_averageAccuracy = 0;
 			_musicHead = 0;
 			contin = false;
 			_scrollSpeed = 4.2/_map->zoom;
@@ -525,15 +530,20 @@ void fEndScreen ()
 	//draw score
 	sprintf(tmpString, "Score: %i Combo %i", _score, _highestCombo);
 	textSize = measureText(tmpString, GetScreenWidth() * 0.07);
-	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.07, LIGHTGRAY);
+	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.4, GetScreenWidth() * 0.07, LIGHTGRAY);
 
 	//draw highscore
 	sprintf(tmpString, "Highscore: %i Combo :%i", _highScore, _highScoreCombo);
 	textSize = measureText(tmpString, GetScreenWidth() * 0.05);
+	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.05, LIGHTGRAY);
+
+	//draw extra info
+	sprintf(tmpString, "Accuracy: %.2f misses :%i",  100*(1-_averageAccuracy*(_amountNotes/(_noteIndex+1))), _notesMissed);
+	textSize = measureText(tmpString, GetScreenWidth() * 0.05);
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.6, GetScreenWidth() * 0.05, LIGHTGRAY);
 	free(tmpString);
 
-	if(interactableButton("Retry", 0.05,middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.7, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
+	if(interactableButton("Retry", 0.05,GetScreenWidth()*0.15, GetScreenHeight() * 0.7, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//retrying map
@@ -543,7 +553,7 @@ void fEndScreen ()
 		_musicHead = 0;
 		_transition = 0.1;
 	}
-	if(interactableButton("Main Menu", 0.05,middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.85, GetScreenWidth()*0.3, GetScreenHeight()*0.1))
+	if(interactableButton("Main Menu", 0.05,GetScreenWidth()*0.15, GetScreenHeight() * 0.85, GetScreenWidth()*0.3, GetScreenHeight()*0.1))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		unloadMap();
@@ -559,7 +569,6 @@ void fEditor ()
 	static bool isPlaying = false;
 	_musicPlaying = isPlaying;
 	float secondsPerBeat = getMusicDuration() / getBeatsCount()/_barMeasureCount;
-
 	
 	if(isPlaying) {
 		_musicHead += GetFrameTime();
@@ -570,6 +579,7 @@ void fEditor ()
 		
 	}else
 	{
+		//Disable some keybinds during playback
 		setMusicFrameCount();
 		if (IsKeyPressed(KEY_RIGHT)) {
 			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
@@ -591,6 +601,12 @@ void fEditor ()
 			_musicHead -= GetMouseDelta().x/GetScreenWidth()*_scrollSpeed;
 		}
 	}
+
+	if (IsMouseButtonPressed(0))
+	{
+		printf("Note at: %f\n", findClosest(_pNotes, _amountNotes/2, screenToMusicTime(GetMouseX())));
+	}
+	
 	if(getMusicHead() < 0)
 		_musicHead = 0;
 
@@ -792,7 +808,7 @@ void fPlaying ()
 		rippleEffect[i] += GetFrameTime()*1200*rippleEffectStrength[i];
 		rippleEffectStrength[i] = fmax(rippleEffectStrength[i] - GetFrameTime()*5, 0);
 		float size = rippleEffect[i];
-		DrawRing((Vector2){.x=GetScreenWidth()/2, .y=GetScreenHeight()*0.42}, size, size*0.7, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i]));
+		DrawRing((Vector2){.x=GetScreenWidth()/2, .y=GetScreenHeight()*0.42}, size*GetScreenWidth()*0.001, size*0.7*GetScreenWidth()*0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i]*0.5));
 	}
 
 	float width = GetScreenWidth() * 0.005;
@@ -824,16 +840,18 @@ void fPlaying ()
 	if(_isKeyPressed && _noteIndex < _amountNotes)
 	{
 		float closestTime = 55;
+		float closestNote = 9999999;
 		int closestIndex = 0;
 		for(int i = _noteIndex; i <= _noteIndex + 1 && i < _amountNotes; i++)
 		{
-			if(closestTime > fabs(_pNotes[i] - getMusicHead()))
+			if(closestNote > _pNotes[i] - getMusicHead() - _maxMargin)
 			{
+				closestNote = _pNotes[i] - getMusicHead() - _maxMargin;
 				closestTime = fabs(_pNotes[i] - getMusicHead());
 				closestIndex = i;
 			}
 		}
-		if(closestTime < _maxMargin)
+		if(fabs(closestTime) < _maxMargin)
 		{
 			while(_noteIndex < closestIndex)
 			{
@@ -841,19 +859,21 @@ void fPlaying ()
 				feedback("miss!", 1.3-_health/100);
 				_combo = 0;
 				_health -= _missPenalty;
+				_notesMissed++;
 			}
+			_averageAccuracy += closestTime/_amountNotes;
 			int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / _maxMargin));
 			_health += healthAdded;
 			int scoreAdded = noLessThanZero(300 - closestTime * (300 / _maxMargin));
 			if(scoreAdded > 200) {
 				feedback("300!", 1.2);
-				addRipple(1);
+				addRipple(1.5);
 			}else if (scoreAdded > 100) {
 				feedback("200!", 1);
-				addRipple(0.6);
+				addRipple(1);
 			} else {
 				feedback("100!", 0.8);
-				addRipple(0.3);
+				addRipple(0.6);
 			}
 			_score += scoreAdded * (1+_combo/100);
 			_noteIndex++;
@@ -866,6 +886,7 @@ void fPlaying ()
 			_combo = 0;
 			_health -= _missPenalty;
 			playAudioEffect(_pMissHitSE, _missHitSE_Size);
+			_notesMissed++;
 		}
 		ClearBackground(BLACK);
 	}
@@ -909,6 +930,11 @@ void fPlaying ()
 	//draw combo
 	sprintf(tmpString, "combo: %i", _combo);
 	drawText(tmpString, GetScreenWidth() * 0.70, GetScreenHeight()*0.05, GetScreenWidth() * 0.05, WHITE);
+
+	//draw acc
+	// sprintf(tmpString, "acc: %.5f", (int)(100*_averageAccuracy*(_amountNotes/(_noteIndex+1))));
+	sprintf(tmpString, "acc: %.2f", 100*(1-_averageAccuracy*(_amountNotes/(_noteIndex+1))));
+	drawText(tmpString, GetScreenWidth() * 0.70, GetScreenHeight()*0.1, GetScreenWidth() * 0.04, WHITE);
 	free(tmpString);
 	drawProgressBar();
 	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), _fade);
