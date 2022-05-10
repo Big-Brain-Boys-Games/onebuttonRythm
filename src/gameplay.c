@@ -792,7 +792,7 @@ void fPlaying ()
 		rippleEffect[i] += GetFrameTime()*1200*rippleEffectStrength[i];
 		rippleEffectStrength[i] = fmax(rippleEffectStrength[i] - GetFrameTime()*5, 0);
 		float size = rippleEffect[i];
-		DrawRing((Vector2){.x=GetScreenWidth()/2, .y=GetScreenHeight()*0.42}, size, size*0.7, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i]));
+		DrawRing((Vector2){.x=GetScreenWidth()/2, .y=GetScreenHeight()*0.42}, size*GetScreenWidth()*0.001, size*0.7*GetScreenWidth()*0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i]*0.5));
 	}
 
 	float width = GetScreenWidth() * 0.005;
@@ -847,13 +847,13 @@ void fPlaying ()
 			int scoreAdded = noLessThanZero(300 - closestTime * (300 / _maxMargin));
 			if(scoreAdded > 200) {
 				feedback("300!", 1.2);
-				addRipple(1);
+				addRipple(1.5);
 			}else if (scoreAdded > 100) {
 				feedback("200!", 1);
-				addRipple(0.6);
+				addRipple(1);
 			} else {
 				feedback("100!", 0.8);
-				addRipple(0.3);
+				addRipple(0.6);
 			}
 			_score += scoreAdded * (1+_combo/100);
 			_noteIndex++;
