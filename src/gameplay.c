@@ -1294,7 +1294,7 @@ void fNewMap()
 		strcat(str, newMap.name);
 		strcat(str, "/song");
 		strcat(str, pMusicExt);
-		FILE * file = fopen(str, "w");
+		FILE * file = fopen(str, "wb");
 		fwrite(pMusic, pMusicSize, 1, file);
 		fclose(file);
 
@@ -1304,7 +1304,7 @@ void fNewMap()
 		strcpy(str, "maps/");
 		strcat(str, newMap.name);
 		strcat(str, "/image.png");
-		file = fopen(str, "w");
+		file = fopen(str, "wb");
 		fwrite(pImage, imageSize, 1, file);
 		fclose(file);
 		if(newMap.bpm == 0)
@@ -1421,7 +1421,7 @@ void fNewMap()
 
 				if(pImage != 0)
 					free(pImage);
-				FILE * file = fopen(files[i], "r");
+				FILE * file = fopen(files[i], "rb");
 				fseek(file, 0L, SEEK_END);
 				int size = ftell(file);
 				rewind(file);
@@ -1435,7 +1435,7 @@ void fNewMap()
 			{
 				if(pMusic != 0)
 					free(pMusic);
-				FILE * file = fopen(files[i], "r");
+				FILE * file = fopen(files[i], "rb");
 				fseek(file, 0L, SEEK_END);
 				int size = ftell(file);
 				rewind(file);
@@ -1450,7 +1450,7 @@ void fNewMap()
 			{
 				if(pMusic != 0)
 					free(pMusic);
-				FILE * file = fopen(files[i], "r");
+				FILE * file = fopen(files[i], "rb");
 				fseek(file, 0L, SEEK_END);
 				int size = ftell(file);
 				rewind(file);
