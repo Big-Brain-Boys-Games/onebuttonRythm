@@ -5,7 +5,7 @@
 #include "files.h"
 #include "gameplay.h"
 
-#include "deps/raylib/src/raylib.h"
+#include "../deps/raylib/src/raylib.h"
 
 int measureText (char * text, int fontSize);
 void drawText(char * str, int x, int y, int fontSize, Color color);
@@ -14,7 +14,7 @@ float screenToMusicTime(float x);
 float noteFadeOut(float note);
 void drawCursor();
 void dNotes();
-void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, bool selected);
+void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float accuracy, bool selected);
 void drawBars();
 void drawBackground();
 void resetBackGround();

@@ -5,7 +5,7 @@
 #include <math.h>
 
 // #include "include/miniaudio.h"
-#include "deps/raylib/src/raylib.h"
+#include "../deps/raylib/src/raylib.h"
 
 #include "shared.h"
 #include "files.h"

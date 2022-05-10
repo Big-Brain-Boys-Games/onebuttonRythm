@@ -6,17 +6,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "deps/raylib/src/raylib.h"
-#include "deps/zip/src/zip.h"
+#include "../deps/raylib/src/raylib.h"
+#include "windowsDefs.h"
+#include "../deps/zip/src/zip.h"
+
 #include "gameplay.h"
 
-
-
-#ifdef _WIN32
-#include <windows.h>
-
-#define mkdir(dir) _mkdir(dir)
-#endif
 #ifdef __unix
 #include <sys/stat.h>
 #define mkdir(dir) mkdir(dir, 0777)
@@ -30,6 +25,7 @@ extern int _amountNotes, _noteIndex, _score, _highestCombo;
 extern bool _noBackground, _mapRefresh;
 extern Settings _settings;
 extern void ** _pMusic;
+extern float _averageAccuracy;
 //TODO add support for more maps
 Map _pMaps [100];
 
@@ -57,36 +53,37 @@ Map loadMapInfo(char * file)
 	if(!FileExists(pStr))
 		return (Map){.name=0};
 	FILE * f;
-	f = fopen(pStr, "rb");
+	f = fopen(pStr, "r");
 
 	
 	//text file
-	char line [1000];
+	char line [1000] = {0};
 	enum FilePart mode = fpNone;
 	while(fgets(line,sizeof(line),f)!= 0)
 	{
 		int stringLenght = strlen(line);
 		bool emptyLine = true;
 		for(int i = 0; i < stringLenght; i++)
-			if(line[i] != ' ' && line[i] != '\n')
+			if(line[i] != ' ' && line[i] != '\n' && line[i] != '\r')
 				emptyLine = false;
 		
 		if(emptyLine)
 			continue;
 
-		if(strcmp(line, "[Name]\n") == 0)			{mode = fpName;			continue;}
-		if(strcmp(line, "[Creator]\n") == 0)		{mode = fpCreator;		continue;}
-		if(strcmp(line, "[Difficulty]\n") == 0)		{mode = fpDifficulty;	continue;}
-		if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;			continue;}
-		if(strcmp(line, "[Image]\n") == 0)			{mode = fpImage;		continue;}
-		if(strcmp(line, "[MusicFile]\n") == 0)		{mode = fpMusicFile;	continue;}
-		if(strcmp(line, "[MusicLength]\n") == 0)	{mode = fpMusicLength;	continue;}
-		if(strcmp(line, "[Zoom]\n") == 0)			{mode = fpZoom;			continue;}
-		if(strcmp(line, "[Offset]\n") == 0)			{mode = fpOffset;		continue;}
-		if(strcmp(line, "[Beats]\n") == 0)			{mode = fpBeats;		continue;}
-		if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
 		for(int i = 0; i < 100; i++)
-					if(line[i] == '\n') line[i]= '\0';
+			if(line[i] == '\n' || line[i] == '\r' || !line[i]) line[i]= '\0';
+		if(strcmp(line, "[Name]") == 0)				{mode = fpName;			continue;}
+		if(strcmp(line, "[Creator]") == 0)			{mode = fpCreator;		continue;}
+		if(strcmp(line, "[Difficulty]") == 0)		{mode = fpDifficulty;	continue;}
+		if(strcmp(line, "[BPM]") == 0)				{mode = fpBPM;			continue;}
+		if(strcmp(line, "[Image]") == 0)			{mode = fpImage;		continue;}
+		if(strcmp(line, "[MusicFile]") == 0)		{mode = fpMusicFile;	continue;}
+		if(strcmp(line, "[MusicLength]") == 0)		{mode = fpMusicLength;	continue;}
+		if(strcmp(line, "[Zoom]") == 0)				{mode = fpZoom;			continue;}
+		if(strcmp(line, "[Offset]") == 0)			{mode = fpOffset;		continue;}
+		if(strcmp(line, "[Beats]") == 0)			{mode = fpBeats;		continue;}
+		if(strcmp(line, "[Notes]") == 0)			{mode = fpNotes;		continue;}
+
 		switch(mode)
 		{
 			case fpNone:
@@ -186,7 +183,8 @@ void saveFile (int noteAmount)
 	strcpy(str, "maps/");
 	strcat(str, _map->folder);
 	strcat(str, "/map.data");
-	_pFile = fopen(str, "");
+	printf("poggies: %s\n", str);
+	_pFile = fopen(str, "w");
 	printf("written map data\n");
 	fprintf(_pFile, "[Name]\n");
 	fprintf(_pFile, "%s\n", _map->name);
@@ -256,7 +254,7 @@ void loadMap ()
 
 	strcpy(pStr, map);
 	strcat(pStr, "/map.data");
-	_pFile = fopen(pStr, "rb");
+	_pFile = fopen(pStr, "r");
 
 	//text file
 	char line [1000];
@@ -307,11 +305,11 @@ void saveScore()
 		return;
 	printf("str %s\n", str);
 	file = fopen(str, "w");
-	fprintf(file, "%i %i\n", _score, _highestCombo);
+	fprintf(file, "%i %i\n", _score, _highestCombo, 100*(1-_averageAccuracy));
 	fclose(file);
 }
 
-bool readScore(Map * map, int *score, int * combo)
+bool readScore(Map * map, int *score, int * combo, float * accuracy)
 {
 	*score = 0;
 	*combo = 0;
@@ -339,6 +337,16 @@ bool readScore(Map * map, int *score, int * combo)
 			part++;
 		}
 		*combo = atoi(part);
+		for(int i = 0; i < 1000; i++)
+		{
+			if(*part == 32)
+			{
+				part++;
+				break;
+			}
+			part++;
+		}
+		*accuracy = atoi(part);
 	}
 	fclose(file);
 	return true;
@@ -357,7 +365,7 @@ void makeMapZip(Map * map)
 	char str[200];
 	strcpy(str, map->name);
 	strcat(str, ".zip");
-	struct zip_t *zip = zip_open(str, ZIP_DEFAULT_COMPRESSION_LEVEL, 'w');
+	struct zip_t *zip = zip_open(str, 6, 'w');
 	strcpy(str, "maps/");
 	strcat(str, map->folder);
 	int amount = 0;

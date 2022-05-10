@@ -4,13 +4,13 @@
 #include "drawing.h"
 #include "audio.h"
 
-#include "deps/raylib/src/raylib.h"
+#include "../deps/raylib/src/raylib.h"
 #include <stdbool.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pthread.h>
+#include "thread.h"
 
 extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
 extern Color _fade;
@@ -39,6 +39,8 @@ float _health = 50;
 int _score= 0, _highScore, _combo = 0, _highestCombo, _highScoreCombo = 0;
 float _maxMargin = 0.1;
 int _hitPoints = 5;
+int _notesMissed = 0;
+float _averageAccuracy = 0;
 int _missPenalty = 10;
 bool _mapRefresh = true;
 int _barMeasureCount = 2;
@@ -308,6 +310,8 @@ void fCountDown ()
 			_combo = 0;
 			_score = 0;
 			_noteIndex =1;
+			_notesMissed = 0;
+			_averageAccuracy = 0;
 			_musicHead = 0;
 			contin = false;
 			_scrollSpeed = 4.2/_map->zoom;
@@ -526,15 +530,20 @@ void fEndScreen ()
 	//draw score
 	sprintf(tmpString, "Score: %i Combo %i", _score, _highestCombo);
 	textSize = measureText(tmpString, GetScreenWidth() * 0.07);
-	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.07, LIGHTGRAY);
+	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.4, GetScreenWidth() * 0.07, LIGHTGRAY);
 
 	//draw highscore
 	sprintf(tmpString, "Highscore: %i Combo :%i", _highScore, _highScoreCombo);
 	textSize = measureText(tmpString, GetScreenWidth() * 0.05);
+	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.05, LIGHTGRAY);
+
+	//draw extra info
+	sprintf(tmpString, "Accuracy: %.2f misses :%i",  100*(1-_averageAccuracy*(_amountNotes/(_noteIndex+1))), _notesMissed);
+	textSize = measureText(tmpString, GetScreenWidth() * 0.05);
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.6, GetScreenWidth() * 0.05, LIGHTGRAY);
 	free(tmpString);
 
-	if(interactableButton("Retry", 0.05,middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.7, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
+	if(interactableButton("Retry", 0.05,GetScreenWidth()*0.15, GetScreenHeight() * 0.7, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//retrying map
@@ -544,7 +553,7 @@ void fEndScreen ()
 		_musicHead = 0;
 		_transition = 0.1;
 	}
-	if(interactableButton("Main Menu", 0.05,middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.85, GetScreenWidth()*0.3, GetScreenHeight()*0.1))
+	if(interactableButton("Main Menu", 0.05,GetScreenWidth()*0.15, GetScreenHeight() * 0.85, GetScreenWidth()*0.3, GetScreenHeight()*0.1))
 	{
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		unloadMap();
@@ -779,7 +788,8 @@ void fPlaying ()
 	if(endOfMusic())
 	{
 		stopMusic();
-		readScore(_map, &_highScore, &_highScoreCombo);
+		float tmp = 0;
+		readScore(_map, &_highScore, &_highScoreCombo, &tmp);
 		if(_highScore < _score)
 			saveScore();
 		_pGameplayFunction = &fEndScreen;
@@ -849,7 +859,6 @@ void fPlaying ()
 				closestIndex = i;
 			}
 		}
-		printf("%.2f\t%.2f\n", fabs(closestTime), _maxMargin);
 		if(fabs(closestTime) < _maxMargin)
 		{
 			while(_noteIndex < closestIndex)
@@ -858,7 +867,10 @@ void fPlaying ()
 				feedback("miss!", 1.3-_health/100);
 				_combo = 0;
 				_health -= _missPenalty;
+				_notesMissed++;
 			}
+			_averageAccuracy += closestTime/_amountNotes / (1/_maxMargin);
+			// _averageAccuracy = 0.5/_amountNotes;
 			int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / _maxMargin));
 			_health += healthAdded;
 			int scoreAdded = noLessThanZero(300 - closestTime * (300 / _maxMargin));
@@ -883,6 +895,7 @@ void fPlaying ()
 			_combo = 0;
 			_health -= _missPenalty;
 			playAudioEffect(_pMissHitSE, _missHitSE_Size);
+			_notesMissed++;
 		}
 		ClearBackground(BLACK);
 	}
@@ -926,6 +939,12 @@ void fPlaying ()
 	//draw combo
 	sprintf(tmpString, "combo: %i", _combo);
 	drawText(tmpString, GetScreenWidth() * 0.70, GetScreenHeight()*0.05, GetScreenWidth() * 0.05, WHITE);
+
+	//draw acc
+	// sprintf(tmpString, "acc: %.5f", (int)(100*_averageAccuracy*(_amountNotes/(_noteIndex+1))));
+	printf("%.2f   %.2f\n", _averageAccuracy, ((float)_amountNotes/(_noteIndex+1)));
+	sprintf(tmpString, "acc: %.2f", 100*(1-_averageAccuracy* ((float)_amountNotes/(_noteIndex+1))));
+	drawText(tmpString, GetScreenWidth() * 0.70, GetScreenHeight()*0.1, GetScreenWidth() * 0.04, WHITE);
 	free(tmpString);
 	drawProgressBar();
 	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), _fade);
@@ -984,11 +1003,17 @@ struct mapInfoLoadingArgs{
 	int * amount;
 	int * highScores;
 	int * combos;
+	float * accuracy;
 };
 
 char filesCaching[100][100] = {0};
 
+#ifdef __unix
 void mapInfoLoading(struct mapInfoLoadingArgs * args)
+#else
+DWORD WINAPI * mapInfoLoading(struct mapInfoLoadingArgs * args)
+// DWORD WINAPI * decodeAudio(struct decodeAudioArgs * args)
+#endif
 {
 	_loading++;
 	int amount;
@@ -1035,7 +1060,8 @@ void mapInfoLoading(struct mapInfoLoadingArgs * args)
 		{
 			readScore(&_pMaps[mapIndex], 
 				&(args->highScores[mapIndex]),
-				&(args->combos[mapIndex]));
+				&(args->combos[mapIndex]),
+				&(args->accuracy[mapIndex]));
 		}
 		
 		//caching
@@ -1046,6 +1072,7 @@ void mapInfoLoading(struct mapInfoLoadingArgs * args)
 	_loading--;
 	ClearDirectoryFiles();
 	*args->amount = mapIndex;
+	free(args);
 }
 
 void fMapSelect()
@@ -1053,12 +1080,11 @@ void fMapSelect()
 	static int amount = 0;
 	static int highScores[100];
 	static int combos[100];
+	static float accuracy[100];
 	static int selectedMap = -1;
 	static float selectMapTransition = 1;
 	static int hoverMap = -1;
 	static float hoverPeriod = 0;
-	static pthread_t thread = {0};
-	static struct mapInfoLoadingArgs args = {0};
 
 	if(selectMapTransition < 1)
 		selectMapTransition += GetFrameTime()*10;
@@ -1067,10 +1093,12 @@ void fMapSelect()
 	checkFileDropped();
 	if(_mapRefresh)
 	{
-		args.amount = &amount;
-		args.combos = combos;
-		args.highScores = highScores;
-		pthread_create(&thread, NULL, (void *(*)(void*))mapInfoLoading, &args);
+		struct mapInfoLoadingArgs * args = malloc(sizeof(struct mapInfoLoadingArgs));
+		args->amount = &amount;
+		args->combos = combos;
+		args->highScores = highScores;
+		args->accuracy = accuracy;
+		createThread(mapInfoLoading, args);
 		_mapRefresh = false;
 	}
 	ClearBackground(BLACK);
@@ -1162,7 +1190,7 @@ void fMapSelect()
 				_disableLoadingScreen = false;
 			}
 
-			drawMapThumbnail(mapButton,&_pMaps[i], highScores[i], combos[i], true);
+			drawMapThumbnail(mapButton,&_pMaps[i], highScores[i], combos[i], accuracy[i], true);
 			if(interactableButtonNoSprite("play", 0.03, mapButton.x, mapButton.y+mapButton.height, mapButton.width*(1/3.0)*1.01, mapButton.height*0.15*selectMapTransition))
 			{
 				_pNextGameplayFunction = &fPlaying;
@@ -1182,7 +1210,7 @@ void fMapSelect()
 			DrawRectangleGradientV(mapButton.x, mapButton.y+mapButton.height, mapButton.width, mapButton.height*0.05*selectMapTransition, ColorAlpha(BLACK, 0.3), ColorAlpha(BLACK, 0));
 		}else
 		{
-			drawMapThumbnail(mapButton,&_pMaps[i], highScores[i], combos[i], false);
+			drawMapThumbnail(mapButton,&_pMaps[i], highScores[i], combos[i], accuracy[i], false);
 
 			if(IsMouseButtonReleased(0) && mouseInRect(mapButton))
 			{
@@ -1273,30 +1301,37 @@ void fNewMap()
 		strcat(str, newMap.name);
 		strcat(str, "/song");
 		strcat(str, pMusicExt);
-		FILE * file = fopen(str, "w");
+		FILE * file = fopen(str, "wb");
 		fwrite(pMusic, pMusicSize, 1, file);
 		fclose(file);
 
 		newMap.musicFile = malloc(100);
-		strcpy(newMap.musicFile, str);
+		sprintf(newMap.musicFile, "/song%s", pMusicExt);
 
 		strcpy(str, "maps/");
 		strcat(str, newMap.name);
 		strcat(str, "/image.png");
-		file = fopen(str, "w");
+		file = fopen(str, "wb");
 		fwrite(pImage, imageSize, 1, file);
 		fclose(file);
 		if(newMap.bpm == 0)
 			newMap.bpm = 1;
-		_pGameplayFunction=&fRecording;
+		_pNextGameplayFunction=&fRecording;
+		_pGameplayFunction=&fCountDown;
 		_transition = 0.1;
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		newMap.folder = malloc(100);
 		strcpy(newMap.folder, newMap.name);
 		_map = &newMap;
 		saveFile(0);
+		printf("map : %s\n", newMap.name);
 		loadMap();
 		_noBackground = 0;
+		setMusicStart();
+		_musicHead = 0;
+		_transition = 0.1;
+		_disableLoadingScreen = false;
+		startMusic();
 		return;
 	}
 
@@ -1393,7 +1428,7 @@ void fNewMap()
 
 				if(pImage != 0)
 					free(pImage);
-				FILE * file = fopen(files[i], "r");
+				FILE * file = fopen(files[i], "rb");
 				fseek(file, 0L, SEEK_END);
 				int size = ftell(file);
 				rewind(file);
@@ -1407,7 +1442,7 @@ void fNewMap()
 			{
 				if(pMusic != 0)
 					free(pMusic);
-				FILE * file = fopen(files[i], "r");
+				FILE * file = fopen(files[i], "rb");
 				fseek(file, 0L, SEEK_END);
 				int size = ftell(file);
 				rewind(file);
@@ -1422,7 +1457,7 @@ void fNewMap()
 			{
 				if(pMusic != 0)
 					free(pMusic);
-				FILE * file = fopen(files[i], "r");
+				FILE * file = fopen(files[i], "rb");
 				fseek(file, 0L, SEEK_END);
 				int size = ftell(file);
 				rewind(file);
