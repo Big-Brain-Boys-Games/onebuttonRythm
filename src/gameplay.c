@@ -538,7 +538,7 @@ void fEndScreen ()
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.5, GetScreenWidth() * 0.05, LIGHTGRAY);
 
 	//draw extra info
-	sprintf(tmpString, "Accuracy: %.2f misses :%i",  100*(1-_averageAccuracy*(_amountNotes/(_noteIndex+1)))), _highScoreCombo);
+	sprintf(tmpString, "Accuracy: %.2f misses :%i",  100*(1-_averageAccuracy*(_amountNotes/(_noteIndex+1))), _notesMissed);
 	textSize = measureText(tmpString, GetScreenWidth() * 0.05);
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight()*0.6, GetScreenWidth() * 0.05, LIGHTGRAY);
 	free(tmpString);
