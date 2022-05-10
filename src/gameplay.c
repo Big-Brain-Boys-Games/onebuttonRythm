@@ -587,12 +587,14 @@ void fEditor ()
 			_musicHead = (_musicHead + _map->offset/1000.0);
 			//Add the bps to the
 			_musicHead += secondsPerBeat;
+			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
 		}
 		
 		if (IsKeyPressed(KEY_LEFT)) {
 			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
 			_musicHead = (_musicHead + _map->offset/1000.0);
 			_musicHead -= secondsPerBeat;
+			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
 		}
 		
 	
@@ -677,6 +679,7 @@ void fEditor ()
 		if(IsKeyPressed(KEY_SPACE))
 		{
 			isPlaying = !isPlaying;
+			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
 		}
 	}
 
