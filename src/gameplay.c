@@ -573,14 +573,19 @@ void fEditor ()
 		//Disable some keybinds during playback
 		setMusicFrameCount();
 		if (IsKeyPressed(KEY_RIGHT)) {
+			//Snap to closest beat
 			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
+			_musicHead = (_musicHead + _map->offset/1000.0);
+			//Add the bps to the
 			_musicHead += secondsPerBeat;
 		}
-			
+		
 		if (IsKeyPressed(KEY_LEFT)) {
 			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
-			_musicHead -= secondsPerBeat;	
+			_musicHead = (_musicHead + _map->offset/1000.0);
+			_musicHead -= secondsPerBeat;
 		}
+		
 	
 		if(GetMouseWheelMove() > 0) _musicHead+= GetFrameTime()*(_scrollSpeed * 2);
 		if(GetMouseWheelMove() < 0) _musicHead-= GetFrameTime()*(_scrollSpeed * 2);
@@ -649,10 +654,12 @@ void fEditor ()
 			//todo maybe not 4 subbeats?
 			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
 		}
+
 		if (IsKeyPressed(KEY_E)  && _barMeasureCount <= 32)
 		{
 			_barMeasureCount = _barMeasureCount * 2;
 		}
+
 		if (IsKeyPressed(KEY_Q) && _barMeasureCount >= 2)
 		{
 			_barMeasureCount = _barMeasureCount / 2;	
@@ -703,7 +710,7 @@ void fEditor ()
 		_map->offset = fmin(fmax(_map->offset, 0), 5000);
 	}
 	
-	
+	drawMusicGraph(0.7);
 	drawBars();
 	drawProgressBarI(true);
 	drawCursor();
