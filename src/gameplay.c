@@ -1299,7 +1299,7 @@ void fNewMap()
 		fclose(file);
 
 		newMap.musicFile = malloc(100);
-		strcpy(newMap.musicFile, str);
+		sprintf(newMap.musicFile, "/song%s", pMusicExt);
 
 		strcpy(str, "maps/");
 		strcat(str, newMap.name);
@@ -1309,15 +1309,22 @@ void fNewMap()
 		fclose(file);
 		if(newMap.bpm == 0)
 			newMap.bpm = 1;
-		_pGameplayFunction=&fRecording;
+		_pNextGameplayFunction=&fRecording;
+		_pGameplayFunction=&fCountDown;
 		_transition = 0.1;
 		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		newMap.folder = malloc(100);
 		strcpy(newMap.folder, newMap.name);
 		_map = &newMap;
 		saveFile(0);
+		printf("map : %s\n", newMap.name);
 		loadMap();
 		_noBackground = 0;
+		setMusicStart();
+		_musicHead = 0;
+		_transition = 0.1;
+		_disableLoadingScreen = false;
+		startMusic();
 		return;
 	}
 

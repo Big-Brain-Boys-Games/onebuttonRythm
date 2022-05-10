@@ -182,7 +182,8 @@ void saveFile (int noteAmount)
 	strcpy(str, "maps/");
 	strcat(str, _map->folder);
 	strcat(str, "/map.data");
-	_pFile = fopen(str, "");
+	printf("poggies: %s\n", str);
+	_pFile = fopen(str, "w");
 	printf("written map data\n");
 	fprintf(_pFile, "[Name]\n");
 	fprintf(_pFile, "%s\n", _map->name);
