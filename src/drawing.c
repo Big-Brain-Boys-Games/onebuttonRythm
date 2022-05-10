@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "deps/raylib/src/raylib.h"
+#include "../deps/raylib/src/raylib.h"
 Texture2D _cursorTex;
 Texture2D _noteTex;
 Texture2D _healthBarTex;

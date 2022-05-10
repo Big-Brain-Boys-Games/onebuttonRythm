@@ -3,7 +3,7 @@
 
 #include "shared.h"
 #include <stdbool.h>
-#include "deps/raylib/src/raylib.h"
+#include "../deps/raylib/src/raylib.h"
 
 struct Map{
 	char * folder;
