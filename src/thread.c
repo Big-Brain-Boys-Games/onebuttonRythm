@@ -16,8 +16,8 @@
 #endif
 {
     #ifdef __unix
-        int id = 0;
-        pthread_create(&id, NULL, func, NULL);
+        pthread_t id = 0;
+        int tmp = pthread_create(&id, NULL, func, args);
     #else
         CreateThread(NULL, 0, func, args, 0, NULL);
     #endif
