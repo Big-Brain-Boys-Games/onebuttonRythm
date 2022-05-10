@@ -6,22 +6,23 @@ SRC_FILES := $(wildcard $(SRC_DIR)/*.c)
 # OBJ_FILES := $(addprefix $(OBJ_DIR)/,$(patsubst %.c,%.o,$(SRC_FILES)))
 OBJ_FILES := $(SRC_FILES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 CFLAGS := -I$(INCLUDE_DIR)/ -I. -ggdb
-LDFLAGS := -Ldeps/raylib -l:libraylib.a -lGL -lm -lpthread -ldl -lrt -lX11 -Ldeps/zip/build -l:libzip.a
-OUTEXE := Build/oneButtonRhythm
+LDFLAGS := -static -s -w -L$(LIB_DIR) -L. -Ldeps/raylib -l:libraylib.a -Ldeps/zip/build -l:libzip.a -lglfw3 -lopengl32 -lgdi32 -lwinmm -Wl,-allow-multiple-definition -Wl,--subsystem,windows
+OUTEXE := Build/oneButtonRhythm.exe
 
 .DEFAULT_GOAL := $(OUTEXE)
 
 .depend: $(SRC_FILES)
 	rm -f .depend
-	gcc $(CFLAGS) -MM $^ | perl -p -e 's,^(.+?)\.o: (.+?)/\1\.c.*,$$2/$$&,;' >> .depend
+	x86_64-w64-mingw32-gcc $(CFLAGS) -MM $^ | perl -p -e 's,^(.+?)\.o: (.+?)/\1\.c.*,$$2/$$&,;' >> .depend
 
 include .depend
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
-	gcc -c $(CFLAGS) $< -o $@
+	x86_64-w64-mingw32-gcc -c $(CFLAGS) $< -o $@
 
 $(OUTEXE): $(OBJ_FILES) .depend
-	gcc -o $(OUTEXE) $(OBJ_FILES) $(LDFLAGS) $(CFLAGS)
+	x86_64-w64-mingw32-gcc -o Build/oneButton.exe Obj/* -static -s -w -Llib -L. -Ldeps/raylib -l:libraylib.a -Ldeps/zip/build -l:libzip.a  -lopengl32 -lgdi32 -lwinmm -Wl,-allow-multiple-definition -Wl,--subsystem,windows -lssp
+#x86_64-w64-mingw32-gcc -o $(OUTEXE) $(OBJ_FILES) $(LDFLAGS) $(CFLAGS)
 
 .PHONY: clean
 clean:

@@ -1,6 +1,24 @@
 #include "audio.h"
+#include "windowsDefs.h"
+#include "../deps/miniaudio/miniaudio.h"
+typedef unsigned long DWORD;
+typedef unsigned short WORD;
+typedef signed long LONG;
+typedef struct tagMSG *LPMSG;
+typedef struct tagBITMAPINFOHEADER {
+  DWORD biSize;
+  LONG  biWidth;
+  LONG  biHeight;
+  WORD  biPlanes;
+  WORD  biBitCount;
+  DWORD biCompression;
+  DWORD biSizeImage;
+  LONG  biXPelsPerMeter;
+  LONG  biYPelsPerMeter;
+  DWORD biClrUsed;
+  DWORD biClrImportant;
+} BITMAPINFOHEADER, *PBITMAPINFOHEADER;
 #define MINIAUDIO_IMPLEMENTATION
-#include "deps/miniaudio/miniaudio.h"
 
 #include "files.h"
 #include "gameplay.h"
@@ -10,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 
 extern int _amountNotes, _loading;
 extern float _musicHead, _scrollSpeed;
@@ -118,13 +137,17 @@ void decodeAudio(struct decodeAudioArgs * args)
 	ma_result result;
 	printf("loading sound effect %s\n", args->file);
 	ma_decoder_config decoder_config = ma_decoder_config_init(ma_format_f32, 2, 48000);
-	decoder_config.resampling.linear.lpfOrder = MA_MAX_FILTER_ORDER;
+	// decoder_config.resampling.linear.lpfOrder = MA_MAX_FILTER_ORDER;
 	ma_decoder decoder = {0};
 	long long unsigned int audioLength = 0;
 	result = ma_decoder_init_file(args->file, &decoder_config, &decoder);
     if (result != MA_SUCCESS) {
-        printf("failed to open music file %s\n", args->file);
-		exit(0);
+        printf("failed to open music file %s %i\n", args->file, result);
+		*args->buffer = 0;
+		*args->audioLength = 0;
+		free(args->file);
+		return;
+		// exit(0);
     }
 	int lastFrame = -1;
 	ma_decoder_get_length_in_pcm_frames(&decoder, &audioLength);
@@ -148,7 +171,7 @@ void decodeAudio(struct decodeAudioArgs * args)
 void loadAudio(void ** buffer, char * file, int * audioLength)
 {
 	static struct decodeAudioArgs args[100];
-	static pthread_t threads[100];
+	// static pthread_t threads[100];
 	static int threadIndex = 0;
 
 	*audioLength = 0;
@@ -156,7 +179,7 @@ void loadAudio(void ** buffer, char * file, int * audioLength)
 	args[threadIndex].buffer=buffer;
 	args[threadIndex].file=malloc(strlen(file)+1);
 	strcpy(args[threadIndex].file, file);
-	pthread_create(&threads[threadIndex], NULL, (void *(*)(void *))decodeAudio, &(args[threadIndex]));
+	decodeAudio( &(args[threadIndex]));
 	threadIndex++;
 }
 
@@ -275,7 +298,8 @@ bool endOfMusic()
 
 void playAudioEffect(void *effect, int size)
 {
-	if(!effect)
+	return;
+	if(!effect || !size)
 		return;
 	for (int i = 0; i < size; i++)
 	{

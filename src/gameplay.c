@@ -4,13 +4,12 @@
 #include "drawing.h"
 #include "audio.h"
 
-#include "deps/raylib/src/raylib.h"
+#include "../deps/raylib/src/raylib.h"
 #include <stdbool.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pthread.h>
 
 extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
 extern Color _fade;
@@ -1040,7 +1039,6 @@ void fMapSelect()
 	static float selectMapTransition = 1;
 	static int hoverMap = -1;
 	static float hoverPeriod = 0;
-	static pthread_t thread = {0};
 	static struct mapInfoLoadingArgs args = {0};
 
 	if(selectMapTransition < 1)
@@ -1053,7 +1051,7 @@ void fMapSelect()
 		args.amount = &amount;
 		args.combos = combos;
 		args.highScores = highScores;
-		pthread_create(&thread, NULL, (void *(*)(void*))mapInfoLoading, &args);
+		mapInfoLoading( &args);
 		_mapRefresh = false;
 	}
 	ClearBackground(BLACK);
