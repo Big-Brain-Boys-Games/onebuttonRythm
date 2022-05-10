@@ -53,36 +53,37 @@ Map loadMapInfo(char * file)
 	if(!FileExists(pStr))
 		return (Map){.name=0};
 	FILE * f;
-	f = fopen(pStr, "rb");
+	f = fopen(pStr, "r");
 
 	
 	//text file
-	char line [1000];
+	char line [1000] = {0};
 	enum FilePart mode = fpNone;
 	while(fgets(line,sizeof(line),f)!= 0)
 	{
 		int stringLenght = strlen(line);
 		bool emptyLine = true;
 		for(int i = 0; i < stringLenght; i++)
-			if(line[i] != ' ' && line[i] != '\n')
+			if(line[i] != ' ' && line[i] != '\n' && line[i] != '\r')
 				emptyLine = false;
 		
 		if(emptyLine)
 			continue;
 
-		if(strcmp(line, "[Name]\n") == 0)			{mode = fpName;			continue;}
-		if(strcmp(line, "[Creator]\n") == 0)		{mode = fpCreator;		continue;}
-		if(strcmp(line, "[Difficulty]\n") == 0)		{mode = fpDifficulty;	continue;}
-		if(strcmp(line, "[BPM]\n") == 0)			{mode = fpBPM;			continue;}
-		if(strcmp(line, "[Image]\n") == 0)			{mode = fpImage;		continue;}
-		if(strcmp(line, "[MusicFile]\n") == 0)		{mode = fpMusicFile;	continue;}
-		if(strcmp(line, "[MusicLength]\n") == 0)	{mode = fpMusicLength;	continue;}
-		if(strcmp(line, "[Zoom]\n") == 0)			{mode = fpZoom;			continue;}
-		if(strcmp(line, "[Offset]\n") == 0)			{mode = fpOffset;		continue;}
-		if(strcmp(line, "[Beats]\n") == 0)			{mode = fpBeats;		continue;}
-		if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
 		for(int i = 0; i < 100; i++)
-					if(line[i] == '\n') line[i]= '\0';
+			if(line[i] == '\n' || line[i] == '\r' || !line[i]) line[i]= '\0';
+		if(strcmp(line, "[Name]") == 0)				{mode = fpName;			continue;}
+		if(strcmp(line, "[Creator]") == 0)			{mode = fpCreator;		continue;}
+		if(strcmp(line, "[Difficulty]") == 0)		{mode = fpDifficulty;	continue;}
+		if(strcmp(line, "[BPM]") == 0)				{mode = fpBPM;			continue;}
+		if(strcmp(line, "[Image]") == 0)			{mode = fpImage;		continue;}
+		if(strcmp(line, "[MusicFile]") == 0)		{mode = fpMusicFile;	continue;}
+		if(strcmp(line, "[MusicLength]") == 0)		{mode = fpMusicLength;	continue;}
+		if(strcmp(line, "[Zoom]") == 0)				{mode = fpZoom;			continue;}
+		if(strcmp(line, "[Offset]") == 0)			{mode = fpOffset;		continue;}
+		if(strcmp(line, "[Beats]") == 0)			{mode = fpBeats;		continue;}
+		if(strcmp(line, "[Notes]") == 0)			{mode = fpNotes;		continue;}
+
 		switch(mode)
 		{
 			case fpNone:
@@ -253,7 +254,7 @@ void loadMap ()
 
 	strcpy(pStr, map);
 	strcat(pStr, "/map.data");
-	_pFile = fopen(pStr, "rb");
+	_pFile = fopen(pStr, "r");
 
 	//text file
 	char line [1000];
