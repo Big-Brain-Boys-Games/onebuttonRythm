@@ -634,7 +634,7 @@ void fEditor ()
 	float secondsPerBeat = getMusicDuration() / getBeatsCount()/_barMeasureCount;
 	
 	if(isPlaying) {
-		_musicHead += GetFrameTime();
+		_musicHead += GetFrameTime()*_musicSpeed;
 		if (endOfMusic())
 		{
 			_musicPlaying = false;
@@ -755,6 +755,11 @@ void fEditor ()
 	{
 		showSettings = !showSettings;
 	}
+
+	if(interactableButton("reset", 0.05, GetScreenWidth()*0.42, GetScreenHeight()*0.1, GetScreenWidth()*0.1, GetScreenHeight()*0.05))
+	{
+		_musicSpeed = 1;
+	}
 	
 	if(showSettings) {
 		DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), (Color){.r=0,.g=0,.b=0,.a=128});
@@ -793,7 +798,7 @@ void fEditor ()
 	drawProgressBarI(true);
 	static bool speedSlider = false;
 	int speed = _musicSpeed * 100;
-	slider((Rectangle){.x=GetScreenWidth()*0.2, .y=GetScreenHeight()*0.1, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.05}, &speedSlider, &speed, 1, 200);
+	slider((Rectangle){.x=GetScreenWidth()*0.2, .y=GetScreenHeight()*0.1, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.03}, &speedSlider, &speed, 200, 20);
 	_musicSpeed = speed / 100.0;
 	drawCursor();
 }
@@ -1160,6 +1165,7 @@ void fMapSelect()
 	static int hoverMap = -1;
 	static float hoverPeriod = 0;
 	static bool selectingMods = false;
+	_musicSpeed = 1;
 
 	if(selectMapTransition < 1)
 		selectMapTransition += GetFrameTime()*10;
