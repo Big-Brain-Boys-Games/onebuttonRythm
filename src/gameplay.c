@@ -20,6 +20,7 @@ extern float _musicHead, _transition;
 extern void * _pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE, **_pMusic;
 extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size, _musicFrameCount, *_musicLength;
 extern bool _isKeyPressed, _disableLoadingScreen;
+extern float _musicSpeed;
 
 extern void *_pFailSE;
 extern int _failSE_Size;
@@ -56,6 +57,70 @@ void (*_pNextGameplayFunction)();
 void (*_pGameplayFunction)();
 
 char _notfication[100];
+
+typedef struct{
+	int id;
+	float healthMod; //higher health mod means you die faster not slower
+	float scoreMod;
+	float speedMod;
+	float marginMod;
+	Texture * icon;
+	char * name;
+} Modifier;
+
+Modifier * _activeMod [100] = {0}; //we dont even have that many
+
+Modifier _mods [] = {
+	(Modifier) {.id = 0, .name = "No Fail", .icon=0, .healthMod=0, .scoreMod=0.2, .speedMod=1, .marginMod=1},
+	(Modifier) {.id = 1, .name = "Easy", .icon=0, .healthMod=0.5, .scoreMod=0.5, .speedMod=1, .marginMod=2},
+	(Modifier) {.id = 2, .name = "Hard", .icon=0, .healthMod=1.5, .scoreMod=1.5, .speedMod=1, .marginMod=0.5},
+	(Modifier) {.id = 3, .name = ".5x", .icon=0, .healthMod=1, .scoreMod=0.5, .speedMod=0.5, .marginMod=1},
+	(Modifier) {.id = 4, .name = "2x", .icon=0, .healthMod=1, .scoreMod=1.5, .speedMod=1.5 /* :P */, .marginMod=1},
+};
+
+float getHealthMod()
+{
+	if(_pGameplayFunction != &fPlaying)
+		return 1;
+	float value = 1;
+	for(int i = 0; i < 100; i++)
+		if(_activeMod[i] != 0)
+			value *= _activeMod[i]->healthMod;
+	return value;
+}
+
+float getScoreMod()
+{
+	if(_pGameplayFunction != &fPlaying)
+		return 1;
+	float value = 1;
+	for(int i = 0; i < 100; i++)
+		if(_activeMod[i] != 0)
+			value *= _activeMod[i]->scoreMod;
+	return value;
+}
+
+float getSpeedMod()
+{
+	if(_pGameplayFunction != &fPlaying)
+		return 1;
+	float value = 1;
+	for(int i = 0; i < 100; i++)
+		if(_activeMod[i] != 0)
+			value *= _activeMod[i]->speedMod;
+	return value;
+}
+
+float getMarginMod()
+{
+	if(_pGameplayFunction != &fPlaying)
+		return 1;
+	float value = 1;
+	for(int i = 0; i < 100; i++)
+		if(_activeMod[i] != 0)
+			value *= _activeMod[i]->marginMod;
+	return value;
+}
 
 bool checkFileDropped()
 {
@@ -197,6 +262,7 @@ bool interactableButton(char * text, float fontScale, float x, float y,float wid
 
 	if (IsMouseButtonReleased(0) && mouseInRect(button))
 	{
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		return true;
 	}
 	return false;
@@ -208,6 +274,7 @@ bool interactableButtonNoSprite(char * text, float fontScale, float x, float y,f
 
 	if (IsMouseButtonReleased(0) && mouseInRect(button))
 	{
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		return true;
 	}
 	return false;
@@ -282,7 +349,6 @@ void fPause()
 	
 	if(interactableButton("Exit", 0.05, middle - GetScreenWidth()*0.15, _pNextGameplayFunction == &fEditor ? GetScreenHeight() * 0.7 : GetScreenHeight() * 0.5, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		unloadMap();
 		gotoMainMenu(false);
 	}
@@ -380,7 +446,6 @@ void fMainMenu()
 
 	if(interactableButton("Play", 0.04, middle - GetScreenWidth()*0.3,GetScreenHeight() * 0.3,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//switching to playing map
 		printf("switching to playing map!\n");
 		_pNextGameplayFunction = &fPlaying;
@@ -390,7 +455,6 @@ void fMainMenu()
 
 	if (interactableButton("Settings", 0.04, middle - GetScreenWidth()*0.34,GetScreenHeight() * 0.45,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//Switching to settings
 		_pGameplayFunction = &fSettings;
 		_transition = 0.1;
@@ -399,7 +463,6 @@ void fMainMenu()
 
 	// if (interactableButton("Export", 0.04, middle - GetScreenWidth()*0.38,GetScreenHeight() * 0.60,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
 	// {
-	// 	playAudioEffect(_pButtonSE, _buttonSE_Size);
 	// 	//Switching to export
 	// 	_pNextGameplayFunction = &fExport;
 	// 	_pGameplayFunction = &fMapSelect;
@@ -408,7 +471,6 @@ void fMainMenu()
 
 	if (interactableButton("New Map", 0.04, middle - GetScreenWidth()*0.38,GetScreenHeight() * 0.60,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		_pGameplayFunction=&fNewMap;
 		_transition = 0.1;
 	}
@@ -496,7 +558,6 @@ void fSettings() {
 
 	if(interactableButton("Back", 0.03,GetScreenWidth()*0.05,GetScreenHeight()*0.05,GetScreenWidth()*0.1,GetScreenHeight()*0.05))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		_pGameplayFunction=&fMainMenu;
 		_transition = 0.1;
 		_settings.offset = _settings.offset*0.001;
@@ -545,7 +606,6 @@ void fEndScreen ()
 
 	if(interactableButton("Retry", 0.05,GetScreenWidth()*0.15, GetScreenHeight() * 0.7, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//retrying map
 		printf("retrying map! \n");
 		
@@ -555,7 +615,6 @@ void fEndScreen ()
 	}
 	if(interactableButton("Main Menu", 0.05,GetScreenWidth()*0.15, GetScreenHeight() * 0.85, GetScreenWidth()*0.3, GetScreenHeight()*0.1))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		unloadMap();
 		gotoMainMenu(false);
 		_pNextGameplayFunction = &fPlaying;
@@ -783,9 +842,12 @@ void fPlaying ()
 	static float rippleEffectStrength[RippleAmount] = {0};
 	static int rippleEffectIndex = 0;
 	static float smoothHealth = 50;
-	_musicHead += GetFrameTime();
+	_musicHead += GetFrameTime()*_musicSpeed;
 	_musicPlaying = true;
 	fixMusicTime();
+
+	_musicSpeed = getSpeedMod();
+	printf("%f\n", getSpeedMod());
 
 
 
@@ -844,7 +906,7 @@ void fPlaying ()
 		//passed note
 		_noteIndex++;
 		feedback("miss!", 1.3-_health/100);
-		_health -= _missPenalty;
+		_health -= _missPenalty*getHealthMod();
 		_combo = 0;
 		playAudioEffect(_pMissSE, _missSE_Size);
 	}
@@ -863,21 +925,21 @@ void fPlaying ()
 				closestIndex = i;
 			}
 		}
-		if(fabs(closestTime) < _maxMargin)
+		if(fabs(closestTime) < _maxMargin*getMarginMod())
 		{
 			while(_noteIndex < closestIndex)
 			{
 				_noteIndex++;
 				feedback("miss!", 1.3-_health/100);
 				_combo = 0;
-				_health -= _missPenalty;
+				_health -= _missPenalty*getHealthMod();
 				_notesMissed++;
 			}
 			_averageAccuracy += closestTime/_amountNotes / (1/_maxMargin);
 			// _averageAccuracy = 0.5/_amountNotes;
 			int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / _maxMargin));
-			_health += healthAdded;
-			int scoreAdded = noLessThanZero(300 - closestTime * (300 / _maxMargin));
+			_health += healthAdded * (1/(getHealthMod()+0.1));
+			int scoreAdded = noLessThanZero(300 - closestTime * (300 / _maxMargin)) * getScoreMod();
 			if(scoreAdded > 200) {
 				feedback("300!", 1.2);
 				addRipple(1.5);
@@ -897,7 +959,7 @@ void fPlaying ()
 			printf("missed note\n");
 			feedback("miss!", 1.3-_health/100);
 			_combo = 0;
-			_health -= _missPenalty;
+			_health -= _missPenalty*getHealthMod();
 			playAudioEffect(_pMissHitSE, _missHitSE_Size);
 			_notesMissed++;
 		}
@@ -983,7 +1045,6 @@ void fFail ()
 
 	if(interactableButton("Retry", 0.05, middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.7, GetScreenWidth()*0.3, GetScreenHeight()*0.1))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//retrying map
 		printf("retrying map! \n");
 		_pGameplayFunction = &fCountDown;
@@ -992,7 +1053,6 @@ void fFail ()
 	}
 	if(interactableButton("Exit", 0.05, middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.85, GetScreenWidth()*0.3, GetScreenHeight()*0.1))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		//retrying map
 		printf("going to main Menu! \n");
 		unloadMap();
@@ -1089,6 +1149,7 @@ void fMapSelect()
 	static float selectMapTransition = 1;
 	static int hoverMap = -1;
 	static float hoverPeriod = 0;
+	static bool selectingMods = false;
 
 	if(selectMapTransition < 1)
 		selectMapTransition += GetFrameTime()*10;
@@ -1109,6 +1170,70 @@ void fMapSelect()
 	DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
 		(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
 
+
+	if(selectingMods)
+	{
+		_playMenuMusic = true;
+		_musicPlaying = false;
+		hoverPeriod = 0;
+		drawVignette();
+		if(interactableButton("Back", 0.03, GetScreenWidth()*0.05, GetScreenHeight()*0.05, GetScreenWidth()*0.1, GetScreenHeight()*0.05))
+		{
+			selectingMods = false;
+			return;
+		}
+		//draw all modifiers
+		int amountMods = sizeof(_mods) / sizeof(_mods[0]);
+		for(int i = 0; i < amountMods; i++)
+		{
+			int x = i % 3;
+			int y = i / 3;
+			if(interactableButton(_mods[i].name, 0.03, GetScreenWidth()*(0.2+x*0.22), GetScreenHeight()*(0.05+y*0.12), GetScreenWidth()*0.2, GetScreenHeight()*0.07))
+			{
+				//enable mod
+				int modId = _mods[i].id;
+				bool foundDouble = false;
+				for(int j = 0; j < amountMods; j++)
+				{
+					//find doubles
+					if(_activeMod[j] != NULL && modId == _activeMod[j]->id)
+					{
+						foundDouble = true;
+						//disable mod
+						_activeMod[j] = 0;
+						break;
+					}
+				}
+				if(!foundDouble)
+				{
+					//add new mod
+					//find empty spot
+					for(int j = 0; j < 100; j++)
+					{
+						if(_activeMod[j] == 0)
+						{
+							_activeMod[j] = &(_mods[i]);
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		//print selected / active mods
+		int modsSoFar = 0;
+		for(int i = 0; i < 100; i++)
+		{
+			if(_activeMod[i] != 0)
+			{
+				drawText(_activeMod[i]->name, GetScreenWidth()*(0.05+0.12*modsSoFar), GetScreenHeight()*0.9, GetScreenWidth()*0.03, WHITE);
+				modsSoFar++;
+			}
+		}
+
+		drawCursor();
+		return;
+	}
 	int middle = GetScreenWidth()/2;
 
 	static float menuScroll = 0;
@@ -1128,14 +1253,16 @@ void fMapSelect()
 	menuScroll = clamp(menuScroll, -.5*floor(amount/2), 0);
 
 
+	if(interactableButton("Mods", 0.03, GetScreenWidth()*0.2, GetScreenHeight()*0.05, GetScreenWidth()*0.1, GetScreenHeight()*0.05))
+	{
+		selectingMods = true;
+		return;
+	}
+
 	if(interactableButton("Back", 0.03, GetScreenWidth()*0.05, GetScreenHeight()*0.05, GetScreenWidth()*0.1, GetScreenHeight()*0.05))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
-		_pGameplayFunction=&fMainMenu;
+		_pGameplayFunction = &fMainMenu;
 		_transition = 0.1;
-		_disableLoadingScreen = false;
-		_musicPlaying = false;
-		_playMenuMusic = true;
 		return;
 	}
 
@@ -1245,6 +1372,7 @@ void fMapSelect()
 	//draw them again, in case the maps are on top
 	//but the click code needs to be first because back needs to return before the click map function
 	interactableButton("Back", 0.03, GetScreenWidth()*0.05, GetScreenHeight()*0.05, GetScreenWidth()*0.1, GetScreenHeight()*0.05);
+	interactableButton("Mods", 0.03, GetScreenWidth()*0.2, GetScreenHeight()*0.05, GetScreenWidth()*0.1, GetScreenHeight()*0.05);
 
 	drawCursor();
 }
@@ -1291,7 +1419,6 @@ void fNewMap()
 
 	if(interactableButton("Back", 0.03,GetScreenWidth()*0.05, GetScreenHeight()*0.05, GetScreenWidth()*0.1, GetScreenHeight()*0.05))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		_pGameplayFunction=&fMainMenu;
 		_transition = 0.1;
 		return;
@@ -1327,7 +1454,6 @@ void fNewMap()
 		_pNextGameplayFunction=&fRecording;
 		_pGameplayFunction=&fCountDown;
 		_transition = 0.1;
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		newMap.folder = malloc(100);
 		strcpy(newMap.folder, newMap.name);
 		_map = &newMap;

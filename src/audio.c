@@ -66,6 +66,8 @@ void **_pMusic = 0;
 void *_pMenuMusic = 0;
 int _menuMusicFrameCount = 0;
 int _menuMusicLength = 0;
+
+float _musicSpeed = 1;
  
 
 int getSamplePosition(float time) {
@@ -74,12 +76,12 @@ int getSamplePosition(float time) {
 //Get duration of music in seconds
 float getMusicDuration()
 {
-	return *_musicLength / (float)48000;
+	return *_musicLength / (float)48000 * _musicSpeed;
 }
 
 float getMusicPosition()
 {
-	return _musicFrameCount / (float)48000;
+	return _musicFrameCount / (float)48000 * _musicSpeed;
 }
 
 void fixMusicTime()
@@ -181,11 +183,17 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 	// music
 	if (_musicPlaying && _pMusic && *_pMusic && _musicLength)
 	{
-		if (*_musicLength >0 && *_musicLength > _musicFrameCount && _musicFrameCount > 0)
+		if (*_musicLength >0 && *_musicLength > _musicFrameCount*_musicSpeed && _musicFrameCount > 0)
 		{
 			for (int i = 0; i < frameCount * 2; i++)
 			{
-				((float *)pOutput)[i] = ((float *)*_pMusic)[i + _musicFrameCount*2]*musicVolume*_musicPlaying;
+				float value = 0;
+				int sampleCount = (int)(_musicSpeed*100);
+				// for(int j = 0; j < sampleCount; j++)
+				// {
+				value += ((float *)*_pMusic)[(int)(i*_musicSpeed  + _musicFrameCount*2*_musicSpeed)]*musicVolume;
+				// }
+				((float *)pOutput)[i] = value;
 			}
 		}
 		else if(_musicLoops && *_musicLength > 0)
