@@ -147,9 +147,8 @@ void gotoMainMenu(bool mainOrSelect)
 	randomMusicPoint();
 	if (mainOrSelect)
 		_pGameplayFunction = &fMainMenu;
-	else
-		_pGameplayFunction = &fMapSelect;
-
+	else _pGameplayFunction = &fMapSelect;
+	SetWindowTitle("One Button Rhythm");
 	resetBackGround();
 }
 
@@ -343,20 +342,25 @@ void fPause()
 
 	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("Continue", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.3, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
-		if (_pNextGameplayFunction == &fPlaying)
+		if(_pNextGameplayFunction == &fPlaying)
 			_pGameplayFunction = &fCountDown;
 		else
 			_pGameplayFunction = _pNextGameplayFunction;
 	}
 	if (_pNextGameplayFunction == &fEditor && interactableButton("Save & Exit", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.5, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		saveFile(_amountNotes);
 		gotoMainMenu(false);
 	}
 
-	if (interactableButton("Exit", 0.05, middle - GetScreenWidth() * 0.15, _pNextGameplayFunction == &fEditor ? GetScreenHeight() * 0.7 : GetScreenHeight() * 0.5, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
+	if (_pNextGameplayFunction == &fRecording && interactableButton("retry", 0.05, middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.5, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
+	{
+		_pGameplayFunction = _pNextGameplayFunction;
+		_noteIndex = 0;
+		_amountNotes = 0;
+	}
+	
+	if(interactableButton("Exit", 0.05, middle - GetScreenWidth()*0.15, _pNextGameplayFunction == &fEditor ? GetScreenHeight() * 0.7 : GetScreenHeight() * 0.5, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
 	{
 		unloadMap();
 		gotoMainMenu(false);
@@ -792,7 +796,7 @@ void fEditor()
 		static bool songNameBoxSelected = false;
 		Rectangle songNameBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.26, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 		textBox(songNameBox, songName, &songNameBoxSelected);
-		_map->name = songName;
+		strcpy(_map->name,songName);
 
 		// song name setting
 		char creator[50] = {0};
@@ -800,7 +804,7 @@ void fEditor()
 		static bool creatorBoxSelected = false;
 		Rectangle creatorBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.34, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 		textBox(creatorBox, creator, &creatorBoxSelected);
-		_map->creator = creator;
+		strcpy(_map->creator,creator);
 
 		// Speed slider
 		static bool speedSlider = false;
@@ -1529,8 +1533,10 @@ void fNewMap()
 		fclose(file);
 		if (newMap.bpm == 0)
 			newMap.bpm = 1;
-		_pNextGameplayFunction = &fRecording;
-		_pGameplayFunction = &fCountDown;
+		_pNextGameplayFunction=&fRecording;
+		_amountNotes = 0;
+		_noteIndex = 0;
+		_pGameplayFunction=&fCountDown;
 		_transition = 0.1;
 		newMap.folder = malloc(100);
 		strcpy(newMap.folder, newMap.name);
