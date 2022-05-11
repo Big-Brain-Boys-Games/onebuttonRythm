@@ -604,7 +604,7 @@ void fEndScreen()
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.5, GetScreenWidth() * 0.05, LIGHTGRAY);
 
 	// draw extra info
-	sprintf(tmpString, "Accuracy: %.2f misses :%i", 100 * (1 - _averageAccuracy * (_amountNotes / (_noteIndex + 1))), _notesMissed);
+	sprintf(tmpString, "Accuracy: %.2f misses :%i", 100 * (1 - _averageAccuracy), _notesMissed);
 	textSize = measureText(tmpString, GetScreenWidth() * 0.05);
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.6, GetScreenWidth() * 0.05, LIGHTGRAY);
 	free(tmpString);
@@ -760,7 +760,8 @@ void fEditor()
 	drawMusicGraph(0.4);
 	drawVignette();
 	drawBars();
-	drawProgressBar();;
+	drawProgressBar();
+	;
 
 	if (showSettings)
 	{
@@ -1001,11 +1002,11 @@ void fPlaying()
 				_health -= _missPenalty * getHealthMod();
 				_notesMissed++;
 			}
-			_averageAccuracy += closestTime / _amountNotes / (1 / _maxMargin);
+			_averageAccuracy = ((_averageAccuracy * (_noteIndex - _notesMissed)) + ((1 / _maxMargin) * closestTime)) / (_noteIndex - _notesMissed + 1);
 			// _averageAccuracy = 0.5/_amountNotes;
-			int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / _maxMargin));
+			int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / _maxMargin * getMarginMod()));
 			_health += healthAdded * (1 / (getHealthMod() + 0.1));
-			int scoreAdded = noLessThanZero(300 - closestTime * (300 / _maxMargin)) * getScoreMod();
+			int scoreAdded = noLessThanZero(300 - closestTime * (300 / _maxMargin * getMarginMod())) * getScoreMod();
 			if (scoreAdded > 200)
 			{
 				feedback("300!", 1.2);
@@ -1081,7 +1082,7 @@ void fPlaying()
 	// draw acc
 	//  sprintf(tmpString, "acc: %.5f", (int)(100*_averageAccuracy*(_amountNotes/(_noteIndex+1))));
 	//  printf("%.2f   %.2f\n", _averageAccuracy, ((float)_amountNotes/(_noteIndex+1)));
-	sprintf(tmpString, "acc: %.2f", 100 * (1 - _averageAccuracy * ((float)_amountNotes / (_noteIndex + 1))));
+	sprintf(tmpString, "acc: %.2f", 100 * (1 - _averageAccuracy));
 	drawText(tmpString, GetScreenWidth() * 0.70, GetScreenHeight() * 0.1, GetScreenWidth() * 0.04, WHITE);
 	free(tmpString);
 	drawProgressBar();
