@@ -9,4 +9,4 @@ Supports exporting / importing zipped maps.
     git clone https://github.com/Big-Brain-Boys-Games/onebuttonRythm.git --recursive
     cd onebuttonRythm
     make deps
-    make
+    make #for wayland do CFLAGS=-DUSE_WAYLAND_DISPLAY
