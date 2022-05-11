@@ -233,10 +233,6 @@ void numberBox(Rectangle rect, int * number, bool * selected)
 
 void slider(Rectangle rect, bool * selected, int * value, int max, int min)
 {
-	if(*value > max)
-		*value = max;
-	if(*value < min)
-		*value = min;
 
 	Color color = WHITE;
 	if(*selected)
@@ -254,6 +250,11 @@ void slider(Rectangle rect, bool * selected, int * value, int max, int min)
 
 	if(!IsMouseButtonDown(0))
 		*selected = false;
+	
+	if(*value > max)
+		*value = max;
+	if(*value < min)
+		*value = min;
 }
 
 bool interactableButton(char * text, float fontScale, float x, float y,float width,float height) {
@@ -756,7 +757,7 @@ void fEditor ()
 		showSettings = !showSettings;
 	}
 
-	if(interactableButton("reset", 0.05, GetScreenWidth()*0.42, GetScreenHeight()*0.1, GetScreenWidth()*0.1, GetScreenHeight()*0.05))
+	if(interactableButton("reset", 0.03, GetScreenWidth()*0.42, GetScreenHeight()*0.1, GetScreenWidth()*0.1, GetScreenHeight()*0.05))
 	{
 		_musicSpeed = 1;
 	}
