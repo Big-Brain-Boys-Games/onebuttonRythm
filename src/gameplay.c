@@ -798,7 +798,7 @@ void fEditor()
 		static bool songNameBoxSelected = false;
 		Rectangle songNameBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.26, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 		textBox(songNameBox, songName, &songNameBoxSelected);
-		_map->name = songName;
+		strcpy(_map->name,songName);
 
 		// song name setting
 		char creator[50] = {0};
@@ -806,7 +806,7 @@ void fEditor()
 		static bool creatorBoxSelected = false;
 		Rectangle creatorBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.34, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 		textBox(creatorBox, creator, &creatorBoxSelected);
-		_map->creator = creator;
+		strcpy(_map->creator,creator);
 
 		// Speed slider
 		static bool speedSlider = false;
