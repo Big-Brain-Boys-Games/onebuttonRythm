@@ -226,12 +226,13 @@ void removeNote(int index)
 	_pNotes = tmp;
 }
 
+void ** _pHitSEp;
 void newNote(float time)
 {
 	printf("new note time %f\n", time);
 	int closestIndex = 0;
 	_amountNotes++;
-	Note *tmp = calloc(_amountNotes, sizeof(float));
+	Note *tmp = calloc(_amountNotes, sizeof(Note));
 	for (int i = 0; i < _amountNotes - 1; i++)
 	{
 		tmp[i] = _pNotes[i];
@@ -249,6 +250,9 @@ void newNote(float time)
 	free(_pNotes);
 	_pNotes = tmp;
 	_pNotes[closestIndex].time = time;
+	_pNotes[closestIndex].texture = _noteTex;
+	_pHitSEp = &_pHitSE;
+	_pNotes[closestIndex].hitSE = &_pHitSEp;
 }
 
 void fPause()
@@ -584,9 +588,11 @@ void fEditor ()
 		if (IsKeyPressed(KEY_RIGHT)) {
 			//Snap to closest beat
 			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
+			//Add the offset
 			_musicHead = (_musicHead + _map->offset/1000.0);
-			//Add the bps to the
+			//Add the bps to the music head
 			_musicHead += secondsPerBeat;
+			//snap it again (it's close enough right?????)
 			_musicHead = roundf(getMusicHead()/secondsPerBeat)*secondsPerBeat;
 		}
 		
