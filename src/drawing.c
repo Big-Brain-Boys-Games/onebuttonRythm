@@ -214,10 +214,12 @@ void drawBackground()
 		(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
 	}
 }
+
 void resetBackGround()
 {
 	_background = _menuBackground;
 }
+
 void drawBars()
 {
 	//Draw the bars
