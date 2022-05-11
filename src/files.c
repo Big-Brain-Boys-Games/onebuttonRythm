@@ -436,7 +436,8 @@ void loadMap ()
 				strcpy(soundFiles[amountSounds], _pNotes[i].hitSE_File);
 				char filePath [100];
 				sprintf(filePath, "maps/%s%s", _map->folder, soundFiles[amountSounds]);
-				sounds[amountSounds] = malloc(sizeof(void*));
+				if(sounds[amountSounds] == 0)
+					sounds[amountSounds] = malloc(sizeof(void*));
 				loadAudio(sounds[amountSounds], filePath, &(soundLengths[amountSounds]));
 				_pNotes[i].hitSE = &sounds[amountSounds];
 				_pNotes[i].hitSE_Length = &soundLengths[amountSounds];
