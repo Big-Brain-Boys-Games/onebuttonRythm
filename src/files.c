@@ -47,6 +47,7 @@ Map loadMapInfo(char * file)
 	map.beats = 4;
 	strcpy(map.folder, file);
 	char * pStr = malloc(strlen(mapStr) + 30);
+	map.imageFile = malloc(100);
 
 	strcpy(pStr, mapStr);
 	strcat(pStr, "/map.data");
@@ -54,6 +55,20 @@ Map loadMapInfo(char * file)
 		return (Map){.name=0};
 	FILE * f;
 	f = fopen(pStr, "r");
+
+	map.name = calloc(sizeof(char), 100);
+	map.name[0] = '\0';
+
+	map.creator = calloc(sizeof(char), 100);
+	map.creator[0] = '\0';
+
+	map.imageFile = calloc(sizeof(char), 100);
+	map.imageFile[0] = '\0';
+
+	map.musicFile = calloc(sizeof(char), 100);
+	map.musicFile[0] = '\0';
+
+
 
 	
 	//text file
@@ -71,7 +86,9 @@ Map loadMapInfo(char * file)
 			continue;
 
 		for(int i = 0; i < 100; i++)
-			if(line[i] == '\n' || line[i] == '\r' || !line[i]) line[i]= '\0';
+			if(line[i] == '\n' || line[i] == '\r' || !line[i])
+				line[i]= '\0';
+		
 		if(strcmp(line, "[Name]") == 0)				{mode = fpName;			continue;}
 		if(strcmp(line, "[Creator]") == 0)			{mode = fpCreator;		continue;}
 		if(strcmp(line, "[Difficulty]") == 0)		{mode = fpDifficulty;	continue;}
@@ -89,11 +106,9 @@ Map loadMapInfo(char * file)
 			case fpNone:
 				break;
 			case fpName:
-				map.name = malloc(100);
 				strcpy(map.name, line);
 				break;
 			case fpCreator:
-				map.creator = malloc(100);
 				strcpy(map.creator, line);
 				break;
 			case fpDifficulty:
@@ -103,11 +118,9 @@ Map loadMapInfo(char * file)
 				map.bpm = atoi(line);
 				break;
 			case fpImage:
-				map.imageFile = malloc(100);
 				strcpy(map.imageFile, line);
 				break;
 			case fpMusicFile:
-				map.musicFile = malloc(100);
 				strcpy(map.musicFile, line);
 				break;
 			case fpZoom:
@@ -129,7 +142,7 @@ Map loadMapInfo(char * file)
 	}
 	fclose(f);
 	strcpy(pStr, mapStr);
-	if(map.imageFile != 0)
+	if(map.imageFile[0] != '\0')
 		strcat(pStr, map.imageFile);
 	else
 		strcat(pStr, "/image.png");
@@ -138,7 +151,6 @@ Map loadMapInfo(char * file)
 		printf("image: %s \n", pStr);
 		// map.image = LoadTexture(pStr);
 		map.cpuImage = LoadImage(pStr);
-		map.imageFile = malloc(100);
 		strcpy(map.imageFile, pStr);
 	}
 	else{

@@ -153,7 +153,8 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float 
 	Vector2 imageScaling = {.x=rect.width,.y=rect.height*imageRatio}, imageOffset = {.x=0,.y=0};
 	if(ogImageRatio>newImageRatio)
 	{
-		imageScaling.y = ogImageRatio*imageScaling.x;
+		imageScaling.y = ((float)map->image.height/ map->image.width)*imageScaling.x;
+		imageOffset.y = (rect.height*imageRatio)/2-imageScaling.y/2;
 	}else {
 		imageScaling.x = ogImageRatio*imageScaling.y;
 		imageOffset.x = rect.width/2-imageScaling.x/2;

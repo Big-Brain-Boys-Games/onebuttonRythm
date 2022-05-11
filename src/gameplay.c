@@ -309,7 +309,7 @@ void fCountDown ()
 			_health = 50;
 			_combo = 0;
 			_score = 0;
-			_noteIndex =1;
+			_noteIndex = 0;
 			_notesMissed = 0;
 			_averageAccuracy = 0;
 			_musicHead = 0;
@@ -673,6 +673,7 @@ void fEditor ()
 		}
 	}
 
+	drawMusicGraph(0.4);
 	drawVignette();
 	
 	if (interactableButton("Song settings",0.025, GetScreenWidth()*0.8, GetScreenHeight()*0.05,GetScreenWidth()*0.2,GetScreenHeight()*0.07))
@@ -935,7 +936,7 @@ void fPlaying ()
 
 	//draw acc
 	// sprintf(tmpString, "acc: %.5f", (int)(100*_averageAccuracy*(_amountNotes/(_noteIndex+1))));
-	printf("%.2f   %.2f\n", _averageAccuracy, ((float)_amountNotes/(_noteIndex+1)));
+	// printf("%.2f   %.2f\n", _averageAccuracy, ((float)_amountNotes/(_noteIndex+1)));
 	sprintf(tmpString, "acc: %.2f", 100*(1-_averageAccuracy* ((float)_amountNotes/(_noteIndex+1))));
 	drawText(tmpString, GetScreenWidth() * 0.70, GetScreenHeight()*0.1, GetScreenWidth() * 0.04, WHITE);
 	free(tmpString);
@@ -1091,7 +1092,7 @@ void fMapSelect()
 		args->combos = combos;
 		args->highScores = highScores;
 		args->accuracy = accuracy;
-		createThread(mapInfoLoading, args);
+		createThread((void * (*)(void *))mapInfoLoading, args);
 		_mapRefresh = false;
 	}
 	ClearBackground(BLACK);
@@ -1129,7 +1130,10 @@ void fMapSelect()
 	}
 
 	if(hoverMap == -1)
+	{
 		_musicFrameCount = 1;
+		hoverPeriod = 0;
+	}
 	else
 	{
 		_disableLoadingScreen = true;
@@ -1267,6 +1271,7 @@ void fNewMap()
 		strcpy(newMap.creator, "creator");
 		newMap.folder = malloc(100);
 		newMap.folder[0] = '\0';
+		newMap.bpm = 100;
 	}
 	ClearBackground(BLACK);
 	DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
@@ -1332,10 +1337,13 @@ void fNewMap()
 	static bool nameBoxSelected = false;
 	Rectangle nameBox = (Rectangle){.x=middle, .y=GetScreenHeight()*0.5, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
 	textBox(nameBox, newMap.name, &nameBoxSelected);
+	drawText("name", middle, GetScreenHeight()*0.45, GetScreenHeight()*0.05, WHITE);
 
 	static bool creatorBoxSelected = false;
 	Rectangle creatorBox = (Rectangle){.x=middle, .y=GetScreenHeight()*0.625, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
 	textBox(creatorBox, newMap.creator, &creatorBoxSelected);
+	drawText("creator", middle, GetScreenHeight()*0.575, GetScreenHeight()*0.05, WHITE);
+
 
 	char str[100] = {'\0'};
 	if(newMap.bpm != 0)
@@ -1344,10 +1352,16 @@ void fNewMap()
 	Rectangle bpmBox = (Rectangle){.x=middle, .y=GetScreenHeight()*0.875, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
 	textBox(bpmBox, str, &bpmBoxSelected);
 	newMap.bpm = fmin(fmax(atoi(str), 0), 500);
+	drawText("bpm", middle, GetScreenHeight()*0.825, GetScreenHeight()*0.05, WHITE);
+
 
 	static bool difficultyBoxSelected = false;
 	Rectangle difficultyBox = (Rectangle){.x=middle, .y=GetScreenHeight()*0.75, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.07};
 	numberBox(difficultyBox, &newMap.difficulty, &difficultyBoxSelected);
+	if(newMap.difficulty < 0) newMap.difficulty = 0;
+	if(newMap.difficulty > 9) newMap.difficulty = 0;
+	drawText("difficulty", middle, GetScreenHeight()*0.70, GetScreenHeight()*0.05, WHITE);
+
 	
 
 	int textSize = measureText("Drop in .png, .wav or .mp3", GetScreenWidth() * 0.04);
