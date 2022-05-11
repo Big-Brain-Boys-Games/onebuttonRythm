@@ -456,15 +456,15 @@ void initDrawing()
 	EndDrawing();
 
 	_heartTex = LoadTexture("assets/heart.png");
-	SetTextureFilter(_heartTex, TEXTURE_FILTER_BILINEAR);
+	SetTextureFilter(_heartTex, TEXTURE_FILTER_ANISOTROPIC_8X);
 	_healthBarTex = LoadTexture("assets/healthBar.png");
-	SetTextureFilter(_healthBarTex, TEXTURE_FILTER_BILINEAR);
+	SetTextureFilter(_healthBarTex, TEXTURE_FILTER_ANISOTROPIC_8X);
 	_noteTex = LoadTexture("assets/note.png");
-	SetTextureFilter(_noteTex, TEXTURE_FILTER_BILINEAR);
+	SetTextureFilter(_noteTex, TEXTURE_FILTER_ANISOTROPIC_8X);
 	_cursorTex = LoadTexture("assets/cursor.png");
-	SetTextureFilter(_cursorTex, TEXTURE_FILTER_BILINEAR);
+	SetTextureFilter(_cursorTex, TEXTURE_FILTER_ANISOTROPIC_8X);
 	_font = LoadFontEx("assets/nasalization.otf", 512, 0, 250);
-	SetTextureFilter(_font.texture, TEXTURE_FILTER_BILINEAR);
+	SetTextureFilter(_font.texture, TEXTURE_FILTER_ANISOTROPIC_8X);
 	_background = _menuBackground;
 
 
