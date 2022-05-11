@@ -633,17 +633,17 @@ void fEditor()
 	static bool isPlaying = false;
 	_musicPlaying = isPlaying;
 	float secondsPerBeat = getMusicDuration() / getBeatsCount() / _barMeasureCount;
-	if (!showSettings)
+	if (isPlaying)
 	{
-		if (isPlaying)
+		_musicHead += GetFrameTime() * _musicSpeed;
+		if (endOfMusic())
 		{
-			_musicHead += GetFrameTime() * _musicSpeed;
-			if (endOfMusic())
-			{
-				_musicPlaying = false;
-			}
+			_musicPlaying = false;
 		}
-		else
+	}
+	else
+	{
+		if (!showSettings)
 		{
 			// Disable some keybinds during playback
 			setMusicFrameCount();
@@ -681,71 +681,70 @@ void fEditor()
 			{
 				_musicHead -= GetMouseDelta().x / GetScreenWidth() * _scrollSpeed;
 			}
-		}
 
-		if (IsMouseButtonPressed(0))
-		{
-			printf("Note at: %f\n", findClosest(_pNotes, _amountNotes / 2, screenToMusicTime(GetMouseX())));
-		}
-
-		if (getMusicHead() < 0)
-			_musicHead = 0;
-
-		if (IsKeyPressed(KEY_ESCAPE))
-		{
-			_pGameplayFunction = &fPause;
-			_pNextGameplayFunction = &fEditor;
-			return;
-		}
-
-		if (getMusicHead() > getMusicDuration())
-			_musicHead = getMusicDuration();
-		if (_isKeyPressed)
-		{
-			float closestTime = 55;
-			int closestIndex = 0;
-			for (int i = 0; i < _amountNotes; i++)
+			if (IsMouseButtonPressed(0))
 			{
-				if (closestTime > fabs(_pNotes[i].time - getMusicHead()))
+				printf("Note at: %f\n", findClosest(_pNotes, _amountNotes / 2, screenToMusicTime(GetMouseX())));
+			}
+
+			if (getMusicHead() < 0)
+				_musicHead = 0;
+
+			if (IsKeyPressed(KEY_ESCAPE))
+			{
+				_pGameplayFunction = &fPause;
+				_pNextGameplayFunction = &fEditor;
+				return;
+			}
+
+			if (getMusicHead() > getMusicDuration())
+				_musicHead = getMusicDuration();
+			if (_isKeyPressed)
+			{
+				float closestTime = 55;
+				int closestIndex = 0;
+				for (int i = 0; i < _amountNotes; i++)
 				{
-					closestTime = fabs(_pNotes[i].time - getMusicHead());
-					closestIndex = i;
+					if (closestTime > fabs(_pNotes[i].time - getMusicHead()))
+					{
+						closestTime = fabs(_pNotes[i].time - getMusicHead());
+						closestIndex = i;
+					}
 				}
-			}
-			if (IsKeyPressed(KEY_Z) && closestTime > 0.03f)
-			{
-				newNote(getMusicHead());
-			}
+				if (IsKeyPressed(KEY_Z) && closestTime > 0.03f)
+				{
+					newNote(getMusicHead());
+				}
 
-			if (IsKeyPressed(KEY_X) && closestTime < _maxMargin)
-			{
-				removeNote(closestIndex);
-			}
+				if (IsKeyPressed(KEY_X) && closestTime < _maxMargin)
+				{
+					removeNote(closestIndex);
+				}
 
-			if (IsKeyPressed(KEY_C) && !isPlaying)
-			{
-				// todo maybe not 4 subbeats?
-				_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
-			}
+				if (IsKeyPressed(KEY_C) && !isPlaying)
+				{
+					// todo maybe not 4 subbeats?
+					_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+				}
 
-			if (IsKeyPressed(KEY_E) && _barMeasureCount <= 32)
-			{
-				_barMeasureCount = _barMeasureCount * 2;
-			}
+				if (IsKeyPressed(KEY_E) && _barMeasureCount <= 32)
+				{
+					_barMeasureCount = _barMeasureCount * 2;
+				}
 
-			if (IsKeyPressed(KEY_Q) && _barMeasureCount >= 2)
-			{
-				_barMeasureCount = _barMeasureCount / 2;
-			}
-
-			if (IsKeyPressed(KEY_SPACE))
-			{
-				isPlaying = !isPlaying;
-				_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+				if (IsKeyPressed(KEY_Q) && _barMeasureCount >= 2)
+				{
+					_barMeasureCount = _barMeasureCount / 2;
+				}
+				
 			}
 		}
 	}
-
+	if (IsKeyPressed(KEY_SPACE) && !showSettings)
+	{
+		isPlaying = !isPlaying;
+		_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+	}
 	ClearBackground(BLACK);
 
 	drawBackground();
@@ -760,8 +759,7 @@ void fEditor()
 	drawMusicGraph(0.4);
 	drawVignette();
 	drawBars();
-	drawProgressBar();
-	;
+	drawProgressBarI(!isPlaying);
 
 	if (showSettings)
 	{
