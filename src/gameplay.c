@@ -148,7 +148,7 @@ void gotoMainMenu(bool mainOrSelect)
 	if(mainOrSelect)
 		_pGameplayFunction = &fMainMenu;
 	else _pGameplayFunction = &fMapSelect;
-	
+	SetWindowTitle("One Button Rhythm");
 	resetBackGround();
 }
 
@@ -339,7 +339,6 @@ void fPause()
 
 	if(IsKeyPressed(KEY_ESCAPE) || interactableButton("Continue", 0.05,middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.3, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		if(_pNextGameplayFunction == &fPlaying)
 			_pGameplayFunction = &fCountDown;
 		else
@@ -347,9 +346,15 @@ void fPause()
 	}
 	if (_pNextGameplayFunction == &fEditor && interactableButton("Save & Exit", 0.05, middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.5, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		saveFile(_amountNotes);
 		gotoMainMenu(false);
+	}
+
+	if (_pNextGameplayFunction == &fRecording && interactableButton("retry", 0.05, middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.5, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
+	{
+		_pGameplayFunction = _pNextGameplayFunction;
+		_noteIndex = 0;
+		_amountNotes = 0;
 	}
 	
 	if(interactableButton("Exit", 0.05, middle - GetScreenWidth()*0.15, _pNextGameplayFunction == &fEditor ? GetScreenHeight() * 0.7 : GetScreenHeight() * 0.5, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
@@ -1469,6 +1474,8 @@ void fNewMap()
 		if(newMap.bpm == 0)
 			newMap.bpm = 1;
 		_pNextGameplayFunction=&fRecording;
+		_amountNotes = 0;
+		_noteIndex = 0;
 		_pGameplayFunction=&fCountDown;
 		_transition = 0.1;
 		newMap.folder = malloc(100);

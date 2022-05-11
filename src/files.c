@@ -465,6 +465,9 @@ void loadMap ()
 	}
 	// free(sounds);
 	_noteIndex = 0;
+	char str [100];
+	sprintf(str, "%s - %s", _map->name, _map->creator);
+	SetWindowTitle(str);
 }
 
 void saveScore()

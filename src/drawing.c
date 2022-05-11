@@ -434,6 +434,7 @@ void initDrawing()
 {
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 600, "One Button Rythm");
+	SetWindowIcon(LoadImage("assets/note.png"));
 	SetTargetFPS(120);
 	SetExitKey(0);
 
