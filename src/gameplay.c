@@ -798,7 +798,7 @@ void fEditor()
 		textBox(songNameBox, songName, &songNameBoxSelected);
 		strcpy(_map->name,songName);
 
-		// song name setting
+		// song creator setting
 		char creator[50] = {0};
 		sprintf(creator, "%s", _map->creator);
 		static bool creatorBoxSelected = false;
