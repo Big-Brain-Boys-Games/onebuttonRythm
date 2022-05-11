@@ -97,6 +97,7 @@ void dNotes ()
 	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
 	
 
+	DrawRectangle(0, GetScreenHeight()*0.30, GetScreenWidth(), GetScreenHeight()*0.3, ColorAlpha(BLACK, 0.4));
 	DrawRectangleGradientH(0,0 , middle - width / 2, GetScreenHeight(), ColorAlpha(BLACK, 0.6), ColorAlpha(BLACK, 0.3));
 	for(int i = _noteIndex; i >= 0 && _pNotes[i].time + _scrollSpeed > getMusicHead(); i--)
 	{
@@ -438,7 +439,7 @@ void initDrawing()
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 600, "One Button Rythm");
 	SetWindowIcon(LoadImage("assets/note.png"));
-	SetTargetFPS(120);
+	SetTargetFPS(360);
 	SetExitKey(0);
 
 	HideCursor();
