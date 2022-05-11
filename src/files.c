@@ -226,11 +226,18 @@ void saveFile (int noteAmount)
 	fprintf(_pFile, "[Beats]\n");
 	fprintf(_pFile, "%f\n", _map->beats);
 	fprintf(_pFile, "[Notes]\n");
+	
 	for(int i = 0; i < noteAmount; i++)
 	{
 		if(_pNotes[i].time == 0)
 			continue;
-		fprintf(_pFile, "%f\n", _pNotes[i].time);
+		
+		fprintf(_pFile, "%f", _pNotes[i].time);
+		if (_pNotes[i].hitSE_File != 0)
+			fprintf(_pFile, " \"%s\"", _pNotes[i].hitSE_File);
+		if (_pNotes[i].texture_File != 0)
+			fprintf(_pFile, " \"%s\"",_pNotes[i].texture_File);
+		fprintf(_pFile, "\n");
 	}
 	fclose(_pFile);
 	
