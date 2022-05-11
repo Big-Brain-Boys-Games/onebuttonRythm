@@ -58,6 +58,41 @@ int main(int argc, char **argv)
 		if(_pGameplayFunction != &fMapSelect)
 			_mapRefresh = true;
 		BeginDrawing();
+			if(IsKeyPressed(KEY_F11) || ((IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)) && IsKeyPressed(KEY_ENTER)))
+			{
+				static int oldSizeX = 0;
+				static int oldSizeY = 0;
+				static int oldPosX = 0;
+				static int oldPosY = 0;
+				if(!IsWindowFullscreen())
+				{
+					oldSizeX = GetScreenWidth();
+					oldSizeY = GetScreenHeight();
+					oldPosX = GetWindowPosition().x;
+					oldPosY = GetWindowPosition().y;
+					SetWindowSize(GetMonitorWidth(GetCurrentMonitor()), GetMonitorHeight(GetCurrentMonitor()));
+					while(!IsWindowResized() && !WindowShouldClose())
+					{
+						BeginDrawing();
+							drawLoadScreen();
+						EndDrawing();
+					}
+					ToggleFullscreen();
+
+				}else
+				{
+					ToggleFullscreen();
+					SetWindowSize(oldSizeX, oldSizeY);
+					while(!IsWindowResized() && !WindowShouldClose())
+					{
+						BeginDrawing();
+							drawLoadScreen();
+						EndDrawing();
+					}
+					SetWindowPosition(oldPosX, oldPosY);
+				}
+				
+			}
 			if(_loadingFade != 1 || _disableLoadingScreen)
 			{
 				if(_transition > 2)
