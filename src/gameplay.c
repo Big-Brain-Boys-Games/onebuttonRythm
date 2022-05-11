@@ -181,7 +181,7 @@ void slider(Rectangle rect, bool * selected, int * value, int max, int min)
 	DrawRectangle(rect.x, rect.y, rect.width, rect.height, WHITE);
 	DrawCircle(rect.x+rect.width*sliderMapped, rect.y+rect.height*0.5, rect.height, color);
 
-	if((mouseInRect(rect) || *selected )&& IsMouseButtonDown(0))
+	if((mouseInRect(rect) && IsMouseButtonPressed(0)) || (*selected && IsMouseButtonDown(0)))
 	{
 		*selected = true;
 		*value = ((GetMouseX()-rect.x)/rect.width)*(max-min)+min;
