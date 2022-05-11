@@ -230,13 +230,13 @@ void drawBars()
 	float distBetweenBars = distBetweenBeats*4;
 	for (int i = (screenToMusicTime(0)-_map->offset/1000.0)/distBetweenBars; i < (screenToMusicTime(GetScreenWidth())-_map->offset/1000.0)/distBetweenBars; i++)
 	{
-		DrawRectangle(musicTimeToScreen(distBetweenBars*i+_map->offset/1000.0),GetScreenHeight()*0.6,GetScreenWidth()*0.01,GetScreenHeight()*0.3,(Color){.r=255,.g=255,.b=255,.a=180});
+		DrawRectangle(musicTimeToScreen(distBetweenBars*i+_map->offset/1000.0)-10,GetScreenHeight()*0.6,GetScreenWidth()*0.01,GetScreenHeight()*0.3,(Color){.r=255,.g=255,.b=255,.a=180});
 	}
 
 	for (int i = (screenToMusicTime(0)-_map->offset/1000.0)/distBetweenBeats; i < (screenToMusicTime(GetScreenWidth())-_map->offset/1000.0)/distBetweenBeats; i++)
 	{
 		if(i % 4 == 0) continue;
-		DrawRectangle(musicTimeToScreen(distBetweenBeats*i+_map->offset/1000.0),GetScreenHeight()*0.7,GetScreenWidth()*0.01,GetScreenHeight()*0.2,(Color){.r=255,.g=255,.b=255,.a=180});
+		DrawRectangle(musicTimeToScreen(distBetweenBeats*i+_map->offset/1000.0)-10,GetScreenHeight()*0.7,GetScreenWidth()*0.01,GetScreenHeight()*0.2,(Color){.r=255,.g=255,.b=255,.a=180});
 	}
 }
 
