@@ -7,7 +7,7 @@ Geoxor
 [BPM]
 150
 [Image]
-maps/testMap/image.png
+/image.png
 [MusicFile]
 /song.mp3
 [MusicLength]
@@ -19,7 +19,7 @@ maps/testMap/image.png
 [Beats]
 4.000000
 [Notes]
-1.600509
+1.600509 "/image.png" "/clickRelease.mp3"
 2.000637
 2.200701
 2.400764

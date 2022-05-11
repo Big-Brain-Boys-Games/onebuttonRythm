@@ -11,6 +11,7 @@
 #include "../deps/zip/src/zip.h"
 
 #include "gameplay.h"
+#include "audio.h"
 
 #ifdef __unix
 #include <sys/stat.h>
@@ -18,7 +19,7 @@
 #endif
 
 
-extern Texture2D _background, _menuBackground;
+extern Texture2D _background, _menuBackground, _noteTex;
 extern Note * _pNotes;
 extern float _scrollSpeed;
 extern Map *_map;
@@ -26,6 +27,8 @@ extern int _amountNotes, _noteIndex, _score, _highestCombo;
 extern bool _noBackground, _mapRefresh;
 extern Settings _settings;
 extern void ** _pMusic;
+extern void *_pHitSE;
+extern int _hitSE_Size;
 extern float _averageAccuracy;
 //TODO add support for more maps
 Map _pMaps [100];
@@ -152,7 +155,7 @@ Map loadMapInfo(char * file)
 		printf("image: %s \n", pStr);
 		// map.image = LoadTexture(pStr);
 		map.cpuImage = LoadImage(pStr);
-		strcpy(map.imageFile, pStr);
+		// strcpy(map.imageFile, pStr);
 	}
 	else{
 		map.image = _menuBackground;
@@ -274,12 +277,13 @@ void loadMap ()
 	enum FilePart mode = fpNone;
 	_amountNotes = 50;
 	_noteIndex = 0;
+
 	while(fgets(line,sizeof(line),_pFile)!= NULL)
 	{
 		int stringLenght = strlen(line);
 		bool emptyLine = true;
 		for(int i = 0; i < stringLenght; i++)
-			if(line[i] != ' ' && line[i] != '\n')
+			if(line[i] != ' ' && line[i] != '\n' && line[i] != '\r')
 				emptyLine = false;
 		
 		if(emptyLine)
@@ -291,13 +295,76 @@ void loadMap ()
 			case fpNone:
 				break;
 			case fpNotes:
-				
+				// printf("new note %i\n", _noteIndex);
 				if(_noteIndex <= _amountNotes)
 				{
 					_amountNotes += 50;
 					_pNotes = realloc(_pNotes, _amountNotes*sizeof(Note));
 				}
 				_pNotes[_noteIndex].time = atof(line);
+				_pNotes[_noteIndex].hitSE_File = 0;
+				_pNotes[_noteIndex].texture_File = 0;
+				int part = 0;
+				for(int j = 0; j < 2 && part != -1; j++)
+				{
+					for(int i = part+1; i < 1000; i++)
+					{
+						if(line[i] == '\r' || line[i] == '\n' || line[i] == '\0' || line[i] == 0)
+						{
+							part = -1;
+							break;
+						}
+						if(line[i] == '"')
+						{
+							part = i+1;
+							break;
+						}
+					}
+					if(part == -1)
+					{
+						break;
+					}
+
+					//add texture file name
+					char * tmpStr = malloc(100);
+					int strPos = 0;
+					for(int i = 0; i < 100; i++) //copy over file name
+					{
+						if(line[i+part] == '"' || line[i+part] == '\0')
+						{
+							tmpStr[strPos] = '\0';
+							break;
+						}
+						tmpStr[strPos] = line[i+part];
+						strPos++;
+					}
+					char * ext = GetFileExtension(tmpStr);
+					if(ext == NULL)
+						continue;
+					if(strcmp(ext, ".mp3") == 0 || strcmp(ext, ".wav") == 0)
+					{
+						printf("found sound %s\n", tmpStr);
+						//found hit sound
+						if(_pNotes[_noteIndex].hitSE_File != 0)
+							free(_pNotes[_noteIndex].hitSE_File);
+						_pNotes[_noteIndex].hitSE_File = tmpStr;
+					}else if(strcmp(ext, ".jpg") == 0 || strcmp(ext, ".png")  == 0 || strcmp(ext, ".jpeg") == 0)
+					{
+						printf("found texture %s\n", tmpStr);
+						//found texture
+						if(_pNotes[_noteIndex].texture_File != 0)
+							free(_pNotes[_noteIndex].texture_File);
+						_pNotes[_noteIndex].texture_File = tmpStr;
+					}
+					for(int i = part; i < 1000; i++)
+					{
+						if(line[i] == '"')
+						{
+							part = i+1;
+							break;
+						}
+					}
+				}
 				_noteIndex++;
 				break;
 		}
@@ -306,6 +373,90 @@ void loadMap ()
 	_noteIndex = 0;
 	fclose(_pFile);
 	free(pStr);
+
+	//load all custom note textures & hit sounds
+	//todo, dynamic allocation
+	char textureFiles[5000][100];
+	char soundFiles[5000][100];
+	Texture textures[5000];
+	static void *** sounds = 0;
+	if(sounds == 0)
+	{
+		sounds = calloc(5000,sizeof(void*));
+		printf("allocating sounds\n");
+	}
+	int soundLengths [5000];
+	int amountTextures = 0, amountSounds = 0;
+	for(int i = 0; i < _amountNotes; i++)
+	{
+		if(_pNotes[i].texture_File != 0)
+		{
+			int foundIndex = -1;
+			for(int j = 0; j < amountTextures; j++)
+			{
+				if(strcmp(textureFiles[j], _pNotes[i].texture_File) == 0)
+				{
+					//found one
+					foundIndex = j;
+				}
+			}
+			if(foundIndex == -1)
+			{
+				//load texture
+				strcpy(textureFiles[amountTextures], _pNotes[i].texture_File);
+				char filePath [100];
+				sprintf(filePath, "maps/%s%s", _map->folder, textureFiles[amountTextures]);
+				textures[amountTextures] = LoadTexture(filePath);
+				_pNotes[i].texture = textures[amountTextures];
+				amountTextures++;
+			}else
+			{
+				//already loaded
+				_pNotes[i].texture = textures[amountTextures];
+			}
+		}else
+			_pNotes[i].texture = _noteTex;
+
+		if(_pNotes[i].hitSE_File != 0)
+		{
+			int foundIndex = -1;
+			for(int j = 0; j < amountSounds; j++)
+			{
+				if(strcmp(soundFiles[j], _pNotes[i].hitSE_File) == 0)
+				{
+					//found one
+					foundIndex = j;
+				}
+			}
+			if(foundIndex == -1)
+			{
+				//load sound
+				if(sounds[amountSounds] != 0)
+					free(sounds[amountSounds]);
+				strcpy(soundFiles[amountSounds], _pNotes[i].hitSE_File);
+				char filePath [100];
+				sprintf(filePath, "maps/%s%s", _map->folder, soundFiles[amountSounds]);
+				sounds[amountSounds] = malloc(sizeof(void*));
+				loadAudio(sounds[amountSounds], filePath, &(soundLengths[amountSounds]));
+				_pNotes[i].hitSE = &sounds[amountSounds];
+				_pNotes[i].hitSE_Length = &soundLengths[amountSounds];
+				amountSounds++;
+			}else
+			{
+				//already loaded
+				_pNotes[i].hitSE = &sounds[amountSounds];
+				_pNotes[i].hitSE_Length = &soundLengths[amountSounds];
+			}
+		}else
+		{
+			static void ** pHitSEp;
+			pHitSEp = &_pHitSE;
+			_pNotes[i].hitSE = &pHitSEp;
+			_pNotes[i].hitSE_Length = &_hitSE_Size;
+		}
+	}
+	// free(sounds);
+	_noteIndex = 0;
 }
 
 void saveScore()

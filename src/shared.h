@@ -7,8 +7,11 @@ void printAllnotes();
 
 typedef struct{
     float time;
-    void * hitSE;
+    void *** hitSE;
+    int * hitSE_Length;
     Texture texture;
+    char * hitSE_File;
+    char * texture_File;
 }Note;
 
 float fDistance(float x1, float y1, float x2, float y2);

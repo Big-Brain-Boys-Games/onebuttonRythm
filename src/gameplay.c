@@ -820,7 +820,7 @@ void fPlaying ()
 		rippleEffect[i] += GetFrameTime()*1200*rippleEffectStrength[i];
 		rippleEffectStrength[i] = fmax(rippleEffectStrength[i] - GetFrameTime()*5, 0);
 		float size = rippleEffect[i];
-		DrawRing((Vector2){.x=GetScreenWidth()/2, .y=GetScreenHeight()*0.42}, size*GetScreenWidth()*0.001, size*0.7*GetScreenWidth()*0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i]*0.5));
+		DrawRing((Vector2){.x=GetScreenWidth()/2, .y=GetScreenHeight()*0.42}, size*GetScreenWidth()*0.001, size*0.7*GetScreenWidth()*0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i]*0.35));
 	}
 
 	float width = GetScreenWidth() * 0.005;
@@ -891,7 +891,7 @@ void fPlaying ()
 			_score += scoreAdded * (1+_combo/100);
 			_noteIndex++;
 			_combo++;
-			playAudioEffect(_pHitSE, _hitSE_Size);
+			playAudioEffect(**_pNotes[closestIndex].hitSE, *_pNotes[closestIndex].hitSE_Length);
 		}else
 		{
 			printf("missed note\n");
