@@ -437,8 +437,10 @@ void unloadMap()
 void loadSettings()
 {
 	if(!FileExists("settings.conf"))
+	{
 		saveSettings();
 		return;
+	}
 	FILE * f;
 	f = fopen("settings.conf", "r");
 	_settings.offset = 0;
