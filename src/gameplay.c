@@ -51,7 +51,7 @@ Settings _settings = (Settings){.volumeGlobal=50, .volumeMusic=100, .volumeSound
 bool showSettings;
 
 //Timestamp of all the notes
-float * _pNotes;
+Note * _pNotes;
 void (*_pNextGameplayFunction)();
 void (*_pGameplayFunction)();
 
@@ -216,8 +216,8 @@ bool interactableButtonNoSprite(char * text, float fontScale, float x, float y,f
 void removeNote(int index)
 {
 	_amountNotes--;
-	float *tmp = malloc(sizeof(float) * _amountNotes);
-	memcpy(tmp, _pNotes, sizeof(float) * _amountNotes);
+	Note *tmp = malloc(sizeof(Note) * _amountNotes);
+	memcpy(tmp, _pNotes, sizeof(Note) * _amountNotes);
 	for (int i = index; i < _amountNotes; i++)
 	{
 		tmp[i] = _pNotes[i + 1];
@@ -231,13 +231,13 @@ void newNote(float time)
 	printf("new note time %f\n", time);
 	int closestIndex = 0;
 	_amountNotes++;
-	float *tmp = calloc(_amountNotes, sizeof(float));
+	Note *tmp = calloc(_amountNotes, sizeof(float));
 	for (int i = 0; i < _amountNotes - 1; i++)
 	{
 		tmp[i] = _pNotes[i];
-		if (tmp[i] < time)
+		if (tmp[i].time < time)
 		{
-			printf("found new closest :%i   value %.2f musicHead %.2f\n", i, tmp[i], time);
+			printf("found new closest :%i   value %.2f musicHead %.2f\n", i, tmp[i].time, time);
 			closestIndex = i + 1;
 		}
 	}
@@ -248,7 +248,7 @@ void newNote(float time)
 
 	free(_pNotes);
 	_pNotes = tmp;
-	_pNotes[closestIndex] = time;
+	_pNotes[closestIndex].time = time;
 }
 
 void fPause()
@@ -644,9 +644,9 @@ void fEditor ()
 		int closestIndex = 0;
 		for(int i = 0; i < _amountNotes; i++)
 		{
-			if(closestTime > fabs(_pNotes[i] - getMusicHead()))
+			if(closestTime > fabs(_pNotes[i].time - getMusicHead()))
 			{
-				closestTime = fabs(_pNotes[i] - getMusicHead());
+				closestTime = fabs(_pNotes[i].time - getMusicHead());
 				closestIndex = i;
 			}
 		}
@@ -839,7 +839,7 @@ void fPlaying ()
 		drawText(feedbackSayings[j], GetScreenWidth() * 0.35, GetScreenHeight() * (0.6 + i * 0.1), GetScreenWidth() * 0.05*feedbackSize[j], (Color){.r=255,.g=255,.b=255,.a=noLessThanZero(150 - i * 40)});
 	}
 
-	if(_noteIndex < _amountNotes && getMusicHead() - _maxMargin > _pNotes[_noteIndex])
+	if(_noteIndex < _amountNotes && getMusicHead() - _maxMargin > _pNotes[_noteIndex].time)
 	{
 		//passed note
 		_noteIndex++;
@@ -856,10 +856,10 @@ void fPlaying ()
 		int closestIndex = 0;
 		for(int i = _noteIndex; i <= _noteIndex + 1 && i < _amountNotes; i++)
 		{
-			if(closestNote > _pNotes[i] - getMusicHead() - _maxMargin)
+			if(closestNote > _pNotes[i].time - getMusicHead() - _maxMargin)
 			{
-				closestNote = _pNotes[i] - getMusicHead() - _maxMargin;
-				closestTime = fabs(_pNotes[i] - getMusicHead());
+				closestNote = _pNotes[i].time - getMusicHead() - _maxMargin;
+				closestTime = fabs(_pNotes[i].time - getMusicHead());
 				closestIndex = i;
 			}
 		}

@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern float * _pNotes;
+extern Note * _pNotes;
 extern int _amountNotes;
 
 float noLessThanZero(float var)
@@ -19,7 +19,7 @@ void printAllNotes()
 {
 	for (int i = 0; i < _amountNotes; i++)
 	{
-		printf("note %.2f\n", _pNotes[i]);
+		printf("note %.2f\n", _pNotes[i].time);
 	}
 }
 
@@ -36,30 +36,30 @@ double clamp(double d, double min, double max) {
   return t > max ? max : t;
 }
 
-float findClosest(float arr[], int n, float target)
+float findClosest(Note arr[], int n, float target)
 {
     // Corner cases
-    if (target <= arr[0])
-        return arr[0];
-    if (target >= arr[n - 1])
-        return arr[n - 1];
+    if (target <= arr[0].time)
+        return arr[0].time;
+    if (target >= arr[n - 1].time)
+        return arr[n - 1].time;
  
     // Doing binary search
     int i = 0, j = n, mid = 0;
     while (i < j) {
         mid = (i + j) / 2;
-        if (arr[mid] == target)
-            return arr[mid];
+        if (arr[mid].time == target)
+            return arr[mid].time;
  
         /* If target is less than array element,
             then search in left */
-        if (target < arr[mid]) {
+        if (target < arr[mid].time) {
  
             // If target is greater than previous
             // to mid, return closest of two
-            if (mid > 0 && target > arr[mid - 1])
-                return getClosest(arr[mid - 1],
-                                  arr[mid], target);
+            if (mid > 0 && target > arr[mid - 1].time)
+                return getClosest(arr[mid - 1].time,
+                                  arr[mid].time, target);
  
             /* Repeat for left half */
             j = mid;
@@ -67,16 +67,16 @@ float findClosest(float arr[], int n, float target)
  
         // If target is greater than mid
         else {
-            if (mid < n - 1 && target < arr[mid + 1])
-                return getClosest(arr[mid],
-                                  arr[mid + 1], target);
+            if (mid < n - 1 && target < arr[mid + 1].time)
+                return getClosest(arr[mid].time,
+                                  arr[mid + 1].time, target);
             // update i
             i = mid + 1;
         }
     }
  
     // Only single element left after search
-    return arr[mid];
+    return arr[mid].time;
 }
  
 // Method to compare which one is the more close.

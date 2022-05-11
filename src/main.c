@@ -20,7 +20,7 @@
 
 extern Texture2D _heartTex, _healthBarTex, _noteTex, _cursorTex, _background, _menuBackground;
 extern void *_pEffectsBuffer, *_pHitSE, *_pMissHitSE, *_pMissSE;
-extern float * _pNotes;
+extern Note * _pNotes;
 extern int _hitSE_Size, _missHitSE_Size, _missSE_Size;
 extern void (*_pGameplayFunction)();
 extern Font _font;
@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 	
 	_pGameplayFunction = &fIntro;
 	_transition = 1;
-	_pNotes = malloc(sizeof(float)*50);
+	_pNotes = malloc(sizeof(Note)*50);
 	while (!WindowShouldClose())
 	{
 		_loadingFade += fmax(((_loading != 0 ? 1 : 0)-_loadingFade) * GetFrameTime()*15, -0.1);

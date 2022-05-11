@@ -19,7 +19,8 @@
 
 
 extern Texture2D _background, _menuBackground;
-extern float * _pNotes, _scrollSpeed;
+extern Note * _pNotes;
+extern float _scrollSpeed;
 extern Map *_map;
 extern int _amountNotes, _noteIndex, _score, _highestCombo;
 extern bool _noBackground, _mapRefresh;
@@ -224,9 +225,9 @@ void saveFile (int noteAmount)
 	fprintf(_pFile, "[Notes]\n");
 	for(int i = 0; i < noteAmount; i++)
 	{
-		if(_pNotes[i] == 0)
+		if(_pNotes[i].time == 0)
 			continue;
-		fprintf(_pFile, "%f\n", _pNotes[i]);
+		fprintf(_pFile, "%f\n", _pNotes[i].time);
 	}
 	fclose(_pFile);
 	
@@ -294,9 +295,9 @@ void loadMap ()
 				if(_noteIndex <= _amountNotes)
 				{
 					_amountNotes += 50;
-					_pNotes = realloc(_pNotes, _amountNotes);
+					_pNotes = realloc(_pNotes, _amountNotes*sizeof(Note));
 				}
-				_pNotes[_noteIndex] = atof(line);
+				_pNotes[_noteIndex].time = atof(line);
 				_noteIndex++;
 				break;
 		}
