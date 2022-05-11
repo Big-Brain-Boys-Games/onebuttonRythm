@@ -919,7 +919,6 @@ void fPlaying()
 	fixMusicTime();
 
 	_musicSpeed = getSpeedMod();
-	printf("%f\n", getSpeedMod());
 
 	if (endOfMusic())
 	{

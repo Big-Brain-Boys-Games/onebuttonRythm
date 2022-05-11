@@ -411,7 +411,10 @@ void drawLoadScreen()
 		(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, ColorAlpha(WHITE, _loadingFade));
 	DrawRing((Vector2){.x=GetScreenWidth()/2, .y=GetScreenHeight()/2}, GetScreenWidth()*0.1, GetScreenWidth()*0.15, angle, angle+170, 50, ColorAlpha(WHITE, _loadingFade));
 	if(_loadingFade== 1)
+	{
 		drawVignette();
+		drawCursor();
+	}
 }
 
 void drawButtonNoSprite(Rectangle rect, char * text, float fontScale)
@@ -440,20 +443,33 @@ void initDrawing()
 
 	HideCursor();
 
-	_heartTex = LoadTexture("assets/heart.png");
-	SetTextureFilter(_heartTex, TEXTURE_FILTER_BILINEAR);
-	_healthBarTex = LoadTexture("assets/healthBar.png");
-	SetTextureFilter(_healthBarTex, TEXTURE_FILTER_BILINEAR);
-	_noteTex = LoadTexture("assets/note.png");
-	SetTextureFilter(_noteTex, TEXTURE_FILTER_BILINEAR);
-	_cursorTex = LoadTexture("assets/cursor.png");
-	SetTextureFilter(_cursorTex, TEXTURE_FILTER_BILINEAR);
+	_loadingFade = 0.3;
+
 	_menuBackground = LoadTexture("assets/background.png");
 	SetTextureFilter(_menuBackground, TEXTURE_FILTER_BILINEAR);
-	_font = LoadFontEx("assets/nasalization.otf", 1024, 0, 250);
-	SetTextureFilter(_font.texture, TEXTURE_FILTER_BILINEAR);
+
+	_loadingFade += 0.1;
+	BeginDrawing();
+		ClearBackground(BLACK);
+		DrawText("Loading", GetScreenWidth()*0.4, GetScreenHeight()*0.4, GetScreenWidth()*0.05, WHITE);
+		// drawLoadScreen();
+	EndDrawing();
+
+	_heartTex = LoadTexture("assets/heart.png");
+	SetTextureFilter(_heartTex, TEXTURE_FILTER_ANISOTROPIC_8X);
+	_healthBarTex = LoadTexture("assets/healthBar.png");
+	SetTextureFilter(_healthBarTex, TEXTURE_FILTER_ANISOTROPIC_8X);
+	_noteTex = LoadTexture("assets/note.png");
+	SetTextureFilter(_noteTex, TEXTURE_FILTER_ANISOTROPIC_8X);
+	_cursorTex = LoadTexture("assets/cursor.png");
+	SetTextureFilter(_cursorTex, TEXTURE_FILTER_ANISOTROPIC_8X);
+	_font = LoadFontEx("assets/nasalization.otf", 512, 0, 250);
+	SetTextureFilter(_font.texture, TEXTURE_FILTER_ANISOTROPIC_8X);
 	_background = _menuBackground;
 
+
+
+	_loadingFade = 0;
 	//load button tile set
 	for(int y = 0; y < 3; y++)
 	{
