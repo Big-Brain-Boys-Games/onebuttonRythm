@@ -791,6 +791,10 @@ void fEditor ()
 	drawMusicGraph(0.7);
 	drawBars();
 	drawProgressBarI(true);
+	static bool speedSlider = false;
+	int speed = _musicSpeed * 100;
+	slider((Rectangle){.x=GetScreenWidth()*0.2, .y=GetScreenHeight()*0.1, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.05}, &speedSlider, &speed, 1, 200);
+	_musicSpeed = speed / 100.0;
 	drawCursor();
 }
 
