@@ -751,11 +751,6 @@ void fEditor ()
 
 	drawMusicGraph(0.4);
 	drawVignette();
-	
-	if (interactableButton("Song settings",0.025, GetScreenWidth()*0.8, GetScreenHeight()*0.05,GetScreenWidth()*0.2,GetScreenHeight()*0.07))
-	{
-		showSettings = !showSettings;
-	}
 
 	if(interactableButton("reset", 0.03, GetScreenWidth()*0.42, GetScreenHeight()*0.1, GetScreenWidth()*0.1, GetScreenHeight()*0.05))
 	{
@@ -794,6 +789,11 @@ void fEditor ()
 		_map->offset = fmin(fmax(_map->offset, 0), 5000);
 	}
 	
+	if (interactableButton("Song settings",0.025, GetScreenWidth()*0.8, GetScreenHeight()*0.05,GetScreenWidth()*0.2,GetScreenHeight()*0.07))
+	{
+		showSettings = !showSettings;
+	}
+
 	drawMusicGraph(0.7);
 	drawBars();
 	drawProgressBarI(!isPlaying);
