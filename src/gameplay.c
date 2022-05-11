@@ -240,7 +240,7 @@ void slider(Rectangle rect, bool * selected, int * value, int max, int min)
 	
 	float sliderMapped = (*value-min) / (float)(max-min);
 	DrawRectangle(rect.x, rect.y, rect.width, rect.height, WHITE);
-	DrawCircle(rect.x+rect.width*sliderMapped, rect.y+rect.height*0.5, rect.height, color);
+	DrawCircle(rect.x+rect.width*sliderMapped+rect.height/2, rect.y+rect.height*0.5, rect.height, color);
 
 	if((mouseInRect(rect) && IsMouseButtonPressed(0)) || (*selected && IsMouseButtonDown(0)))
 	{
@@ -796,11 +796,11 @@ void fEditor ()
 	
 	drawMusicGraph(0.7);
 	drawBars();
-	drawProgressBarI(true);
+	drawProgressBarI(!isPlaying);
 	static bool speedSlider = false;
-	int speed = _musicSpeed * 100;
-	slider((Rectangle){.x=GetScreenWidth()*0.2, .y=GetScreenHeight()*0.1, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.03}, &speedSlider, &speed, 200, 20);
-	_musicSpeed = speed / 100.0;
+	int speed = _musicSpeed * 4;
+	slider((Rectangle){.x=GetScreenWidth()*0.2, .y=GetScreenHeight()*0.1, .width=GetScreenWidth()*0.2, .height=GetScreenHeight()*0.03}, &speedSlider, &speed, 8, 1);
+	_musicSpeed = speed / 4.0;
 	drawCursor();
 }
 

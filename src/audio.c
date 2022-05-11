@@ -76,12 +76,12 @@ int getSamplePosition(float time) {
 //Get duration of music in seconds
 float getMusicDuration()
 {
-	return *_musicLength / (float)48000 * _musicSpeed;
+	return *_musicLength / (float)48000;
 }
 
 float getMusicPosition()
 {
-	return _musicFrameCount / (float)48000 * _musicSpeed;
+	return _musicFrameCount / (float)48000;
 }
 
 void fixMusicTime()
