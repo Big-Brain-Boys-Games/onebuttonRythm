@@ -402,7 +402,7 @@ void loadMap ()
 						while(line[part] != ' ')
 								part++;
 						part++;
-						// printf("found animation %i  ", _pNotes[_noteIndex].animSize);
+						printf("found animation %i  ", _pNotes[_noteIndex].animSize);
 						for(int i = 0; i < _pNotes[_noteIndex].animSize; i++)
 						{
 							part++; //skip space
@@ -415,9 +415,9 @@ void loadMap ()
 								part++;
 							part++;
 							_pNotes[_noteIndex].anim[i].vec.y = atof(&(line[part]));
-							// printf("%f  %f  %f    ", _pNotes[_noteIndex].anim[i].time, _pNotes[_noteIndex].anim[i].vec.x, _pNotes[_noteIndex].anim[i].vec.y);
+							printf("%f  %f  %f    ", _pNotes[_noteIndex].anim[i].time, _pNotes[_noteIndex].anim[i].vec.x, _pNotes[_noteIndex].anim[i].vec.y);
 						}
-						// printf("\n");
+						printf("\n");
 					}
 					for(int i = part; i < 1000; i++)
 					{

@@ -13,6 +13,7 @@ float musicTimeToScreen(float musicTime);
 float screenToMusicTime(float x);
 float noteFadeOut(float note);
 void drawCursor();
+void drawNote(float musicTime, Note * note, Color color);
 void dNotes();
 void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float accuracy, bool selected);
 void drawBars();

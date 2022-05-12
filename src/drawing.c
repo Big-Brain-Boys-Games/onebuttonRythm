@@ -90,7 +90,7 @@ void drawCursor ()
 	DrawTextureEx(_cursorTex, (Vector2){.x=GetMouseX()-xOffset, .y=GetMouseY()-yOffset}, 0, size, WHITE);
 }
 
-void drawNote(Note * note, Color color)
+void drawNote(float musicTime, Note * note, Color color)
 {
 	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
 	if(!note->anim)
@@ -98,25 +98,28 @@ void drawNote(Note * note, Color color)
 	else if(note->animSize)
 	{
 		//draw animated note
-		float time = (note->time -_musicHead) / _scrollSpeed;
-		if(time > 1 || time < 0)
-			return;
+		float time = (note->time - musicTime) / (_scrollSpeed);
+		// if(time < note->anim[0].time || time < time < note->anim[note->animSize].time)
+		// 	return;
 		int anim = 0;
-		for(int i = 0; i < note->animSize; i++)
+		for(int i = 0; i < note->animSize-1; i++)
 		{
-			if(note->anim[i].time > time)
+			if(note->anim[i].time < time && note->anim[i+1].time > time)
 			{
-				anim = i-1;
+				anim = i;
 				break;
 			}
 		}
 		Frame frame1 = note->anim[anim];
 		Frame frame2 = note->anim[anim+1];
+		if(_musicHead != musicTime) printf("%i %f %f %f\n", anim, frame1.time, frame1.vec.x, frame1.vec.y);
+		if(_musicHead != musicTime) printf("%i %f %f %f\n", anim+1, frame2.time, frame2.vec.x, frame2.vec.y);
 		float betweenFrames = (time - frame1.time) / (frame2.time - frame1.time);
+		if(_musicHead != musicTime) printf("inbetween %.2f\n", betweenFrames);
 		Vector2 pos;
 		pos.x = frame1.vec.x + (frame2.vec.x-frame1.vec.x)*betweenFrames;
 		pos.y = frame1.vec.y + (frame2.vec.y-frame1.vec.y)*betweenFrames;
-		DrawTextureEx(note->texture, (Vector2){.x=pos.x*GetScreenWidth()- note->texture.width * scaleNotes / 2, .y=pos.y*GetScreenHeight() - note->texture.height * scaleNotes}, 0,  scaleNotes, color);
+		DrawTextureEx(note->texture, (Vector2){.x=pos.x*GetScreenWidth()+GetScreenWidth()- note->texture.width * scaleNotes / 2, .y=pos.y*GetScreenHeight() - note->texture.height * scaleNotes}, 0,  scaleNotes, color);
 	}
 }
 
@@ -134,7 +137,7 @@ void dNotes ()
 		if(i < 0) continue;
 		//DrawCircle( middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
 		//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
-		drawNote(&_pNotes[i], ColorAlpha(GRAY, noteFadeOut(_pNotes[i].time)));
+		drawNote(_musicHead, &_pNotes[i], ColorAlpha(GRAY, noteFadeOut(_pNotes[i].time)));
 
 	}
 
@@ -145,7 +148,7 @@ void dNotes ()
 		{
 			//DrawCircle( middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
 			//DrawTextureEx(_noteTex, (Vector2){.x=middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
-			drawNote(&_pNotes[i], ColorAlpha(WHITE, noteFadeOut(_pNotes[i].time)));
+			drawNote(_musicHead, &_pNotes[i], ColorAlpha(WHITE, noteFadeOut(_pNotes[i].time)));
 
 		}
 	}
