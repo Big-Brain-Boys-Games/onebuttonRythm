@@ -9,10 +9,10 @@
 
 void gotoMainMenu(bool mainOrSelect);
 bool mouseInRect(Rectangle rect);
-void textBox(Rectangle rect, char * str, bool * selected);
-void numberBox(Rectangle rect, int * number, bool * selected);
-void slider(Rectangle rect, bool * selected, int * value, int max, int min);
-bool drawInteractableButton(char * text, float fontScale, float x, float y,float width,float height);
+void textBox(Rectangle rect, char *str, bool *selected);
+void numberBox(Rectangle rect, int *number, bool *selected);
+void slider(Rectangle rect, bool *selected, int *value, int max, int min);
+bool drawInteractableButton(char *text, float fontScale, float x, float y, float width, float height);
 void removeNote(int index);
 void newNote(float time);
 void fPause();

@@ -13,13 +13,12 @@ int getBeatsCount();
 void setMusicStart();
 void randomMusicPoint();
 void audioInit();
-void loadMusic(Map * map);
-void loadAudio(void ** buffer, char * file, int * audioLength);
+void loadMusic(Map *map);
+void loadAudio(void **buffer, char *file, int *audioLength);
 bool endOfMusic();
 void playAudioEffect(void *effect, int size);
 void startMusic();
 void stopMusic();
 void setMusicFrameCount();
-
 
 #endif

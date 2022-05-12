@@ -5,89 +5,101 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern Note * _pNotes;
+extern Note *_pNotes;
 extern int _amountNotes;
 
 float noLessThanZero(float var)
- {
- 	if (var < 0)
- 		return 0;
- 	return var;
- }
+{
+    if (var < 0)
+        return 0;
+    return var;
+}
 
 void printAllNotes()
 {
-	for (int i = 0; i < _amountNotes; i++)
-	{
-		printf("note %.2f\n", _pNotes[i].time);
-	}
+    for (int i = 0; i < _amountNotes; i++)
+    {
+        printf("note %.2f\n", _pNotes[i].time);
+    }
 }
 
-//TODO think of a better name because f used in front of a function is for gameplay functions
+// TODO think of a better name because f used in front of a function is for gameplay functions
 float fDistance(float x1, float y1, float x2, float y2)
 {
-	float x = x1 - x2;
-	float y = y1 - y2;
-	return sqrtf(fabs(x * x + y * y));
+    float x = x1 - x2;
+    float y = y1 - y2;
+    return sqrtf(fabs(x * x + y * y));
 }
 
-double clamp(double d, double min, double max) {
-  const double t = d < min ? min : d;
-  return t > max ? max : t;
+double clamp(double d, double min, double max)
+{
+    const double t = d < min ? min : d;
+    return t > max ? max : t;
 }
 
-float findClosest(Note arr[], int n, float target)
+int findClosestNote(Note arr[], int n, float target)
 {
     // Corner cases
     if (target <= arr[0].time)
-        return arr[0].time;
+    {
+        return 0;
+    }
+
     if (target >= arr[n - 1].time)
-        return arr[n - 1].time;
- 
+    {
+        return n - 1;
+    }
+
     // Doing binary search
     int i = 0, j = n, mid = 0;
-    while (i < j) {
+    while (i < j)
+    {
         mid = (i + j) / 2;
         if (arr[mid].time == target)
-            return arr[mid].time;
- 
+        {
+            return mid;
+        }
+
         /* If target is less than array element,
             then search in left */
-        if (target < arr[mid].time) {
- 
+        if (target < arr[mid].time)
+        {
             // If target is greater than previous
             // to mid, return closest of two
             if (mid > 0 && target > arr[mid - 1].time)
-                return getClosest(arr[mid - 1].time,
-                                  arr[mid].time, target);
- 
+            {
+                float val1 = arr[mid -1].time;
+                float val2 = arr[mid].time;
+                if (target - val1 >= val2 - target)
+                    return mid;
+                else
+                    return mid -1;
+                // return getClosest(arr[mid - 1].time, arr[mid].time, target);
+            }
+
             /* Repeat for left half */
             j = mid;
         }
- 
+
         // If target is greater than mid
-        else {
+        else
+        {
             if (mid < n - 1 && target < arr[mid + 1].time)
-                return getClosest(arr[mid].time,
-                                  arr[mid + 1].time, target);
+            {
+                // return getClosest(arr[mid].time, arr[mid + 1].time, target);
+                float val2 = arr[mid + 1].time;
+                float val1 = arr[mid].time;
+                if (target - val1 >= val2 - target)
+                    return mid + 1;
+                else
+                    return mid;
+            }
+
             // update i
             i = mid + 1;
         }
     }
- 
+
     // Only single element left after search
-    return arr[mid].time;
-}
- 
-// Method to compare which one is the more close.
-// We find the closest by taking the difference
-// between the target and both values. It assumes
-// that val2 is greater than val1 and target lies
-// between these two.
-float getClosest(float val1, float val2, float target)
-{
-    if (target - val1 >= val2 - target)
-        return val2;
-    else
-        return val1;
+    return mid;
 }
