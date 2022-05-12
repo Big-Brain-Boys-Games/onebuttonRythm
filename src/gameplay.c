@@ -31,7 +31,7 @@ extern int _finishSE_Size;
 
 extern int _loading;
 
-extern Map _pMaps[100];
+extern Map * _pMaps;
 
 float _scrollSpeed = 0.6;
 int _noteIndex = 0, _amountNotes = 0;
@@ -1143,12 +1143,12 @@ void fFail()
 struct mapInfoLoadingArgs
 {
 	int *amount;
-	int *highScores;
-	int *combos;
-	float *accuracy;
+	int **highScores;
+	int **combos;
+	float **accuracy;
 };
 
-char filesCaching[100][100] = {0};
+char ** filesCaching = 0;
 
 #ifdef __unix
 void mapInfoLoading(struct mapInfoLoadingArgs *args)
@@ -1159,8 +1159,44 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 {
 	_loading++;
 	int amount;
+	static int oldAmount = 0;
 	char **files = GetDirectoryFiles("maps/", &amount);
+	if(args->highScores != 0)
+	{
+		*args->highScores = realloc(*args->highScores, amount*sizeof(int));
+		*args->combos = realloc(*args->combos, amount*sizeof(int));
+		*args->accuracy = realloc(*args->accuracy, amount*sizeof(float));
+		char ** tmp = calloc(amount, sizeof(char*));
+		for(int i = 0; i < amount && i < oldAmount; i++)
+		{
+			tmp[i] = filesCaching[i];
+		}
+		for(int i = oldAmount; i < amount; i++)
+			tmp[i] = calloc(100, sizeof(char));
+		for(int i = amount; i < oldAmount; i++)
+			free(filesCaching[i]);
+		free(filesCaching);
+		filesCaching = tmp;
 
+		Map * tmp2 = calloc(amount, sizeof(Map));
+		for(int i = 0; i < amount && i < oldAmount; i++)
+		{
+			tmp2[i] = _pMaps[i];
+		}
+		for(int i = amount; i < oldAmount; i++)
+			freeMap(&_pMaps[i]);
+		free(_pMaps);
+		_pMaps = tmp2;
+	}else {
+		*args->highScores = malloc(amount*sizeof(int)); 
+		*args->combos = malloc(amount*sizeof(int)); 
+		*args->accuracy = malloc(amount*sizeof(float)); 
+		filesCaching = calloc(amount, sizeof(char*));
+		for(int i = 0; i < amount; i++)
+			filesCaching[i] = calloc(100, sizeof(char));
+		_pMaps = calloc(amount, sizeof(Map));
+	}
+	oldAmount = amount;
 	int mapIndex = 0;
 	for (int i = 0; i < amount; i++)
 	{
@@ -1168,7 +1204,7 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 			continue;
 		// check for cache
 		bool cacheHit = false;
-		for (int j = 0; j < 100; j++)
+		for (int j = 0; j < amount; j++)
 		{
 			if (!filesCaching[j][0])
 				continue;
@@ -1185,6 +1221,10 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 				strcpy(filesCaching[mapIndex], filesCaching[j]);
 				_pMaps[mapIndex] = _pMaps[j];
 				_pMaps[j] = (Map){0};
+				readScore(&_pMaps[mapIndex],
+					  &((*args->highScores)[mapIndex]),
+					  &((*args->combos)[mapIndex]),
+					  &((*args->accuracy)[mapIndex]));
 				break;
 			}
 		}
@@ -1201,9 +1241,9 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 		if (_pMaps[mapIndex].name != 0)
 		{
 			readScore(&_pMaps[mapIndex],
-					  &(args->highScores[mapIndex]),
-					  &(args->combos[mapIndex]),
-					  &(args->accuracy[mapIndex]));
+					  &((*args->highScores)[mapIndex]),
+					  &((*args->combos)[mapIndex]),
+					  &((*args->accuracy)[mapIndex]));
 		}
 
 		// caching
@@ -1220,9 +1260,9 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 void fMapSelect()
 {
 	static int amount = 0;
-	static int highScores[100];
-	static int combos[100];
-	static float accuracy[100];
+	static int * highScores;
+	static int * combos;
+	static float * accuracy;
 	static int selectedMap = -1;
 	static float selectMapTransition = 1;
 	static int hoverMap = -1;
@@ -1241,9 +1281,9 @@ void fMapSelect()
 	{
 		struct mapInfoLoadingArgs *args = malloc(sizeof(struct mapInfoLoadingArgs));
 		args->amount = &amount;
-		args->combos = combos;
-		args->highScores = highScores;
-		args->accuracy = accuracy;
+		args->combos = &combos;
+		args->highScores = &highScores;
+		args->accuracy = &accuracy;
 		createThread((void *(*)(void *))mapInfoLoading, args);
 		_mapRefresh = false;
 	}
@@ -1435,7 +1475,7 @@ void fMapSelect()
 				_disableLoadingScreen = false;
 			}
 
-			drawMapThumbnail(mapButton, &_pMaps[i], highScores[i], combos[i], accuracy[i], true);
+			drawMapThumbnail(mapButton, &_pMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], true);
 			if (interactableButtonNoSprite("play", 0.03, mapButton.x, mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect) )
 			{
 				_pNextGameplayFunction = &fPlaying;
@@ -1456,7 +1496,7 @@ void fMapSelect()
 		}
 		else
 		{
-			drawMapThumbnail(mapButton, &_pMaps[i], highScores[i], combos[i], accuracy[i], false);
+			drawMapThumbnail(mapButton, &_pMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], false);
 
 			if (IsMouseButtonReleased(0) && mouseInRect(mapButton) && mouseInRect(mapSelectRect))
 			{
