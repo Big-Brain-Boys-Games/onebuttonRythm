@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "thread.h"
+#include <ctype.h>
 
 extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
 extern Color _fade;
@@ -1228,6 +1229,8 @@ void fMapSelect()
 	static float hoverPeriod = 0;
 	static bool selectingMods = false;
 	_musicSpeed = 1;
+	static char search[100];
+	static bool searchSelected;
 
 	if (selectMapTransition < 1)
 		selectMapTransition += GetFrameTime() * 10;
@@ -1335,15 +1338,15 @@ void fMapSelect()
 	if (interactableButton("Mods", 0.03, GetScreenWidth() * 0.2, GetScreenHeight() * 0.05, GetScreenWidth() * 0.1, GetScreenHeight() * 0.05))
 	{
 		selectingMods = true;
-		return;
 	}
 
 	if (interactableButton("Back", 0.03, GetScreenWidth() * 0.05, GetScreenHeight() * 0.05, GetScreenWidth() * 0.1, GetScreenHeight() * 0.05))
 	{
 		_pGameplayFunction = &fMainMenu;
 		_transition = 0.1;
-		return;
 	}
+
+	textBox((Rectangle){.x=GetScreenWidth() * 0.35, .y=GetScreenHeight() * 0.05, .width=GetScreenWidth() * 0.2, .height=GetScreenHeight() * 0.05}, search, &searchSelected);
 
 	if (hoverMap == -1)
 	{
@@ -1358,14 +1361,42 @@ void fMapSelect()
 			_musicFrameCount = 1;
 	}
 	// draw map button
+	Rectangle mapSelectRect = (Rectangle){.x=0, .y=GetScreenHeight()*0.13, .width=GetScreenWidth(), .height=GetScreenHeight()};
+	BeginScissorMode(mapSelectRect.x, mapSelectRect.y, mapSelectRect.width, mapSelectRect.height);
+	int mapCount = -1;
 	for (int i = 0; i < amount; i++)
 	{
-		// draw main menu
+		// draw maps
+		if(search[0] != '\0')
+		{
+			bool missingLetter = false;
+			char str[100];
+			sprintf(str, "%s - %s", _pMaps[i].name, _pMaps[i].creator);
+			int stringLength = strlen(str);
+			for(int j = 0; j < 100 && search[j] != '\0'; j++)
+			{
+				bool foundOne = false;
+				for(int k = 0; k < stringLength; k++)
+				{
+					if(tolower(search[j]) == tolower(str[k]))
+						foundOne = true;
+				}
+				if(!foundOne)
+				{
+					missingLetter = true;
+					break;
+				}
+			}
+			if(missingLetter)
+				continue;
+		}
+
+		mapCount++;
 		int x = GetScreenWidth() * 0.05;
-		if (i % 2 == 1)
+		if (mapCount % 2 == 1)
 			x = GetScreenWidth() * 0.55;
-		Rectangle mapButton = (Rectangle){.x = x, .y = menuScrollSmooth * GetScreenHeight() + GetScreenHeight() * ((floor(i / 2) > floor(selectedMap / 2) && selectedMap != -1 ? 0.4 : 0.3) + 0.45 * floor(i / 2)), .width = GetScreenWidth() * 0.4, .height = GetScreenHeight() * 0.4};
-		if (mouseInRect(mapButton) || selectedMap == i)
+		Rectangle mapButton = (Rectangle){.x = x, .y = menuScrollSmooth * GetScreenHeight() + GetScreenHeight() * ((floor(i / 2) > floor(selectedMap / 2) && selectedMap != -1 ? 0.4 : 0.3) + 0.45 * floor(mapCount / 2)), .width = GetScreenWidth() * 0.4, .height = GetScreenHeight() * 0.4};
+		if ((mouseInRect(mapButton) || selectedMap == i) && mouseInRect(mapSelectRect))
 		{
 			if (hoverPeriod > 1 && hoverPeriod < 2 || !_musicPlaying)
 			{
@@ -1379,7 +1410,7 @@ void fMapSelect()
 			hoverMap = i;
 			_disableLoadingScreen = true;
 		}
-		else if (!mouseInRect(mapButton) && hoverMap == i)
+		else if ((!mouseInRect(mapButton) || !mouseInRect(mapSelectRect)) && hoverMap == i)
 		{
 			hoverMap = -1;
 			_playMenuMusic = true;
@@ -1389,11 +1420,11 @@ void fMapSelect()
 		}
 		if (selectedMap == i)
 		{
-			if (IsMouseButtonReleased(0) && mouseInRect(mapButton))
+			if (IsMouseButtonReleased(0) && mouseInRect(mapButton) && mouseInRect(mapSelectRect))
 				selectedMap = -1;
 
 			Rectangle buttons = (Rectangle){.x = mapButton.x, .y = mapButton.y + mapButton.height, .width = mapButton.width, .height = mapButton.height * 0.15 * selectMapTransition};
-			if (mouseInRect(buttons) && IsMouseButtonReleased(0))
+			if (mouseInRect(buttons) && IsMouseButtonReleased(0) && mouseInRect(mapSelectRect))
 			{
 				_map = &_pMaps[i];
 				loadMap();
@@ -1405,19 +1436,19 @@ void fMapSelect()
 			}
 
 			drawMapThumbnail(mapButton, &_pMaps[i], highScores[i], combos[i], accuracy[i], true);
-			if (interactableButtonNoSprite("play", 0.03, mapButton.x, mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition))
+			if (interactableButtonNoSprite("play", 0.03, mapButton.x, mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect) )
 			{
 				_pNextGameplayFunction = &fPlaying;
 				_pGameplayFunction = &fCountDown;
 			}
-			if (interactableButtonNoSprite("editor", 0.03, mapButton.x + mapButton.width * (1 / 3.0), mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition))
+			if (interactableButtonNoSprite("editor", 0.03, mapButton.x + mapButton.width * (1 / 3.0), mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect) )
 			{
 				_pNextGameplayFunction = &fEditor;
 				_pGameplayFunction = &fEditor;
 				startMusic();
 				_musicPlaying = false;
 			}
-			if (interactableButtonNoSprite("export", 0.03, mapButton.x + mapButton.width * (1 / 3.0 * 2), mapButton.y + mapButton.height, mapButton.width * (1 / 3.0), mapButton.height * 0.15 * selectMapTransition))
+			if (interactableButtonNoSprite("export", 0.03, mapButton.x + mapButton.width * (1 / 3.0 * 2), mapButton.y + mapButton.height, mapButton.width * (1 / 3.0), mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect) )
 			{
 				_pGameplayFunction = &fExport;
 			}
@@ -1427,7 +1458,7 @@ void fMapSelect()
 		{
 			drawMapThumbnail(mapButton, &_pMaps[i], highScores[i], combos[i], accuracy[i], false);
 
-			if (IsMouseButtonReleased(0) && mouseInRect(mapButton))
+			if (IsMouseButtonReleased(0) && mouseInRect(mapButton) && mouseInRect(mapSelectRect))
 			{
 				playAudioEffect(_pButtonSE, _buttonSE_Size);
 				selectedMap = i;
@@ -1437,7 +1468,10 @@ void fMapSelect()
 			}
 		}
 	}
+	// DrawRectangleGradientV(mapSelectRect.x, mapSelectRect.y, mapSelectRect.width, mapSelectRect.height*0.2, ColorAlpha(BLACK, 1), ColorAlpha(BLACK, 0));
 	drawVignette();
+
+	EndScissorMode();
 
 	if (hoverMap != -1 || selectedMap != -1)
 	{
@@ -1447,13 +1481,8 @@ void fMapSelect()
 		strcat(str, " - ");
 		strcat(str, _pMaps[selMap].creator);
 		int textSize = measureText(str, GetScreenWidth() * 0.05);
-		drawText(str, GetScreenWidth() * 0.9 - textSize, GetScreenHeight() * 0.01, GetScreenWidth() * 0.05, WHITE);
+		drawText(str, GetScreenWidth() * 0.9 - textSize, GetScreenHeight() * 0.92, GetScreenWidth() * 0.05, WHITE);
 	}
-
-	// draw them again, in case the maps are on top
-	// but the click code needs to be first because back needs to return before the click map function
-	interactableButton("Back", 0.03, GetScreenWidth() * 0.05, GetScreenHeight() * 0.05, GetScreenWidth() * 0.1, GetScreenHeight() * 0.05);
-	interactableButton("Mods", 0.03, GetScreenWidth() * 0.2, GetScreenHeight() * 0.05, GetScreenWidth() * 0.1, GetScreenHeight() * 0.05);
 
 	drawCursor();
 }

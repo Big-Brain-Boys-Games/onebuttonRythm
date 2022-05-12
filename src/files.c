@@ -480,7 +480,7 @@ void saveScore()
 		return;
 	printf("str %s\n", str);
 	file = fopen(str, "w");
-	fprintf(file, "%i %i\n", _score, _highestCombo, 100*(1-_averageAccuracy));
+	fprintf(file, "%i %i %f", _score, _highestCombo, 100*(1-_averageAccuracy));
 	fclose(file);
 }
 
@@ -521,7 +521,7 @@ bool readScore(Map * map, int *score, int * combo, float * accuracy)
 			}
 			part++;
 		}
-		*accuracy = atoi(part);
+		*accuracy = atof(part);
 	}
 	fclose(file);
 	return true;

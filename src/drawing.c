@@ -202,6 +202,20 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float 
 		drawText(text, rect.x + rect.width*0.82, rect.y + 0.08*rect.height, GetScreenWidth() * 0.02, WHITE);
 		sprintf(text, "%.2f", 100*(1-accuracy));
 		drawText(text, rect.x + rect.width*0.84, rect.y + 0.14*rect.height, GetScreenWidth() * 0.02, WHITE);
+
+		//rank
+		Color colRank = LIGHTGRAY;
+		if(accuracy < 0.7)
+			colRank = WHITE;
+		if(accuracy < 0.4)
+			colRank = GREEN;
+		if(accuracy < 0.3)
+			colRank = YELLOW;
+		if(accuracy < 0.2)
+			colRank = ORANGE;
+		if(accuracy < 0.1)
+			colRank = RED;
+		DrawTexturePro(_noteTex, (Rectangle){.x=0, .y=0, .width=_noteTex.width, .height=_noteTex.height}, (Rectangle){.x=rect.x*1.03, .y=rect.y*1.03, .width=rect.x*0.08, .height=rect.x*0.08}, (Vector2) {.x=0, .y=0}, 0, colRank);
 	}
 }
 
