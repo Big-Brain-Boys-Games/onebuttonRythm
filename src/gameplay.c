@@ -32,7 +32,7 @@ extern int _finishSE_Size;
 extern int _loading;
 
 extern Map * _pMaps;
-
+extern char _playerName[100];
 float _scrollSpeed = 0.6;
 int _noteIndex = 0, _amountNotes = 0;
 bool _noBackground = false;
@@ -499,6 +499,10 @@ void fMainMenu()
 	// real title
 	drawText(title, middle - size / 2, GetScreenHeight() * 0.1, tSize, WHITE);
 
+	char str[120];
+	sprintf(str, "name: %s", _playerName);
+	drawText(str, GetScreenWidth() * 0.4, GetScreenHeight() * 0.8, GetScreenWidth() * 0.04, WHITE);
+	
 	drawText(_notfication, GetScreenWidth() * 0.6, GetScreenHeight() * 0.7, GetScreenWidth() * 0.02, WHITE);
 
 	drawCursor();
@@ -534,6 +538,10 @@ void fSettings()
 	tSize = GetScreenWidth() * 0.03;
 	size = MeasureText("zoom", tSize);
 	drawText("zoom", zoomBox.x + zoomBox.width / 2 - size / 2, zoomBox.y - GetScreenHeight() * 0.05, tSize, WHITE);
+
+	static bool nameBoxSelected = false;
+	Rectangle nameBox = (Rectangle){.x = GetScreenWidth() * 0.02, .y = GetScreenHeight() * 0.3, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	textBox(nameBox, _playerName, &nameBoxSelected);
 
 	char offset[10] = {0};
 	if (_settings.offset != 0)

@@ -30,6 +30,7 @@ extern void ** _pMusic;
 extern void *_pHitSE;
 extern int _hitSE_Size;
 extern float _averageAccuracy;
+extern char _playerName[100];
 //TODO add support for more maps
 Map _pMaps [100];
 
@@ -66,6 +67,9 @@ Map loadMapInfo(char * file)
 	map.creator = calloc(sizeof(char), 100);
 	map.creator[0] = '\0';
 
+	map.mapCreator = calloc(sizeof(char), 100);
+	map.mapCreator[0] = '\0';
+
 	map.imageFile = calloc(sizeof(char), 100);
 	map.imageFile[0] = '\0';
 
@@ -95,6 +99,8 @@ Map loadMapInfo(char * file)
 		
 		if(strcmp(line, "[Name]") == 0)				{mode = fpName;			continue;}
 		if(strcmp(line, "[Creator]") == 0)			{mode = fpCreator;		continue;}
+		if(strcmp(line, "[Music Creator]") == 0)	{mode = fpCreator;		continue;}
+		if(strcmp(line, "[Map Creator]") == 0)		{mode = fpMapCreator;	continue;}
 		if(strcmp(line, "[Difficulty]") == 0)		{mode = fpDifficulty;	continue;}
 		if(strcmp(line, "[BPM]") == 0)				{mode = fpBPM;			continue;}
 		if(strcmp(line, "[Image]") == 0)			{mode = fpImage;		continue;}
@@ -114,6 +120,9 @@ Map loadMapInfo(char * file)
 				break;
 			case fpCreator:
 				strcpy(map.creator, line);
+				break;
+			case fpMapCreator:
+				strcpy(map.mapCreator, line);
 				break;
 			case fpDifficulty:
 				map.difficulty = atoi(line);
@@ -180,6 +189,8 @@ void freeMap(Map * map)
 		free(map->name);
 	if(map->creator != 0)
 		free(map->creator);
+	if(map->mapCreator != 0)
+		free(map->mapCreator);
 	if(map->folder != 0)
 		free(map->folder);
 	if(map->imageFile != 0)
@@ -204,8 +215,10 @@ void saveFile (int noteAmount)
 	printf("written map data\n");
 	fprintf(_pFile, "[Name]\n");
 	fprintf(_pFile, "%s\n", _map->name);
-	fprintf(_pFile, "[Creator]\n");
+	fprintf(_pFile, "[Music Creator]\n");
 	fprintf(_pFile, "%s\n", _map->creator);
+	fprintf(_pFile, "[Map Creator]\n");
+	fprintf(_pFile, "%s\n", _map->mapCreator);
 	fprintf(_pFile, "[Difficulty]\n");
 	fprintf(_pFile, "%i\n", _map->difficulty);
 	fprintf(_pFile, "[BPM]\n");
@@ -621,6 +634,7 @@ void loadSettings()
 		if(emptyLine)
 			continue;
 
+		if(strcmp(line, "[Name]\n") == 0)					{mode = spName;			continue;}
 		if(strcmp(line, "[Volume Global]\n") == 0)			{mode = spVolGlobal;	continue;}
 		if(strcmp(line, "[Volume Music]\n") == 0)			{mode = spVolMusic;		continue;}
 		if(strcmp(line, "[Volume Sound Effects]\n") == 0)	{mode = spVolSE;		continue;}
@@ -632,6 +646,8 @@ void loadSettings()
 		{
 			case spNone:
 				break;
+			case spName:
+				strcpy(_playerName, line);
 			case spVolGlobal:
 				_settings.volumeGlobal = atoi(line);
 				break;
@@ -657,6 +673,8 @@ void saveSettings ()
 {
 	printf("written settings\n");
 	FILE * file = fopen("settings.conf", "w");
+	fprintf(file, "[Name]\n");
+	fprintf(file, "%s\n", _playerName);
 	fprintf(file, "[Volume Global]\n");
 	fprintf(file, "%i\n", _settings.volumeGlobal);
 	fprintf(file, "[Volume Music]\n");

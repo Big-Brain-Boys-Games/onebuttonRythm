@@ -34,6 +34,8 @@ bool _isKeyPressed = false;
 
 float _transition = 0;
 
+char _playerName [100];
+
 #define GLSL_VERSION 330
 
 
@@ -42,6 +44,8 @@ int main(int argc, char **argv)
 	
 	initDrawing();
 	audioInit();
+	srand(time(NULL));
+	sprintf(_playerName, "guest%i", rand());
 	loadSettings();
 	
 	_pGameplayFunction = &fIntro;

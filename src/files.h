@@ -9,6 +9,7 @@ struct Map{
 	char * folder;
 	char * name;
 	char * creator;
+	char * mapCreator;
 	int difficulty;
 	int bpm;
 	int zoom;
@@ -33,8 +34,8 @@ struct Settings{
 };
 typedef struct Settings Settings;
 
-enum FilePart{fpNone, fpName, fpCreator, fpDifficulty, fpBPM, fpImage, fpMusicFile, fpMusicLength, fpZoom, fpOffset, fpBeats, fpNotes};
-enum SettingsPart{spNone, spZoom, spVolGlobal, spVolMusic, spVolSE, spOffset};
+enum FilePart{fpNone, fpName, fpCreator, fpMapCreator, fpDifficulty, fpBPM, fpImage, fpMusicFile, fpMusicLength, fpZoom, fpOffset, fpBeats, fpNotes};
+enum SettingsPart{spNone, spName, spZoom, spVolGlobal, spVolMusic, spVolSE, spOffset};
 
 Map loadMapInfo(char * file);
 void saveFile (int noteAmount);
