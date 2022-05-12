@@ -6,6 +6,7 @@
 #include "../deps/raylib/src/raylib.h"
 
 struct Map{
+	int id;
 	char * folder;
 	char * name;
 	char * artist;

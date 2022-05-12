@@ -1,0 +1,16 @@
+[20:07:16] SendRequest.Execute: <https://api.gamejolt.com/api/game/v1_2/scores/tables/?game_id=716890&format=keypair&signature=64d2a7ad76d6507b878b335cdced9612>
+[20:07:16] SendRequest.Finish: </scores/tables/?game_id=716890>
+(
+success:"true"
+id:"725829"
+name:"Main"
+description:""
+primary:"1"
+)
+[20:11:16] SendRequest.Execute: <https://api.gamejolt.com/api/game/v1_2/scores/add/?game_id=716890&table_id=0&score=172033&sort=172033&extra_data=&guest=JSaurusRex&format=keypair&signature=7084ef8135e2e6e5784856e001a8bb63>
+[20:11:16] SendRequest.Execute: <https://api.gamejolt.com/api/game/v1_2/scores/?game_id=716890&table_id=725829&limit=500&format=keypair&signature=50504543f13a490a8b0dee87bfdbfb80>
+[20:11:16] SendRequest.Finish: </scores/add/?game_id=716890&table_id=0&score=172033&sort=172033&extra_data=&guest=JSaurusRex>
+(
+success:"false"
+message:"The high score table ID you passed in does not belong to this game or has been deleted."
+)

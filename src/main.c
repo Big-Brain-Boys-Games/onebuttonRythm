@@ -11,7 +11,7 @@
 #include "files.h"
 #include "drawing.h"
 #include "gameplay.h"
-
+#include "gamejolt.h"
 
 // #include "shared.c"
 // #include "drawing.c"
@@ -47,12 +47,14 @@ int main(int argc, char **argv)
 	srand(time(NULL));
 	sprintf(_playerName, "guest%i", rand());
 	loadSettings();
+	apiInit();
 	
 	_pGameplayFunction = &fIntro;
 	_transition = 1;
 	_pNotes = malloc(sizeof(Note)*50);
 	while (!WindowShouldClose())
 	{
+		apiUpdate();
 		_loadingFade += fmax(((_loading != 0 ? 1 : 0)-_loadingFade) * GetFrameTime()*15, -0.1);
 		if(_loadingFade < 0)
 			_loadingFade = 0;

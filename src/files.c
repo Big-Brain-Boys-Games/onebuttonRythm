@@ -76,6 +76,8 @@ Map loadMapInfo(char * file)
 	map.musicFile = calloc(sizeof(char), 100);
 	map.musicFile[0] = '\0';
 
+	map.id = rand();
+
 
 
 	
@@ -97,6 +99,7 @@ Map loadMapInfo(char * file)
 			if(line[i] == '\n' || line[i] == '\r' || !line[i])
 				line[i]= '\0';
 		
+		if(strcmp(line, "[ID]") == 0)				{mode = fpID;			continue;}
 		if(strcmp(line, "[Name]") == 0)				{mode = fpName;			continue;}
 		if(strcmp(line, "[Artist]") == 0)			{mode = fpArtist;		continue;}
 		if(strcmp(line, "[Map Creator]") == 0)		{mode = fpMapCreator;	continue;}
@@ -114,6 +117,8 @@ Map loadMapInfo(char * file)
 		{
 			case fpNone:
 				break;
+			case fpID:
+				map.id = atoi(line);
 			case fpName:
 				strcpy(map.name, line);
 				break;
@@ -201,6 +206,7 @@ void freeMap(Map * map)
 	map->zoom = 7;
 	map->offset = 0;
 	map->musicLength = 0;
+	map->id = 0;
 }
 
 void saveFile (int noteAmount)
@@ -212,6 +218,8 @@ void saveFile (int noteAmount)
 	printf("poggies: %s\n", str);
 	_pFile = fopen(str, "w");
 	printf("written map data\n");
+	fprintf(_pFile, "[ID]\n");
+	fprintf(_pFile, "%i\n", _map->id);
 	fprintf(_pFile, "[Name]\n");
 	fprintf(_pFile, "%s\n", _map->name);
 	fprintf(_pFile, "[Artist]\n");
@@ -249,6 +257,15 @@ void saveFile (int noteAmount)
 			fprintf(_pFile, " \"%s\"", _pNotes[i].hitSE_File);
 		if (_pNotes[i].texture_File != 0)
 			fprintf(_pFile, " \"%s\"",_pNotes[i].texture_File);
+		if (_pNotes[i].anim && _pNotes[i].animSize)
+		{
+			fprintf(_pFile, " \"(%i",_pNotes[i].animSize);
+			for(int j = 0; j < _pNotes[i].animSize; j++)
+			{
+				fprintf(_pFile, " %f,%f,%f ", _pNotes[i].anim[j].time, _pNotes[i].anim[j].vec.x, _pNotes[i].anim[j].vec.y);
+			}
+			fprintf(_pFile, ")\"");
+		}
 		fprintf(_pFile, "\n");
 	}
 	fclose(_pFile);
@@ -323,6 +340,9 @@ void loadMap ()
 				_pNotes[_noteIndex].time = atof(line);
 				_pNotes[_noteIndex].hitSE_File = 0;
 				_pNotes[_noteIndex].texture_File = 0;
+				_pNotes[_noteIndex].anim = 0;
+				_pNotes[_noteIndex].animSize = 0;
+
 				int part = 0;
 				for(int j = 0; j < 2 && part != -1; j++)
 				{
@@ -374,6 +394,30 @@ void loadMap ()
 						if(_pNotes[_noteIndex].texture_File != 0)
 							free(_pNotes[_noteIndex].texture_File);
 						_pNotes[_noteIndex].texture_File = tmpStr;
+					}else if(line[part] == '(')
+					{
+						//found animation
+						_pNotes[_noteIndex].animSize = atoi(&(line[part+1]));
+						_pNotes[_noteIndex].anim = calloc(_pNotes[_noteIndex].animSize, sizeof(Frame));
+						while(line[part] != ' ')
+								part++;
+						part++;
+						// printf("found animation %i  ", _pNotes[_noteIndex].animSize);
+						for(int i = 0; i < _pNotes[_noteIndex].animSize; i++)
+						{
+							part++; //skip space
+							_pNotes[_noteIndex].anim[i].time = atof(&(line[part]));
+							while(line[part] != ',')
+								part++;
+							part++;
+							_pNotes[_noteIndex].anim[i].vec.x = atof(&(line[part]));
+							while(line[part] != ',')
+								part++;
+							part++;
+							_pNotes[_noteIndex].anim[i].vec.y = atof(&(line[part]));
+							// printf("%f  %f  %f    ", _pNotes[_noteIndex].anim[i].time, _pNotes[_noteIndex].anim[i].vec.x, _pNotes[_noteIndex].anim[i].vec.y);
+						}
+						// printf("\n");
 					}
 					for(int i = part; i < 1000; i++)
 					{
@@ -486,8 +530,7 @@ void saveScore()
 {
 	FILE * file;
 	char str [100];
-	strcpy(str, "scores/");
-	strcat(str, _map->name);
+	sprintf("scores/%s/%s", _map->name, _playerName);
 	if(!DirectoryExists("scores/"))
 		return;
 	printf("str %s\n", str);
@@ -502,8 +545,7 @@ bool readScore(Map * map, int *score, int * combo, float * accuracy)
 	*combo = 0;
 	FILE * file;
 	char str [100];
-	strcpy(str, "scores/");
-	strcat(str, map->name);
+	sprintf(str, "scores/%s/%s", map->name, _playerName);
 	if(!DirectoryExists("scores/"))
 		return false;
 	if(!FileExists(str))

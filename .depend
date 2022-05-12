@@ -8,8 +8,8 @@ src/files.o: src/files.c src/files.h src/shared.h \
  src/../deps/zip/src/zip.h src/gameplay.h src/audio.h
 src/gameplay.o: src/gameplay.c src/gameplay.h src/shared.h \
  src/../deps/raylib/src/raylib.h src/audio.h src/files.h src/drawing.h \
- src/thread.h
+ src/thread.h src/gamejolt.h
 src/main.o: src/main.c src/../deps/raylib/src/raylib.h src/shared.h \
- src/files.h src/drawing.h src/gameplay.h src/audio.h
+ src/files.h src/drawing.h src/gameplay.h src/audio.h src/gamejolt.h
 src/shared.o: src/shared.c src/shared.h src/../deps/raylib/src/raylib.h
 src/thread.o: src/thread.c

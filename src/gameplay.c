@@ -12,6 +12,7 @@
 #include <string.h>
 #include "thread.h"
 #include <ctype.h>
+#include "gamejolt.h"
 
 extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
 extern Color _fade;
@@ -516,65 +517,99 @@ void fSettings()
 					 (Rectangle){.x = 0, .y = 0, .height = GetScreenHeight(), .width = GetScreenWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
 	int middle = GetScreenWidth() / 2;
 
+	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight()*0.13, ColorAlpha(BLACK ,0.4));
 	// gigantic ass settings title
 	char *title = "Settings";
 	float tSize = GetScreenWidth() * 0.05;
 	int size = MeasureText(title, tSize);
 	// dropshadow
-	drawText(title, middle - size / 2 + GetScreenWidth() * 0.004, GetScreenHeight() * 0.107, tSize, DARKGRAY);
+	drawText(title, middle - size / 2 + GetScreenWidth() * 0.004, GetScreenHeight() * 0.03, tSize, DARKGRAY);
 	// real title
-	drawText(title, middle - size / 2, GetScreenHeight() * 0.1, tSize, WHITE);
+	drawText(title, middle - size / 2, GetScreenHeight() * 0.02, tSize, WHITE);
 
-	char zoom[10] = {0};
-	if (_settings.zoom != 0)
-		sprintf(zoom, "%i", _settings.zoom);
-	static bool zoomBoxSelected = false;
+	static float menuScroll = 0;
+	static float menuScrollSmooth = 0;
+	menuScroll += GetMouseWheelMove() * .04;
+	menuScrollSmooth += (menuScroll - menuScrollSmooth) * GetFrameTime() * 15;
+	if (IsMouseButtonDown(0))
+	{ // scroll by dragging
+		menuScroll += GetMouseDelta().y / GetScreenHeight();
+	}
 
-	Rectangle zoomBox = (Rectangle){.x = GetScreenWidth() * 0.4, .y = GetScreenHeight() * 0.7, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
-	textBox(zoomBox, zoom, &zoomBoxSelected);
+	menuScroll = (int)fmin(fmax(menuScroll, 0), 1);
 
-	_settings.zoom = atoi(zoom);
-	_settings.zoom = fmin(fmax(_settings.zoom, 0), 300);
-	tSize = GetScreenWidth() * 0.03;
-	size = MeasureText("zoom", tSize);
-	drawText("zoom", zoomBox.x + zoomBox.width / 2 - size / 2, zoomBox.y - GetScreenHeight() * 0.05, tSize, WHITE);
+	Rectangle settingsRect = (Rectangle){.x=0, .y=GetScreenHeight()*0.13, .width=GetScreenWidth(), .height=GetScreenHeight()};
+	BeginScissorMode(settingsRect.x, settingsRect.y, settingsRect.width, settingsRect.height);
 
-	static bool nameBoxSelected = false;
-	Rectangle nameBox = (Rectangle){.x = GetScreenWidth() * 0.02, .y = GetScreenHeight() * 0.3, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
-	textBox(nameBox, _playerName, &nameBoxSelected);
+		char zoom[10] = {0};
+		if (_settings.zoom != 0)
+			sprintf(zoom, "%i", _settings.zoom);
+		static bool zoomBoxSelected = false;
 
-	char offset[10] = {0};
-	if (_settings.offset != 0)
-		sprintf(offset, "%i", (int)_settings.offset);
-	static bool offsetBoxSelected = false;
-	Rectangle offsetBox = (Rectangle){.x = GetScreenWidth() * 0.4, .y = GetScreenHeight() * 0.85, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
-	textBox(offsetBox, offset, &offsetBoxSelected);
-	_settings.offset = (float)atoi(offset);
-	_settings.offset = fmin(fmax(_settings.offset, 0), 300);
-	tSize = GetScreenWidth() * 0.03;
-	size = MeasureText("offset", tSize);
-	drawText("offset", offsetBox.x + offsetBox.width / 2 - size / 2, offsetBox.y - GetScreenHeight() * 0.05, tSize, WHITE);
+		Rectangle zoomBox = (Rectangle){.x = GetScreenWidth() * 0.1, .y = GetScreenHeight() * (0.7+menuScrollSmooth), .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+		textBox(zoomBox, zoom, &zoomBoxSelected);
 
-	static bool gvBoolSelected = false;
-	Rectangle gvSlider = (Rectangle){.x = GetScreenWidth() * 0.35, .y = GetScreenHeight() * 0.3, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.03};
-	slider(gvSlider, &gvBoolSelected, &_settings.volumeGlobal, 100, 0);
-	tSize = GetScreenWidth() * 0.03;
-	size = MeasureText("global volume", tSize);
-	drawText("global volume", gvSlider.x + gvSlider.width / 2 - size / 2, gvSlider.y - GetScreenHeight() * 0.05, tSize, WHITE);
+		if(!mouseInRect(settingsRect))
+			zoomBoxSelected = false;
 
-	static bool mvBoolSelected = false;
-	Rectangle mvSlider = (Rectangle){.x = GetScreenWidth() * 0.35, .y = GetScreenHeight() * 0.45, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.03};
-	slider(mvSlider, &mvBoolSelected, &_settings.volumeMusic, 100, 0);
-	tSize = GetScreenWidth() * 0.03;
-	size = MeasureText("music volume", tSize);
-	drawText("music volume", mvSlider.x + mvSlider.width / 2 - size / 2, mvSlider.y - GetScreenHeight() * 0.05, tSize, WHITE);
+		_settings.zoom = atoi(zoom);
+		_settings.zoom = fmin(fmax(_settings.zoom, 0), 300);
+		tSize = GetScreenWidth() * 0.03;
+		size = MeasureText("zoom", tSize);
+		drawText("zoom", zoomBox.x + zoomBox.width / 2 - size / 2, zoomBox.y - GetScreenHeight() * 0.05, tSize, WHITE);
 
-	static bool aevBoolSelected = false;
-	Rectangle aevSlider = (Rectangle){.x = GetScreenWidth() * 0.35, .y = GetScreenHeight() * 0.6, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.03};
-	slider(aevSlider, &aevBoolSelected, &_settings.volumeSoundEffects, 100, 0);
-	tSize = GetScreenWidth() * 0.03;
-	size = MeasureText("sound sffect volume", tSize);
-	drawText("sound Effect volume", aevSlider.x + aevSlider.width / 2 - size / 2, aevSlider.y - GetScreenHeight() * 0.05, tSize, WHITE);
+		static bool nameBoxSelected = false;
+		Rectangle nameBox = (Rectangle){.x = GetScreenWidth() * 0.52, .y = GetScreenHeight() * (0.3+menuScrollSmooth), .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+		textBox(nameBox, _playerName, &nameBoxSelected);
+
+		char offset[10] = {0};
+		if (_settings.offset != 0)
+			sprintf(offset, "%i", (int)_settings.offset);
+		static bool offsetBoxSelected = false;
+		Rectangle offsetBox = (Rectangle){.x = GetScreenWidth() * 0.1, .y = GetScreenHeight() * (0.85+menuScrollSmooth), .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+		textBox(offsetBox, offset, &offsetBoxSelected);
+		_settings.offset = (float)atoi(offset);
+		_settings.offset = fmin(fmax(_settings.offset, 0), 300);
+		tSize = GetScreenWidth() * 0.03;
+		size = MeasureText("offset", tSize);
+		drawText("offset", offsetBox.x + offsetBox.width / 2 - size / 2, offsetBox.y - GetScreenHeight() * 0.05, tSize, WHITE);
+
+		if(!mouseInRect(settingsRect))
+			offsetBoxSelected = false;
+
+		static bool gvBoolSelected = false;
+		Rectangle gvSlider = (Rectangle){.x = GetScreenWidth() * 0.05, .y = GetScreenHeight() * (0.3+menuScrollSmooth), .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.03};
+		slider(gvSlider, &gvBoolSelected, &_settings.volumeGlobal, 100, 0);
+		tSize = GetScreenWidth() * 0.03;
+		size = MeasureText("global volume", tSize);
+		drawText("global volume", gvSlider.x + gvSlider.width / 2 - size / 2, gvSlider.y - GetScreenHeight() * 0.05, tSize, WHITE);
+
+		if(!mouseInRect(settingsRect))
+			gvBoolSelected = false;
+
+		static bool mvBoolSelected = false;
+		Rectangle mvSlider = (Rectangle){.x = GetScreenWidth() * 0.05, .y = GetScreenHeight() * (0.45+menuScrollSmooth), .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.03};
+		slider(mvSlider, &mvBoolSelected, &_settings.volumeMusic, 100, 0);
+		tSize = GetScreenWidth() * 0.03;
+		size = MeasureText("music volume", tSize);
+		drawText("music volume", mvSlider.x + mvSlider.width / 2 - size / 2, mvSlider.y - GetScreenHeight() * 0.05, tSize, WHITE);
+
+		if(!mouseInRect(settingsRect))
+			mvBoolSelected = false;
+
+
+		static bool aevBoolSelected = false;
+		Rectangle aevSlider = (Rectangle){.x = GetScreenWidth() * 0.05, .y = GetScreenHeight() * (0.6+menuScrollSmooth), .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.03};
+		slider(aevSlider, &aevBoolSelected, &_settings.volumeSoundEffects, 100, 0);
+		tSize = GetScreenWidth() * 0.03;
+		size = MeasureText("sound sffect volume", tSize);
+		drawText("sound Effect volume", aevSlider.x + aevSlider.width / 2 - size / 2, aevSlider.y - GetScreenHeight() * 0.05, tSize, WHITE);
+
+		if(!mouseInRect(settingsRect))
+			aevBoolSelected = false;
+
+		drawVignette();
+	EndScissorMode();
 
 	if (interactableButton("Back", 0.03, GetScreenWidth() * 0.05, GetScreenHeight() * 0.05, GetScreenWidth() * 0.1, GetScreenHeight() * 0.05))
 	{
@@ -935,7 +970,11 @@ void fPlaying()
 		float tmp = 0;
 		readScore(_map, &_highScore, &_highScoreCombo, &tmp);
 		if (_highScore < _score)
+		{
 			saveScore();
+			int tmp = 0;
+			submitScore(_map->id, _score, &tmp);
+		}
 		_pGameplayFunction = &fEndScreen;
 		playAudioEffect(_pFinishSE, _finishSE_Size);
 		_transition = 0.1;
@@ -1564,7 +1603,10 @@ void fNewMap()
 		strcpy(newMap.name, "name");
 		newMap.artist = malloc(100);
 		newMap.artist[0] = '\0';
-		strcpy(newMap.artist, "creator");
+		strcpy(newMap.artist, "Artist");
+		newMap.mapCreator = malloc(100);
+		newMap.mapCreator[0] = '\0';
+		strcpy(newMap.mapCreator, "mapCreator");
 		newMap.folder = malloc(100);
 		newMap.folder[0] = '\0';
 		newMap.bpm = 100;
@@ -1631,13 +1673,18 @@ void fNewMap()
 
 	// text boxes
 	static bool nameBoxSelected = false;
-	Rectangle nameBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.5, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+	Rectangle nameBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.475, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 	textBox(nameBox, newMap.name, &nameBoxSelected);
 	drawText("name", middle, GetScreenHeight() * 0.45, GetScreenHeight() * 0.05, WHITE);
 
+	static bool artistBoxSelected = false;
+	Rectangle artistBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.5, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+	textBox(artistBox, newMap.artist, &artistBoxSelected);
+	drawText("artist", middle, GetScreenHeight() * 0.575, GetScreenHeight() * 0.05, WHITE);
+
 	static bool creatorBoxSelected = false;
 	Rectangle creatorBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.625, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
-	textBox(creatorBox, newMap.artist, &creatorBoxSelected);
+	textBox(creatorBox, newMap.mapCreator, &creatorBoxSelected);
 	drawText("creator", middle, GetScreenHeight() * 0.575, GetScreenHeight() * 0.05, WHITE);
 
 	char str[100] = {'\0'};
