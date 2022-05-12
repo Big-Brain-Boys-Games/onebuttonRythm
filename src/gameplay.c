@@ -54,6 +54,7 @@ Map *_map;
 Settings _settings = (Settings){.volumeGlobal = 50, .volumeMusic = 100, .volumeSoundEffects = 100, .zoom = 7, .offset = 0};
 
 bool showSettings;
+bool showNoteSettings;
 
 // Timestamp of all the notes
 Note *_pNotes;
@@ -728,7 +729,7 @@ void fEditor()
 	}
 	else
 	{
-		if (!showSettings)
+		if (!showSettings && !showNoteSettings)
 		{
 			// Disable some keybinds during playback
 			setMusicFrameCount();
@@ -767,7 +768,7 @@ void fEditor()
 				_musicHead -= GetMouseDelta().x / GetScreenWidth() * _scrollSpeed;
 			}
 
-			if (IsMouseButtonPressed(0))
+			if (IsMouseButtonPressed(0) && GetMouseY() > GetScreenHeight() * 0.3 && GetMouseY() < GetScreenHeight() * 0.6)
 			{
 				addSelectNote(findClosestNote(_pNotes, _amountNotes, screenToMusicTime(GetMouseX())));
 				for (int i = 0; i < _amountSelectedNotes; i++)
@@ -828,7 +829,7 @@ void fEditor()
 			}
 		}
 	}
-	if (IsKeyPressed(KEY_SPACE) && !showSettings)
+	if (IsKeyPressed(KEY_SPACE) && !showSettings && !showNoteSettings)
 	{
 		isPlaying = !isPlaying;
 		_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
@@ -896,9 +897,7 @@ void fEditor()
 		slider((Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.50, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.03}, &speedSlider, &speed, 8, 1);
 		_musicSpeed = speed / 4.0;
 		if (interactableButton("reset", 0.03, GetScreenWidth() * 0.52, GetScreenHeight() * 0.50, GetScreenWidth() * 0.1, GetScreenHeight() * 0.05))
-		{
 			_musicSpeed = 1;
-		}
 
 		// Drawing text next to the buttons
 		char *text = "BPM:";
@@ -927,10 +926,48 @@ void fEditor()
 		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.50, tSize, WHITE);
 	}
 
-	if (interactableButton("Song settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.05, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+	if (_amountSelectedNotes > 0)
 	{
-		showSettings = !showSettings;
+		if (showNoteSettings)
+		{
+			// Darken background
+			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
+
+			char sprite[100] = {0};
+			sprite[0] = "\0";
+			if (_pNotes[_selectedNotes[0]].texture_File != 0)
+				sprintf(sprite, "%c", _pNotes[_selectedNotes[0]].texture_File);
+			static bool spriteBoxSelected = false;
+			Rectangle spriteBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.1, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+			textBox(spriteBox, sprite, &spriteBoxSelected);
+			if (strlen(sprite) != 0)
+			{
+				printf("Yo: %p\n", _pNotes[_selectedNotes[0]].texture_File);
+				// TODO change to for loop to support multiple notes
+				if (_pNotes[_selectedNotes[0]].texture_File == 0)
+					_pNotes[_selectedNotes[0]].texture_File = malloc(sizeof(char) * 100);
+				strcpy(_pNotes[_selectedNotes[0]].texture_File, sprite);
+			}
+
+			if (interactableButton("Animation", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.5, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+			{
+				//Run animation tab
+			}
+			
+		}
+		if (interactableButton("Note settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.15, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+		{
+			showNoteSettings = !showNoteSettings;
+		}
 	}
+	if (!showNoteSettings)
+	{
+		if (interactableButton("Song settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.05, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+		{
+			showSettings = !showSettings;
+		}
+	}
+
 	drawCursor();
 }
 
