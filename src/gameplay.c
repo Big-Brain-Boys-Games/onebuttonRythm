@@ -698,7 +698,7 @@ void fEditor()
 
 			if (IsMouseButtonPressed(0))
 			{
-				printf("Note at: %f\n", findClosest(_pNotes, _amountNotes / 2, screenToMusicTime(GetMouseX())));
+				removeNote(findClosest(_pNotes, _amountNotes, screenToMusicTime(GetMouseX())));
 			}
 
 			if (getMusicHead() < 0)
