@@ -809,11 +809,11 @@ void fEditor()
 
 		// song creator setting
 		char creator[50] = {0};
-		sprintf(creator, "%s", _map->creator);
+		sprintf(creator, "%s", _map->artist);
 		static bool creatorBoxSelected = false;
 		Rectangle creatorBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.34, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 		textBox(creatorBox, creator, &creatorBoxSelected);
-		strcpy(_map->creator,creator);
+		strcpy(_map->artist,creator);
 
 		// Speed slider
 		static bool speedSlider = false;
@@ -1419,7 +1419,7 @@ void fMapSelect()
 		{
 			bool missingLetter = false;
 			char str[100];
-			sprintf(str, "%s - %s", _pMaps[i].name, _pMaps[i].creator);
+			sprintf(str, "%s - %s", _pMaps[i].name, _pMaps[i].artist);
 			int stringLength = strlen(str);
 			for(int j = 0; j < 100 && search[j] != '\0'; j++)
 			{
@@ -1527,7 +1527,7 @@ void fMapSelect()
 		char str[100];
 		strcpy(str, _pMaps[selMap].name);
 		strcat(str, " - ");
-		strcat(str, _pMaps[selMap].creator);
+		strcat(str, _pMaps[selMap].artist);
 		int textSize = measureText(str, GetScreenWidth() * 0.05);
 		drawText(str, GetScreenWidth() * 0.9 - textSize, GetScreenHeight() * 0.92, GetScreenWidth() * 0.05, WHITE);
 	}
@@ -1562,9 +1562,9 @@ void fNewMap()
 	{
 		newMap.name = malloc(100);
 		strcpy(newMap.name, "name");
-		newMap.creator = malloc(100);
-		newMap.creator[0] = '\0';
-		strcpy(newMap.creator, "creator");
+		newMap.artist = malloc(100);
+		newMap.artist[0] = '\0';
+		strcpy(newMap.artist, "creator");
 		newMap.folder = malloc(100);
 		newMap.folder[0] = '\0';
 		newMap.bpm = 100;
@@ -1637,7 +1637,7 @@ void fNewMap()
 
 	static bool creatorBoxSelected = false;
 	Rectangle creatorBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.625, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
-	textBox(creatorBox, newMap.creator, &creatorBoxSelected);
+	textBox(creatorBox, newMap.artist, &creatorBoxSelected);
 	drawText("creator", middle, GetScreenHeight() * 0.575, GetScreenHeight() * 0.05, WHITE);
 
 	char str[100] = {'\0'};

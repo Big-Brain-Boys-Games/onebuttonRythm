@@ -168,7 +168,7 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float 
 	DrawRectangleGradientV(rect.x, rect.y+rect.height*0.4, rect.width, rect.height*imageRatio-rect.height*0.4, ColorAlpha(BLACK, 0), ColorAlpha(BLACK, 0.5));
 	
 	char text [100];
-	sprintf(text, "%s - %s", map->name, map->creator);
+	sprintf(text, "%s - %s", map->name, map->artist);
 	int length = strlen(text);
 	char* textPointer = text;
 	if(length > 18)

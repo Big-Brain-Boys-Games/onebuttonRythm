@@ -64,8 +64,8 @@ Map loadMapInfo(char * file)
 	map.name = calloc(sizeof(char), 100);
 	map.name[0] = '\0';
 
-	map.creator = calloc(sizeof(char), 100);
-	map.creator[0] = '\0';
+	map.artist = calloc(sizeof(char), 100);
+	map.artist[0] = '\0';
 
 	map.mapCreator = calloc(sizeof(char), 100);
 	map.mapCreator[0] = '\0';
@@ -98,8 +98,7 @@ Map loadMapInfo(char * file)
 				line[i]= '\0';
 		
 		if(strcmp(line, "[Name]") == 0)				{mode = fpName;			continue;}
-		if(strcmp(line, "[Creator]") == 0)			{mode = fpCreator;		continue;}
-		if(strcmp(line, "[Music Creator]") == 0)	{mode = fpCreator;		continue;}
+		if(strcmp(line, "[Artist]") == 0)			{mode = fpArtist;		continue;}
 		if(strcmp(line, "[Map Creator]") == 0)		{mode = fpMapCreator;	continue;}
 		if(strcmp(line, "[Difficulty]") == 0)		{mode = fpDifficulty;	continue;}
 		if(strcmp(line, "[BPM]") == 0)				{mode = fpBPM;			continue;}
@@ -118,8 +117,8 @@ Map loadMapInfo(char * file)
 			case fpName:
 				strcpy(map.name, line);
 				break;
-			case fpCreator:
-				strcpy(map.creator, line);
+			case fpArtist:
+				strcpy(map.artist, line);
 				break;
 			case fpMapCreator:
 				strcpy(map.mapCreator, line);
@@ -187,8 +186,8 @@ void freeMap(Map * map)
 	}
 	if(map->name != 0)
 		free(map->name);
-	if(map->creator != 0)
-		free(map->creator);
+	if(map->artist != 0)
+		free(map->artist);
 	if(map->mapCreator != 0)
 		free(map->mapCreator);
 	if(map->folder != 0)
@@ -215,8 +214,8 @@ void saveFile (int noteAmount)
 	printf("written map data\n");
 	fprintf(_pFile, "[Name]\n");
 	fprintf(_pFile, "%s\n", _map->name);
-	fprintf(_pFile, "[Music Creator]\n");
-	fprintf(_pFile, "%s\n", _map->creator);
+	fprintf(_pFile, "[Artist]\n");
+	fprintf(_pFile, "%s\n", _map->artist);
 	fprintf(_pFile, "[Map Creator]\n");
 	fprintf(_pFile, "%s\n", _map->mapCreator);
 	fprintf(_pFile, "[Difficulty]\n");
@@ -479,7 +478,7 @@ void loadMap ()
 	// free(sounds);
 	_noteIndex = 0;
 	char str [100];
-	sprintf(str, "%s - %s", _map->name, _map->creator);
+	sprintf(str, "%s - %s", _map->name, _map->artist);
 	SetWindowTitle(str);
 }
 
