@@ -37,7 +37,7 @@ double clamp(double d, double min, double max)
     return t > max ? max : t;
 }
 
-int findClosest(Note arr[], int n, float target)
+int findClosestNote(Note arr[], int n, float target)
 {
     // Corner cases
     if (target <= arr[0].time)

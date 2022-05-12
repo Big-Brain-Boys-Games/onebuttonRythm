@@ -46,6 +46,9 @@ int _missPenalty = 10;
 bool _mapRefresh = true;
 int _barMeasureCount = 2;
 
+int *_selectedNotes = 0;
+int _amountSelectedNotes = 0;
+
 Map *_map;
 Settings _settings = (Settings){.volumeGlobal = 50, .volumeMusic = 100, .volumeSoundEffects = 100, .zoom = 7, .offset = 0};
 
@@ -326,6 +329,39 @@ void newNote(float time)
 	_pNotes[closestIndex].texture = _noteTex;
 	_pHitSEp = &_pHitSE;
 	_pNotes[closestIndex].hitSE = &_pHitSEp;
+}
+
+void addSelectNote(int note)
+{
+	printf("Adding note: %i\n", note);
+	for (int i = 0; i < _amountSelectedNotes; i++)
+	{
+		if (_selectedNotes[i] == note)
+		{
+			printf("Note in array, removing: %i at index: %i\n", note, i);
+			removeSelectedNote(i);
+			return;
+		}
+	}
+
+	_amountSelectedNotes++;
+	if (_selectedNotes == 0)
+		_selectedNotes = malloc(sizeof(int) * _amountSelectedNotes);
+	else
+		_selectedNotes = realloc(_selectedNotes, sizeof(int) * _amountSelectedNotes);
+	_selectedNotes[_amountSelectedNotes - 1] = note;
+}
+
+void removeSelectedNote(int index)
+{
+	printf("Removing note: %i\n", index);
+
+	for (int i = index; i < _amountSelectedNotes; i++)
+	{
+		_selectedNotes[i] = _selectedNotes[i + 1];
+	}
+	_amountSelectedNotes--;
+	_selectedNotes = realloc(_selectedNotes, sizeof(int) * _amountSelectedNotes);
 }
 
 void fPause()
@@ -698,7 +734,11 @@ void fEditor()
 
 			if (IsMouseButtonPressed(0))
 			{
-				removeNote(findClosest(_pNotes, _amountNotes, screenToMusicTime(GetMouseX())));
+				addSelectNote(findClosestNote(_pNotes, _amountNotes, screenToMusicTime(GetMouseX())));
+				for (int i = 0; i < _amountSelectedNotes; i++)
+				{
+					printf("Amount of notes: %i\t Selected notes: %i\n", _amountSelectedNotes, _selectedNotes[i]);
+				}
 			}
 
 			if (getMusicHead() < 0)
