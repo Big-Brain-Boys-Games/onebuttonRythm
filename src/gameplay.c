@@ -1363,7 +1363,7 @@ void fMapSelect()
 		return;
 	}
 	int middle = GetScreenWidth() / 2;
-
+	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight()*0.13, BLACK);
 	static float menuScroll = 0;
 	static float menuScrollSmooth = 0;
 	menuScroll += GetMouseWheelMove() * .04;
