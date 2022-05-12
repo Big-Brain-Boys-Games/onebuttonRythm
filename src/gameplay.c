@@ -31,7 +31,7 @@ extern int _finishSE_Size;
 
 extern int _loading;
 
-extern Map * _pMaps;
+extern Map *_pMaps;
 extern char _playerName[100];
 float _scrollSpeed = 0.6;
 int _noteIndex = 0, _amountNotes = 0;
@@ -148,7 +148,8 @@ void gotoMainMenu(bool mainOrSelect)
 	randomMusicPoint();
 	if (mainOrSelect)
 		_pGameplayFunction = &fMainMenu;
-	else _pGameplayFunction = &fMapSelect;
+	else
+		_pGameplayFunction = &fMapSelect;
 	SetWindowTitle("One Button Rhythm");
 	resetBackGround();
 }
@@ -343,7 +344,7 @@ void fPause()
 
 	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("Continue", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.3, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
 	{
-		if(_pNextGameplayFunction == &fPlaying)
+		if (_pNextGameplayFunction == &fPlaying)
 			_pGameplayFunction = &fCountDown;
 		else
 			_pGameplayFunction = _pNextGameplayFunction;
@@ -354,14 +355,14 @@ void fPause()
 		gotoMainMenu(false);
 	}
 
-	if (_pNextGameplayFunction == &fRecording && interactableButton("retry", 0.05, middle - GetScreenWidth()*0.15, GetScreenHeight() * 0.5, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
+	if (_pNextGameplayFunction == &fRecording && interactableButton("retry", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.5, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
 	{
 		_pGameplayFunction = _pNextGameplayFunction;
 		_noteIndex = 0;
 		_amountNotes = 0;
 	}
-	
-	if(interactableButton("Exit", 0.05, middle - GetScreenWidth()*0.15, _pNextGameplayFunction == &fEditor ? GetScreenHeight() * 0.7 : GetScreenHeight() * 0.5, GetScreenWidth()*0.3,GetScreenHeight()*0.1))
+
+	if (interactableButton("Exit", 0.05, middle - GetScreenWidth() * 0.15, _pNextGameplayFunction == &fEditor ? GetScreenHeight() * 0.7 : GetScreenHeight() * 0.5, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
 	{
 		unloadMap();
 		gotoMainMenu(false);
@@ -502,7 +503,7 @@ void fMainMenu()
 	char str[120];
 	sprintf(str, "name: %s", _playerName);
 	drawText(str, GetScreenWidth() * 0.4, GetScreenHeight() * 0.8, GetScreenWidth() * 0.04, WHITE);
-	
+
 	drawText(_notfication, GetScreenWidth() * 0.6, GetScreenHeight() * 0.7, GetScreenWidth() * 0.02, WHITE);
 
 	drawCursor();
@@ -749,7 +750,6 @@ void fEditor()
 				{
 					_barMeasureCount = _barMeasureCount / 2;
 				}
-				
 			}
 		}
 	}
@@ -805,7 +805,7 @@ void fEditor()
 		static bool songNameBoxSelected = false;
 		Rectangle songNameBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.26, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 		textBox(songNameBox, songName, &songNameBoxSelected);
-		strcpy(_map->name,songName);
+		strcpy(_map->name, songName);
 
 		// song creator setting
 		char creator[50] = {0};
@@ -813,7 +813,7 @@ void fEditor()
 		static bool creatorBoxSelected = false;
 		Rectangle creatorBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.34, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 		textBox(creatorBox, creator, &creatorBoxSelected);
-		strcpy(_map->artist,creator);
+		strcpy(_map->artist, creator);
 
 		// Speed slider
 		static bool speedSlider = false;
@@ -1156,7 +1156,7 @@ struct mapInfoLoadingArgs
 	float **accuracy;
 };
 
-char ** filesCaching = 0;
+char **filesCaching = 0;
 
 #ifdef __unix
 void mapInfoLoading(struct mapInfoLoadingArgs *args)
@@ -1169,38 +1169,40 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 	int amount;
 	static int oldAmount = 0;
 	char **files = GetDirectoryFiles("maps/", &amount);
-	if(args->highScores != 0)
+	if (args->highScores != 0)
 	{
-		*args->highScores = realloc(*args->highScores, amount*sizeof(int));
-		*args->combos = realloc(*args->combos, amount*sizeof(int));
-		*args->accuracy = realloc(*args->accuracy, amount*sizeof(float));
-		char ** tmp = calloc(amount, sizeof(char*));
-		for(int i = 0; i < amount && i < oldAmount; i++)
+		*args->highScores = realloc(*args->highScores, amount * sizeof(int));
+		*args->combos = realloc(*args->combos, amount * sizeof(int));
+		*args->accuracy = realloc(*args->accuracy, amount * sizeof(float));
+		char **tmp = calloc(amount, sizeof(char *));
+		for (int i = 0; i < amount && i < oldAmount; i++)
 		{
 			tmp[i] = filesCaching[i];
 		}
-		for(int i = oldAmount; i < amount; i++)
+		for (int i = oldAmount; i < amount; i++)
 			tmp[i] = calloc(100, sizeof(char));
-		for(int i = amount; i < oldAmount; i++)
+		for (int i = amount; i < oldAmount; i++)
 			free(filesCaching[i]);
 		free(filesCaching);
 		filesCaching = tmp;
 
-		Map * tmp2 = calloc(amount, sizeof(Map));
-		for(int i = 0; i < amount && i < oldAmount; i++)
+		Map *tmp2 = calloc(amount, sizeof(Map));
+		for (int i = 0; i < amount && i < oldAmount; i++)
 		{
 			tmp2[i] = _pMaps[i];
 		}
-		for(int i = amount; i < oldAmount; i++)
+		for (int i = amount; i < oldAmount; i++)
 			freeMap(&_pMaps[i]);
 		free(_pMaps);
 		_pMaps = tmp2;
-	}else {
-		*args->highScores = malloc(amount*sizeof(int)); 
-		*args->combos = malloc(amount*sizeof(int)); 
-		*args->accuracy = malloc(amount*sizeof(float)); 
-		filesCaching = calloc(amount, sizeof(char*));
-		for(int i = 0; i < amount; i++)
+	}
+	else
+	{
+		*args->highScores = malloc(amount * sizeof(int));
+		*args->combos = malloc(amount * sizeof(int));
+		*args->accuracy = malloc(amount * sizeof(float));
+		filesCaching = calloc(amount, sizeof(char *));
+		for (int i = 0; i < amount; i++)
 			filesCaching[i] = calloc(100, sizeof(char));
 		_pMaps = calloc(amount, sizeof(Map));
 	}
@@ -1230,9 +1232,9 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 				_pMaps[mapIndex] = _pMaps[j];
 				_pMaps[j] = (Map){0};
 				readScore(&_pMaps[mapIndex],
-					  &((*args->highScores)[mapIndex]),
-					  &((*args->combos)[mapIndex]),
-					  &((*args->accuracy)[mapIndex]));
+						  &((*args->highScores)[mapIndex]),
+						  &((*args->combos)[mapIndex]),
+						  &((*args->accuracy)[mapIndex]));
 				break;
 			}
 		}
@@ -1268,9 +1270,9 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 void fMapSelect()
 {
 	static int amount = 0;
-	static int * highScores;
-	static int * combos;
-	static float * accuracy;
+	static int *highScores;
+	static int *combos;
+	static float *accuracy;
 	static int selectedMap = -1;
 	static float selectMapTransition = 1;
 	static int hoverMap = -1;
@@ -1394,7 +1396,7 @@ void fMapSelect()
 		_transition = 0.1;
 	}
 
-	textBox((Rectangle){.x=GetScreenWidth() * 0.35, .y=GetScreenHeight() * 0.05, .width=GetScreenWidth() * 0.2, .height=GetScreenHeight() * 0.05}, search, &searchSelected);
+	textBox((Rectangle){.x = GetScreenWidth() * 0.35, .y = GetScreenHeight() * 0.05, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.05}, search, &searchSelected);
 
 	if (hoverMap == -1)
 	{
@@ -1409,33 +1411,33 @@ void fMapSelect()
 			_musicFrameCount = 1;
 	}
 	// draw map button
-	Rectangle mapSelectRect = (Rectangle){.x=0, .y=GetScreenHeight()*0.13, .width=GetScreenWidth(), .height=GetScreenHeight()};
+	Rectangle mapSelectRect = (Rectangle){.x = 0, .y = GetScreenHeight() * 0.13, .width = GetScreenWidth(), .height = GetScreenHeight()};
 	BeginScissorMode(mapSelectRect.x, mapSelectRect.y, mapSelectRect.width, mapSelectRect.height);
 	int mapCount = -1;
 	for (int i = 0; i < amount; i++)
 	{
 		// draw maps
-		if(search[0] != '\0')
+		if (search[0] != '\0')
 		{
 			bool missingLetter = false;
 			char str[100];
 			sprintf(str, "%s - %s", _pMaps[i].name, _pMaps[i].artist);
 			int stringLength = strlen(str);
-			for(int j = 0; j < 100 && search[j] != '\0'; j++)
+			for (int j = 0; j < 100 && search[j] != '\0'; j++)
 			{
 				bool foundOne = false;
-				for(int k = 0; k < stringLength; k++)
+				for (int k = 0; k < stringLength; k++)
 				{
-					if(tolower(search[j]) == tolower(str[k]))
+					if (tolower(search[j]) == tolower(str[k]))
 						foundOne = true;
 				}
-				if(!foundOne)
+				if (!foundOne)
 				{
 					missingLetter = true;
 					break;
 				}
 			}
-			if(missingLetter)
+			if (missingLetter)
 				continue;
 		}
 
@@ -1484,19 +1486,19 @@ void fMapSelect()
 			}
 
 			drawMapThumbnail(mapButton, &_pMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], true);
-			if (interactableButtonNoSprite("play", 0.03, mapButton.x, mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect) )
+			if (interactableButtonNoSprite("play", 0.03, mapButton.x, mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
 			{
 				_pNextGameplayFunction = &fPlaying;
 				_pGameplayFunction = &fCountDown;
 			}
-			if (interactableButtonNoSprite("editor", 0.03, mapButton.x + mapButton.width * (1 / 3.0), mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect) )
+			if (interactableButtonNoSprite("editor", 0.03, mapButton.x + mapButton.width * (1 / 3.0), mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
 			{
 				_pNextGameplayFunction = &fEditor;
 				_pGameplayFunction = &fEditor;
 				startMusic();
 				_musicPlaying = false;
 			}
-			if (interactableButtonNoSprite("export", 0.03, mapButton.x + mapButton.width * (1 / 3.0 * 2), mapButton.y + mapButton.height, mapButton.width * (1 / 3.0), mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect) )
+			if (interactableButtonNoSprite("export", 0.03, mapButton.x + mapButton.width * (1 / 3.0 * 2), mapButton.y + mapButton.height, mapButton.width * (1 / 3.0), mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
 			{
 				_pGameplayFunction = &fExport;
 			}
@@ -1609,10 +1611,10 @@ void fNewMap()
 		fclose(file);
 		if (newMap.bpm == 0)
 			newMap.bpm = 1;
-		_pNextGameplayFunction=&fRecording;
+		_pNextGameplayFunction = &fRecording;
 		_amountNotes = 0;
 		_noteIndex = 0;
-		_pGameplayFunction=&fCountDown;
+		_pGameplayFunction = &fCountDown;
 		_transition = 0.1;
 		newMap.folder = malloc(100);
 		strcpy(newMap.folder, newMap.name);

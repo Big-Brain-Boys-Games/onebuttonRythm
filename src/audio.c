@@ -3,7 +3,6 @@
 #define MINIAUDIO_IMPLEMENTATION
 #include "../deps/miniaudio/miniaudio.h"
 
-
 #include "files.h"
 #include "gameplay.h"
 #include "thread.h"
@@ -13,10 +12,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 extern int _amountNotes, _loading;
 extern float _musicHead, _scrollSpeed;
-extern Map * _map;
+extern Map *_map;
 extern Settings _settings;
 
 #define EFFECT_BUFFER_SIZE 48000 * 4 * 4
@@ -51,15 +49,13 @@ int _finishSE_Size;
 void *_pEffectsBuffer;
 int _effectOffset;
 
-
-
-//Where is the current audio
+// Where is the current audio
 float _musicHead = 0;
 float _musicPlaying = 0;
 bool _musicLoops = true, _playMenuMusic = true;
 
 int _musicFrameCount = 0;
-int * _musicLength = 0;
+int *_musicLength = 0;
 
 void **_pMusic = 0;
 
@@ -68,12 +64,12 @@ int _menuMusicFrameCount = 0;
 int _menuMusicLength = 0;
 
 float _musicSpeed = 1;
- 
 
-int getSamplePosition(float time) {
-	return time*48000*2;
+int getSamplePosition(float time)
+{
+	return time * 48000 * 2;
 }
-//Get duration of music in seconds
+// Get duration of music in seconds
 float getMusicDuration()
 {
 	return *_musicLength / (float)48000;
@@ -81,7 +77,7 @@ float getMusicDuration()
 
 float getMusicPosition()
 {
-	return _musicFrameCount / (float)48000 ;
+	return _musicFrameCount / (float)48000;
 }
 
 void fixMusicTime()
@@ -112,15 +108,15 @@ void randomMusicPoint()
 
 struct decodeAudioArgs
 {
-	void ** buffer;
-	char * file;
-	int * audioLength;
+	void **buffer;
+	char *file;
+	int *audioLength;
 };
 
 #ifdef __unix
-void * decodeAudio(struct decodeAudioArgs * args)
+void *decodeAudio(struct decodeAudioArgs *args)
 #else
-DWORD WINAPI * decodeAudio(struct decodeAudioArgs * args)
+DWORD WINAPI *decodeAudio(struct decodeAudioArgs *args)
 #endif
 {
 	_loading++;
@@ -131,25 +127,26 @@ DWORD WINAPI * decodeAudio(struct decodeAudioArgs * args)
 	ma_decoder decoder = {0};
 	long long unsigned int audioLength = 0;
 	result = ma_decoder_init_file(args->file, &decoder_config, &decoder);
-    if (result != MA_SUCCESS) {
-        printf("failed to open music file %s %i\n", args->file, result);
+	if (result != MA_SUCCESS)
+	{
+		printf("failed to open music file %s %i\n", args->file, result);
 		*args->buffer = 0;
 		*args->audioLength = 0;
 		free(args->file);
 		return NULL;
 		// exit(0);
-    }
+	}
 	int lastFrame = -1;
 	ma_decoder_get_length_in_pcm_frames(&decoder, &audioLength);
-	*args->buffer = calloc(sizeof(float)*2*2, audioLength);
-	void * pCursor = *args->buffer;
+	*args->buffer = calloc(sizeof(float) * 2 * 2, audioLength);
+	void *pCursor = *args->buffer;
 	int size = 0;
 	lastFrame = -1;
-	while(decoder.readPointerInPCMFrames !=lastFrame)
+	while (decoder.readPointerInPCMFrames != lastFrame)
 	{
 		lastFrame = decoder.readPointerInPCMFrames;
 		ma_result result = ma_decoder_read_pcm_frames(&decoder, pCursor, 256, NULL);
-		pCursor += sizeof(float)*2*256;
+		pCursor += sizeof(float) * 2 * 256;
 		size++;
 	}
 	ma_decoder_uninit(&decoder);
@@ -160,61 +157,61 @@ DWORD WINAPI * decodeAudio(struct decodeAudioArgs * args)
 	return NULL;
 }
 
-void loadAudio(void ** buffer, char * file, int * audioLength)
+void loadAudio(void **buffer, char *file, int *audioLength)
 {
 	static int threadIndex = 0;
 
 	*audioLength = 0;
-	struct decodeAudioArgs * args = malloc(sizeof(struct decodeAudioArgs));
-	args->audioLength=audioLength;
-	args->buffer=buffer;
-	args->file=malloc(strlen(file)+5);
+	struct decodeAudioArgs *args = malloc(sizeof(struct decodeAudioArgs));
+	args->audioLength = audioLength;
+	args->buffer = buffer;
+	args->file = malloc(strlen(file) + 5);
 	strcpy(args->file, file);
-	createThread((void * (*)(void *))decodeAudio,args);
+	createThread((void *(*)(void *))decodeAudio, args);
 	threadIndex++;
 }
 
 void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount)
 {
-	float globalVolume = _settings.volumeGlobal/100.0;
-	float musicVolume = _settings.volumeMusic/100.0 * globalVolume;
-	float audioEffectVolume = _settings.volumeSoundEffects/100.0 * globalVolume;
+	float globalVolume = _settings.volumeGlobal / 100.0;
+	float musicVolume = _settings.volumeMusic / 100.0 * globalVolume;
+	float audioEffectVolume = _settings.volumeSoundEffects / 100.0 * globalVolume;
 
 	// music
 	if (_musicPlaying && _pMusic && *_pMusic && _musicLength)
 	{
-		if (*_musicLength >0 && *_musicLength > _musicFrameCount && _musicFrameCount > 0)
+		if (*_musicLength > 0 && *_musicLength > _musicFrameCount && _musicFrameCount > 0)
 		{
 			for (int i = 0; i < frameCount * 2; i++)
 			{
 				float value = 0;
-				int sampleCount = (int)(_musicSpeed*100);
+				int sampleCount = (int)(_musicSpeed * 100);
 				// for(int j = 0; j < sampleCount; j++)
 				// {
-				value += ((float *)*_pMusic)[(int)(i*_musicSpeed  + _musicFrameCount*2)]*musicVolume;
+				value += ((float *)*_pMusic)[(int)(i * _musicSpeed + _musicFrameCount * 2)] * musicVolume;
 				// }
 				((float *)pOutput)[i] = value;
 			}
 		}
-		else if(_musicLoops && *_musicLength > 0)
-			_musicFrameCount = _musicFrameCount%*_musicLength;
+		else if (_musicLoops && *_musicLength > 0)
+			_musicFrameCount = _musicFrameCount % *_musicLength;
 		_musicFrameCount += frameCount * _musicSpeed;
 	}
-	if (_pMenuMusic && _menuMusicLength >0 && _menuMusicLength > _menuMusicFrameCount && _menuMusicFrameCount > 0)
+	if (_pMenuMusic && _menuMusicLength > 0 && _menuMusicLength > _menuMusicFrameCount && _menuMusicFrameCount > 0)
 	{
 		for (int i = 0; i < frameCount * 2; i++)
 		{
-			((float *)pOutput)[i] += ((float *)_pMenuMusic)[i + _menuMusicFrameCount*2]*musicVolume*(1-_musicPlaying)*_playMenuMusic;
+			((float *)pOutput)[i] += ((float *)_pMenuMusic)[i + _menuMusicFrameCount * 2] * musicVolume * (1 - _musicPlaying) * _playMenuMusic;
 		}
 	}
-	if(_menuMusicLength!=0)
-		_menuMusicFrameCount = _menuMusicFrameCount%_menuMusicLength;
+	if (_menuMusicLength != 0)
+		_menuMusicFrameCount = _menuMusicFrameCount % _menuMusicLength;
 	_menuMusicFrameCount += frameCount;
 	// sound effects
 
 	for (int i = 0; i < frameCount * 2; i++)
 	{
-		((float *)pOutput)[i] += ((float *)_pEffectsBuffer)[(i + _effectOffset) % (48000 * 4)]*audioEffectVolume;
+		((float *)pOutput)[i] += ((float *)_pEffectsBuffer)[(i + _effectOffset) % (48000 * 4)] * audioEffectVolume;
 		((float *)_pEffectsBuffer)[(i + _effectOffset) % (48000 * 4)] = 0;
 	}
 	_effectOffset += frameCount * 2;
@@ -224,8 +221,8 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 
 void audioInit()
 {
-		//todo do this smarter
-	_pEffectsBuffer = calloc(sizeof(char), EFFECT_BUFFER_SIZE); //4 second long buffer
+	// todo do this smarter
+	_pEffectsBuffer = calloc(sizeof(char), EFFECT_BUFFER_SIZE); // 4 second long buffer
 	loadAudio(&_pHitSE, "assets/hit.mp3", &_hitSE_Size);
 	loadAudio(&_pMissHitSE, "assets/missHit.mp3", &_missHitSE_Size);
 	printf("%s \t %p\n", "assets/missHit.mp3", _pMissSE);
@@ -238,7 +235,6 @@ void audioInit()
 	loadAudio(&_pFinishSE, "assets/hit.mp3", &_finishSE_Size);
 	loadAudio(&_pFailSE, "assets/missHit.mp3", &_failSE_Size);
 
-
 	_musicFrameCount = 0;
 	_musicLength = 0;
 	_musicLoops = false;
@@ -247,14 +243,12 @@ void audioInit()
 	loadAudio(&_pMenuMusic, "assets/menuMusic.mp3", &_menuMusicLength);
 	_menuMusicLength = 0;
 
-
-
 	_musicPlaying = false;
 	_deviceConfig = ma_device_config_init(ma_device_type_playback);
-    _deviceConfig.playback.format   = ma_format_f32;
-    _deviceConfig.playback.channels = 2;
-    _deviceConfig.sampleRate        = 48000;
-    _deviceConfig.dataCallback      = data_callback;
+	_deviceConfig.playback.format = ma_format_f32;
+	_deviceConfig.playback.channels = 2;
+	_deviceConfig.sampleRate = 48000;
+	_deviceConfig.dataCallback = data_callback;
 	// _deviceConfig.periodSizeInMilliseconds = 300;
 	if (ma_device_init(NULL, &_deviceConfig, &_device) != MA_SUCCESS)
 	{
@@ -270,17 +264,16 @@ void audioInit()
 	}
 }
 
-
-void loadMusic(Map * map)
+void loadMusic(Map *map)
 {
 	_musicPlaying = false;
 	char str[100];
-	if(map->folder == NULL || map->musicFile == NULL)
+	if (map->folder == NULL || map->musicFile == NULL)
 		return;
 	strcpy(str, "maps/");
 	strcat(str, map->folder);
 	strcat(str, map->musicFile);
-	if(map->music == 0)
+	if (map->music == 0)
 		loadAudio(&map->music, str, &map->musicLengthFrames);
 	_musicLength = &map->musicLengthFrames;
 	_pMusic = &map->music;
@@ -295,7 +288,7 @@ bool endOfMusic()
 
 void playAudioEffect(void *effect, int size)
 {
-	if(!effect || !size)
+	if (!effect || !size)
 		return;
 	for (int i = 0; i < size; i++)
 	{
@@ -320,5 +313,5 @@ void stopMusic()
 
 void setMusicFrameCount()
 {
-    _musicFrameCount = _musicHead*48000;
+	_musicFrameCount = _musicHead * 48000;
 }

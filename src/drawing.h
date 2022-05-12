@@ -7,8 +7,8 @@
 
 #include "../deps/raylib/src/raylib.h"
 
-int measureText (char * text, int fontSize);
-void drawText(char * str, int x, int y, int fontSize, Color color);
+int measureText(char *text, int fontSize);
+void drawText(char *str, int x, int y, int fontSize, Color color);
 float musicTimeToScreen(float musicTime);
 float screenToMusicTime(float x);
 float noteFadeOut(float note);
@@ -21,8 +21,8 @@ void resetBackGround();
 void drawVignette();
 void drawProgressBar();
 void drawProgressBarI(bool interactable);
-void drawButton(Rectangle rect, char * text, float fontScale);
-void drawButtonNoSprite(Rectangle rect, char * text, float fontScale);
+void drawButton(Rectangle rect, char *text, float fontScale);
+void drawButtonNoSprite(Rectangle rect, char *text, float fontScale);
 void fMapSelect();
 void drawMusicGraph(float transparent);
 void drawTransition();
