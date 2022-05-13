@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "shared.h"
+#include "gameplay.h"
 #include "../deps/raylib/src/raylib.h"
 Texture2D _cursorTex;
 Texture2D _noteTex;
@@ -29,6 +30,7 @@ extern void ** _pMusic, *_pClickPress, *_pClickRelease;
 extern float _transition, _loadingFade;
 extern Map * _map;
 extern int _barMeasureCount;
+extern void (*_pGameplayFunction)();;
 
 
 int measureText (char * text, int fontSize)
@@ -97,14 +99,16 @@ void drawNote(float musicTime, Note * note, Color color)
 		DrawTextureEx(note->texture, (Vector2){.x=musicTimeToScreen(note->time)- note->texture.width * scaleNotes / 2, .y=GetScreenHeight() / 2 -note->texture.height * scaleNotes}, 0,  scaleNotes, color);
 	else if(note->animSize)
 	{
+		if(_pGameplayFunction == &fEditor)
+		DrawTextureEx(note->texture, (Vector2){.x=musicTimeToScreen(note->time)- note->texture.width * scaleNotes / 2, .y=GetScreenHeight() / 2 -note->texture.height * scaleNotes}, 0,  scaleNotes, ColorAlpha(GRAY, 0.5));
 		//draw animated note
-		float time = (note->time - musicTime) / (_scrollSpeed);
+		float time = (musicTime - note->time) / (_scrollSpeed);
 		// if(time < note->anim[0].time || time < time < note->anim[note->animSize].time)
 		// 	return;
 		int anim = 0;
 		for(int i = 0; i < note->animSize-1; i++)
 		{
-			if(note->anim[i].time < time && note->anim[i+1].time > time)
+			if(note->anim[i].time*2-1 < time && note->anim[i+1].time * 2 - 1 > time)
 			{
 				anim = i;
 				break;
@@ -112,14 +116,13 @@ void drawNote(float musicTime, Note * note, Color color)
 		}
 		Frame frame1 = note->anim[anim];
 		Frame frame2 = note->anim[anim+1];
-		if(_musicHead != musicTime) printf("%i %f %f %f\n", anim, frame1.time, frame1.vec.x, frame1.vec.y);
-		if(_musicHead != musicTime) printf("%i %f %f %f\n", anim+1, frame2.time, frame2.vec.x, frame2.vec.y);
-		float betweenFrames = (time - frame1.time) / (frame2.time - frame1.time);
-		if(_musicHead != musicTime) printf("inbetween %.2f\n", betweenFrames);
+		float time1 = frame1.time*2-1;
+		float time2 = frame2.time*2-1;
+		float betweenFrames = (time - time1) / (time2 - time1);
 		Vector2 pos;
 		pos.x = frame1.vec.x + (frame2.vec.x-frame1.vec.x)*betweenFrames;
 		pos.y = frame1.vec.y + (frame2.vec.y-frame1.vec.y)*betweenFrames;
-		DrawTextureEx(note->texture, (Vector2){.x=pos.x*GetScreenWidth()+GetScreenWidth()- note->texture.width * scaleNotes / 2, .y=pos.y*GetScreenHeight() - note->texture.height * scaleNotes}, 0,  scaleNotes, color);
+		DrawTextureEx(note->texture, (Vector2){.x=pos.x*GetScreenWidth() - note->texture.width * scaleNotes / 2, .y=pos.y*GetScreenHeight() - note->texture.height * scaleNotes}, 0,  scaleNotes, color);
 	}
 }
 
