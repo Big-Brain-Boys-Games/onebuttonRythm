@@ -262,7 +262,7 @@ void saveFile (int noteAmount)
 			fprintf(_pFile, " \"(%i",_pNotes[i].animSize);
 			for(int j = 0; j < _pNotes[i].animSize; j++)
 			{
-				fprintf(_pFile, " %f,%f,%f ", _pNotes[i].anim[j].time, _pNotes[i].anim[j].vec.x, _pNotes[i].anim[j].vec.y);
+				fprintf(_pFile, " %f,%f,%f", _pNotes[i].anim[j].time, _pNotes[i].anim[j].vec.x, _pNotes[i].anim[j].vec.y);
 			}
 			fprintf(_pFile, ")\"");
 		}
@@ -378,22 +378,23 @@ void loadMap ()
 						strPos++;
 					}
 					char * ext = GetFileExtension(tmpStr);
-					if(ext == NULL)
-						continue;
-					if(strcmp(ext, ".mp3") == 0 || strcmp(ext, ".wav") == 0)
+					if(ext != NULL)
 					{
-						printf("found sound %s\n", tmpStr);
-						//found hit sound
-						if(_pNotes[_noteIndex].hitSE_File != 0)
-							free(_pNotes[_noteIndex].hitSE_File);
-						_pNotes[_noteIndex].hitSE_File = tmpStr;
-					}else if(strcmp(ext, ".jpg") == 0 || strcmp(ext, ".png")  == 0 || strcmp(ext, ".jpeg") == 0)
-					{
-						printf("found texture %s\n", tmpStr);
-						//found texture
-						if(_pNotes[_noteIndex].texture_File != 0)
-							free(_pNotes[_noteIndex].texture_File);
-						_pNotes[_noteIndex].texture_File = tmpStr;
+						if(strcmp(ext, ".mp3") == 0 || strcmp(ext, ".wav") == 0)
+						{
+							printf("found sound %s\n", tmpStr);
+							//found hit sound
+							if(_pNotes[_noteIndex].hitSE_File != 0)
+								free(_pNotes[_noteIndex].hitSE_File);
+							_pNotes[_noteIndex].hitSE_File = tmpStr;
+						}else if(strcmp(ext, ".jpg") == 0 || strcmp(ext, ".png")  == 0 || strcmp(ext, ".jpeg") == 0)
+						{
+							printf("found texture %s\n", tmpStr);
+							//found texture
+							if(_pNotes[_noteIndex].texture_File != 0)
+								free(_pNotes[_noteIndex].texture_File);
+							_pNotes[_noteIndex].texture_File = tmpStr;
+						}
 					}else if(line[part] == '(')
 					{
 						//found animation
@@ -415,6 +416,8 @@ void loadMap ()
 								part++;
 							part++;
 							_pNotes[_noteIndex].anim[i].vec.y = atof(&(line[part]));
+							while(line[part] != ' ')
+								part++;
 							printf("%f  %f  %f    ", _pNotes[_noteIndex].anim[i].time, _pNotes[_noteIndex].anim[i].vec.x, _pNotes[_noteIndex].anim[i].vec.y);
 						}
 						printf("\n");

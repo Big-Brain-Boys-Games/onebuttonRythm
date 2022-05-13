@@ -849,7 +849,7 @@ void fEditor()
 	drawVignette();
 	drawBars();
 	static bool showAnimation = false;
-	drawProgressBarI(!isPlaying && !showAnimation);
+	drawProgressBarI(!isPlaying && !showNoteSettings && !showSettings);
 
 	if (showSettings)
 	{
@@ -927,6 +927,12 @@ void fEditor()
 		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.50, tSize, WHITE);
 	}
 
+	if(_pNotes[1].hitSE_File != 0)
+		printf("_pNotes[1].hitSE_File != 0\n");
+
+	if(_pNotes[1].texture_File != 0)
+		printf("_pNotes[1].texture_File != 0\n");
+
 	if (_amountSelectedNotes > 0)
 	{
 		if (showNoteSettings)
@@ -946,24 +952,45 @@ void fEditor()
 			if (interactableButton("back", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.15, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
 			{
 				showNoteSettings = !showNoteSettings;
+				//apply changes to first note to all selected notes
+				printf("applying to all selected notes\n");
+				Note * firstNote = &(_pNotes[_selectedNotes[0]]);
+				printf("new size %i\n", firstNote->animSize);
+				for(int i = 1; i < _amountSelectedNotes; i++)
+				{
+					if(_pNotes[_selectedNotes[i]].anim == 0)
+						_pNotes[_selectedNotes[i]].anim = malloc(sizeof(Frame)*firstNote->animSize);
+					else
+						_pNotes[_selectedNotes[i]].anim = realloc(_pNotes[_selectedNotes[i]].anim, sizeof(Frame)*firstNote->animSize);
+					
+					_pNotes[_selectedNotes[i]].animSize = firstNote->animSize;
+
+					for(int key = 0; key < firstNote->animSize; key++)
+					{
+						_pNotes[_selectedNotes[i]].anim[key] = firstNote->anim[key];
+					}	
+				}
 				return;
 			}
 
 			if(!showAnimation)
 			{
 				char sprite[100] = {0};
-				sprite[0] = "\0";
+				sprite[0] = '\0';
 				if (_pNotes[_selectedNotes[0]].texture_File != 0)
-					sprintf(sprite, "%c", _pNotes[_selectedNotes[0]].texture_File);
+					sprintf(sprite, "%s", _pNotes[_selectedNotes[0]].texture_File);
 				static bool spriteBoxSelected = false;
 				Rectangle spriteBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.1, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 				textBox(spriteBox, sprite, &spriteBoxSelected);
 				if (strlen(sprite) != 0)
 				{
-					// TODO change to for loop to support multiple notes
 					if (_pNotes[_selectedNotes[0]].texture_File == 0)
 						_pNotes[_selectedNotes[0]].texture_File = malloc(sizeof(char) * 100);
 					strcpy(_pNotes[_selectedNotes[0]].texture_File, sprite);
+				}else if(_pNotes[_selectedNotes[0]].texture_File != 0)
+				{
+					free(_pNotes[_selectedNotes[0]].texture_File);
+					_pNotes[_selectedNotes[0]].texture_File = 0;
 				}
 			}else
 			{
@@ -979,7 +1006,7 @@ void fEditor()
 					_pNotes[_selectedNotes[0]].anim[0].vec = (Vector2){.x=1, .y=0.5};
 					_pNotes[_selectedNotes[0]].anim[1].time = 1;
 					_pNotes[_selectedNotes[0]].anim[1].vec = (Vector2){.x=0, .y=0.5};
-					_pNotes[_selectedNotes[0]].animSize = 3;
+					_pNotes[_selectedNotes[0]].animSize = 2;
 				}
 
 				slider((Rectangle){.x=0, .y=GetScreenHeight()*0.9, .width=GetScreenWidth(), .height=GetScreenHeight()*0.03}, &timeLineSelected, &value, 100, -100);
@@ -1018,7 +1045,7 @@ void fEditor()
 					if(index != -1)
 					{
 						//modify existing frame
-						anim[index].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()-0.02};
+						anim[index].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()-0.05};
 					}else
 					{
 						for(int key = 0; key < _pNotes[_selectedNotes[0]].animSize; key++) printf("%i  %i  %f %f %f\n", _pNotes[_selectedNotes[0]].animSize, key, _pNotes[_selectedNotes[0]].anim[key].time, _pNotes[_selectedNotes[0]].anim[key].vec.x, _pNotes[_selectedNotes[0]].anim[key].vec.y);
@@ -1043,7 +1070,7 @@ void fEditor()
 						}
 						// printf("")
 						_pNotes[_selectedNotes[0]].anim[newIndex].time = (timeLine+1)/2;
-						_pNotes[_selectedNotes[0]].anim[newIndex].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()};
+						_pNotes[_selectedNotes[0]].anim[newIndex].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()-0.05};
 
 						for(int key = 0; key < _pNotes[_selectedNotes[0]].animSize; key++) printf("%i  %i  %f %f %f\n", _pNotes[_selectedNotes[0]].animSize, key, _pNotes[_selectedNotes[0]].anim[key].time, _pNotes[_selectedNotes[0]].anim[key].vec.x, _pNotes[_selectedNotes[0]].anim[key].vec.y);
 						
@@ -1054,24 +1081,6 @@ void fEditor()
 		else if (interactableButton("Note settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.15, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
 		{
 			showNoteSettings = !showNoteSettings;
-			if(!showNoteSettings)
-			{
-				//apply changes to first note to all selected notes
-				Note * firstNote = &(_pNotes[_selectedNotes[0]]);
-				for(int i = 1; i < _amountSelectedNotes; i++)
-				{
-					if(_pNotes[_selectedNotes[i]].anim == 0)
-						_pNotes[_selectedNotes[i]].anim = malloc(sizeof(Frame)*firstNote->animSize);
-					else
-						_pNotes[_selectedNotes[i]].anim = realloc(_pNotes[_selectedNotes[i]].anim, sizeof(Frame)*firstNote->animSize);
-					
-					_pNotes[_selectedNotes[i]].animSize = firstNote->animSize;
-
-					for(int key = 0; key < firstNote->animSize; key++)
-						_pNotes[_selectedNotes[i]].anim[key] = firstNote->anim[key];
-						
-				}
-			}
 		}
 	}
 	if (!showNoteSettings)
