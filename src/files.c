@@ -530,9 +530,14 @@ void saveScore()
 {
 	FILE * file;
 	char str [100];
-	sprintf("scores/%s/%s", _map->name, _playerName);
 	if(!DirectoryExists("scores/"))
-		return;
+	{
+		mkdir("scores");
+	}
+	sprintf(str, "scores/%s", _map->name);
+	if(!DirectoryExists(str))
+		mkdir(str);
+	sprintf(str, "scores/%s/%s", _map->name, _playerName);
 	printf("str %s\n", str);
 	file = fopen(str, "w");
 	fprintf(file, "%i %i %f", _score, _highestCombo, 100*(1-_averageAccuracy));
