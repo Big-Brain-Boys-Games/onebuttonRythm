@@ -56,6 +56,7 @@ bool _musicLoops = true, _playMenuMusic = true;
 
 int _musicFrameCount = 0;
 int *_musicLength = 0;
+float _musicPreviewOffset;
 
 void **_pMusic = 0;
 
@@ -276,6 +277,7 @@ void loadMusic(Map *map)
 	if (map->music == 0)
 		loadAudio(&map->music, str, &map->musicLengthFrames);
 	_musicLength = &map->musicLengthFrames;
+	_musicPreviewOffset = map->musicPreviewOffset;
 	_pMusic = &map->music;
 }
 

@@ -99,19 +99,20 @@ Map loadMapInfo(char * file)
 			if(line[i] == '\n' || line[i] == '\r' || !line[i])
 				line[i]= '\0';
 		
-		if(strcmp(line, "[ID]") == 0)				{mode = fpID;			continue;}
-		if(strcmp(line, "[Name]") == 0)				{mode = fpName;			continue;}
-		if(strcmp(line, "[Artist]") == 0)			{mode = fpArtist;		continue;}
-		if(strcmp(line, "[Map Creator]") == 0)		{mode = fpMapCreator;	continue;}
-		if(strcmp(line, "[Difficulty]") == 0)		{mode = fpDifficulty;	continue;}
-		if(strcmp(line, "[BPM]") == 0)				{mode = fpBPM;			continue;}
-		if(strcmp(line, "[Image]") == 0)			{mode = fpImage;		continue;}
-		if(strcmp(line, "[MusicFile]") == 0)		{mode = fpMusicFile;	continue;}
-		if(strcmp(line, "[MusicLength]") == 0)		{mode = fpMusicLength;	continue;}
-		if(strcmp(line, "[Zoom]") == 0)				{mode = fpZoom;			continue;}
-		if(strcmp(line, "[Offset]") == 0)			{mode = fpOffset;		continue;}
-		if(strcmp(line, "[Beats]") == 0)			{mode = fpBeats;		continue;}
-		if(strcmp(line, "[Notes]") == 0)			{mode = fpNotes;		continue;}
+		if(strcmp(line, "[ID]") == 0)					{mode = fpID;					continue;}
+		if(strcmp(line, "[Name]") == 0)					{mode = fpName;					continue;}
+		if(strcmp(line, "[Artist]") == 0)				{mode = fpArtist;				continue;}
+		if(strcmp(line, "[Map Creator]") == 0)			{mode = fpMapCreator;			continue;}
+		if(strcmp(line, "[Difficulty]") == 0)			{mode = fpDifficulty;			continue;}
+		if(strcmp(line, "[BPM]") == 0)					{mode = fpBPM;					continue;}
+		if(strcmp(line, "[Image]") == 0)				{mode = fpImage;				continue;}
+		if(strcmp(line, "[MusicFile]") == 0)			{mode = fpMusicFile;			continue;}
+		if(strcmp(line, "[MusicLength]") == 0)			{mode = fpMusicLength;			continue;}
+		if(strcmp(line, "[MusicPreviewOffset]") == 0)	{mode = fpMusicPreviewOffset;	continue;}
+		if(strcmp(line, "[Zoom]") == 0)					{mode = fpZoom;					continue;}
+		if(strcmp(line, "[Offset]") == 0)				{mode = fpOffset;				continue;}
+		if(strcmp(line, "[Beats]") == 0)				{mode = fpBeats;				continue;}
+		if(strcmp(line, "[Notes]") == 0)				{mode = fpNotes;				continue;}
 
 		switch(mode)
 		{
@@ -145,6 +146,9 @@ Map loadMapInfo(char * file)
 				break;
 			case fpMusicLength:
 				map.musicLength = atoi(line);
+				break;
+			case fpMusicPreviewOffset:
+				map.musicPreviewOffset = atof(line);
 				break;
 			case fpOffset:
 				map.offset = atoi(line);
@@ -243,6 +247,8 @@ void saveFile (int noteAmount)
 	fprintf(_pFile, "%i\n", _map->zoom);
 	fprintf(_pFile, "[Offset]\n");
 	fprintf(_pFile, "%i\n", _map->offset);
+	fprintf(_pFile, "[MusicPreviewOffset]\n");
+	fprintf(_pFile, "%f\n", _map->musicPreviewOffset);
 	fprintf(_pFile, "[Beats]\n");
 	fprintf(_pFile, "%f\n", _map->beats);
 	fprintf(_pFile, "[Notes]\n");
@@ -478,6 +484,7 @@ void freeAllCustomSounds ()
 
 
 //Load the map. Use 1 parameter to only open the file
+//TODO Change to loadNotes();
 void loadMap ()
 {
 	char * map = malloc(100);

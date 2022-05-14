@@ -16,6 +16,7 @@ struct Map{
 	int zoom;
 	int offset;
 	float beats;
+	float musicPreviewOffset;
 	char * imageFile;
 	char * musicFile;
 	void * music;
@@ -48,7 +49,7 @@ struct Settings{
 };
 typedef struct Settings Settings;
 
-enum FilePart{fpNone, fpID, fpName, fpArtist, fpMapCreator, fpDifficulty, fpBPM, fpImage, fpMusicFile, fpMusicLength, fpZoom, fpOffset, fpBeats, fpNotes};
+enum FilePart{fpNone, fpID, fpName, fpArtist, fpMapCreator, fpDifficulty, fpBPM, fpImage, fpMusicFile, fpMusicLength, fpMusicPreviewOffset, fpZoom, fpOffset, fpBeats, fpNotes};
 enum SettingsPart{spNone, spName, spZoom, spVolGlobal, spVolMusic, spVolSE, spOffset};
 
 Map loadMapInfo(char * file);
