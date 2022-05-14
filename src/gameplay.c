@@ -711,7 +711,7 @@ void fEndScreen()
 }
 
 #define UNDOBUFFER 5
-Note * _paUndoBuffer[UNDOBUFFER];
+Note * _paUndoBuffer[UNDOBUFFER] = {0};
 int _undoBufferSize[UNDOBUFFER] = {0};
 int _undoBufferIndex = 0;
 
@@ -719,49 +719,118 @@ int _undoBufferIndex = 0;
 	if(arr)\
 		free(arr);
 
-// void undo()
-// {
-// 	for(int i = 0; i < _amountNotes; i++) //free _pNotes
-// 	{
-// 		Texture texs[5000] = {0};
-// 		int amountTex = 0;
-// 		for(int i = 0; i < _amountNotes; i++)
-// 		{
-// 			freeArray(_pNotes[i].anim);
-// 			freeArray(_pNotes[i].hitSE);
-// 			freeArray(_pNotes[i].hitSE_File);
-// 			freeArray(_pNotes[i].texture_File);
-// 			bool foundTex = false;
-// 			for(int tex = 0; tex < amountTex; tex++)
-// 				if(texs[tex].id == _pNotes[i].texture.id)
-// 					foundTex = true;
-// 			if(!foundTex)
-// 			{
-// 				texs[amountTex] = _pNotes[i].texture;
-// 				amountTex++;
-// 			}
-// 		}
-// 		//unload all textures
-// 		for(int i = 0; i < amountTex; i++)
-// 		{
-// 			bool foundTex = false;
-// 			for(int j = 0; j < _undoBufferSize[_undoBufferIndex]; j++)
-// 			{
-				
-// 			}
-// 			UnloadTexture(texs[i]);
-// 		}
+void undo()
+{
+	for(int i = 0; i < _amountNotes; i++) //free _pNotes
+	{
+		freeArray(_pNotes[i].anim);
+		if(_pNotes[i].hitSE_File)
+		{
+			char tmp [100];
+			sprintf(tmp, "maps/%s/%s", _map->folder, _pNotes[i].hitSE_File);
+			removeCustomSound(tmp);
+		}
+		if(_pNotes[i].texture_File)
+		{
+			char tmp [100];
+			sprintf(tmp, "maps/%s/%s", _map->folder, _pNotes[i].texture_File);
+			removeCustomTexture(tmp);
+		}
+		freeArray(_pNotes[i].hitSE_File);
+		freeArray(_pNotes[i].texture_File);
+	}
+	free(_pNotes);
 
-// 		free(_pNotes);
-// 	}
-// 	_pNotes = realloc(_undoBufferSize[_undoBufferIndex], sizeof(Note));
-// 	for(int i = 0; i < _amountNotes; i++)
-// 	{
-// 		//free _pNotes stuff
-// 		_pNotes[]
-// 	}
-// 	_undoBufferIndex--;
-// }
+	_pNotes = malloc(_undoBufferSize[_undoBufferIndex] * sizeof(Note));
+	for(int i = 0; i < _undoBufferSize[_undoBufferIndex]; i++)
+	{
+		
+		_pNotes[i] = _paUndoBuffer[_undoBufferIndex][i];
+		_pNotes[i].anim = 0;
+		_pNotes[i].custSound = 0;
+		_pNotes[i].custTex = 0;
+		if(_pNotes[i].animSize != 0)
+		{
+			_pNotes[i].anim = malloc(_pNotes[i].animSize*sizeof(Frame));
+			for(int j = 0; j < _pNotes[i].animSize; j++) //copy over animation
+			{
+				_pNotes[i].anim[j] = _paUndoBuffer[_undoBufferIndex][i].anim[j];
+			}
+		}
+		if(_pNotes[i].hitSE_File != 0)
+		{
+			_pNotes[i].hitSE_File = malloc(strlen(_paUndoBuffer[_undoBufferIndex][i].hitSE_File));
+			strcpy(_pNotes[i].hitSE_File, _paUndoBuffer[_undoBufferIndex][i].hitSE_File);
+			char tmp [100];
+			sprintf(tmp, "maps/%s/%s", _map->folder, _pNotes[i].hitSE_File);
+			_pNotes[i].custSound = addCustomSound(tmp);
+		}
+		if(_pNotes[i].texture_File != 0)
+		{
+			_pNotes[i].texture_File = malloc(strlen(_paUndoBuffer[_undoBufferIndex][i].texture_File));
+			strcpy(_pNotes[i].texture_File, _paUndoBuffer[_undoBufferIndex][i].texture_File);
+			char tmp [100];
+			sprintf(tmp, "maps/%s/%s", _map->folder, _pNotes[i].texture_File);
+			_pNotes[i].custTex = addCustomTexture(tmp);
+		}
+	}
+	_amountNotes = _undoBufferSize[_undoBufferIndex];
+	_undoBufferIndex--;
+	if(_undoBufferIndex < 0)
+		_undoBufferIndex = UNDOBUFFER-1;
+}
+
+void doAction()
+{
+	printf("adding to undo buffer\n");
+	_undoBufferIndex++;
+	if(_undoBufferIndex >= UNDOBUFFER)
+		_undoBufferIndex = 0;
+
+	//free old buffer
+	for(int i = 0; i < _undoBufferSize[_undoBufferIndex]; i++)
+	{
+		freeArray(_paUndoBuffer[_undoBufferIndex][i].anim);
+		if(_paUndoBuffer[_undoBufferIndex][i].hitSE_File) removeCustomSound(_paUndoBuffer[_undoBufferIndex][i].hitSE_File);
+		if(_paUndoBuffer[_undoBufferIndex][i].texture_File) removeCustomTexture(_paUndoBuffer[_undoBufferIndex][i].texture_File);
+		freeArray(_paUndoBuffer[_undoBufferIndex][i].hitSE_File);
+		freeArray(_paUndoBuffer[_undoBufferIndex][i].texture_File);
+	}
+	_paUndoBuffer[_undoBufferIndex] = realloc(_paUndoBuffer[_undoBufferIndex], _amountNotes * sizeof(Note));
+	_undoBufferSize[_undoBufferIndex] = _amountNotes;
+	//copy over new stuff
+	for(int i = 0; i < _amountNotes; i++)
+	{
+		
+		_paUndoBuffer[_undoBufferIndex][i] = _pNotes[i];
+		if(_paUndoBuffer[_undoBufferIndex][i].anim != 0)
+		{
+			_paUndoBuffer[_undoBufferIndex][i].anim = malloc(_paUndoBuffer[_undoBufferIndex][i].animSize*sizeof(Frame));
+			for(int j = 0; j < _paUndoBuffer[_undoBufferIndex][i].animSize; j++) //copy over animation
+			{
+				_paUndoBuffer[_undoBufferIndex][i].anim[j] = _pNotes[i].anim[j];
+			}
+		}
+		if(_paUndoBuffer[_undoBufferIndex][i].hitSE_File != 0)
+		{
+			_paUndoBuffer[_undoBufferIndex][i].hitSE_File = malloc(100);
+			strcpy(_paUndoBuffer[_undoBufferIndex][i].hitSE_File, _pNotes[i].hitSE_File);
+			char tmp [100];
+			sprintf(tmp, "maps/%s/%s", _map->folder, _pNotes[i].hitSE_File);
+			_paUndoBuffer[_undoBufferIndex][i].custSound = addCustomSound(tmp);
+		}
+		if(_paUndoBuffer[_undoBufferIndex][i].texture_File != 0)
+		{
+			_paUndoBuffer[_undoBufferIndex][i].texture_File = malloc(100);
+			strcpy(_paUndoBuffer[_undoBufferIndex][i].texture_File, _pNotes[i].texture_File);
+			char tmp [100];
+			sprintf(tmp, "maps/%s/%s", _map->folder, _pNotes[i].texture_File);
+			_paUndoBuffer[_undoBufferIndex][i].custTex = addCustomTexture(tmp);
+		}
+	}
+	
+
+}
 
 void fEditor()
 {
@@ -850,13 +919,18 @@ void fEditor()
 						closestIndex = i;
 					}
 				}
-				if (IsKeyPressed(KEY_Z) && closestTime > 0.03f)
+				if (IsKeyPressed(KEY_Z) && IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f)
 				{
+					undo();
+				}else if (IsKeyPressed(KEY_Z) && closestTime > 0.03f)
+				{
+					doAction();
 					newNote(getMusicHead());
 				}
 
 				if (IsKeyPressed(KEY_X) && closestTime < _maxMargin)
 				{
+					doAction();
 					removeNote(closestIndex);
 				}
 
@@ -1001,6 +1075,7 @@ void fEditor()
 			{
 				//Run animation tab
 				showAnimation = !showAnimation;
+				doAction();
 				return;
 			}
 
@@ -1801,10 +1876,46 @@ void fMapSelect()
 				for(int j = 0; j < UNDOBUFFER; j++)
 				{
 					if(_paUndoBuffer[j])
-						_paUndoBuffer[j] = realloc(_paUndoBuffer, _amountNotes*sizeof(Note));
+					{
+						freeArray(_paUndoBuffer[j]->anim);
+						freeArray(_paUndoBuffer[j]->hitSE_File);
+						freeArray(_paUndoBuffer[j]->texture_File);
+						free(_paUndoBuffer[j]);
+						_paUndoBuffer[j] = malloc(_amountNotes*sizeof(Note));
+					}
 					else
 						_paUndoBuffer[j] = malloc(_amountNotes*sizeof(Note));
-					memcpy(_paUndoBuffer[j], _pNotes, _amountNotes*sizeof(Note));
+
+					//copy everything over
+					for(int k = 0; k < _amountNotes; k++)
+					{
+						_paUndoBuffer[j][k] = _pNotes[k];
+						_paUndoBuffer[j][k].custSound = 0;
+						_paUndoBuffer[j][k].custTex = 0;
+
+						if(_paUndoBuffer[j][k].anim)//copy over animations
+						{
+							for(int l = 0; l < _paUndoBuffer[j][k].animSize; l++)
+								_paUndoBuffer[j][k].anim[l] = _pNotes[k].anim[l];
+						}
+						char fullPath[100];
+						if(_pNotes[k].hitSE_File)
+						{
+							sprintf(fullPath, "maps/%s/%s", _map->folder, _pNotes[k].hitSE_File);
+							_paUndoBuffer[j][k].custSound = addCustomSound(fullPath);
+							_paUndoBuffer[j][k].hitSE_File = malloc(100);
+							strcpy(_paUndoBuffer[j][k].hitSE_File, _pNotes[k].hitSE_File);
+						}
+						if(_pNotes[k].texture_File)
+						{
+							sprintf(fullPath, "maps/%s/%s", _map->folder, _pNotes[k].texture_File);
+							_paUndoBuffer[j][k].custTex = addCustomTexture(fullPath);
+							_paUndoBuffer[j][k].texture_File = malloc(100);
+							strcpy(_paUndoBuffer[j][k].texture_File, _pNotes[k].texture_File);
+						}
+					}
+					// memcpy(_paUndoBuffer[j], _pNotes, _amountNotes*sizeof(Note));
+					_undoBufferSize[j] = _amountNotes;
 				}
 				startMusic();
 				_musicPlaying = false;
