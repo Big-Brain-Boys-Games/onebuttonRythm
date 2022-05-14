@@ -894,11 +894,13 @@ void fEditor()
 
 			if (IsMouseButtonPressed(0) && GetMouseY() > GetScreenHeight() * 0.3 && GetMouseY() < GetScreenHeight() * 0.6)
 			{
-				addSelectNote(findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX())));
-				for (int i = 0; i < _amountSelectedNotes; i++)
+				if(!IsKeyDown(KEY_LEFT_SHIFT))
 				{
-					printf("Amount of notes: %i\t Selected notes: %i\n", _amountSelectedNotes, _selectedNotes[i]);
+					free(_selectedNotes);
+					_amountSelectedNotes = 0;
+					_selectedNotes = 0;
 				}
+				addSelectNote(findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX())));
 			}
 
 			if (getMusicHead() < 0)
@@ -980,14 +982,18 @@ void fEditor()
 						{
 							_papNotes[note]->hitSE_File = malloc(100);
 							strcpy(_papNotes[note]->hitSE_File, _selectedNotes[i]->hitSE_File);
-							_papNotes[note]->custSound = addCustomSound(_selectedNotes[i]->hitSE_File);
+							char tmpStr[100];
+							sprintf(tmpStr, "maps/%s/%s", _map->folder, _selectedNotes[i]->hitSE_File);
+							_papNotes[note]->custSound = addCustomSound(tmpStr);
 						}
 
 						if(_selectedNotes[i]->texture_File)
 						{
 							_papNotes[note]->texture_File = malloc(100);
 							strcpy(_papNotes[note]->texture_File, _selectedNotes[i]->texture_File);
-							_papNotes[note]->custTex = addCustomTexture(_selectedNotes[i]->texture_File);
+							char tmpStr[100];
+							sprintf(tmpStr, "maps/%s/%s", _map->folder, _selectedNotes[i]->texture_File);
+							_papNotes[note]->custTex = addCustomTexture(tmpStr);
 						}
 					}
 				}

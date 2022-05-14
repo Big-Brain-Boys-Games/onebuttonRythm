@@ -54,8 +54,10 @@ int main(int argc, char **argv)
 	{
 		if(_loading)
 			loadTimer += GetFrameTime();
+		else
+			loadTimer = 0;
 		
-		//todo, fix
+		//todo, use mutexes instead
 		if(loadTimer > 1) //nothing should take longer than 1 second to load
 		{
 			loadTimer = 0;
