@@ -304,7 +304,6 @@ void removeNote(int index)
 	_pNotes = tmp;
 }
 
-void **_pHitSEp;
 void newNote(float time)
 {
 	printf("new note time %f\n", time);
@@ -328,9 +327,6 @@ void newNote(float time)
 	free(_pNotes);
 	_pNotes = tmp;
 	_pNotes[closestIndex].time = time;
-	_pNotes[closestIndex].texture = _noteTex;
-	_pHitSEp = &_pHitSE;
-	_pNotes[closestIndex].hitSE = &_pHitSEp;
 }
 
 void addSelectNote(int note)
@@ -714,6 +710,59 @@ void fEndScreen()
 	drawCursor();
 }
 
+#define UNDOBUFFER 5
+Note * _paUndoBuffer[UNDOBUFFER];
+int _undoBufferSize[UNDOBUFFER] = {0};
+int _undoBufferIndex = 0;
+
+#define freeArray(arr) \
+	if(arr)\
+		free(arr);
+
+// void undo()
+// {
+// 	for(int i = 0; i < _amountNotes; i++) //free _pNotes
+// 	{
+// 		Texture texs[5000] = {0};
+// 		int amountTex = 0;
+// 		for(int i = 0; i < _amountNotes; i++)
+// 		{
+// 			freeArray(_pNotes[i].anim);
+// 			freeArray(_pNotes[i].hitSE);
+// 			freeArray(_pNotes[i].hitSE_File);
+// 			freeArray(_pNotes[i].texture_File);
+// 			bool foundTex = false;
+// 			for(int tex = 0; tex < amountTex; tex++)
+// 				if(texs[tex].id == _pNotes[i].texture.id)
+// 					foundTex = true;
+// 			if(!foundTex)
+// 			{
+// 				texs[amountTex] = _pNotes[i].texture;
+// 				amountTex++;
+// 			}
+// 		}
+// 		//unload all textures
+// 		for(int i = 0; i < amountTex; i++)
+// 		{
+// 			bool foundTex = false;
+// 			for(int j = 0; j < _undoBufferSize[_undoBufferIndex]; j++)
+// 			{
+				
+// 			}
+// 			UnloadTexture(texs[i]);
+// 		}
+
+// 		free(_pNotes);
+// 	}
+// 	_pNotes = realloc(_undoBufferSize[_undoBufferIndex], sizeof(Note));
+// 	for(int i = 0; i < _amountNotes; i++)
+// 	{
+// 		//free _pNotes stuff
+// 		_pNotes[]
+// 	}
+// 	_undoBufferIndex--;
+// }
+
 void fEditor()
 {
 	static bool isPlaying = false;
@@ -926,12 +975,6 @@ void fEditor()
 		size = measureText(text, tSize);
 		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.50, tSize, WHITE);
 	}
-
-	if(_pNotes[1].hitSE_File != 0)
-		printf("_pNotes[1].hitSE_File != 0\n");
-
-	if(_pNotes[1].texture_File != 0)
-		printf("_pNotes[1].texture_File != 0\n");
 
 	if (_amountSelectedNotes > 0)
 	{
@@ -1279,7 +1322,10 @@ void fPlaying()
 			_score += scoreAdded * (1 + _combo / 100);
 			_noteIndex++;
 			_combo++;
-			playAudioEffect(**_pNotes[closestIndex].hitSE, *_pNotes[closestIndex].hitSE_Length);
+			if(_pNotes[closestIndex].custSound)
+				playAudioEffect(_pNotes[closestIndex].custSound->sound, _pNotes[closestIndex].custSound->length);
+			else
+				playAudioEffect(_pHitSE, _hitSE_Size);
 		}
 		else
 		{
@@ -1739,6 +1785,14 @@ void fMapSelect()
 			{
 				_pNextGameplayFunction = &fEditor;
 				_pGameplayFunction = &fEditor;
+				for(int j = 0; j < UNDOBUFFER; j++)
+				{
+					if(_paUndoBuffer[j])
+						_paUndoBuffer[j] = realloc(_paUndoBuffer, _amountNotes*sizeof(Note));
+					else
+						_paUndoBuffer[j] = malloc(_amountNotes*sizeof(Note));
+					memcpy(_paUndoBuffer[j], _pNotes, _amountNotes*sizeof(Note));
+				}
 				startMusic();
 				_musicPlaying = false;
 			}

@@ -4,6 +4,7 @@
 float noLessThanZero(float var);
 void printAllnotes();
 #include "../deps/raylib/src/raylib.h"
+#include "files.h"
 
 typedef struct{
     Vector2 vec;
@@ -12,9 +13,8 @@ typedef struct{
 
 typedef struct{
     float time;
-    void ***hitSE;
-    int *hitSE_Length;
-    Texture texture;
+    CustomSound * custSound;
+    CustomTexture * custTex;
     char * hitSE_File;
     char * texture_File;
     Frame * anim;

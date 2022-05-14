@@ -50,7 +50,6 @@ int main(int argc, char **argv)
 	
 	_pGameplayFunction = &fIntro;
 	_transition = 1;
-	_pNotes = malloc(sizeof(Note) * 50);
 	while (!WindowShouldClose())
 	{
 		apiUpdate();

@@ -1,7 +1,7 @@
 #ifndef GAME_FILE_HANDLING
 #define GAME_FILE_HANDLING
 
-#include "shared.h"
+// #include "shared.h"
 #include <stdbool.h>
 #include "../deps/raylib/src/raylib.h"
 
@@ -26,6 +26,19 @@ struct Map{
 };
 typedef struct Map Map;
 
+typedef struct{
+	char * file;
+	Texture texture;
+	int uses;
+}CustomTexture;
+
+typedef struct{
+	char * file;
+	void * sound;
+	int length;
+	int uses;
+}CustomSound;
+
 struct Settings{
 	int zoom;
 	int volumeGlobal;
@@ -43,6 +56,7 @@ void saveFile (int noteAmount);
 void loadMap();
 void unloadMap();
 void freeMap(Map * map);
+void freeNotes();
 void saveScore();
 bool readScore(Map * map, int *score, int * combo, float * accuracy);
 void makeMap(Map * map);

@@ -95,12 +95,17 @@ void drawCursor ()
 void drawNote(float musicTime, Note * note, Color color)
 {
 	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
+	Texture tex = _noteTex;
+	if(note->custTex)
+	{
+		tex = note->custTex->texture;
+	}
 	if(!note->anim)
-		DrawTextureEx(note->texture, (Vector2){.x=musicTimeToScreen(note->time)- note->texture.width * scaleNotes / 2, .y=GetScreenHeight() / 2 -note->texture.height * scaleNotes}, 0,  scaleNotes, color);
+		DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 -tex.height * scaleNotes}, 0,  scaleNotes, color);
 	else if(note->animSize)
 	{
 		if(_pGameplayFunction == &fEditor)
-		DrawTextureEx(note->texture, (Vector2){.x=musicTimeToScreen(note->time)- note->texture.width * scaleNotes / 2, .y=GetScreenHeight() / 2 -note->texture.height * scaleNotes}, 0,  scaleNotes, ColorAlpha(GRAY, 0.5));
+			DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 -tex.height * scaleNotes}, 0,  scaleNotes, ColorAlpha(GRAY, 0.5));
 		//draw animated note
 		float time = (musicTime - note->time) / (_scrollSpeed);
 		// if(time < note->anim[0].time || time < time < note->anim[note->animSize].time)
@@ -122,7 +127,7 @@ void drawNote(float musicTime, Note * note, Color color)
 		Vector2 pos;
 		pos.x = frame1.vec.x + (frame2.vec.x-frame1.vec.x)*betweenFrames;
 		pos.y = frame1.vec.y + (frame2.vec.y-frame1.vec.y)*betweenFrames;
-		DrawTextureEx(note->texture, (Vector2){.x=pos.x*GetScreenWidth() - note->texture.width * scaleNotes / 2, .y=pos.y*GetScreenHeight() - note->texture.height * scaleNotes}, 0,  scaleNotes, color);
+		DrawTextureEx(tex, (Vector2){.x=pos.x*GetScreenWidth() - tex.width * scaleNotes / 2, .y=pos.y*GetScreenHeight() - tex.height * scaleNotes}, 0,  scaleNotes, color);
 	}
 }
 
