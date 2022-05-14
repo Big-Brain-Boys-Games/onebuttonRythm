@@ -272,6 +272,9 @@ void saveFile (int noteAmount)
 			}
 			fprintf(_pFile, ")\"");
 		}
+		if (_pNotes[i].health > 0)
+			fprintf(_pFile, " \"h%i\"", (int)(_pNotes[i].health));
+		
 		fprintf(_pFile, "\n");
 	}
 	fclose(_pFile);
@@ -566,7 +569,7 @@ void loadMap ()
 				_pNotes[_noteIndex].animSize = 0;
 				_pNotes[_noteIndex].custSound = 0;
 				_pNotes[_noteIndex].custTex = 0;
-				_pNotes[_noteIndex].health = 1;
+				_pNotes[_noteIndex].health = 0;
 
 				int part = 0;
 				for(int j = 0; j < 2 && part != -1; j++)

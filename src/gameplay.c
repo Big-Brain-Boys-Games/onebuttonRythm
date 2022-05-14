@@ -1047,6 +1047,42 @@ void fEditor()
 					free(_pNotes[_selectedNotes[0]].texture_File);
 					_pNotes[_selectedNotes[0]].texture_File = 0;
 				}
+
+				// health setting
+				char health[10] = {0};
+				bool theSame = false;
+				for (int i = 0; i < _amountSelectedNotes; i++)
+				{
+					if (_pNotes[_selectedNotes[0]].health != _pNotes[_selectedNotes[i]].health) {
+						theSame = false;
+						break;
+					}
+					else
+						theSame = true;
+				}
+				if (theSame)
+				{
+					sprintf(health, "%i", (int)(_pNotes[_selectedNotes[0]].health));
+				}
+				else sprintf(health, "-", "%c");
+				
+				static bool healthBoxSelected = false;
+				Rectangle healthBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.2, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+				textBox(healthBox, health, &healthBoxSelected);
+				if (healthBoxSelected)
+				{
+					for (int i = 0; i < _amountSelectedNotes; i++)
+					{
+						_pNotes[_selectedNotes[i]].health = atoi(health);
+						_pNotes[_selectedNotes[i]].health = (int)(fmin(fmax(_pNotes[_selectedNotes[i]].health, 0), 9));
+					}
+				}
+				for (int i = 0; i < _amountSelectedNotes; i++)
+				{
+					printf("%f\t", _pNotes[_selectedNotes[i]].health);
+				}
+				printf("\n");
+				
 			}else
 			{
 				//animation :)
