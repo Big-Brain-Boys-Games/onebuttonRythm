@@ -731,7 +731,7 @@ void saveScore()
 	sprintf(str, "scores/%s/%s", _map->name, _playerName);
 	printf("str %s\n", str);
 	file = fopen(str, "w");
-	fprintf(file, "%i %i %f", _score, _highestCombo, 100*(1-_averageAccuracy));
+	fprintf(file, "%i %i %f", _score, _highestCombo, _averageAccuracy);
 	fclose(file);
 }
 
