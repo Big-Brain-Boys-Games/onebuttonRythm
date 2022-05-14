@@ -341,7 +341,7 @@ void removeCustomTexture(char * file)
 	if(file == 0 || !strlen(file))
 	{
 		printf("removeCustomTexture got empty file\n");
-		return 0; // >:(
+		return; // >:(
 	}
 
 	int index = -1;
@@ -357,8 +357,10 @@ void removeCustomTexture(char * file)
 		return;
 
 	_paCustomTextures[index]->uses--;
+	printf("uses %s %i\n", file, _paCustomTextures[index]->uses);
 	if(_paCustomTextures[index]->uses <= 0)
 	{
+		printf("no uses for it anymore, removing %s\n", file);
 		//free texture
 		UnloadTexture(_paCustomTextures[index]->texture);
 		free(_paCustomTextures[index]->file);
@@ -427,10 +429,10 @@ CustomSound * addCustomSound(char * file)
 			loadAudio(&_paCustomSounds[found]->sound, file, &_paCustomSounds[found]->length);
 			_paCustomSounds[_customSoundsSize]->uses = 1;
 			_customSoundsSize++;
-			return &_paCustomSounds[_customSoundsSize-1];
+			return _paCustomSounds[_customSoundsSize-1];
 		}else {
 			_paCustomSounds[found]->uses++;
-			return &_paCustomSounds[found];
+			return _paCustomSounds[found];
 		}
 	}
 }
@@ -440,7 +442,7 @@ void removeCustomSound(char * file)
 	if(file == 0 || !strlen(file))
 	{
 		printf("removeCustomSound got empty file\n");
-		return 0; // >:(
+		return; // >:(
 	}
 
 	int index = -1;
@@ -456,8 +458,10 @@ void removeCustomSound(char * file)
 		return;
 
 	_paCustomSounds[index]->uses--;
+	printf("uses %s %i\n", file, _paCustomSounds[index]->uses);
 	if(_paCustomSounds[index]->uses <= 0)
 	{
+		printf("no uses for it anymore, removing %s\n", file);
 		//free music
 		free(_paCustomSounds[index]->sound);
 		free(_paCustomSounds[index]->file);
@@ -622,8 +626,18 @@ void loadMap ()
 						{
 							printf("found texture %s\n", tmpStr);
 							//found texture
+							char fileStr [50];
+							for(int k = 0; k < 50; k++)
+							{
+								if(tmpStr[k] == '"')
+								{
+									fileStr[k] = '\0';
+									break;
+								}
+								fileStr[k] = tmpStr[k];
+							}
 							char fullPath [100];
-							sprintf(fullPath, "maps/%s/%s", _map->folder, tmpStr);
+							sprintf(fullPath, "maps/%s/%s", _map->folder, fileStr);
 							_pNotes[_noteIndex].custTex = addCustomTexture(fullPath); 
 							_pNotes[_noteIndex].texture_File = malloc(100*sizeof(char));
 							strcpy(_pNotes[_noteIndex].texture_File, tmpStr);
@@ -720,7 +734,7 @@ void saveScore()
 	sprintf(str, "scores/%s/%s", _map->name, _playerName);
 	printf("str %s\n", str);
 	file = fopen(str, "w");
-	fprintf(file, "%i %i %f", _score, _highestCombo, 100*(1-_averageAccuracy));
+	fprintf(file, "%i %i %f", _score, _highestCombo, _averageAccuracy);
 	fclose(file);
 }
 

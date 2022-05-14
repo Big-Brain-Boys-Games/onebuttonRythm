@@ -65,5 +65,11 @@ void addZipMap(char * file);
 void makeMapZip(Map * map);
 void loadSettings();
 void saveSettings ();
+CustomTexture * addCustomTexture(char * file);
+void removeCustomTexture(char * file);
+void freeAllCustomTextures ();
+CustomSound * addCustomSound(char * file);
+void removeCustomSound(char * file);
+void freeAllCustomSounds ();
 
 #endif
