@@ -22,7 +22,7 @@ extern float _musicHead, _transition;
 extern void *_pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE, **_pMusic;
 extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size, _musicFrameCount, *_musicLength;
 extern bool _isKeyPressed, _disableLoadingScreen;
-extern float _musicSpeed;
+extern float _musicSpeed, *_musicPreviewOffset;
 
 extern void *_pFailSE;
 extern int _failSE_Size;
@@ -892,6 +892,18 @@ void fEditor()
 		textBox(creatorBox, creator, &creatorBoxSelected);
 		strcpy(_map->artist, creator);
 
+		// preview offset setting
+		char musicPreviewOffset[10] = {0};
+		musicPreviewOffset[0] = '\0';
+		if (_map->musicPreviewOffset != 0)
+			sprintf(musicPreviewOffset, "%i", (int)(_map->musicPreviewOffset * 1000));
+		static bool musicPreviewOffsetBoxSelected = false;
+		Rectangle musicPreviewOffsetBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.42, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+		textBox(musicPreviewOffsetBox, musicPreviewOffset, &musicPreviewOffsetBoxSelected);
+		_map->musicPreviewOffset = atoi(musicPreviewOffset) / 1000.0;
+		_map->musicPreviewOffset = fmin(fmax(_map->musicPreviewOffset, 0), *_musicLength);
+		printf("%s\n", musicPreviewOffset);
+
 		// Speed slider
 		static bool speedSlider = false;
 		int speed = _musicSpeed * 4;
@@ -1643,7 +1655,7 @@ void fMapSelect()
 		_disableLoadingScreen = true;
 		hoverPeriod += GetFrameTime();
 		if (!_musicLength || !*_musicLength)
-			_musicFrameCount = 1;
+			_musicFrameCount = _pMaps[hoverMap].musicPreviewOffset * 48000 * 2;
 	}
 	// draw map button
 	Rectangle mapSelectRect = (Rectangle){.x = 0, .y = GetScreenHeight() * 0.13, .width = GetScreenWidth(), .height = GetScreenHeight()};
@@ -1689,6 +1701,7 @@ void fMapSelect()
 				char str[100];
 				loadMusic(&_pMaps[i]);
 				_playMenuMusic = false;
+				_musicFrameCount = _pMaps[i].musicPreviewOffset * 48000 * 2;
 				_musicPlaying = true;
 				hoverPeriod++;
 			}

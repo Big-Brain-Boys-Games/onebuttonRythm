@@ -1,7 +1,11 @@
+[ID]
+2037105159
 [Name]
 Bloodlust
 [Artist]
 Geoxor
+[Map Creator]
+
 [Difficulty]
 3
 [BPM]
@@ -11,15 +15,17 @@ Geoxor
 [MusicFile]
 /song.mp3
 [MusicLength]
-225
+0
 [Zoom]
 10
 [Offset]
 5
+[MusicPreviewOffset]
+5.000000
 [Beats]
 4.000000
 [Notes]
-1.600509 "(3 0,0,0 0.5,1,1 1,0,0)"
+1.600509 "(3 0.000000,0.000000,0.000000  0.000000,1.000000,1.000000  0.000000,0.000000,0.000000 )"
 2.000637
 2.200701
 2.400764
