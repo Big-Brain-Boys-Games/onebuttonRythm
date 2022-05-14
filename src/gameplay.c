@@ -43,7 +43,7 @@ float _maxMargin = 0.1;
 int _hitPoints = 5;
 int _notesMissed = 0;
 float _averageAccuracy = 0;
-int _missPenalty = 10;
+int _missPenalty = 5;
 bool _mapRefresh = true;
 int _barMeasureCount = 2;
 
@@ -1282,7 +1282,7 @@ void fPlaying()
 		// passed note
 		_noteIndex++;
 		feedback("miss!", 1.3 - _health / 100);
-		_health -= _missPenalty * getHealthMod();
+		_health -= _missPenalty * getHealthMod() * _pNotes[_noteIndex].health;
 		_combo = 0;
 		playAudioEffect(_pMissSE, _missSE_Size);
 	}
@@ -1308,12 +1308,12 @@ void fPlaying()
 				_noteIndex++;
 				feedback("miss!", 1.3 - _health / 100);
 				_combo = 0;
-				_health -= _missPenalty * getHealthMod();
+				_health -= _missPenalty * getHealthMod() * _pNotes[_noteIndex].health;
 				_notesMissed++;
 			}
 			_averageAccuracy = ((_averageAccuracy * (_noteIndex - _notesMissed)) + ((1 / _maxMargin) * closestTime)) / (_noteIndex - _notesMissed + 1);
 			// _averageAccuracy = 0.5/_amountNotes;
-			int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / _maxMargin * getMarginMod()));
+			int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / _maxMargin * getMarginMod())) * _pNotes[_noteIndex].health;
 			_health += healthAdded * (1 / (getHealthMod() + 0.1));
 			int scoreAdded = noLessThanZero(300 - closestTime * (300 / _maxMargin * getMarginMod())) * getScoreMod();
 			if (scoreAdded > 200)
@@ -1344,7 +1344,7 @@ void fPlaying()
 			printf("missed note\n");
 			feedback("miss!", 1.3 - _health / 100);
 			_combo = 0;
-			_health -= _missPenalty * getHealthMod();
+			_health -= _missPenalty * getHealthMod() * _pNotes[_noteIndex].health;
 			playAudioEffect(_pMissHitSE, _missHitSE_Size);
 			_notesMissed++;
 		}

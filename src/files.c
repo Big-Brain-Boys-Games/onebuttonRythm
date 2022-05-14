@@ -564,6 +564,7 @@ void loadMap ()
 				_pNotes[_noteIndex].animSize = 0;
 				_pNotes[_noteIndex].custSound = 0;
 				_pNotes[_noteIndex].custTex = 0;
+				_pNotes[_noteIndex].health = 1;
 
 				int part = 0;
 				for(int j = 0; j < 2 && part != -1; j++)
@@ -599,6 +600,7 @@ void loadMap ()
 						tmpStr[strPos] = line[i+part];
 						strPos++;
 					}
+					//Loading files
 					char * ext = GetFileExtension(tmpStr);
 					if(ext != NULL)
 					{
@@ -621,7 +623,9 @@ void loadMap ()
 							_pNotes[_noteIndex].texture_File = malloc(100*sizeof(char));
 							strcpy(_pNotes[_noteIndex].texture_File, tmpStr);
 						}
-					}else if(line[part] == '(')
+					}
+					//Loading animation
+					else if(line[part] == '(')
 					{
 						//found animation
 						_pNotes[_noteIndex].animSize = atoi(&(line[part+1]));
@@ -647,6 +651,12 @@ void loadMap ()
 							printf("%f  %f  %f    ", _pNotes[_noteIndex].anim[i].time, _pNotes[_noteIndex].anim[i].vec.x, _pNotes[_noteIndex].anim[i].vec.y);
 						}
 						printf("\n");
+					}
+					else if (line[part] == 'h')
+					{
+						part++;
+						//found health
+						_pNotes[_noteIndex].health = atof(&(line[part]));
 					}
 					for(int i = part; i < 1000; i++)
 					{
