@@ -304,7 +304,7 @@ void removeNote(int index)
 	_pNotes = tmp;
 }
 
-void newNote(float time)
+int newNote(float time)
 {
 	printf("new note time %f\n", time);
 	int closestIndex = 0;
@@ -327,6 +327,7 @@ void newNote(float time)
 	free(_pNotes);
 	_pNotes = tmp;
 	_pNotes[closestIndex].time = time;
+	return closestIndex;
 }
 
 void addSelectNote(int note)
@@ -721,6 +722,8 @@ int _undoBufferIndex = 0;
 
 void undo()
 {
+	printf("undo\n");
+	_undoBufferIndex--;
 	for(int i = 0; i < _amountNotes; i++) //free _pNotes
 	{
 		freeArray(_pNotes[i].anim);
@@ -775,7 +778,6 @@ void undo()
 		}
 	}
 	_amountNotes = _undoBufferSize[_undoBufferIndex];
-	_undoBufferIndex--;
 	if(_undoBufferIndex < 0)
 		_undoBufferIndex = UNDOBUFFER-1;
 }
@@ -919,10 +921,11 @@ void fEditor()
 						closestIndex = i;
 					}
 				}
-				if (IsKeyPressed(KEY_Z) && IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f)
+				if (IsKeyPressed(KEY_Z) && IsKeyDown(KEY_LEFT_CONTROL))
 				{
+					printf("control z\n");
 					undo();
-				}else if (IsKeyPressed(KEY_Z) && closestTime > 0.03f)
+				}else if (IsKeyPressed(KEY_Z) && !IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f)
 				{
 					doAction();
 					newNote(getMusicHead());
@@ -938,6 +941,52 @@ void fEditor()
 				{
 					// todo maybe not 4 subbeats?
 					_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+				}
+
+				if (IsKeyPressed(KEY_V) && IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f && _amountSelectedNotes > 0)
+				{
+					doAction();
+					//copy currently selected notes at _musichead position
+
+					//get begin point of notes
+					float firstNote = -1;
+					for(int i = 0; i < _amountSelectedNotes; i++)
+					{
+						if(firstNote == -1)
+							firstNote = _pNotes[_selectedNotes[i]].time;
+						else if(_pNotes[_selectedNotes[i]].time < firstNote)
+						{
+							firstNote = _pNotes[_selectedNotes[i]].time;
+						}
+					}
+					//copy over notes
+					for(int i = 0; i < _amountSelectedNotes; i++)
+					{
+						int note = newNote(_musicHead+_pNotes[_selectedNotes[i]].time-firstNote);
+						if(_pNotes[_selectedNotes[i]].anim)
+						{
+							_pNotes[note].anim = malloc(sizeof(Frame)*_pNotes[_selectedNotes[i]].animSize);
+							for(int j = 0; j < _pNotes[_selectedNotes[i]].animSize; j++)
+							{
+								_pNotes[note].anim[j] = _pNotes[_selectedNotes[i]].anim[j];
+							}
+							_pNotes[note].animSize = _pNotes[_selectedNotes[i]].animSize;
+						}
+
+						if(_pNotes[_selectedNotes[i]].hitSE_File)
+						{
+							_pNotes[note].hitSE_File = malloc(100);
+							strcpy(_pNotes[note].hitSE_File, _pNotes[_selectedNotes[i]].hitSE_File);
+							_pNotes[note].custSound = addCustomSound(_pNotes[_selectedNotes[i]].hitSE_File);
+						}
+
+						if(_pNotes[_selectedNotes[i]].texture_File)
+						{
+							_pNotes[note].texture_File = malloc(100);
+							strcpy(_pNotes[note].texture_File, _pNotes[_selectedNotes[i]].texture_File);
+							_pNotes[note].custTex = addCustomTexture(_pNotes[_selectedNotes[i]].texture_File);
+						}
+					}
 				}
 
 				if (IsKeyPressed(KEY_E) && _barMeasureCount <= 32)
