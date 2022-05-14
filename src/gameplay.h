@@ -15,6 +15,8 @@ void slider(Rectangle rect, bool *selected, int *value, int max, int min);
 bool drawInteractableButton(char *text, float fontScale, float x, float y, float width, float height);
 void removeNote(int index);
 int newNote(float time);
+void removeNote(int index);
+int newNote(float time);
 void fPause();
 void fCountDown();
 void fMainMenu();

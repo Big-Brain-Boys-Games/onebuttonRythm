@@ -20,7 +20,7 @@
 
 
 extern Texture2D _background, _menuBackground, _noteTex;
-extern Note * _pNotes;
+extern Note ** _papNotes;
 extern float _scrollSpeed;
 extern Map *_map;
 extern int _amountNotes, _noteIndex, _score, _highestCombo;
@@ -255,25 +255,25 @@ void saveFile (int noteAmount)
 	
 	for(int i = 0; i < noteAmount; i++)
 	{
-		if(_pNotes[i].time == 0)
+		if(_papNotes[i]->time == 0)
 			continue;
 		
-		fprintf(_pFile, "%f", _pNotes[i].time);
-		if (_pNotes[i].hitSE_File != 0)
-			fprintf(_pFile, " \"%s\"", _pNotes[i].hitSE_File);
-		if (_pNotes[i].texture_File != 0)
-			fprintf(_pFile, " \"%s\"",_pNotes[i].texture_File);
-		if (_pNotes[i].anim && _pNotes[i].animSize)
+		fprintf(_pFile, "%f", _papNotes[i]->time);
+		if (_papNotes[i]->hitSE_File != 0)
+			fprintf(_pFile, " \"%s\"", _papNotes[i]->hitSE_File);
+		if (_papNotes[i]->texture_File != 0)
+			fprintf(_pFile, " \"%s\"",_papNotes[i]->texture_File);
+		if (_papNotes[i]->anim && _papNotes[i]->animSize)
 		{
-			fprintf(_pFile, " \"(%i",_pNotes[i].animSize);
-			for(int j = 0; j < _pNotes[i].animSize; j++)
+			fprintf(_pFile, " \"(%i",_papNotes[i]->animSize);
+			for(int j = 0; j < _papNotes[i]->animSize; j++)
 			{
-				fprintf(_pFile, " %f,%f,%f", _pNotes[i].anim[j].time, _pNotes[i].anim[j].vec.x, _pNotes[i].anim[j].vec.y);
+				fprintf(_pFile, " %f,%f,%f", _papNotes[i]->anim[j].time, _papNotes[i]->anim[j].vec.x, _papNotes[i]->anim[j].vec.y);
 			}
 			fprintf(_pFile, ")\"");
 		}
-		if (_pNotes[i].health > 0)
-			fprintf(_pFile, " \"h%i\"", (int)(_pNotes[i].health));
+		if (_papNotes[i]->health > 0)
+			fprintf(_pFile, " \"h%i\"", (int)(_papNotes[i]->health));
 		
 		fprintf(_pFile, "\n");
 	}
@@ -539,7 +539,7 @@ void loadMap ()
 	char line [1000];
 	enum FilePart mode = fpNone;
 	_amountNotes = 50;
-	_pNotes = malloc(_amountNotes*sizeof(Note));
+	_papNotes = malloc(_amountNotes*sizeof(Note*));
 	_noteIndex = 0;
 
 
@@ -564,16 +564,17 @@ void loadMap ()
 				if(_noteIndex <= _amountNotes)
 				{
 					_amountNotes += 50;
-					_pNotes = realloc(_pNotes, _amountNotes*sizeof(Note));
+					_papNotes = realloc(_papNotes, _amountNotes*sizeof(Note*));
 				}
-				_pNotes[_noteIndex].time = atof(line);
-				_pNotes[_noteIndex].hitSE_File = 0;
-				_pNotes[_noteIndex].texture_File = 0;
-				_pNotes[_noteIndex].anim = 0;
-				_pNotes[_noteIndex].animSize = 0;
-				_pNotes[_noteIndex].custSound = 0;
-				_pNotes[_noteIndex].custTex = 0;
-				_pNotes[_noteIndex].health = 0;
+				_papNotes[_noteIndex] = malloc(sizeof(Note));
+				_papNotes[_noteIndex]->time = atof(line);
+				_papNotes[_noteIndex]->hitSE_File = 0;
+				_papNotes[_noteIndex]->texture_File = 0;
+				_papNotes[_noteIndex]->anim = 0;
+				_papNotes[_noteIndex]->animSize = 0;
+				_papNotes[_noteIndex]->custSound = 0;
+				_papNotes[_noteIndex]->custTex = 0;
+				_papNotes[_noteIndex]->health = 0;
 
 				int part = 0;
 				for(int j = 0; j < 2 && part != -1; j++)
@@ -619,9 +620,9 @@ void loadMap ()
 							//found hit sound
 							char fullPath [100];
 							sprintf(fullPath, "maps/%s/%s", _map->folder, tmpStr);
-							_pNotes[_noteIndex].custSound = addCustomSound(fullPath);
-							_pNotes[_noteIndex].hitSE_File = malloc(100*sizeof(char));
-							strcpy(_pNotes[_noteIndex].hitSE_File, tmpStr);
+							_papNotes[_noteIndex]->custSound = addCustomSound(fullPath);
+							_papNotes[_noteIndex]->hitSE_File = malloc(100*sizeof(char));
+							strcpy(_papNotes[_noteIndex]->hitSE_File, tmpStr);
 						}else if(strcmp(ext, ".jpg") == 0 || strcmp(ext, ".png")  == 0 || strcmp(ext, ".jpeg") == 0)
 						{
 							printf("found texture %s\n", tmpStr);
@@ -638,36 +639,36 @@ void loadMap ()
 							}
 							char fullPath [100];
 							sprintf(fullPath, "maps/%s/%s", _map->folder, fileStr);
-							_pNotes[_noteIndex].custTex = addCustomTexture(fullPath); 
-							_pNotes[_noteIndex].texture_File = malloc(100*sizeof(char));
-							strcpy(_pNotes[_noteIndex].texture_File, tmpStr);
+							_papNotes[_noteIndex]->custTex = addCustomTexture(fullPath); 
+							_papNotes[_noteIndex]->texture_File = malloc(100*sizeof(char));
+							strcpy(_papNotes[_noteIndex]->texture_File, tmpStr);
 						}
 					}
 					//Loading animation
 					else if(line[part] == '(')
 					{
 						//found animation
-						_pNotes[_noteIndex].animSize = atoi(&(line[part+1]));
-						_pNotes[_noteIndex].anim = calloc(_pNotes[_noteIndex].animSize, sizeof(Frame));
+						_papNotes[_noteIndex]->animSize = atoi(&(line[part+1]));
+						_papNotes[_noteIndex]->anim = calloc(_papNotes[_noteIndex]->animSize, sizeof(Frame));
 						while(line[part] != ' ')
 								part++;
 						part++;
-						printf("found animation %i  ", _pNotes[_noteIndex].animSize);
-						for(int i = 0; i < _pNotes[_noteIndex].animSize; i++)
+						printf("found animation %i  ", _papNotes[_noteIndex]->animSize);
+						for(int i = 0; i < _papNotes[_noteIndex]->animSize; i++)
 						{
 							part++; //skip space
-							_pNotes[_noteIndex].anim[i].time = atof(&(line[part]));
+							_papNotes[_noteIndex]->anim[i].time = atof(&(line[part]));
 							while(line[part] != ',')
 								part++;
 							part++;
-							_pNotes[_noteIndex].anim[i].vec.x = atof(&(line[part]));
+							_papNotes[_noteIndex]->anim[i].vec.x = atof(&(line[part]));
 							while(line[part] != ',')
 								part++;
 							part++;
-							_pNotes[_noteIndex].anim[i].vec.y = atof(&(line[part]));
+							_papNotes[_noteIndex]->anim[i].vec.y = atof(&(line[part]));
 							while(line[part] != ' ')
 								part++;
-							printf("%f  %f  %f    ", _pNotes[_noteIndex].anim[i].time, _pNotes[_noteIndex].anim[i].vec.x, _pNotes[_noteIndex].anim[i].vec.y);
+							printf("%f  %f  %f    ", _papNotes[_noteIndex]->anim[i].time, _papNotes[_noteIndex]->anim[i].vec.x, _papNotes[_noteIndex]->anim[i].vec.y);
 						}
 						printf("\n");
 					}
@@ -675,7 +676,7 @@ void loadMap ()
 					{
 						part++;
 						//found health
-						_pNotes[_noteIndex].health = atof(&(line[part]));
+						_papNotes[_noteIndex]->health = atof(&(line[part]));
 					}
 					for(int i = part; i < 1000; i++)
 					{
@@ -706,17 +707,18 @@ void loadMap ()
 
 void freeNotes()
 {
-	if(_pNotes)
+	if(_papNotes)
 	{
 		int amountTex = 0;
 		for(int i = 0; i < _amountNotes; i++)
 		{
-			freeArray(_pNotes[i].anim);
-			freeArray(_pNotes[i].hitSE_File);
-			freeArray(_pNotes[i].texture_File);
+			freeArray(_papNotes[i]->anim);
+			freeArray(_papNotes[i]->hitSE_File);
+			freeArray(_papNotes[i]->texture_File);
+			free(_papNotes[i]);
 		}
 
-		free(_pNotes);
+		free(_papNotes);
 	}
 }
 
@@ -845,7 +847,7 @@ void makeMap(Map * map)
 
 void unloadMap()
 {
-	// free(_pNotes);
+	// free(_papNotes);
 	_amountNotes = 0;
 	_noteIndex = 0;
 }

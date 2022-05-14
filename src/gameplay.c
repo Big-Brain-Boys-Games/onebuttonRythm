@@ -47,7 +47,7 @@ int _missPenalty = 5;
 bool _mapRefresh = true;
 int _barMeasureCount = 2;
 
-int *_selectedNotes = 0;
+Note **_selectedNotes = 0;
 int _amountSelectedNotes = 0;
 
 Map *_map;
@@ -57,7 +57,7 @@ bool showSettings;
 bool showNoteSettings;
 
 // Timestamp of all the notes
-Note *_pNotes;
+Note ** _papNotes;
 void (*_pNextGameplayFunction)();
 void (*_pGameplayFunction)();
 
@@ -293,40 +293,41 @@ bool interactableButtonNoSprite(char *text, float fontScale, float x, float y, f
 
 void removeNote(int index)
 {
+	removeSelectedNote(index);
 	_amountNotes--;
-	Note *tmp = malloc(sizeof(Note) * _amountNotes);
-	memcpy(tmp, _pNotes, sizeof(Note) * _amountNotes);
+	free(_papNotes[index]);
+	Note ** tmp = malloc(sizeof(Note*) * _amountNotes);
+	memcpy(tmp, _papNotes, sizeof(Note*) * _amountNotes);
 	for (int i = index; i < _amountNotes; i++)
 	{
-		tmp[i] = _pNotes[i + 1];
+		tmp[i] = _papNotes[i + 1];
 	}
-	free(_pNotes);
-	_pNotes = tmp;
+	free(_papNotes);
+	_papNotes = tmp;
 }
 
 int newNote(float time)
 {
-	printf("new note time %f\n", time);
 	int closestIndex = 0;
 	_amountNotes++;
-	Note *tmp = calloc(_amountNotes, sizeof(Note));
+	Note ** tmp = calloc(_amountNotes, sizeof(Note*));
 	for (int i = 0; i < _amountNotes - 1; i++)
 	{
-		tmp[i] = _pNotes[i];
-		if (tmp[i].time < time)
+		tmp[i] = _papNotes[i];
+		if (tmp[i]->time < time)
 		{
-			printf("found new closest :%i   value %.2f musicHead %.2f\n", i, tmp[i].time, time);
+			printf("found new closest :%i   value %.2f musicHead %.2f\n", i, tmp[i]->time, time);
 			closestIndex = i + 1;
 		}
 	}
 	for (int i = closestIndex; i < _amountNotes - 1; i++)
 	{
-		tmp[i + 1] = _pNotes[i];
+		tmp[i + 1] = _papNotes[i];
 	}
-
-	free(_pNotes);
-	_pNotes = tmp;
-	_pNotes[closestIndex].time = time;
+	free(_papNotes);
+	_papNotes = tmp;
+	_papNotes[closestIndex] = calloc(1, sizeof(Note));
+	_papNotes[closestIndex]->time = time;
 	return closestIndex;
 }
 
@@ -335,7 +336,7 @@ void addSelectNote(int note)
 	printf("Adding note: %i\n", note);
 	for (int i = 0; i < _amountSelectedNotes; i++)
 	{
-		if (_selectedNotes[i] == note)
+		if (_selectedNotes[i] == _papNotes[note])
 		{
 			printf("Note in array, removing: %i at index: %i\n", note, i);
 			removeSelectedNote(i);
@@ -345,10 +346,10 @@ void addSelectNote(int note)
 
 	_amountSelectedNotes++;
 	if (_selectedNotes == 0)
-		_selectedNotes = malloc(sizeof(int) * _amountSelectedNotes);
+		_selectedNotes = malloc(sizeof(Note*) * _amountSelectedNotes);
 	else
-		_selectedNotes = realloc(_selectedNotes, sizeof(int) * _amountSelectedNotes);
-	_selectedNotes[_amountSelectedNotes - 1] = note;
+		_selectedNotes = realloc(_selectedNotes, sizeof(Note*) * _amountSelectedNotes);
+	_selectedNotes[_amountSelectedNotes - 1] = _papNotes[note];
 }
 
 void removeSelectedNote(int index)
@@ -723,61 +724,63 @@ int _undoBufferIndex = 0;
 void undo()
 {
 	printf("undo\n");
+	free(_selectedNotes);
+	_amountSelectedNotes = 0;
 	_undoBufferIndex--;
-	for(int i = 0; i < _amountNotes; i++) //free _pNotes
+	for(int i = 0; i < _amountNotes; i++) //free _papNotes
 	{
-		freeArray(_pNotes[i].anim);
-		if(_pNotes[i].hitSE_File)
+		freeArray(_papNotes[i]->anim);
+		if(_papNotes[i]->hitSE_File)
 		{
 			char tmp [100];
-			sprintf(tmp, "maps/%s/%s", _map->folder, _pNotes[i].hitSE_File);
+			sprintf(tmp, "maps/%s/%s", _map->folder, _papNotes[i]->hitSE_File);
 			removeCustomSound(tmp);
 		}
-		if(_pNotes[i].texture_File)
+		if(_papNotes[i]->texture_File)
 		{
 			char tmp [100];
-			sprintf(tmp, "maps/%s/%s", _map->folder, _pNotes[i].texture_File);
+			sprintf(tmp, "maps/%s/%s", _map->folder, _papNotes[i]->texture_File);
 			removeCustomTexture(tmp);
 		}
-		freeArray(_pNotes[i].hitSE_File);
-		freeArray(_pNotes[i].texture_File);
+		freeArray(_papNotes[i]->hitSE_File);
+		freeArray(_papNotes[i]->texture_File);
+		free(_papNotes[i]);
 	}
-	free(_pNotes);
-
-	_pNotes = malloc(_undoBufferSize[_undoBufferIndex] * sizeof(Note));
-	for(int i = 0; i < _undoBufferSize[_undoBufferIndex]; i++)
+	free(_papNotes);
+	_amountNotes = _undoBufferSize[_undoBufferIndex];
+	_papNotes = malloc(_amountNotes * sizeof(Note*));
+	for(int i = 0; i < _amountNotes; i++)
 	{
-		
-		_pNotes[i] = _paUndoBuffer[_undoBufferIndex][i];
-		_pNotes[i].anim = 0;
-		_pNotes[i].custSound = 0;
-		_pNotes[i].custTex = 0;
-		if(_pNotes[i].animSize != 0)
+		_papNotes[i] = malloc(sizeof(Note));
+		*_papNotes[i] = _paUndoBuffer[_undoBufferIndex][i];
+		_papNotes[i]->anim = 0;
+		_papNotes[i]->custSound = 0;
+		_papNotes[i]->custTex = 0;
+		if(_papNotes[i]->animSize != 0)
 		{
-			_pNotes[i].anim = malloc(_pNotes[i].animSize*sizeof(Frame));
-			for(int j = 0; j < _pNotes[i].animSize; j++) //copy over animation
+			_papNotes[i]->anim = malloc(_papNotes[i]->animSize*sizeof(Frame));
+			for(int j = 0; j < _papNotes[i]->animSize; j++) //copy over animation
 			{
-				_pNotes[i].anim[j] = _paUndoBuffer[_undoBufferIndex][i].anim[j];
+				_papNotes[i]->anim[j] = _paUndoBuffer[_undoBufferIndex][i].anim[j];
 			}
 		}
-		if(_pNotes[i].hitSE_File != 0)
+		if(_papNotes[i]->hitSE_File != 0)
 		{
-			_pNotes[i].hitSE_File = malloc(strlen(_paUndoBuffer[_undoBufferIndex][i].hitSE_File));
-			strcpy(_pNotes[i].hitSE_File, _paUndoBuffer[_undoBufferIndex][i].hitSE_File);
+			_papNotes[i]->hitSE_File = malloc(strlen(_paUndoBuffer[_undoBufferIndex][i].hitSE_File));
+			strcpy(_papNotes[i]->hitSE_File, _paUndoBuffer[_undoBufferIndex][i].hitSE_File);
 			char tmp [100];
-			sprintf(tmp, "maps/%s/%s", _map->folder, _pNotes[i].hitSE_File);
-			_pNotes[i].custSound = addCustomSound(tmp);
+			sprintf(tmp, "maps/%s/%s", _map->folder, _papNotes[i]->hitSE_File);
+			_papNotes[i]->custSound = addCustomSound(tmp);
 		}
-		if(_pNotes[i].texture_File != 0)
+		if(_papNotes[i]->texture_File != 0)
 		{
-			_pNotes[i].texture_File = malloc(strlen(_paUndoBuffer[_undoBufferIndex][i].texture_File));
-			strcpy(_pNotes[i].texture_File, _paUndoBuffer[_undoBufferIndex][i].texture_File);
+			_papNotes[i]->texture_File = malloc(strlen(_paUndoBuffer[_undoBufferIndex][i].texture_File));
+			strcpy(_papNotes[i]->texture_File, _paUndoBuffer[_undoBufferIndex][i].texture_File);
 			char tmp [100];
-			sprintf(tmp, "maps/%s/%s", _map->folder, _pNotes[i].texture_File);
-			_pNotes[i].custTex = addCustomTexture(tmp);
+			sprintf(tmp, "maps/%s/%s", _map->folder, _papNotes[i]->texture_File);
+			_papNotes[i]->custTex = addCustomTexture(tmp);
 		}
 	}
-	_amountNotes = _undoBufferSize[_undoBufferIndex];
 	if(_undoBufferIndex < 0)
 		_undoBufferIndex = UNDOBUFFER-1;
 }
@@ -804,29 +807,29 @@ void doAction()
 	for(int i = 0; i < _amountNotes; i++)
 	{
 		
-		_paUndoBuffer[_undoBufferIndex][i] = _pNotes[i];
+		_paUndoBuffer[_undoBufferIndex][i] = *_papNotes[i];
 		if(_paUndoBuffer[_undoBufferIndex][i].anim != 0)
 		{
 			_paUndoBuffer[_undoBufferIndex][i].anim = malloc(_paUndoBuffer[_undoBufferIndex][i].animSize*sizeof(Frame));
 			for(int j = 0; j < _paUndoBuffer[_undoBufferIndex][i].animSize; j++) //copy over animation
 			{
-				_paUndoBuffer[_undoBufferIndex][i].anim[j] = _pNotes[i].anim[j];
+				_paUndoBuffer[_undoBufferIndex][i].anim[j] = _papNotes[i]->anim[j];
 			}
 		}
 		if(_paUndoBuffer[_undoBufferIndex][i].hitSE_File != 0)
 		{
 			_paUndoBuffer[_undoBufferIndex][i].hitSE_File = malloc(100);
-			strcpy(_paUndoBuffer[_undoBufferIndex][i].hitSE_File, _pNotes[i].hitSE_File);
+			strcpy(_paUndoBuffer[_undoBufferIndex][i].hitSE_File, _papNotes[i]->hitSE_File);
 			char tmp [100];
-			sprintf(tmp, "maps/%s/%s", _map->folder, _pNotes[i].hitSE_File);
+			sprintf(tmp, "maps/%s/%s", _map->folder, _papNotes[i]->hitSE_File);
 			_paUndoBuffer[_undoBufferIndex][i].custSound = addCustomSound(tmp);
 		}
 		if(_paUndoBuffer[_undoBufferIndex][i].texture_File != 0)
 		{
 			_paUndoBuffer[_undoBufferIndex][i].texture_File = malloc(100);
-			strcpy(_paUndoBuffer[_undoBufferIndex][i].texture_File, _pNotes[i].texture_File);
+			strcpy(_paUndoBuffer[_undoBufferIndex][i].texture_File, _papNotes[i]->texture_File);
 			char tmp [100];
-			sprintf(tmp, "maps/%s/%s", _map->folder, _pNotes[i].texture_File);
+			sprintf(tmp, "maps/%s/%s", _map->folder, _papNotes[i]->texture_File);
 			_paUndoBuffer[_undoBufferIndex][i].custTex = addCustomTexture(tmp);
 		}
 	}
@@ -890,7 +893,7 @@ void fEditor()
 
 			if (IsMouseButtonPressed(0) && GetMouseY() > GetScreenHeight() * 0.3 && GetMouseY() < GetScreenHeight() * 0.6)
 			{
-				addSelectNote(findClosestNote(_pNotes, _amountNotes, screenToMusicTime(GetMouseX())));
+				addSelectNote(findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX())));
 				for (int i = 0; i < _amountSelectedNotes; i++)
 				{
 					printf("Amount of notes: %i\t Selected notes: %i\n", _amountSelectedNotes, _selectedNotes[i]);
@@ -915,15 +918,14 @@ void fEditor()
 				int closestIndex = 0;
 				for (int i = 0; i < _amountNotes; i++)
 				{
-					if (closestTime > fabs(_pNotes[i].time - getMusicHead()))
+					if (closestTime > fabs(_papNotes[i]->time - getMusicHead()))
 					{
-						closestTime = fabs(_pNotes[i].time - getMusicHead());
+						closestTime = fabs(_papNotes[i]->time - getMusicHead());
 						closestIndex = i;
 					}
 				}
 				if (IsKeyPressed(KEY_Z) && IsKeyDown(KEY_LEFT_CONTROL))
 				{
-					printf("control z\n");
 					undo();
 				}else if (IsKeyPressed(KEY_Z) && !IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f)
 				{
@@ -953,38 +955,38 @@ void fEditor()
 					for(int i = 0; i < _amountSelectedNotes; i++)
 					{
 						if(firstNote == -1)
-							firstNote = _pNotes[_selectedNotes[i]].time;
-						else if(_pNotes[_selectedNotes[i]].time < firstNote)
+							firstNote = _selectedNotes[i]->time;
+						else if(_selectedNotes[i]->time < firstNote)
 						{
-							firstNote = _pNotes[_selectedNotes[i]].time;
+							firstNote = _selectedNotes[i]->time;
 						}
 					}
 					//copy over notes
 					for(int i = 0; i < _amountSelectedNotes; i++)
 					{
-						int note = newNote(_musicHead+_pNotes[_selectedNotes[i]].time-firstNote);
-						if(_pNotes[_selectedNotes[i]].anim)
+						int note = newNote(_musicHead+_selectedNotes[i]->time-firstNote);
+						if(_selectedNotes[i]->anim)
 						{
-							_pNotes[note].anim = malloc(sizeof(Frame)*_pNotes[_selectedNotes[i]].animSize);
-							for(int j = 0; j < _pNotes[_selectedNotes[i]].animSize; j++)
+							_papNotes[note]->anim = malloc(sizeof(Frame)*_selectedNotes[i]->animSize);
+							for(int j = 0; j < _selectedNotes[i]->animSize; j++)
 							{
-								_pNotes[note].anim[j] = _pNotes[_selectedNotes[i]].anim[j];
+								_papNotes[note]->anim[j] = _selectedNotes[i]->anim[j];
 							}
-							_pNotes[note].animSize = _pNotes[_selectedNotes[i]].animSize;
+							_papNotes[note]->animSize = _selectedNotes[i]->animSize;
 						}
 
-						if(_pNotes[_selectedNotes[i]].hitSE_File)
+						if(_selectedNotes[i]->hitSE_File)
 						{
-							_pNotes[note].hitSE_File = malloc(100);
-							strcpy(_pNotes[note].hitSE_File, _pNotes[_selectedNotes[i]].hitSE_File);
-							_pNotes[note].custSound = addCustomSound(_pNotes[_selectedNotes[i]].hitSE_File);
+							_papNotes[note]->hitSE_File = malloc(100);
+							strcpy(_papNotes[note]->hitSE_File, _selectedNotes[i]->hitSE_File);
+							_papNotes[note]->custSound = addCustomSound(_selectedNotes[i]->hitSE_File);
 						}
 
-						if(_pNotes[_selectedNotes[i]].texture_File)
+						if(_selectedNotes[i]->texture_File)
 						{
-							_pNotes[note].texture_File = malloc(100);
-							strcpy(_pNotes[note].texture_File, _pNotes[_selectedNotes[i]].texture_File);
-							_pNotes[note].custTex = addCustomTexture(_pNotes[_selectedNotes[i]].texture_File);
+							_papNotes[note]->texture_File = malloc(100);
+							strcpy(_papNotes[note]->texture_File, _selectedNotes[i]->texture_File);
+							_papNotes[note]->custTex = addCustomTexture(_selectedNotes[i]->texture_File);
 						}
 					}
 				}
@@ -1133,20 +1135,20 @@ void fEditor()
 				showNoteSettings = !showNoteSettings;
 				//apply changes to first note to all selected notes
 				printf("applying to all selected notes\n");
-				Note * firstNote = &(_pNotes[_selectedNotes[0]]);
+				Note * firstNote = _selectedNotes[0];
 				printf("new size %i\n", firstNote->animSize);
 				for(int i = 1; i < _amountSelectedNotes; i++)
 				{
-					if(_pNotes[_selectedNotes[i]].anim == 0)
-						_pNotes[_selectedNotes[i]].anim = malloc(sizeof(Frame)*firstNote->animSize);
+					if(_selectedNotes[i]->anim == 0)
+						_selectedNotes[i]->anim = malloc(sizeof(Frame)*firstNote->animSize);
 					else
-						_pNotes[_selectedNotes[i]].anim = realloc(_pNotes[_selectedNotes[i]].anim, sizeof(Frame)*firstNote->animSize);
+						_selectedNotes[i]->anim = realloc(_selectedNotes[i]->anim, sizeof(Frame)*firstNote->animSize);
 					
-					_pNotes[_selectedNotes[i]].animSize = firstNote->animSize;
+					_selectedNotes[i]->animSize = firstNote->animSize;
 
 					for(int key = 0; key < firstNote->animSize; key++)
 					{
-						_pNotes[_selectedNotes[i]].anim[key] = firstNote->anim[key];
+						_selectedNotes[i]->anim[key] = firstNote->anim[key];
 					}	
 				}
 				return;
@@ -1156,20 +1158,20 @@ void fEditor()
 			{
 				char sprite[100] = {0};
 				sprite[0] = '\0';
-				if (_pNotes[_selectedNotes[0]].texture_File != 0)
-					sprintf(sprite, "%s", _pNotes[_selectedNotes[0]].texture_File);
+				if (_selectedNotes[0]->texture_File != 0)
+					sprintf(sprite, "%s", _selectedNotes[0]->texture_File);
 				static bool spriteBoxSelected = false;
 				Rectangle spriteBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.1, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 				textBox(spriteBox, sprite, &spriteBoxSelected);
 				if (strlen(sprite) != 0)
 				{
-					if (_pNotes[_selectedNotes[0]].texture_File == 0)
-						_pNotes[_selectedNotes[0]].texture_File = malloc(sizeof(char) * 100);
-					strcpy(_pNotes[_selectedNotes[0]].texture_File, sprite);
-				}else if(_pNotes[_selectedNotes[0]].texture_File != 0)
+					if (_selectedNotes[0]->texture_File == 0)
+						_selectedNotes[0]->texture_File = malloc(sizeof(char) * 100);
+					strcpy(_selectedNotes[0]->texture_File, sprite);
+				}else if(_selectedNotes[0]->texture_File != 0)
 				{
-					free(_pNotes[_selectedNotes[0]].texture_File);
-					_pNotes[_selectedNotes[0]].texture_File = 0;
+					free(_selectedNotes[0]->texture_File);
+					_selectedNotes[0]->texture_File = 0;
 				}
 
 				// health setting
@@ -1177,7 +1179,7 @@ void fEditor()
 				bool theSame = false;
 				for (int i = 0; i < _amountSelectedNotes; i++)
 				{
-					if (_pNotes[_selectedNotes[0]].health != _pNotes[_selectedNotes[i]].health) {
+					if (_selectedNotes[0]->health != _selectedNotes[i]->health) {
 						theSame = false;
 						break;
 					}
@@ -1186,7 +1188,7 @@ void fEditor()
 				}
 				if (theSame)
 				{
-					sprintf(health, "%i", (int)(_pNotes[_selectedNotes[0]].health));
+					sprintf(health, "%i", (int)(_selectedNotes[0]->health));
 				}
 				else sprintf(health, "-", "%c");
 				
@@ -1197,13 +1199,13 @@ void fEditor()
 				{
 					for (int i = 0; i < _amountSelectedNotes; i++)
 					{
-						_pNotes[_selectedNotes[i]].health = atoi(health);
-						_pNotes[_selectedNotes[i]].health = (int)(fmin(fmax(_pNotes[_selectedNotes[i]].health, 0), 9));
+						_selectedNotes[i]->health = atoi(health);
+						_selectedNotes[i]->health = (int)(fmin(fmax(_selectedNotes[i]->health, 0), 9));
 					}
 				}
 				for (int i = 0; i < _amountSelectedNotes; i++)
 				{
-					printf("%f\t", _pNotes[_selectedNotes[i]].health);
+					printf("%f\t", _selectedNotes[i]->health);
 				}
 				printf("\n");
 				
@@ -1214,44 +1216,44 @@ void fEditor()
 				static float timeLine = 0;
 				int value = timeLine * 100;
 				
-				if(_pNotes[_selectedNotes[0]].anim == 0)
+				if(_selectedNotes[0]->anim == 0)
 				{
-					_pNotes[_selectedNotes[0]].anim = malloc(sizeof(Frame) * 2);
-					_pNotes[_selectedNotes[0]].anim[0].time = 0;
-					_pNotes[_selectedNotes[0]].anim[0].vec = (Vector2){.x=1, .y=0.5};
-					_pNotes[_selectedNotes[0]].anim[1].time = 1;
-					_pNotes[_selectedNotes[0]].anim[1].vec = (Vector2){.x=0, .y=0.5};
-					_pNotes[_selectedNotes[0]].animSize = 2;
+					_selectedNotes[0]->anim = malloc(sizeof(Frame) * 2);
+					_selectedNotes[0]->anim[0].time = 0;
+					_selectedNotes[0]->anim[0].vec = (Vector2){.x=1, .y=0.5};
+					_selectedNotes[0]->anim[1].time = 1;
+					_selectedNotes[0]->anim[1].vec = (Vector2){.x=0, .y=0.5};
+					_selectedNotes[0]->animSize = 2;
 				}
 
 				slider((Rectangle){.x=0, .y=GetScreenHeight()*0.9, .width=GetScreenWidth(), .height=GetScreenHeight()*0.03}, &timeLineSelected, &value, 100, -100);
 				timeLine = value / 100.0;
-				drawNote(timeLine*_scrollSpeed+_pNotes[_selectedNotes[0]].time, &(_pNotes[_selectedNotes[0]]), WHITE);
-				Frame * anim = _pNotes[_selectedNotes[0]].anim;
-				for(int key = 0; key < _pNotes[_selectedNotes[0]].animSize; key++)
+				drawNote(timeLine*_scrollSpeed+_selectedNotes[0]->time, _selectedNotes[0], WHITE);
+				Frame * anim = _selectedNotes[0]->anim;
+				for(int key = 0; key < _selectedNotes[0]->animSize; key++)
 				{
 					//draw keys
 					if(interactableButton("k", 0.01, (anim[key].time)*GetScreenWidth()-GetScreenWidth()*0.01, GetScreenHeight()*0.85, GetScreenWidth()*0.02, GetScreenHeight()*0.05))
 					{
 						//delete key
 						printf("poggies\n");
-						if(_pNotes[_selectedNotes[0]].animSize <= 2)
+						if(_selectedNotes[0]->animSize <= 2)
 							break;
-						_pNotes[_selectedNotes[0]].animSize --;
-						for(int k = key; k < _pNotes[_selectedNotes[0]].animSize; k++)
+						_selectedNotes[0]->animSize --;
+						for(int k = key; k < _selectedNotes[0]->animSize; k++)
 						{
 							anim[k].time = anim[k+1].time;
 							anim[k].vec = anim[k+1].vec;
 						}
-						_pNotes[_selectedNotes[0]].anim = realloc(_pNotes[_selectedNotes[0]].anim, sizeof(Frame)*_pNotes[_selectedNotes[0]].animSize);
+						_selectedNotes[0]->anim = realloc(_selectedNotes[0]->anim, sizeof(Frame)*_selectedNotes[0]->animSize);
 					}
 				}
 				if(IsMouseButtonReleased(0) && GetMouseY() < GetScreenHeight()*0.85)
 				{
 					int index = -1;
-					for(int key = 0; key < _pNotes[_selectedNotes[0]].animSize; key++)
+					for(int key = 0; key < _selectedNotes[0]->animSize; key++)
 					{
-						if((timeLine+1)/2 == _pNotes[_selectedNotes[0]].anim[key].time)
+						if((timeLine+1)/2 == _selectedNotes[0]->anim[key].time)
 						{
 							index = key;
 							break;
@@ -1260,34 +1262,34 @@ void fEditor()
 					if(index != -1)
 					{
 						//modify existing frame
-						anim[index].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()-0.05};
+						anim[index].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()+0.05};
 					}else
 					{
-						for(int key = 0; key < _pNotes[_selectedNotes[0]].animSize; key++) printf("%i  %i  %f %f %f\n", _pNotes[_selectedNotes[0]].animSize, key, _pNotes[_selectedNotes[0]].anim[key].time, _pNotes[_selectedNotes[0]].anim[key].vec.x, _pNotes[_selectedNotes[0]].anim[key].vec.y);
+						for(int key = 0; key < _selectedNotes[0]->animSize; key++) printf("%i  %i  %f %f %f\n", _selectedNotes[0]->animSize, key, _selectedNotes[0]->anim[key].time, _selectedNotes[0]->anim[key].vec.x, _selectedNotes[0]->anim[key].vec.y);
 						//create new frame
-						_pNotes[_selectedNotes[0]].animSize++;
-						_pNotes[_selectedNotes[0]].anim = realloc(_pNotes[_selectedNotes[0]].anim, _pNotes[_selectedNotes[0]].animSize*sizeof(Frame));
-						for(int key = _pNotes[_selectedNotes[0]].animSize-1; key > 0; key--)
+						_selectedNotes[0]->animSize++;
+						_selectedNotes[0]->anim = realloc(_selectedNotes[0]->anim, _selectedNotes[0]->animSize*sizeof(Frame));
+						for(int key = _selectedNotes[0]->animSize-1; key > 0; key--)
 						{
-							if(_pNotes[_selectedNotes[0]].anim[key].time > (timeLine+1)/2)
+							if(_selectedNotes[0]->anim[key].time > (timeLine+1)/2)
 							{
-								_pNotes[_selectedNotes[0]].anim[key+1] = _pNotes[_selectedNotes[0]].anim[key];
+								_selectedNotes[0]->anim[key+1] = _selectedNotes[0]->anim[key];
 							}
 						}
 						int newIndex = 0;
-						for(int key = 0; key < _pNotes[_selectedNotes[0]].animSize-1; key++)
+						for(int key = 0; key < _selectedNotes[0]->animSize-1; key++)
 						{
-							if(_pNotes[_selectedNotes[0]].anim[key].time == _pNotes[_selectedNotes[0]].anim[key+1].time)
+							if(_selectedNotes[0]->anim[key].time == _selectedNotes[0]->anim[key+1].time)
 							{
 								newIndex = key;
 								break;
 							}
 						}
 						// printf("")
-						_pNotes[_selectedNotes[0]].anim[newIndex].time = (timeLine+1)/2;
-						_pNotes[_selectedNotes[0]].anim[newIndex].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()-0.05};
+						_selectedNotes[0]->anim[newIndex].time = (timeLine+1)/2;
+						_selectedNotes[0]->anim[newIndex].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()+0.05};
 
-						for(int key = 0; key < _pNotes[_selectedNotes[0]].animSize; key++) printf("%i  %i  %f %f %f\n", _pNotes[_selectedNotes[0]].animSize, key, _pNotes[_selectedNotes[0]].anim[key].time, _pNotes[_selectedNotes[0]].anim[key].vec.x, _pNotes[_selectedNotes[0]].anim[key].vec.y);
+						for(int key = 0; key < _selectedNotes[0]->animSize; key++) printf("%i  %i  %f %f %f\n", _selectedNotes[0]->animSize, key, _selectedNotes[0]->anim[key].time, _selectedNotes[0]->anim[key].vec.x, _selectedNotes[0]->anim[key].vec.y);
 						
 					}
 				}
@@ -1306,8 +1308,8 @@ void fEditor()
 		}
 		for(int i = 0; i < _amountSelectedNotes; i++)
 		{
-			DrawCircle(musicTimeToScreen(_pNotes[_selectedNotes[i]].time), GetScreenHeight()*0.55, GetScreenWidth()*0.013, BLACK);
-			DrawCircle(musicTimeToScreen(_pNotes[_selectedNotes[i]].time), GetScreenHeight()*0.55, GetScreenWidth()*0.01, WHITE);
+			DrawCircle(musicTimeToScreen(_selectedNotes[i]->time), GetScreenHeight()*0.55, GetScreenWidth()*0.013, BLACK);
+			DrawCircle(musicTimeToScreen(_selectedNotes[i]->time), GetScreenHeight()*0.55, GetScreenWidth()*0.01, WHITE);
 		}
 	}
 
@@ -1437,12 +1439,12 @@ void fPlaying()
 		drawText(feedbackSayings[j], GetScreenWidth() * 0.35, GetScreenHeight() * (0.6 + i * 0.1), GetScreenWidth() * 0.05 * feedbackSize[j], (Color){.r = 255, .g = 255, .b = 255, .a = noLessThanZero(150 - i * 40)});
 	}
 
-	if (_noteIndex < _amountNotes && getMusicHead() - _maxMargin > _pNotes[_noteIndex].time)
+	if (_noteIndex < _amountNotes && getMusicHead() - _maxMargin > _papNotes[_noteIndex]->time)
 	{
 		// passed note
 		_noteIndex++;
 		feedback("miss!", 1.3 - _health / 100);
-		_health -= _missPenalty * getHealthMod() * _pNotes[_noteIndex].health;
+		_health -= _missPenalty * getHealthMod() * _papNotes[_noteIndex]->health;
 		_combo = 0;
 		playAudioEffect(_pMissSE, _missSE_Size);
 	}
@@ -1454,10 +1456,10 @@ void fPlaying()
 		int closestIndex = 0;
 		for (int i = _noteIndex; i <= _noteIndex + 1 && i < _amountNotes; i++)
 		{
-			if (closestNote > _pNotes[i].time - getMusicHead() - _maxMargin)
+			if (closestNote > _papNotes[i]->time - getMusicHead() - _maxMargin)
 			{
-				closestNote = _pNotes[i].time - getMusicHead() - _maxMargin;
-				closestTime = fabs(_pNotes[i].time - getMusicHead());
+				closestNote = _papNotes[i]->time - getMusicHead() - _maxMargin;
+				closestTime = fabs(_papNotes[i]->time - getMusicHead());
 				closestIndex = i;
 			}
 		}
@@ -1468,12 +1470,12 @@ void fPlaying()
 				_noteIndex++;
 				feedback("miss!", 1.3 - _health / 100);
 				_combo = 0;
-				_health -= _missPenalty * getHealthMod() * _pNotes[_noteIndex].health;
+				_health -= _missPenalty * getHealthMod() * _papNotes[_noteIndex]->health;
 				_notesMissed++;
 			}
 			_averageAccuracy = ((_averageAccuracy * (_noteIndex - _notesMissed)) + ((1 / _maxMargin) * closestTime)) / (_noteIndex - _notesMissed + 1);
 			// _averageAccuracy = 0.5/_amountNotes;
-			int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / _maxMargin * getMarginMod())) * _pNotes[_noteIndex].health;
+			int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / _maxMargin * getMarginMod())) * _papNotes[_noteIndex]->health;
 			_health += healthAdded * (1 / (getHealthMod() + 0.1));
 			int scoreAdded = noLessThanZero(300 - closestTime * (300 / _maxMargin * getMarginMod())) * getScoreMod();
 			if (scoreAdded > 200)
@@ -1494,8 +1496,8 @@ void fPlaying()
 			_score += scoreAdded * (1 + _combo / 100);
 			_noteIndex++;
 			_combo++;
-			if(_pNotes[closestIndex].custSound)
-				playAudioEffect(_pNotes[closestIndex].custSound->sound, _pNotes[closestIndex].custSound->length);
+			if(_papNotes[closestIndex]->custSound)
+				playAudioEffect(_papNotes[closestIndex]->custSound->sound, _papNotes[closestIndex]->custSound->length);
 			else
 				playAudioEffect(_pHitSE, _hitSE_Size);
 		}
@@ -1504,7 +1506,7 @@ void fPlaying()
 			printf("missed note\n");
 			feedback("miss!", 1.3 - _health / 100);
 			_combo = 0;
-			_health -= _missPenalty * getHealthMod() * _pNotes[_noteIndex].health;
+			_health -= _missPenalty * getHealthMod() * _papNotes[_noteIndex]->health;
 			playAudioEffect(_pMissHitSE, _missHitSE_Size);
 			_notesMissed++;
 		}
@@ -1974,32 +1976,32 @@ void fMapSelect()
 					//copy everything over
 					for(int k = 0; k < _amountNotes; k++)
 					{
-						_paUndoBuffer[j][k] = _pNotes[k];
+						_paUndoBuffer[j][k] = *_papNotes[k];
 						_paUndoBuffer[j][k].custSound = 0;
 						_paUndoBuffer[j][k].custTex = 0;
 
 						if(_paUndoBuffer[j][k].anim)//copy over animations
 						{
 							for(int l = 0; l < _paUndoBuffer[j][k].animSize; l++)
-								_paUndoBuffer[j][k].anim[l] = _pNotes[k].anim[l];
+								_paUndoBuffer[j][k].anim[l] = _papNotes[k]->anim[l];
 						}
 						char fullPath[100];
-						if(_pNotes[k].hitSE_File)
+						if(_papNotes[k]->hitSE_File)
 						{
-							sprintf(fullPath, "maps/%s/%s", _map->folder, _pNotes[k].hitSE_File);
+							sprintf(fullPath, "maps/%s/%s", _map->folder, _papNotes[k]->hitSE_File);
 							_paUndoBuffer[j][k].custSound = addCustomSound(fullPath);
 							_paUndoBuffer[j][k].hitSE_File = malloc(100);
-							strcpy(_paUndoBuffer[j][k].hitSE_File, _pNotes[k].hitSE_File);
+							strcpy(_paUndoBuffer[j][k].hitSE_File, _papNotes[k]->hitSE_File);
 						}
-						if(_pNotes[k].texture_File)
+						if(_papNotes[k]->texture_File)
 						{
-							sprintf(fullPath, "maps/%s/%s", _map->folder, _pNotes[k].texture_File);
+							sprintf(fullPath, "maps/%s/%s", _map->folder, _papNotes[k]->texture_File);
 							_paUndoBuffer[j][k].custTex = addCustomTexture(fullPath);
 							_paUndoBuffer[j][k].texture_File = malloc(100);
-							strcpy(_paUndoBuffer[j][k].texture_File, _pNotes[k].texture_File);
+							strcpy(_paUndoBuffer[j][k].texture_File, _papNotes[k]->texture_File);
 						}
 					}
-					// memcpy(_paUndoBuffer[j], _pNotes, _amountNotes*sizeof(Note));
+					// memcpy(_paUndoBuffer[j], _papNotes, _amountNotes*sizeof(Note));
 					_undoBufferSize[j] = _amountNotes;
 				}
 				startMusic();

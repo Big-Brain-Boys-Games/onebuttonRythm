@@ -20,7 +20,6 @@
 
 extern Texture2D _heartTex, _healthBarTex, _noteTex, _cursorTex, _background, _menuBackground;
 extern void *_pEffectsBuffer, *_pHitSE, *_pMissHitSE, *_pMissSE;
-extern Note *_pNotes;
 extern int _hitSE_Size, _missHitSE_Size, _missSE_Size;
 extern void (*_pGameplayFunction)();
 extern Font _font;

@@ -23,7 +23,7 @@ Color _UIColor = WHITE;
 Color _fade = WHITE;
 
 extern float _musicHead, _scrollSpeed;
-extern Note *_pNotes;
+extern Note ** _papNotes;
 extern int _noteIndex, _amountNotes, _clickPressSE_Size, _clickReleaseSE_Size;
 extern bool _noBackground, _isKeyPressed;
 extern void ** _pMusic, *_pClickPress, *_pClickRelease;
@@ -140,23 +140,23 @@ void dNotes ()
 
 	DrawRectangle(0, GetScreenHeight()*0.30, GetScreenWidth(), GetScreenHeight()*0.3, ColorAlpha(BLACK, 0.4));
 	DrawRectangleGradientH(0,0 , middle - width / 2, GetScreenHeight(), ColorAlpha(BLACK, 0.6), ColorAlpha(BLACK, 0.3));
-	for(int i = _noteIndex; i >= 0 && _pNotes[i].time + _scrollSpeed > getMusicHead(); i--)
+	for(int i = _noteIndex; i >= 0 && _papNotes[i]->time + _scrollSpeed > getMusicHead(); i--)
 	{
 		if(i < 0) continue;
 		//DrawCircle( middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
 		//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
-		drawNote(_musicHead, &_pNotes[i], ColorAlpha(GRAY, noteFadeOut(_pNotes[i].time)));
+		drawNote(_musicHead, _papNotes[i], ColorAlpha(GRAY, noteFadeOut(_papNotes[i]->time)));
 
 	}
 
 	if(_noteIndex < _amountNotes) //draw notes after line
 	{
 		//draw notes before line
-		for(int i = _noteIndex; i < _amountNotes && _pNotes[i].time - _scrollSpeed < getMusicHead(); i++)
+		for(int i = _noteIndex; i < _amountNotes && _papNotes[i]->time - _scrollSpeed < getMusicHead(); i++)
 		{
 			//DrawCircle( middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
 			//DrawTextureEx(_noteTex, (Vector2){.x=middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
-			drawNote(_musicHead, &_pNotes[i], ColorAlpha(WHITE, noteFadeOut(_pNotes[i].time)));
+			drawNote(_musicHead, _papNotes[i], ColorAlpha(WHITE, noteFadeOut(_papNotes[i]->time)));
 
 		}
 	}

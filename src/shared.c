@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern Note *_pNotes;
+extern Note ** _papNotes;
 extern int _amountNotes;
 
 float noLessThanZero(float var)
@@ -19,7 +19,7 @@ void printAllNotes()
 {
     for (int i = 0; i < _amountNotes; i++)
     {
-        printf("note %.2f\n", _pNotes[i].time);
+        printf("note %.2f\n", _papNotes[i]->time);
     }
 }
 
@@ -37,15 +37,15 @@ double clamp(double d, double min, double max)
     return t > max ? max : t;
 }
 
-int findClosestNote(Note arr[], int n, float target)
+int findClosestNote(Note ** arr, int n, float target)
 {
     // Corner cases
-    if (target <= arr[0].time)
+    if (target <= arr[0]->time)
     {
         return 0;
     }
 
-    if (target >= arr[n - 1].time)
+    if (target >= arr[n - 1]->time)
     {
         return n - 1;
     }
@@ -55,26 +55,26 @@ int findClosestNote(Note arr[], int n, float target)
     while (i < j)
     {
         mid = (i + j) / 2;
-        if (arr[mid].time == target)
+        if (arr[mid]->time == target)
         {
             return mid;
         }
 
         /* If target is less than array element,
             then search in left */
-        if (target < arr[mid].time)
+        if (target < arr[mid]->time)
         {
             // If target is greater than previous
             // to mid, return closest of two
-            if (mid > 0 && target > arr[mid - 1].time)
+            if (mid > 0 && target > arr[mid - 1]->time)
             {
-                float val1 = arr[mid -1].time;
-                float val2 = arr[mid].time;
+                float val1 = arr[mid -1]->time;
+                float val2 = arr[mid]->time;
                 if (target - val1 >= val2 - target)
                     return mid;
                 else
                     return mid -1;
-                // return getClosest(arr[mid - 1].time, arr[mid].time, target);
+                // return getClosest(arr[mid - 1]->time, arr[mid]->time, target);
             }
 
             /* Repeat for left half */
@@ -84,11 +84,11 @@ int findClosestNote(Note arr[], int n, float target)
         // If target is greater than mid
         else
         {
-            if (mid < n - 1 && target < arr[mid + 1].time)
+            if (mid < n - 1 && target < arr[mid + 1]->time)
             {
-                // return getClosest(arr[mid].time, arr[mid + 1].time, target);
-                float val2 = arr[mid + 1].time;
-                float val1 = arr[mid].time;
+                // return getClosest(arr[mid]->time, arr[mid + 1]->time, target);
+                float val2 = arr[mid + 1]->time;
+                float val1 = arr[mid]->time;
                 if (target - val1 >= val2 - target)
                     return mid + 1;
                 else

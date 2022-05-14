@@ -24,6 +24,6 @@ typedef struct{
 
 float fDistance(float x1, float y1, float x2, float y2);
 double clamp(double d, double min, double max);
-int findClosestNote(Note arr[], int n, float target);
+int findClosestNote(Note ** arr, int n, float target);
 
 #endif
