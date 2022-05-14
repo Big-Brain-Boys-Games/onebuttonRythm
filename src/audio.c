@@ -233,7 +233,7 @@ void audioInit()
 	loadAudio(&_pClickPress, "assets/clickPress.mp3", &_clickPressSE_Size);
 	loadAudio(&_pClickRelease, "assets/clickRelease.mp3", &_clickReleaseSE_Size);
 
-	loadAudio(&_pFinishSE, "assets/hit.mp3", &_finishSE_Size);
+	loadAudio(&_pFinishSE, "assets/applause.mp3", &_finishSE_Size);
 	loadAudio(&_pFailSE, "assets/missHit.mp3", &_failSE_Size);
 
 	_musicFrameCount = 0;

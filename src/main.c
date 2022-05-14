@@ -49,8 +49,18 @@ int main(int argc, char **argv)
 	
 	_pGameplayFunction = &fIntro;
 	_transition = 1;
+	float loadTimer = 0;
 	while (!WindowShouldClose())
 	{
+		if(_loading)
+			loadTimer += GetFrameTime();
+		
+		//todo, fix
+		if(loadTimer > 1) //nothing should take longer than 1 second to load
+		{
+			loadTimer = 0;
+			_loading = 0;
+		}
 		apiUpdate();
 		_loadingFade += fmax(((_loading != 0 ? 1 : 0)-_loadingFade) * GetFrameTime()*15, -0.1);
 		if(_loadingFade < 0)
