@@ -382,6 +382,7 @@ void freeAllCustomTextures ()
 		free(_paCustomTextures);
 	}
 	_customTexturesSize = 0;
+	_paCustomTextures = 0;
 }
 
 CustomSound * addCustomSound(char * file)
@@ -480,6 +481,7 @@ void freeAllCustomSounds ()
 		free(_paCustomSounds);
 	}
 	_customSoundsSize = 0;
+	_paCustomSounds = 0;
 }
 
 
