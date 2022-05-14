@@ -1210,11 +1210,6 @@ void fEditor()
 						_selectedNotes[i]->health = (int)(fmin(fmax(_selectedNotes[i]->health, 0), 9));
 					}
 				}
-				for (int i = 0; i < _amountSelectedNotes; i++)
-				{
-					printf("%f\t", _selectedNotes[i]->health);
-				}
-				printf("\n");
 				
 			}else
 			{
