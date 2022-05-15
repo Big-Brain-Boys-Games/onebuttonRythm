@@ -833,8 +833,6 @@ void doAction()
 			_paUndoBuffer[_undoBufferIndex][i].custTex = addCustomTexture(tmp);
 		}
 	}
-	
-
 }
 
 void fEditor()
@@ -845,6 +843,16 @@ void fEditor()
 	if (isPlaying)
 	{
 		_musicHead += GetFrameTime() * _musicSpeed;
+		printf("%i\n", _noteIndex);
+		if (getMusicHead() > _papNotes[_noteIndex]->time)
+		{
+			++_noteIndex;
+			if(_papNotes[_noteIndex]->custSound)
+				playAudioEffect(_papNotes[_noteIndex]->custSound->sound, _papNotes[_noteIndex]->custSound->length);
+			else
+				playAudioEffect(_pHitSE, _hitSE_Size);
+		}
+		
 		if (endOfMusic())
 		{
 			_musicPlaying = false;
@@ -1498,7 +1506,7 @@ void fPlaying()
 			_combo++;
 			if(_papNotes[closestIndex]->custSound)
 				playAudioEffect(_papNotes[closestIndex]->custSound->sound, _papNotes[closestIndex]->custSound->length);
-			else
+			else	
 				playAudioEffect(_pHitSE, _hitSE_Size);
 		}
 		else
