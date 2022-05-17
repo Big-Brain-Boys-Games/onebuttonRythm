@@ -35,7 +35,7 @@ extern int _loading;
 extern Map *_pMaps;
 extern char _playerName[100];
 float _scrollSpeed = 0.6;
-int _noteIndex = 0, _amountNotes = 0;
+volatile int _noteIndex = 0, _amountNotes = 0;
 bool _noBackground = false;
 float _health = 50;
 int _score = 0, _highScore, _combo = 0, _highestCombo, _highScoreCombo = 0;
@@ -1034,6 +1034,15 @@ void fEditor()
 		_musicHead = 0;
 	if(_musicHead > getMusicDuration())
 		_musicHead = getMusicDuration();
+	
+	if (_noteIndex > 0)
+	{
+		if (_musicHead < _papNotes[_noteIndex - 1]->time)
+		{
+			--_noteIndex;
+		}
+	}
+	
 	ClearBackground(BLACK);
 
 	drawBackground();
