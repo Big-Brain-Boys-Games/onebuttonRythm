@@ -12,6 +12,7 @@
 #include "drawing.h"
 #include "gameplay.h"
 #include "gamejolt.h"
+#include "thread.h"
 
 // #include "shared.c"
 // #include "drawing.c"
@@ -39,7 +40,7 @@ char _playerName[100];
 
 int main(int argc, char **argv)
 {
-
+	LoadingMutexInit();
 	initDrawing();
 	audioInit();
 	srand(time(NULL));
@@ -52,26 +53,20 @@ int main(int argc, char **argv)
 	float loadTimer = 0;
 	while (!WindowShouldClose())
 	{
-		if(_loading)
-			loadTimer += GetFrameTime();
-		else
-			loadTimer = 0;
-		
-		//todo, use mutexes instead
-		if(loadTimer > 1) //nothing should take longer than 1 second to load
-		{
-			loadTimer = 0;
-			_loading = 0;
-		}
-		apiUpdate();
+		lockLoadingMutex();	
 		_loadingFade += fmax(((_loading != 0 ? 1 : 0)-_loadingFade) * GetFrameTime()*15, -0.1);
 		if(_loadingFade < 0)
 			_loadingFade = 0;
 		if (_loadingFade < _loading)
 			_loadingFade = 1;
+		unlockLoadingMutex();
+		
 		_isKeyPressed = isAnyKeyDown();
 		if (_pGameplayFunction != &fMapSelect)
 			_mapRefresh = true;
+
+		apiUpdate();
+		
 		BeginDrawing();
 		if (IsKeyPressed(KEY_F11) || ((IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)) && IsKeyPressed(KEY_ENTER)))
 		{

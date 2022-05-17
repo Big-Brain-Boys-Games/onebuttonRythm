@@ -8,3 +8,9 @@ void createThread(void *(*func)(void *), void *args);
 #include <windows.h>
 void createThread(DWORD WINAPI *(*func)(void *), void *args);
 #endif
+
+void LoadingMutexInit();
+
+void lockLoadingMutex();
+
+void unlockLoadingMutex();

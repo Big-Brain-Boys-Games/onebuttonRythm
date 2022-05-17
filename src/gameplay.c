@@ -1642,7 +1642,9 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 // DWORD WINAPI * decodeAudio(struct decodeAudioArgs * args)
 #endif
 {
+	lockLoadingMutex();
 	_loading++;
+	unlockLoadingMutex();
 	int amount;
 	static int oldAmount = 0;
 	char **files = GetDirectoryFiles("maps/", &amount);
@@ -1744,7 +1746,9 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 
 		mapIndex++;
 	}
+	lockLoadingMutex();
 	_loading--;
+	unlockLoadingMutex();
 	ClearDirectoryFiles();
 	*args->amount = mapIndex;
 	free(args);

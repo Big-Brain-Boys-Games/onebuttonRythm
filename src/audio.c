@@ -120,7 +120,9 @@ void *decodeAudio(struct decodeAudioArgs *args)
 DWORD WINAPI *decodeAudio(struct decodeAudioArgs *args)
 #endif
 {
+	lockLoadingMutex();
 	_loading++;
+	unlockLoadingMutex();
 	ma_result result;
 	printf("loading sound effect %s\n", args->file);
 	ma_decoder_config decoder_config = ma_decoder_config_init(ma_format_f32, 2, 48000);
@@ -151,7 +153,9 @@ DWORD WINAPI *decodeAudio(struct decodeAudioArgs *args)
 		size++;
 	}
 	ma_decoder_uninit(&decoder);
+	lockLoadingMutex();
 	_loading--;
+	unlockLoadingMutex();
 	*args->audioLength = audioLength;
 	free(args->file);
 	free(args);

@@ -3,9 +3,11 @@
 
 #ifdef __unix
 #include <pthread.h>
+pthread_mutex_t _loadingMutex;
 #else
 #include "windowsDefs.h"
 #include <windows.h>
+HANDLE _loadingMutex;
 #endif
 
 #ifdef __unix
@@ -22,4 +24,31 @@ void createThread(DWORD WINAPI *(*func)(void *), void *args)
 #endif
 
     return;
+}
+
+void LoadingMutexInit()
+{
+    #ifdef __unix
+        pthread_mutex_init(&_loadingMutex, NULL);
+    #else
+        _loadingMutex = CreateMutex( NULL, FALSE, NULL);
+    #endif
+}
+
+void lockLoadingMutex()
+{
+    #ifdef __unix
+        pthread_mutex_lock(&_loadingMutex);
+    #else
+        WaitForSingleObject(_loadingMutex, INFINITE);
+    #endif
+}
+
+void unlockLoadingMutex()
+{
+    #ifdef __unix
+        pthread_mutex_unlock(&_loadingMutex);
+    #else
+        ReleaseMutex(_loadingMutex);
+    #endif
 }
