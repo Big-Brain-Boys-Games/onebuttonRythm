@@ -56,8 +56,13 @@ Map loadMapInfo(char * file)
 
 	strcpy(pStr, mapStr);
 	strcat(pStr, "/map.data");
+	printf("%s\n", pStr);
 	if(!FileExists(pStr))
+	{
+		free(pStr);
+		printf("map.data doesn't exist\n");
 		return (Map){.name=0};
+	}
 	FILE * f;
 	f = fopen(pStr, "r");
 
@@ -180,8 +185,15 @@ Map loadMapInfo(char * file)
 	}
 	SetTextureFilter(map.image, TEXTURE_FILTER_BILINEAR);
 	free(pStr);
+	printf("successfully loaded %s\n", file);
 	return map;
 }
+
+#define freeArray(arr) \
+	if(arr) { \
+		free(arr); \
+		arr = 0; \
+	}
 
 void freeMap(Map * map)
 {
@@ -193,18 +205,13 @@ void freeMap(Map * map)
 	{
 		UnloadTexture(map->image);
 	}
-	if(map->name != 0)
-		free(map->name);
-	if(map->artist != 0)
-		free(map->artist);
-	if(map->mapCreator != 0)
-		free(map->mapCreator);
-	if(map->folder != 0)
-		free(map->folder);
-	if(map->imageFile != 0)
-		free(map->imageFile);
-	if(map->musicFile != 0)
-		free(map->musicFile);
+	freeArray(map->name);
+	freeArray(map->artist);
+	freeArray(map->mapCreator);
+	freeArray(map->folder);
+	freeArray(map->imageFile);
+	freeArray(map->musicFile);
+	freeArray(map->music);
 	map->bpm = 0;
 	map->difficulty = 0;
 	map->zoom = 7;
@@ -700,10 +707,6 @@ void loadMap ()
 	sprintf(str, "%s - %s", _map->name, _map->artist);
 	SetWindowTitle(str);
 }
-
-#define freeArray(arr) \
-	if(arr)\
-		free(arr);
 
 void freeNotes()
 {

@@ -173,6 +173,8 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float 
 		{
 			map->image = LoadTextureFromImage(map->cpuImage);
 		}
+		UnloadImage(map->cpuImage);
+		map->cpuImage.width = 0;
 		if(map->image.id == 0)
 			map->image.id = -1; 
 		else

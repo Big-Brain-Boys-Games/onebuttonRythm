@@ -844,8 +844,7 @@ void fEditor()
 	if (isPlaying)
 	{
 		_musicHead += GetFrameTime() * _musicSpeed;
-		printf("%i\n", _noteIndex);
-		if (getMusicHead() > _papNotes[_noteIndex]->time)
+		if (_amountNotes > 0 && getMusicHead() > _papNotes[_noteIndex]->time)
 		{
 			++_noteIndex;
 			if(_papNotes[_noteIndex]->custSound)
@@ -1023,6 +1022,10 @@ void fEditor()
 		isPlaying = !isPlaying;
 		_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
 	}
+	if(_musicHead < 0)
+		_musicHead = 0;
+	if(_musicHead > getMusicDuration())
+		_musicHead = getMusicDuration();
 	ClearBackground(BLACK);
 
 	drawBackground();
@@ -1688,6 +1691,7 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 			continue;
 		// check for cache
 		bool cacheHit = false;
+		//todo reenable cache when memory leak is fixed and music isn't unloaded
 		for (int j = 0; j < amount; j++)
 		{
 			if (!filesCaching[j][0])
@@ -1717,11 +1721,16 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 			mapIndex++;
 			continue;
 		}
-		printf("cache miss %s\n", files[i]);
+		printf("cache miss %s %i\n", files[i], mapIndex);
 		// cache miss
 
 		freeMap(&_pMaps[mapIndex]);
 		_pMaps[mapIndex] = loadMapInfo(files[i]);
+		if(_pMaps[mapIndex].name == 0)
+		{
+			printf("skipping map, failed to load\n");
+			continue;
+		}
 		if (_pMaps[mapIndex].name != 0)
 		{
 			readScore(&_pMaps[mapIndex],
@@ -2045,12 +2054,16 @@ void fMapSelect()
 	if (hoverMap != -1 || selectedMap != -1)
 	{
 		int selMap = selectedMap != -1 ? selectedMap : hoverMap;
-		char str[100];
-		strcpy(str, _pMaps[selMap].name);
-		strcat(str, " - ");
-		strcat(str, _pMaps[selMap].artist);
-		int textSize = measureText(str, GetScreenWidth() * 0.05);
-		drawText(str, GetScreenWidth() * 0.9 - textSize, GetScreenHeight() * 0.92, GetScreenWidth() * 0.05, WHITE);
+		if(_pMaps[selMap].name != 0)
+		{
+			char str[100];
+			// printf("%p\n", _pMaps[selMap].name);
+			strcpy(str, _pMaps[selMap].name);
+			strcat(str, " - ");
+			strcat(str, _pMaps[selMap].artist);
+			int textSize = measureText(str, GetScreenWidth() * 0.05);
+			drawText(str, GetScreenWidth() * 0.9 - textSize, GetScreenHeight() * 0.92, GetScreenWidth() * 0.05, WHITE);
+		}
 	}
 
 	drawCursor();
