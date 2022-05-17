@@ -844,14 +844,22 @@ void fEditor()
 	if (isPlaying)
 	{
 		_musicHead += GetFrameTime() * _musicSpeed;
-		if (_amountNotes > 0 && getMusicHead() > _papNotes[_noteIndex]->time)
+		if (_amountNotes > 0 && _noteIndex < _amountNotes-1 && getMusicHead() > _papNotes[_noteIndex]->time)
 		{
-			++_noteIndex;
+			
 			if(_papNotes[_noteIndex]->custSound)
 				playAudioEffect(_papNotes[_noteIndex]->custSound->sound, _papNotes[_noteIndex]->custSound->length);
 			else
 				playAudioEffect(_pHitSE, _hitSE_Size);
+
+			while(_noteIndex < _amountNotes-1 && getMusicHead() > _papNotes[_noteIndex]->time)
+			{
+				_noteIndex++;
+			}
 		}
+
+		while(_noteIndex < _amountNotes-1 && _noteIndex > 0 && getMusicHead() < _papNotes[_noteIndex-1]->time)
+			_noteIndex--;
 		
 		if (endOfMusic())
 		{
