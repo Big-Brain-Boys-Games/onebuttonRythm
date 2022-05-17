@@ -35,7 +35,7 @@ extern int _loading;
 extern Map *_pMaps;
 extern char _playerName[100];
 float _scrollSpeed = 0.6;
-volatile int _noteIndex = 0, _amountNotes = 0;
+int _noteIndex = 0, _amountNotes = 0;
 bool _noBackground = false;
 float _health = 50;
 int _score = 0, _highScore, _combo = 0, _highestCombo, _highScoreCombo = 0;
