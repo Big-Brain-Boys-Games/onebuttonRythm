@@ -1863,7 +1863,7 @@ void fMapSelect()
 		{
 			int x = i % 3;
 			int y = i / 3;
-			if (interactableButton(_mods[i].name, 0.03, GetScreenWidth() * (0.2 + x * 0.22), GetScreenHeight() * (0.05 + y * 0.12), GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+			if (interactableButton(_mods[i].name, 0.03, GetScreenWidth() * (0.2 + x * 0.22), GetScreenHeight() * (0.6 + y * 0.12), GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
 			{
 				// enable mod
 				int modId = _mods[i].id;
@@ -2026,7 +2026,7 @@ void fMapSelect()
 				_musicHead = 0;
 				printf("selected map!\n");
 				_transition = 0.1;
-				// _disableLoadingScreen = false;
+				_disableLoadingScreen = false;
 			}
 
 			drawMapThumbnail(mapButton, &_pMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], true);
@@ -2043,14 +2043,24 @@ void fMapSelect()
 				{
 					if(_paUndoBuffer[j])
 					{
-						freeArray(_paUndoBuffer[j]->anim);
-						freeArray(_paUndoBuffer[j]->hitSE_File);
-						freeArray(_paUndoBuffer[j]->texture_File);
+						for(int k = 0; k < _undoBufferSize[j]; k++)
+						{
+							freeArray(_paUndoBuffer[j][k].anim);
+							if(_paUndoBuffer[j][k].hitSE_File)
+							{
+								removeCustomSound(_paUndoBuffer[j][k].hitSE_File);
+							}
+							freeArray(_paUndoBuffer[j][k].hitSE_File);
+							if(_paUndoBuffer[j][k].texture_File)
+							{
+								removeCustomTexture(_paUndoBuffer[j][k].texture_File);
+							}
+							freeArray(_paUndoBuffer[j][k].texture_File);
+						}
 						free(_paUndoBuffer[j]);
-						_paUndoBuffer[j] = malloc(_amountNotes*sizeof(Note));
 					}
-					else
-						_paUndoBuffer[j] = malloc(_amountNotes*sizeof(Note));
+					_paUndoBuffer[j] = malloc(_amountNotes*sizeof(Note));
+					
 
 					//copy everything over
 					for(int k = 0; k < _amountNotes; k++)

@@ -193,7 +193,7 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 				int sampleCount = (int)(_musicSpeed * 100);
 				// for(int j = 0; j < sampleCount; j++)
 				// {
-				value += ((float *)*_pMusic)[(int)(i * _musicSpeed + _musicFrameCount * 2)] * musicVolume;
+				value += ((float *)*_pMusic)[(int)(i * (double)_musicSpeed + _musicFrameCount * 2)] * musicVolume;
 				// }
 				((float *)pOutput)[i] = value;
 			}
