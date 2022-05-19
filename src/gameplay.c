@@ -2022,7 +2022,7 @@ void fMapSelect()
 				_musicHead = 0;
 				printf("selected map!\n");
 				_transition = 0.1;
-				// _disableLoadingScreen = false;
+				_disableLoadingScreen = false;
 			}
 
 			drawMapThumbnail(mapButton, &_pMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], true);
