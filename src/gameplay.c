@@ -497,16 +497,53 @@ void fMainMenu()
 	//  Rectangle recordingButton = (Rectangle){.x=middle - GetScreenWidth()*0.10, .y=GetScreenHeight() * 0.75, .width=GetScreenWidth()*0.2,.height=GetScreenHeight()*0.08};
 	//  drawButton(recordingButton,"Record", 0.04);
 
-	if (interactableButton("Play", 0.04, middle - GetScreenWidth() * 0.3, GetScreenHeight() * 0.3, GetScreenWidth() * 0.2, GetScreenHeight() * 0.08))
+	// if (interactableButton("Play", 0.04, middle - GetScreenWidth() * 0.3, GetScreenHeight() * 0.3, GetScreenWidth() * 0.2, GetScreenHeight() * 0.08))
+	// {
+	// 	// switching to playing map
+	// 	printf("switching to playing map!\n");
+	// 	_pNextGameplayFunction = &fPlaying;
+	// 	_pGameplayFunction = &fMapSelect;
+	// 	_transition = 0.1;
+	// }
+	float fontScale = 0.075;
+	//play button
+	Rectangle button = (Rectangle){.x = GetScreenWidth() * 0.05, .y = GetScreenHeight() * 0.25, .width = GetScreenWidth() * 0.32, .height = GetScreenWidth() * 0.32};
+	Color color = WHITE;
+	static float growTimer = 0;
+	if(mouseInRect(button))
 	{
-		// switching to playing map
+		growTimer += GetFrameTime() * 12;
+		color = LIGHTGRAY;
+	}else
+		growTimer -= GetFrameTime() * 12;
+
+	growTimer = fmax(fmin(growTimer, 1), 0);
+	
+	button.width += GetScreenWidth()*0.1*growTimer;
+	button.height += GetScreenWidth()*0.1*growTimer;
+	button.x -= GetScreenWidth()*0.05*growTimer;
+	button.y -= GetScreenWidth()*0.05*growTimer;
+
+	DrawTexturePro(_noteTex, (Rectangle){.x=0, .y=0, .width=_noteTex.width, .height=_noteTex.height}, (Rectangle){.x=button.x, .y=button.y, .width=button.width, .height=button.width}, (Vector2) {.x=0, .y=0}, 0, WHITE);
+
+	// DrawTexturePro(_noteTex, (Rectangle){.x=0, .y=0, .width=_noteTex.width, .height=_noteTex.height}, (Rectangle){.x=0, .y=0, .width=button.width, .height=button.height}, (Vector2){.x=button.x, .y=button.y}, 0, WHITE);
+	// drawBox(button, color);
+	fontScale *= 1.3;
+	// DrawRectangle(rect.x, rect.y, rect.width, rect.height, ColorAlpha(color, 0.5));
+	int screenSize = GetScreenWidth() > GetScreenHeight() ? GetScreenHeight() : GetScreenWidth();
+	int textSize = measureText("Play", screenSize * fontScale);
+	drawText("Play", button.x + button.width / 2 - textSize / 2, button.y + button.height*0.5-GetScreenHeight()*0.045, screenSize * fontScale, DARKGRAY);
+
+	if (IsMouseButtonReleased(0) && mouseInRect(button))
+	{
+		playAudioEffect(_pButtonSE, _buttonSE_Size);
 		printf("switching to playing map!\n");
 		_pNextGameplayFunction = &fPlaying;
 		_pGameplayFunction = &fMapSelect;
 		_transition = 0.1;
 	}
 
-	if (interactableButton("Settings", 0.04, middle - GetScreenWidth() * 0.34, GetScreenHeight() * 0.45, GetScreenWidth() * 0.2, GetScreenHeight() * 0.08))
+	if (interactableButton("Settings", 0.035, middle - GetScreenWidth() * (0.12-growTimer*0.03), GetScreenHeight() * 0.55, GetScreenWidth() * 0.2, GetScreenHeight() * 0.065))
 	{
 		// Switching to settings
 		_pGameplayFunction = &fSettings;
@@ -514,32 +551,32 @@ void fMainMenu()
 		_settings.offset = _settings.offset * 1000;
 	}
 
-	// if (interactableButton("Export", 0.04, middle - GetScreenWidth()*0.38,GetScreenHeight() * 0.60,GetScreenWidth()*0.2,GetScreenHeight()*0.08))
-	// {
-	// 	//Switching to export
-	// 	_pNextGameplayFunction = &fExport;
-	// 	_pGameplayFunction = &fMapSelect;
-	// 	_transition = 0.1;
-	// }
-
-	if (interactableButton("New Map", 0.04, middle - GetScreenWidth() * 0.38, GetScreenHeight() * 0.60, GetScreenWidth() * 0.2, GetScreenHeight() * 0.08))
+	if (interactableButton("New Map", 0.035, middle - GetScreenWidth() * (0.03 - growTimer*0.03), GetScreenHeight() * 0.65, GetScreenWidth() * 0.2, GetScreenHeight() * 0.065))
 	{
 		_pGameplayFunction = &fNewMap;
 		_transition = 0.1;
 	}
 
 	// gigantic ass title
-	char *title = "One Button Rhythm";
-	float tSize = GetScreenWidth() * 0.05;
+	char *title = "One Button";
+	float tSize = GetScreenWidth() * 0.07;
 	int size = MeasureText(title, tSize);
+	Vector2 titlePos = (Vector2){.x=GetScreenWidth()*0.5, .y=GetScreenHeight()*0.2};
 	// dropshadow
-	drawText(title, middle - size / 2 + GetScreenWidth() * 0.004, GetScreenHeight() * 0.107, tSize, DARKGRAY);
+	drawText("One Button", titlePos.x + GetScreenWidth() * 0.004, titlePos.y + GetScreenHeight()* 0.007, tSize, ColorAlpha(BLACK, 0.4));
 	// real title
-	drawText(title, middle - size / 2, GetScreenHeight() * 0.1, tSize, WHITE);
+	drawText("One Button", titlePos.x, titlePos.y, tSize, WHITE);
+
+	titlePos.x += GetScreenWidth()*0.07;
+	titlePos.y += GetScreenHeight()*0.1;
+	// dropshadow
+	drawText("Rhythm", titlePos.x + GetScreenWidth() * 0.004, titlePos.y + GetScreenHeight()* 0.007, tSize, ColorAlpha(BLACK, 0.4));
+	// real title
+	drawText("Rhythm", titlePos.x, titlePos.y, tSize, WHITE);
 
 	char str[120];
 	sprintf(str, "name: %s", _playerName);
-	drawText(str, GetScreenWidth() * 0.4, GetScreenHeight() * 0.8, GetScreenWidth() * 0.04, WHITE);
+	drawText(str, GetScreenWidth() * 0.55, GetScreenHeight() * 0.92, GetScreenWidth() * 0.04, WHITE);
 
 	drawText(_notfication, GetScreenWidth() * 0.6, GetScreenHeight() * 0.7, GetScreenWidth() * 0.02, WHITE);
 
