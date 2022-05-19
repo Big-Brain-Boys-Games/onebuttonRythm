@@ -1946,10 +1946,8 @@ void fMapSelect()
 		}
 
 		mapCount++;
-		int x = GetScreenWidth() * 0.05;
-		if (mapCount % 2 == 1)
-			x = GetScreenWidth() * 0.55;
-		Rectangle mapButton = (Rectangle){.x = x, .y = menuScrollSmooth * GetScreenHeight() + GetScreenHeight() * ((floor(i / 2) > floor(selectedMap / 2) && selectedMap != -1 ? 0.4 : 0.3) + 0.45 * floor(mapCount / 2)), .width = GetScreenWidth() * 0.4, .height = GetScreenHeight() * 0.4};
+		int x = GetScreenWidth() * 0.02 + GetScreenWidth() * 0.32 * (mapCount % 3);
+		Rectangle mapButton = (Rectangle){.x = x, .y = menuScrollSmooth * GetScreenHeight() + GetScreenHeight() * ((floor(i / 3) > floor(selectedMap / 3) && selectedMap != -1 ? 0.3 : 0.225) + 0.3375 * floor(mapCount / 3)), .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.3};
 		if ((mouseInRect(mapButton) || selectedMap == i) && mouseInRect(mapSelectRect))
 		{
 			if (hoverPeriod > 1 && hoverPeriod < 2 || !_musicPlaying)
@@ -1991,12 +1989,12 @@ void fMapSelect()
 			}
 
 			drawMapThumbnail(mapButton, &_pMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], true);
-			if (interactableButtonNoSprite("play", 0.03, mapButton.x, mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
+			if (interactableButtonNoSprite("play", 0.0225, mapButton.x, mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
 			{
 				_pNextGameplayFunction = &fPlaying;
 				_pGameplayFunction = &fCountDown;
 			}
-			if (interactableButtonNoSprite("editor", 0.03, mapButton.x + mapButton.width * (1 / 3.0), mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
+			if (interactableButtonNoSprite("editor", 0.0225, mapButton.x + mapButton.width * (1 / 3.0), mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
 			{
 				_pNextGameplayFunction = &fEditor;
 				_pGameplayFunction = &fEditor;
@@ -2047,7 +2045,7 @@ void fMapSelect()
 				startMusic();
 				_musicPlaying = false;
 			}
-			if (interactableButtonNoSprite("export", 0.03, mapButton.x + mapButton.width * (1 / 3.0 * 2), mapButton.y + mapButton.height, mapButton.width * (1 / 3.0), mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
+			if (interactableButtonNoSprite("export", 0.0225, mapButton.x + mapButton.width * (1 / 3.0 * 2), mapButton.y + mapButton.height, mapButton.width * (1 / 3.0), mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
 			{
 				_pGameplayFunction = &fExport;
 			}

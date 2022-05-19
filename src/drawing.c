@@ -225,24 +225,24 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float 
 			text[19] = '\0';
 		}
 	}
-	int textSize = measureText(textPointer, GetScreenWidth() * 0.04);
-	drawText(textPointer, rect.x + rect.width/2 - textSize / 2, rect.y + GetScreenHeight() * 0.01+rect.height*imageRatio, GetScreenWidth() * 0.04, DARKGRAY);
+	int textSize = measureText(textPointer, GetScreenWidth() * 0.03);
+	drawText(textPointer, rect.x + rect.width/2 - textSize / 2, rect.y + GetScreenHeight() * 0.01+rect.height*imageRatio, GetScreenWidth() * 0.03, DARKGRAY);
 	
 	sprintf(text, "%i", map->difficulty);
 	DrawRectangle(rect.x + rect.width*0.13, rect.y + 0.60*rect.height, rect.width*0.2, rect.height*0.20, ColorAlpha(BLACK, 0.4));
-	drawText(text, rect.x + rect.width*0.08, rect.y + 0.60*rect.height, GetScreenWidth() * 0.035, WHITE);
+	drawText(text, rect.x + rect.width*0.08, rect.y + 0.60*rect.height, GetScreenWidth() * 0.02625, WHITE);
 	sprintf(text, "%i:%i", (int)floorf(map->musicLength/60), (int)floorf(map->musicLength-floorf(map->musicLength/60)*60));
-	drawText(text, rect.x + rect.width*0.06, rect.y + 0.68*rect.height, GetScreenWidth() * 0.035, WHITE);
+	drawText(text, rect.x + rect.width*0.06, rect.y + 0.68*rect.height, GetScreenWidth() * 0.02625, WHITE);
 
 	sprintf(text, "%i", highScore);
 	if(highScore !=0)
 	{
 		DrawRectangle(rect.x + rect.width*0.78, rect.y + 0.02*rect.height, rect.width*0.2, rect.height*0.20, ColorAlpha(BLACK, 0.4));
-		drawText(text, rect.x + rect.width*0.80, rect.y + 0.02*rect.height, GetScreenWidth() * 0.02, WHITE);
+		drawText(text, rect.x + rect.width*0.80, rect.y + 0.02*rect.height, GetScreenWidth() * 0.015, WHITE);
 		sprintf(text, "%i", combo);
-		drawText(text, rect.x + rect.width*0.82, rect.y + 0.08*rect.height, GetScreenWidth() * 0.02, WHITE);
+		drawText(text, rect.x + rect.width*0.82, rect.y + 0.08*rect.height, GetScreenWidth() * 0.015, WHITE);
 		sprintf(text, "%.2f", 100*(1-accuracy));
-		drawText(text, rect.x + rect.width*0.84, rect.y + 0.14*rect.height, GetScreenWidth() * 0.02, WHITE);
+		drawText(text, rect.x + rect.width*0.84, rect.y + 0.14*rect.height, GetScreenWidth() * 0.015, WHITE);
 
 		//rank
 		Color colRank = LIGHTGRAY;
@@ -256,7 +256,7 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float 
 			colRank = ORANGE;
 		if(accuracy < 0.1)
 			colRank = RED;
-		DrawTexturePro(_noteTex, (Rectangle){.x=0, .y=0, .width=_noteTex.width, .height=_noteTex.height}, (Rectangle){.x=rect.x*1.03, .y=rect.y*1.03, .width=rect.x*0.08, .height=rect.x*0.08}, (Vector2) {.x=0, .y=0}, 0, colRank);
+		DrawTexturePro(_noteTex, (Rectangle){.x=0, .y=0, .width=_noteTex.width, .height=_noteTex.height}, (Rectangle){.x=rect.x+rect.width*0.03, .y=rect.y+rect.width*0.03, .width=rect.width*0.08, .height=rect.width*0.08}, (Vector2) {.x=0, .y=0}, 0, colRank);
 	}
 }
 
