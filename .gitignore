@@ -64,3 +64,4 @@ vgcore*
 scores/*
 *~
 *.txt
+.depend
