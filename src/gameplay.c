@@ -1859,7 +1859,7 @@ void fMapSelect()
 		{
 			int x = i % 3;
 			int y = i / 3;
-			if (interactableButton(_mods[i].name, 0.03, GetScreenWidth() * (0.2 + x * 0.22), GetScreenHeight() * (0.05 + y * 0.12), GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+			if (interactableButton(_mods[i].name, 0.03, GetScreenWidth() * (0.2 + x * 0.22), GetScreenHeight() * (0.6 + y * 0.12), GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
 			{
 				// enable mod
 				int modId = _mods[i].id;
