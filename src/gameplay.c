@@ -1065,7 +1065,11 @@ void fEditor()
 	if (IsKeyPressed(KEY_SPACE) && !showSettings && !showNoteSettings)
 	{
 		isPlaying = !isPlaying;
-		_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+		if (roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat < getMusicDuration())
+		{
+			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+		}
+		
 	}
 	if(_musicHead < 0)
 		_musicHead = 0;
