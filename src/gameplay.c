@@ -2039,14 +2039,24 @@ void fMapSelect()
 				{
 					if(_paUndoBuffer[j])
 					{
-						freeArray(_paUndoBuffer[j]->anim);
-						freeArray(_paUndoBuffer[j]->hitSE_File);
-						freeArray(_paUndoBuffer[j]->texture_File);
+						for(int k = 0; k < _undoBufferSize[j]; k++)
+						{
+							freeArray(_paUndoBuffer[j][k].anim);
+							if(_paUndoBuffer[j][k].hitSE_File)
+							{
+								removeCustomSound(_paUndoBuffer[j][k].hitSE_File);
+							}
+							freeArray(_paUndoBuffer[j][k].hitSE_File);
+							if(_paUndoBuffer[j][k].texture_File)
+							{
+								removeCustomTexture(_paUndoBuffer[j][k].texture_File);
+							}
+							freeArray(_paUndoBuffer[j][k].texture_File);
+						}
 						free(_paUndoBuffer[j]);
-						_paUndoBuffer[j] = malloc(_amountNotes*sizeof(Note));
 					}
-					else
-						_paUndoBuffer[j] = malloc(_amountNotes*sizeof(Note));
+					_paUndoBuffer[j] = malloc(_amountNotes*sizeof(Note));
+					
 
 					//copy everything over
 					for(int k = 0; k < _amountNotes; k++)
