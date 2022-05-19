@@ -2224,14 +2224,14 @@ void fNewMap()
 
 	// text boxes
 	static bool nameBoxSelected = false;
-	Rectangle nameBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.475, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+	Rectangle nameBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.375, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 	textBox(nameBox, newMap.name, &nameBoxSelected);
-	drawText("name", middle, GetScreenHeight() * 0.45, GetScreenHeight() * 0.05, WHITE);
+	drawText("name", middle, GetScreenHeight() * 0.325, GetScreenHeight() * 0.05, WHITE);
 
 	static bool artistBoxSelected = false;
 	Rectangle artistBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.5, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 	textBox(artistBox, newMap.artist, &artistBoxSelected);
-	drawText("artist", middle, GetScreenHeight() * 0.575, GetScreenHeight() * 0.05, WHITE);
+	drawText("artist", middle, GetScreenHeight() * 0.45, GetScreenHeight() * 0.05, WHITE);
 
 	static bool creatorBoxSelected = false;
 	Rectangle creatorBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.625, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
