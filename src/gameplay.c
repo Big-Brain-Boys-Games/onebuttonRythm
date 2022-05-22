@@ -1565,6 +1565,7 @@ void fPlaying()
 				addRipple(0.6);
 			}
 			_score += scoreAdded * (1 + _combo / 100);
+			_papNotes[_noteIndex]->hit = 1;
 			_noteIndex++;
 			_combo++;
 			if(_papNotes[closestIndex]->custSound)

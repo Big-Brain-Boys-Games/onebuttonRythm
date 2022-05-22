@@ -95,17 +95,19 @@ void drawCursor ()
 void drawNote(float musicTime, Note * note, Color color)
 {
 	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
+	if(note->hit)
+		scaleNotes *= 0.5;
 	Texture tex = _noteTex;
 	if(note->custTex)
 	{
 		tex = note->custTex->texture;
 	}
 	if(!note->anim)
-		DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 -tex.height * scaleNotes}, 0,  scaleNotes, color);
+		DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 -tex.height * scaleNotes/2}, 0,  scaleNotes, color);
 	else if(note->animSize)
 	{
 		if(_pGameplayFunction == &fEditor)
-			DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 -tex.height * scaleNotes}, 0,  scaleNotes, ColorAlpha(GRAY, 0.5));
+			DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 -tex.height * scaleNotes/2}, 0,  scaleNotes, ColorAlpha(GRAY, 0.5));
 		//draw animated note
 		float time = (musicTime - note->time) / (_scrollSpeed);
 		// if(time < note->anim[0].time || time < time < note->anim[note->animSize].time)
@@ -127,7 +129,7 @@ void drawNote(float musicTime, Note * note, Color color)
 		Vector2 pos;
 		pos.x = frame1.vec.x + (frame2.vec.x-frame1.vec.x)*betweenFrames;
 		pos.y = frame1.vec.y + (frame2.vec.y-frame1.vec.y)*betweenFrames;
-		DrawTextureEx(tex, (Vector2){.x=pos.x*GetScreenWidth() - tex.width * scaleNotes / 2, .y=pos.y*GetScreenHeight() - tex.height * scaleNotes}, 0,  scaleNotes, color);
+		DrawTextureEx(tex, (Vector2){.x=pos.x*GetScreenWidth() - tex.width * scaleNotes / 2, .y=pos.y*GetScreenHeight() - tex.height * scaleNotes/2}, 0,  scaleNotes, color);
 	}
 }
 
@@ -138,14 +140,14 @@ void dNotes ()
 	float middle = GetScreenWidth() /2;
 	
 
-	DrawRectangle(0, GetScreenHeight()*0.30, GetScreenWidth(), GetScreenHeight()*0.3, ColorAlpha(BLACK, 0.4));
+	DrawRectangle(0, GetScreenHeight()*0.35, GetScreenWidth(), GetScreenHeight()*0.3, ColorAlpha(BLACK, 0.4));
 	DrawRectangleGradientH(0,0 , middle - width / 2, GetScreenHeight(), ColorAlpha(BLACK, 0.6), ColorAlpha(BLACK, 0.3));
 	for(int i = _noteIndex; i < _amountNotes && i >= 0 && _papNotes[i]->time + _scrollSpeed > getMusicHead(); i--)
 	{
 		if(i < 0) continue;
 		//DrawCircle( middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
 		//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
-		drawNote(_musicHead, _papNotes[i], ColorAlpha(GRAY, noteFadeOut(_papNotes[i]->time)));
+			drawNote(_musicHead, _papNotes[i], ColorAlpha(GRAY, noteFadeOut(_papNotes[i]->time)));
 
 	}
 

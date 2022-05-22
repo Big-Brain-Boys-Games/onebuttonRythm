@@ -582,6 +582,7 @@ void loadMap ()
 				_papNotes[_noteIndex]->custSound = 0;
 				_papNotes[_noteIndex]->custTex = 0;
 				_papNotes[_noteIndex]->health = 0;
+				_papNotes[_noteIndex]->hit = 0;
 
 				int part = 0;
 				for(int j = 0; j < 2 && part != -1; j++)

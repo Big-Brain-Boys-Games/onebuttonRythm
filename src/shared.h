@@ -20,6 +20,7 @@ typedef struct{
     Frame * anim;
     int animSize;
     float health;
+    short int hit;
 }Note;
 
 float fDistance(float x1, float y1, float x2, float y2);
