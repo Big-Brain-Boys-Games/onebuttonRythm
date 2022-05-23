@@ -901,164 +901,166 @@ void fEditor()
 		if (endOfMusic())
 		{
 			_musicPlaying = false;
+			isPlaying = false;
 		}
-	}
-	else
+	}else 
+		setMusicFrameCount();
+
+	if (!showSettings && !showNoteSettings)
 	{
-		if (!showSettings && !showNoteSettings)
+		// Disable some keybinds during playback
+		// undo that ^
+		if (IsKeyPressed(KEY_RIGHT))
 		{
-			// Disable some keybinds during playback
-			setMusicFrameCount();
-			if (IsKeyPressed(KEY_RIGHT))
-			{
-				// Snap to closest beat
-				_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
-				// Add the offset
-				_musicHead = (_musicHead + _map->offset / 1000.0);
-				// Add the bps to the music head
-				_musicHead += secondsPerBeat;
-				// snap it again (it's close enough right?????)
-				_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
-			}
+			// Snap to closest beat
+			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+			// Add the offset
+			_musicHead = (_musicHead + _map->offset / 1000.0);
+			// Add the bps to the music head
+			_musicHead += secondsPerBeat;
+			// snap it again (it's close enough right?????)
+			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+			isPlaying = false;
+		}
 
-			if (IsKeyPressed(KEY_LEFT))
-			{
-				_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
-				_musicHead = (_musicHead + _map->offset / 1000.0);
-				_musicHead -= secondsPerBeat;
-				_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
-			}
+		if (IsKeyPressed(KEY_LEFT))
+		{
+			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+			_musicHead = (_musicHead + _map->offset / 1000.0);
+			_musicHead -= secondsPerBeat;
+			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+			isPlaying = false;
+		}
 
-			if (GetMouseWheelMove() > 0)
-				_musicHead += GetFrameTime() * (_scrollSpeed * 6);
-			if (GetMouseWheelMove() < 0)
-				_musicHead -= GetFrameTime() * (_scrollSpeed * 6);
-			if (IsKeyPressed(KEY_UP) || (GetMouseWheelMove() > 0 && IsKeyDown(KEY_LEFT_CONTROL)))
-				_scrollSpeed *= 1.2;
-			if (IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL)))
-				_scrollSpeed /= 1.2;
-			if (_scrollSpeed == 0)
-				_scrollSpeed = 0.01;
-			if (IsMouseButtonDown(2))
-			{
-				_musicHead -= GetMouseDelta().x / GetScreenWidth() * _scrollSpeed;
-			}
+		if (GetMouseWheelMove() > 0)
+			_musicHead += GetFrameTime() * (_scrollSpeed * 6);
+		if (GetMouseWheelMove() < 0)
+			_musicHead -= GetFrameTime() * (_scrollSpeed * 6);
+		if (IsKeyPressed(KEY_UP) || (GetMouseWheelMove() > 0 && IsKeyDown(KEY_LEFT_CONTROL)))
+			_scrollSpeed *= 1.2;
+		if (IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL)))
+			_scrollSpeed /= 1.2;
+		if (_scrollSpeed == 0)
+			_scrollSpeed = 0.01;
+		if (IsMouseButtonDown(2))
+		{
+			_musicHead -= GetMouseDelta().x / GetScreenWidth() * _scrollSpeed;
+		}
 
-			if (IsMouseButtonPressed(0) && GetMouseY() > GetScreenHeight() * 0.3 && GetMouseY() < GetScreenHeight() * 0.6)
+		if (IsMouseButtonPressed(0) && GetMouseY() > GetScreenHeight() * 0.3 && GetMouseY() < GetScreenHeight() * 0.6)
+		{
+			if(!IsKeyDown(KEY_LEFT_SHIFT))
 			{
-				if(!IsKeyDown(KEY_LEFT_SHIFT))
+				free(_selectedNotes);
+				_amountSelectedNotes = 0;
+				_selectedNotes = 0;
+			}
+			addSelectNote(findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX())));
+		}
+
+		if (getMusicHead() < 0)
+			_musicHead = 0;
+
+		if (IsKeyPressed(KEY_ESCAPE))
+		{
+			_pGameplayFunction = &fPause;
+			_pNextGameplayFunction = &fEditor;
+			return;
+		}
+
+		if (getMusicHead() > getMusicDuration())
+			_musicHead = getMusicDuration();
+		if (_isKeyPressed)
+		{
+			float closestTime = 55;
+			int closestIndex = 0;
+			for (int i = 0; i < _amountNotes; i++)
+			{
+				if (closestTime > fabs(_papNotes[i]->time - getMusicHead()))
 				{
-					free(_selectedNotes);
-					_amountSelectedNotes = 0;
-					_selectedNotes = 0;
+					closestTime = fabs(_papNotes[i]->time - getMusicHead());
+					closestIndex = i;
 				}
-				addSelectNote(findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX())));
+			}
+			if (IsKeyPressed(KEY_Z) && IsKeyDown(KEY_LEFT_CONTROL))
+			{
+				undo();
+			}else if (IsKeyPressed(KEY_Z) && !IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f)
+			{
+				doAction();
+				newNote(getMusicHead());
 			}
 
-			if (getMusicHead() < 0)
-				_musicHead = 0;
-
-			if (IsKeyPressed(KEY_ESCAPE))
+			if (IsKeyPressed(KEY_X) && closestTime < _maxMargin)
 			{
-				_pGameplayFunction = &fPause;
-				_pNextGameplayFunction = &fEditor;
-				return;
+				doAction();
+				removeNote(closestIndex);
 			}
 
-			if (getMusicHead() > getMusicDuration())
-				_musicHead = getMusicDuration();
-			if (_isKeyPressed)
+			if (IsKeyPressed(KEY_C) && !isPlaying)
 			{
-				float closestTime = 55;
-				int closestIndex = 0;
-				for (int i = 0; i < _amountNotes; i++)
+				// todo maybe not 4 subbeats?
+				_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+			}
+
+			if (IsKeyPressed(KEY_V) && IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f && _amountSelectedNotes > 0)
+			{
+				doAction();
+				//copy currently selected notes at _musichead position
+
+				//get begin point of notes
+				float firstNote = -1;
+				for(int i = 0; i < _amountSelectedNotes; i++)
 				{
-					if (closestTime > fabs(_papNotes[i]->time - getMusicHead()))
+					if(firstNote == -1)
+						firstNote = _selectedNotes[i]->time;
+					else if(_selectedNotes[i]->time < firstNote)
 					{
-						closestTime = fabs(_papNotes[i]->time - getMusicHead());
-						closestIndex = i;
+						firstNote = _selectedNotes[i]->time;
 					}
 				}
-				if (IsKeyPressed(KEY_Z) && IsKeyDown(KEY_LEFT_CONTROL))
+				//copy over notes
+				for(int i = 0; i < _amountSelectedNotes; i++)
 				{
-					undo();
-				}else if (IsKeyPressed(KEY_Z) && !IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f)
-				{
-					doAction();
-					newNote(getMusicHead());
-				}
-
-				if (IsKeyPressed(KEY_X) && closestTime < _maxMargin)
-				{
-					doAction();
-					removeNote(closestIndex);
-				}
-
-				if (IsKeyPressed(KEY_C) && !isPlaying)
-				{
-					// todo maybe not 4 subbeats?
-					_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
-				}
-
-				if (IsKeyPressed(KEY_V) && IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f && _amountSelectedNotes > 0)
-				{
-					doAction();
-					//copy currently selected notes at _musichead position
-
-					//get begin point of notes
-					float firstNote = -1;
-					for(int i = 0; i < _amountSelectedNotes; i++)
+					int note = newNote(_musicHead+_selectedNotes[i]->time-firstNote);
+					if(_selectedNotes[i]->anim)
 					{
-						if(firstNote == -1)
-							firstNote = _selectedNotes[i]->time;
-						else if(_selectedNotes[i]->time < firstNote)
+						_papNotes[note]->anim = malloc(sizeof(Frame)*_selectedNotes[i]->animSize);
+						for(int j = 0; j < _selectedNotes[i]->animSize; j++)
 						{
-							firstNote = _selectedNotes[i]->time;
+							_papNotes[note]->anim[j] = _selectedNotes[i]->anim[j];
 						}
+						_papNotes[note]->animSize = _selectedNotes[i]->animSize;
 					}
-					//copy over notes
-					for(int i = 0; i < _amountSelectedNotes; i++)
+
+					if(_selectedNotes[i]->hitSE_File)
 					{
-						int note = newNote(_musicHead+_selectedNotes[i]->time-firstNote);
-						if(_selectedNotes[i]->anim)
-						{
-							_papNotes[note]->anim = malloc(sizeof(Frame)*_selectedNotes[i]->animSize);
-							for(int j = 0; j < _selectedNotes[i]->animSize; j++)
-							{
-								_papNotes[note]->anim[j] = _selectedNotes[i]->anim[j];
-							}
-							_papNotes[note]->animSize = _selectedNotes[i]->animSize;
-						}
+						_papNotes[note]->hitSE_File = malloc(100);
+						strcpy(_papNotes[note]->hitSE_File, _selectedNotes[i]->hitSE_File);
+						char tmpStr[100];
+						sprintf(tmpStr, "maps/%s/%s", _map->folder, _selectedNotes[i]->hitSE_File);
+						_papNotes[note]->custSound = addCustomSound(tmpStr);
+					}
 
-						if(_selectedNotes[i]->hitSE_File)
-						{
-							_papNotes[note]->hitSE_File = malloc(100);
-							strcpy(_papNotes[note]->hitSE_File, _selectedNotes[i]->hitSE_File);
-							char tmpStr[100];
-							sprintf(tmpStr, "maps/%s/%s", _map->folder, _selectedNotes[i]->hitSE_File);
-							_papNotes[note]->custSound = addCustomSound(tmpStr);
-						}
-
-						if(_selectedNotes[i]->texture_File)
-						{
-							_papNotes[note]->texture_File = malloc(100);
-							strcpy(_papNotes[note]->texture_File, _selectedNotes[i]->texture_File);
-							char tmpStr[100];
-							sprintf(tmpStr, "maps/%s/%s", _map->folder, _selectedNotes[i]->texture_File);
-							_papNotes[note]->custTex = addCustomTexture(tmpStr);
-						}
+					if(_selectedNotes[i]->texture_File)
+					{
+						_papNotes[note]->texture_File = malloc(100);
+						strcpy(_papNotes[note]->texture_File, _selectedNotes[i]->texture_File);
+						char tmpStr[100];
+						sprintf(tmpStr, "maps/%s/%s", _map->folder, _selectedNotes[i]->texture_File);
+						_papNotes[note]->custTex = addCustomTexture(tmpStr);
 					}
 				}
+			}
 
-				if (IsKeyPressed(KEY_E) && _barMeasureCount <= 32)
-				{
-					_barMeasureCount = _barMeasureCount * 2;
-				}
+			if (IsKeyPressed(KEY_E) && _barMeasureCount <= 32)
+			{
+				_barMeasureCount = _barMeasureCount * 2;
+			}
 
-				if (IsKeyPressed(KEY_Q) && _barMeasureCount >= 2)
-				{
-					_barMeasureCount = _barMeasureCount / 2;
-				}
+			if (IsKeyPressed(KEY_Q) && _barMeasureCount >= 2)
+			{
+				_barMeasureCount = _barMeasureCount / 2;
 			}
 		}
 	}
@@ -1069,7 +1071,6 @@ void fEditor()
 		{
 			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
 		}
-		
 	}
 	if(_musicHead < 0)
 		_musicHead = 0;
@@ -1099,7 +1100,8 @@ void fEditor()
 	drawVignette();
 	drawBars();
 	static bool showAnimation = false;
-	drawProgressBarI(!isPlaying && !showNoteSettings && !showSettings);
+	if(drawProgressBarI(!showNoteSettings && !showSettings))
+		isPlaying = false;
 
 	if (showSettings)
 	{

@@ -21,7 +21,7 @@ void drawBackground();
 void resetBackGround();
 void drawVignette();
 void drawProgressBar();
-void drawProgressBarI(bool interactable);
+bool drawProgressBarI(bool interactable);
 void drawButton(Rectangle rect, char *text, float fontScale);
 void drawButtonNoSprite(Rectangle rect, char *text, float fontScale);
 void fMapSelect();

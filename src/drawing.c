@@ -30,7 +30,8 @@ extern void ** _pMusic, *_pClickPress, *_pClickRelease;
 extern float _transition, _loadingFade;
 extern Map * _map;
 extern int _barMeasureCount;
-extern void (*_pGameplayFunction)();;
+extern void (*_pGameplayFunction)();
+extern bool _musicPlaying;
 
 
 int measureText (char * text, int fontSize)
@@ -338,7 +339,7 @@ void drawVignette()
 //TODO don't do this, pls fix
 void drawProgressBar() {drawProgressBarI(false);}
 
-void drawProgressBarI(bool interActable)
+bool drawProgressBarI(bool interActable)
 {
 	static bool isGrabbed = false;
 	DrawRectangle( GetScreenWidth()*0.01, GetScreenHeight()*0.93, GetScreenWidth()*0.98, GetScreenHeight()*0.02, (Color){.r=_UIColor.r,.g=_UIColor.g,.b=_UIColor.b,.a=126});
@@ -361,7 +362,9 @@ void drawProgressBarI(bool interActable)
 		}
 		if(!IsMouseButtonDown(0))
 			isGrabbed = false;
+		return isGrabbed;
 	}
+	return false;
 }
 
 
