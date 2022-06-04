@@ -63,5 +63,5 @@ vgcore*
 *.conf
 scores/*
 *~
-*.txt
+build/
 .depend
