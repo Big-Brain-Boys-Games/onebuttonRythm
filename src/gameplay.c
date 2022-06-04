@@ -12,7 +12,6 @@
 #include <string.h>
 #include "thread.h"
 #include <ctype.h>
-#include "gamejolt.h"
 
 extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
 extern Color _fade;
@@ -1468,7 +1467,7 @@ void fPlaying()
 		{
 			saveScore();
 			int tmp = 0;
-			submitScore(_map->id, _score, &tmp);
+			// submitScore(_map->id, _score, &tmp);
 		}
 		_pGameplayFunction = &fEndScreen;
 		playAudioEffect(_pFinishSE, _finishSE_Size);

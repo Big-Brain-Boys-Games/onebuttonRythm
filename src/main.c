@@ -11,7 +11,6 @@
 #include "files.h"
 #include "drawing.h"
 #include "gameplay.h"
-#include "gamejolt.h"
 #include "thread.h"
 
 // #include "shared.c"
@@ -46,7 +45,6 @@ int main(int argc, char **argv)
 	srand(time(NULL));
 	sprintf(_playerName, "guest%i", rand());
 	loadSettings();
-	apiInit();
 	
 	_pGameplayFunction = &fIntro;
 	_transition = 1;
@@ -64,8 +62,6 @@ int main(int argc, char **argv)
 		_isKeyPressed = isAnyKeyDown();
 		if (_pGameplayFunction != &fMapSelect)
 			_mapRefresh = true;
-
-		apiUpdate();
 		
 		BeginDrawing();
 		if (IsKeyPressed(KEY_F11) || ((IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)) && IsKeyPressed(KEY_ENTER)))
