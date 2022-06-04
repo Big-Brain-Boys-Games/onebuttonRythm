@@ -9,14 +9,12 @@ project(
 include_directories(src)
 add_executable(${PROJECT_NAME} src/audio.c src/drawing.c src/files.c src/gameplay.c src/main.c src/shared.c src/thread.c)
 
-add_subdirectory(
-    deps/raylib
-    deps/zip
-)
+add_subdirectory(deps/raylib)
+add_subdirectory(deps/zip)
 
 target_link_directories( ${PROJECT_NAME}
-    PUBLIC deps/raylib/src
-    PUBLIC deps/zip/build
+    PRIVATE deps/raylib/src
+    PRIVATE deps/zip
 )
 
 target_link_libraries(${PROJECT_NAME} raylib zip)
