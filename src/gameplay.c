@@ -1736,6 +1736,35 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 	int amount;
 	static int oldAmount = 0;
 	char **files = GetDirectoryFiles("maps/", &amount);
+
+	int newAmount = 0;
+	for(int i = 0; i < amount; i++)
+	{
+		char str [100];
+		snprintf(str, 100, "maps/%s/map.data", files[i]);
+		if(FileExists(str))
+		{
+			newAmount++;
+		}
+	}
+	char **newFiles = malloc(sizeof(char *) * newAmount);
+	for(int i = 0, j = 0; i < amount && j < newAmount; i++)
+	{
+		char str [100];
+		snprintf(str, 100, "maps/%s/map.data", files[i]);
+		if(FileExists(str))
+		{
+			newFiles[j] = malloc(sizeof(char) * strlen(files[i]));
+			strcpy(newFiles[j], files[i]);
+			j++;
+		}
+		// free(files[i]);
+	}
+	// free(files);
+	ClearDirectoryFiles();
+	files = newFiles;
+	amount = newAmount;
+
 	if (args->highScores != 0)
 	{
 		*args->highScores = realloc(*args->highScores, amount * sizeof(int));
@@ -1837,7 +1866,6 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 	lockLoadingMutex();
 	_loading--;
 	unlockLoadingMutex();
-	ClearDirectoryFiles();
 	*args->amount = mapIndex;
 	free(args);
 }
