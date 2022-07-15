@@ -1142,8 +1142,9 @@ void editorControls()
 		// Snap to closest beat
 		_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
 		// Add the offset
-		_musicHead = (_musicHead + _map->offset / 1000.0);
+		_musicHead += _map->offset / 1000.0;
 		// Add the bps to the music head
+		if(before >= _musicHead) _musicHead += secondsPerBeat;
 		if(before >= _musicHead) _musicHead += secondsPerBeat;
 		// // snap it again (it's close enough right?????)
 		// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
@@ -1156,6 +1157,8 @@ void editorControls()
 		_musicHead = floorf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
 		_musicHead += _map->offset / 1000.0;	
 		printf("before %.2f  musichead %.2f\n", before, _musicHead);
+		if(before <= _musicHead)
+			_musicHead -= secondsPerBeat;
 		if(before <= _musicHead)
 			_musicHead -= secondsPerBeat;
 		// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
