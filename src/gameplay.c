@@ -766,6 +766,7 @@ void undo()
 {
 	printf("undo\n");
 	free(_selectedNotes);
+	_selectedNotes = 0;
 	_amountSelectedNotes = 0;
 	_undoBufferIndex--;
 	for(int i = 0; i < _amountNotes; i++) //free _papNotes
@@ -1135,7 +1136,7 @@ void editorNoteSettings()
 
 void editorControls()
 {
-	float secondsPerBeat = (getMusicDuration()-_map->offset/1000.0) / getBeatsCount() / _barMeasureCount;
+	float secondsPerBeat = (60.0/_map->bpm) / _barMeasureCount;
 	if (IsKeyPressed(KEY_RIGHT))
 	{
 		float before = _musicHead;
@@ -1317,7 +1318,7 @@ void editorControls()
 
 void fEditor()
 {
-	float secondsPerBeat = (getMusicDuration()-_map->offset/1000.0) / getBeatsCount() / _barMeasureCount;
+	float secondsPerBeat = (60.0/_map->bpm) / _barMeasureCount;
 	if (_musicPlaying)
 	{
 		_musicHead += GetFrameTime() * _musicSpeed;
