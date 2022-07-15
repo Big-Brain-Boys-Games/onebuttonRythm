@@ -163,6 +163,7 @@ Map loadMapInfo(char * file)
 				break;
 			case fpNotes:
 				//neat, notes :P
+				//not needed for loadmapinfo, is used for loadmap
 				break;
 		}
 	}
@@ -183,7 +184,7 @@ Map loadMapInfo(char * file)
 		map.image = _menuBackground;
 		map.cpuImage.width = 0;
 	}
-	SetTextureFilter(map.image, TEXTURE_FILTER_BILINEAR);
+	// SetTextureFilter(map.image, TEXTURE_FILTER_BILINEAR);
 	free(pStr);
 	printf("successfully loaded %s\n", file);
 	return map;

@@ -7,6 +7,3 @@
 [submodule "deps/miniaudio"]
 	path = deps/miniaudio
 	url = https://github.com/mackron/miniaudio.git
-[submodule "deps/--force"]
-	path = deps/--force
-	url = https://github.com/MausGames/game-jolt-api-cpp-library.git

@@ -65,3 +65,4 @@ scores/*
 *~
 build/
 .depend
+maps/*
