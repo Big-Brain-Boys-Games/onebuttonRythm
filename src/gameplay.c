@@ -1140,7 +1140,7 @@ void editorControls()
 	{
 		float before = _musicHead;
 		// Snap to closest beat
-		_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+		_musicHead = roundf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat;
 		// Add the offset
 		_musicHead += _map->offset / 1000.0;
 		// Add the bps to the music head
@@ -1154,11 +1154,9 @@ void editorControls()
 	if (IsKeyPressed(KEY_LEFT))
 	{
 		float before = _musicHead;
-		_musicHead = floorf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+		_musicHead = floorf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat;
 		_musicHead += _map->offset / 1000.0;	
 		printf("before %.2f  musichead %.2f\n", before, _musicHead);
-		if(before <= _musicHead)
-			_musicHead -= secondsPerBeat;
 		if(before <= _musicHead)
 			_musicHead -= secondsPerBeat;
 		// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
@@ -1240,7 +1238,7 @@ void editorControls()
 		if (IsKeyPressed(KEY_C) && !_musicPlaying)
 		{
 			// todo maybe not 4 subbeats?
-			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+			_musicHead = roundf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat + _map->offset/1000.0;
 		}
 
 		if (IsKeyPressed(KEY_V) && IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f && _amountSelectedNotes > 0)
