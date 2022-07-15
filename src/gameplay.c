@@ -52,8 +52,10 @@ int _amountSelectedNotes = 0;
 Map *_map;
 Settings _settings = (Settings){.volumeGlobal = 50, .volumeMusic = 100, .volumeSoundEffects = 100, .zoom = 7, .offset = 0};
 
-bool showSettings;
-bool showNoteSettings;
+bool _showSettings = false;
+bool _showNoteSettings = false;
+bool _showAnimation = false;
+
 
 // Timestamp of all the notes
 Note ** _papNotes;
@@ -874,242 +876,13 @@ void doAction()
 	}
 }
 
-void fEditor()
+
+void editorSettings()
 {
-	static bool isPlaying = false;
-	_musicPlaying = isPlaying;
-	float secondsPerBeat = getMusicDuration() / getBeatsCount() / _barMeasureCount;
-	if (isPlaying)
-	{
-		_musicHead += GetFrameTime() * _musicSpeed;
-		if (_amountNotes > 0 && _noteIndex < _amountNotes-1 && getMusicHead() > _papNotes[_noteIndex]->time)
-		{
-			
-			if(_papNotes[_noteIndex]->custSound)
-				playAudioEffect(_papNotes[_noteIndex]->custSound->sound, _papNotes[_noteIndex]->custSound->length);
-			else
-				playAudioEffect(_pHitSE, _hitSE_Size);
-
-			while(_noteIndex < _amountNotes-1 && getMusicHead() > _papNotes[_noteIndex]->time)
-			{
-				_noteIndex++;
-			}
-		}
-
-		while(_noteIndex < _amountNotes-1 && _noteIndex > 0 && getMusicHead() < _papNotes[_noteIndex-1]->time)
-			_noteIndex--;
-		
-		if (endOfMusic())
-		{
-			_musicPlaying = false;
-			isPlaying = false;
-		}
-	}else 
-		setMusicFrameCount();
-
-	if (!showSettings && !showNoteSettings)
-	{
-		// Disable some keybinds during playback
-		// undo that ^
-		if (IsKeyPressed(KEY_RIGHT))
-		{
-			// Snap to closest beat
-			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
-			// Add the offset
-			_musicHead = (_musicHead + _map->offset / 1000.0);
-			// Add the bps to the music head
-			_musicHead += secondsPerBeat;
-			// // snap it again (it's close enough right?????)
-			// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
-			isPlaying = false;
-		}
-
-		if (IsKeyPressed(KEY_LEFT))
-		{
-			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
-			_musicHead = (_musicHead + _map->offset / 1000.0);
-			_musicHead -= secondsPerBeat;
-			// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
-			isPlaying = false;
-		}
-
-		if (GetMouseWheelMove() > 0)
-			_musicHead += GetFrameTime() * (_scrollSpeed * 6);
-		if (GetMouseWheelMove() < 0)
-			_musicHead -= GetFrameTime() * (_scrollSpeed * 6);
-		if (IsKeyPressed(KEY_UP) || (GetMouseWheelMove() > 0 && IsKeyDown(KEY_LEFT_CONTROL)))
-			_scrollSpeed *= 1.2;
-		if (IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL)))
-			_scrollSpeed /= 1.2;
-		if (_scrollSpeed == 0)
-			_scrollSpeed = 0.01;
-		if (IsMouseButtonDown(2))
-		{
-			_musicHead -= GetMouseDelta().x / GetScreenWidth() * _scrollSpeed;
-		}
-
-		if (IsMouseButtonPressed(0) && GetMouseY() > GetScreenHeight() * 0.3 && GetMouseY() < GetScreenHeight() * 0.6)
-		{
-			if(!IsKeyDown(KEY_LEFT_SHIFT))
-			{
-				free(_selectedNotes);
-				_amountSelectedNotes = 0;
-				_selectedNotes = 0;
-			}
-			addSelectNote(findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX())));
-		}
-
-		if (getMusicHead() < 0)
-			_musicHead = 0;
-
-		if (IsKeyPressed(KEY_ESCAPE))
-		{
-			_pGameplayFunction = &fPause;
-			_pNextGameplayFunction = &fEditor;
-			return;
-		}
-
-		if (getMusicHead() > getMusicDuration())
-			_musicHead = getMusicDuration();
-		if (_isKeyPressed)
-		{
-			float closestTime = 55;
-			int closestIndex = 0;
-			for (int i = 0; i < _amountNotes; i++)
-			{
-				if (closestTime > fabs(_papNotes[i]->time - getMusicHead()))
-				{
-					closestTime = fabs(_papNotes[i]->time - getMusicHead());
-					closestIndex = i;
-				}
-			}
-			if (IsKeyPressed(KEY_Z) && IsKeyDown(KEY_LEFT_CONTROL))
-			{
-				undo();
-			}else if (IsKeyPressed(KEY_Z) && !IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f)
-			{
-				doAction();
-				newNote(getMusicHead());
-			}
-
-			if (IsKeyPressed(KEY_X) && closestTime < _maxMargin)
-			{
-				doAction();
-				removeNote(closestIndex);
-			}
-
-			if (IsKeyPressed(KEY_C) && !isPlaying)
-			{
-				// todo maybe not 4 subbeats?
-				_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
-			}
-
-			if (IsKeyPressed(KEY_V) && IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f && _amountSelectedNotes > 0)
-			{
-				doAction();
-				//copy currently selected notes at _musichead position
-
-				//get begin point of notes
-				float firstNote = -1;
-				for(int i = 0; i < _amountSelectedNotes; i++)
-				{
-					if(firstNote == -1)
-						firstNote = _selectedNotes[i]->time;
-					else if(_selectedNotes[i]->time < firstNote)
-					{
-						firstNote = _selectedNotes[i]->time;
-					}
-				}
-				//copy over notes
-				for(int i = 0; i < _amountSelectedNotes; i++)
-				{
-					int note = newNote(_musicHead+_selectedNotes[i]->time-firstNote);
-					if(_selectedNotes[i]->anim)
-					{
-						_papNotes[note]->anim = malloc(sizeof(Frame)*_selectedNotes[i]->animSize);
-						for(int j = 0; j < _selectedNotes[i]->animSize; j++)
-						{
-							_papNotes[note]->anim[j] = _selectedNotes[i]->anim[j];
-						}
-						_papNotes[note]->animSize = _selectedNotes[i]->animSize;
-					}
-
-					if(_selectedNotes[i]->hitSE_File)
-					{
-						_papNotes[note]->hitSE_File = malloc(100);
-						strcpy(_papNotes[note]->hitSE_File, _selectedNotes[i]->hitSE_File);
-						char tmpStr[100];
-						sprintf(tmpStr, "maps/%s/%s", _map->folder, _selectedNotes[i]->hitSE_File);
-						_papNotes[note]->custSound = addCustomSound(tmpStr);
-					}
-
-					if(_selectedNotes[i]->texture_File)
-					{
-						_papNotes[note]->texture_File = malloc(100);
-						strcpy(_papNotes[note]->texture_File, _selectedNotes[i]->texture_File);
-						char tmpStr[100];
-						sprintf(tmpStr, "maps/%s/%s", _map->folder, _selectedNotes[i]->texture_File);
-						_papNotes[note]->custTex = addCustomTexture(tmpStr);
-					}
-				}
-			}
-
-			if (IsKeyPressed(KEY_E) && _barMeasureCount <= 32)
-			{
-				_barMeasureCount = _barMeasureCount * 2;
-			}
-
-			if (IsKeyPressed(KEY_Q) && _barMeasureCount >= 2)
-			{
-				_barMeasureCount = _barMeasureCount / 2;
-			}
-		}
-	}
-	if (IsKeyPressed(KEY_SPACE) && !showSettings && !showNoteSettings)
-	{
-		isPlaying = !isPlaying;
-		if (roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat < getMusicDuration())
-		{
-			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
-			_musicHead += _map->offset/1000.0;
-		}
-	}
-	if(_musicHead < 0)
-		_musicHead = 0;
-	if(_musicHead > getMusicDuration())
-		_musicHead = getMusicDuration();
-	
-	if (_noteIndex > 0)
-	{
-		if (_musicHead < _papNotes[_noteIndex - 1]->time)
-		{
-			--_noteIndex;
-		}
-	}
-	
-	ClearBackground(BLACK);
-
-	drawBackground();
-
-	// draw notes
-	float width = GetScreenWidth() * 0.005;
-	float middle = GetScreenWidth() / 2;
-
-	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
-
-	dNotes();
-	drawMusicGraph(0.4);
-	drawVignette();
-	drawBars();
-	static bool showAnimation = false;
-	if(drawProgressBarI(!showNoteSettings && !showSettings))
-		isPlaying = false;
-
-	if (showSettings)
+	if (_showSettings)
 	{
 		// Darken background
 		DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
-
 		// BPM setting
 		char bpm[10] = {0};
 		if (_map->bpm != 0)
@@ -1183,194 +956,432 @@ void fEditor()
 		// size = measureText(text, tSize);
 		// drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.50, tSize, WHITE);
 	}
+}
+
+void editorNoteSettings()
+{
+	// Darken background
+	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ColorAlpha(BLACK, 0.5));
+	if(_showAnimation)
+		DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),  ColorAlpha(BLACK, 0.3));
+
+	if (interactableButton("Animation", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.5, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+	{
+		//Run animation tab
+		_showAnimation = !_showAnimation;
+		doAction();
+		return;
+	}
+
+	if (interactableButton("back", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.15, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+	{
+		_showNoteSettings = !_showNoteSettings;
+		//apply changes to first note to all selected notes
+		printf("applying to all selected notes\n");
+		Note * firstNote = _selectedNotes[0];
+		printf("new size %i\n", firstNote->animSize);
+		for(int i = 1; i < _amountSelectedNotes; i++)
+		{
+			if(_selectedNotes[i]->anim == 0)
+				_selectedNotes[i]->anim = malloc(sizeof(Frame)*firstNote->animSize);
+			else
+				_selectedNotes[i]->anim = realloc(_selectedNotes[i]->anim, sizeof(Frame)*firstNote->animSize);
+			
+			_selectedNotes[i]->animSize = firstNote->animSize;
+
+			for(int key = 0; key < firstNote->animSize; key++)
+			{
+				_selectedNotes[i]->anim[key] = firstNote->anim[key];
+			}	
+		}
+		return;
+	}
+
+	if(!_showAnimation)
+	{
+		char sprite[100] = {0};
+		sprite[0] = '\0';
+		if (_selectedNotes[0]->texture_File != 0)
+			sprintf(sprite, "%s", _selectedNotes[0]->texture_File);
+		static bool spriteBoxSelected = false;
+		Rectangle spriteBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.1, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+		textBox(spriteBox, sprite, &spriteBoxSelected);
+		if (strlen(sprite) != 0)
+		{
+			if (_selectedNotes[0]->texture_File == 0)
+				_selectedNotes[0]->texture_File = malloc(sizeof(char) * 100);
+			strcpy(_selectedNotes[0]->texture_File, sprite);
+		}else if(_selectedNotes[0]->texture_File != 0)
+		{
+			free(_selectedNotes[0]->texture_File);
+			_selectedNotes[0]->texture_File = 0;
+		}
+
+		// health setting
+		char health[10] = {0};
+		bool theSame = false;
+		for (int i = 0; i < _amountSelectedNotes; i++)
+		{
+			if (_selectedNotes[0]->health != _selectedNotes[i]->health) {
+				theSame = false;
+				break;
+			}
+			else
+				theSame = true;
+		}
+		if (theSame)
+		{
+			sprintf(health, "%i", (int)(_selectedNotes[0]->health));
+		}
+		else sprintf(health, "-", "%c");
+		
+		static bool healthBoxSelected = false;
+		Rectangle healthBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.2, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+		textBox(healthBox, health, &healthBoxSelected);
+		if (healthBoxSelected)
+		{
+			for (int i = 0; i < _amountSelectedNotes; i++)
+			{
+				_selectedNotes[i]->health = atoi(health);
+				_selectedNotes[i]->health = (int)(fmin(fmax(_selectedNotes[i]->health, 0), 9));
+			}
+		}
+		
+	}else
+	{
+		//animation :)
+		static bool timeLineSelected = false;
+		static float timeLine = 0;
+		int value = timeLine * 100;
+		
+		if(_selectedNotes[0]->anim == 0)
+		{
+			_selectedNotes[0]->anim = malloc(sizeof(Frame) * 2);
+			_selectedNotes[0]->anim[0].time = 0;
+			_selectedNotes[0]->anim[0].vec = (Vector2){.x=1, .y=0.5};
+			_selectedNotes[0]->anim[1].time = 1;
+			_selectedNotes[0]->anim[1].vec = (Vector2){.x=0, .y=0.5};
+			_selectedNotes[0]->animSize = 2;
+		}
+
+		slider((Rectangle){.x=0, .y=GetScreenHeight()*0.9, .width=GetScreenWidth(), .height=GetScreenHeight()*0.03}, &timeLineSelected, &value, 100, -100);
+		timeLine = value / 100.0;
+		drawNote(timeLine*_scrollSpeed+_selectedNotes[0]->time, _selectedNotes[0], WHITE);
+		Frame * anim = _selectedNotes[0]->anim;
+		for(int key = 0; key < _selectedNotes[0]->animSize; key++)
+		{
+			//draw keys
+			if(interactableButton("k", 0.01, (anim[key].time)*GetScreenWidth()-GetScreenWidth()*0.01, GetScreenHeight()*0.85, GetScreenWidth()*0.02, GetScreenHeight()*0.05))
+			{
+				//delete key
+				if(_selectedNotes[0]->animSize <= 2)
+					break;
+				_selectedNotes[0]->animSize --;
+				for(int k = key; k < _selectedNotes[0]->animSize; k++)
+				{
+					anim[k].time = anim[k+1].time;
+					anim[k].vec = anim[k+1].vec;
+				}
+				_selectedNotes[0]->anim = realloc(_selectedNotes[0]->anim, sizeof(Frame)*_selectedNotes[0]->animSize);
+			}
+		}
+		if(IsMouseButtonReleased(0) && GetMouseY() < GetScreenHeight()*0.85)
+		{
+			int index = -1;
+			for(int key = 0; key < _selectedNotes[0]->animSize; key++)
+			{
+				if((timeLine+1)/2 == _selectedNotes[0]->anim[key].time)
+				{
+					index = key;
+					break;
+				}
+			}
+			if(index != -1)
+			{
+				//modify existing frame
+				anim[index].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()+0.05};
+			}else
+			{
+				for(int key = 0; key < _selectedNotes[0]->animSize; key++) printf("%i  %i  %f %f %f\n", _selectedNotes[0]->animSize, key, _selectedNotes[0]->anim[key].time, _selectedNotes[0]->anim[key].vec.x, _selectedNotes[0]->anim[key].vec.y);
+				//create new frame
+				_selectedNotes[0]->animSize++;
+				_selectedNotes[0]->anim = realloc(_selectedNotes[0]->anim, _selectedNotes[0]->animSize*sizeof(Frame));
+				for(int key = _selectedNotes[0]->animSize-1; key > 0; key--)
+				{
+					if(_selectedNotes[0]->anim[key].time > (timeLine+1)/2)
+					{
+						_selectedNotes[0]->anim[key+1] = _selectedNotes[0]->anim[key];
+					}
+				}
+				int newIndex = 0;
+				for(int key = 0; key < _selectedNotes[0]->animSize-1; key++)
+				{
+					if(_selectedNotes[0]->anim[key].time == _selectedNotes[0]->anim[key+1].time)
+					{
+						newIndex = key;
+						break;
+					}
+				}
+				// printf("")
+				_selectedNotes[0]->anim[newIndex].time = (timeLine+1)/2;
+				_selectedNotes[0]->anim[newIndex].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()+0.05};
+
+				for(int key = 0; key < _selectedNotes[0]->animSize; key++) printf("%i  %i  %f %f %f\n", _selectedNotes[0]->animSize, key, _selectedNotes[0]->anim[key].time, _selectedNotes[0]->anim[key].vec.x, _selectedNotes[0]->anim[key].vec.y);
+				
+			}
+		}
+	}
+}
+
+void editorControls()
+{
+	float secondsPerBeat = getMusicDuration() / getBeatsCount() / _barMeasureCount;
+	if (IsKeyPressed(KEY_RIGHT))
+	{
+		// Snap to closest beat
+		_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+		// Add the offset
+		_musicHead = (_musicHead + _map->offset / 1000.0);
+		// Add the bps to the music head
+		_musicHead += secondsPerBeat;
+		// // snap it again (it's close enough right?????)
+		// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+		_musicPlaying = false;
+	}
+
+	if (IsKeyPressed(KEY_LEFT))
+	{
+		_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+		_musicHead = (_musicHead + _map->offset / 1000.0);
+		_musicHead -= secondsPerBeat;
+		// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+		_musicPlaying = false;
+	}
+
+	if (GetMouseWheelMove() > 0)
+		_musicHead += GetFrameTime() * (_scrollSpeed * 6);
+	if (GetMouseWheelMove() < 0)
+		_musicHead -= GetFrameTime() * (_scrollSpeed * 6);
+	if (IsKeyPressed(KEY_UP) || (GetMouseWheelMove() > 0 && IsKeyDown(KEY_LEFT_CONTROL)))
+		_scrollSpeed *= 1.2;
+	if (IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL)))
+		_scrollSpeed /= 1.2;
+	if (_scrollSpeed == 0)
+		_scrollSpeed = 0.01;
+	if (IsMouseButtonDown(2))
+	{
+		_musicHead -= GetMouseDelta().x / GetScreenWidth() * _scrollSpeed;
+	}
+
+	if (IsMouseButtonPressed(0) && GetMouseY() > GetScreenHeight() * 0.3 && GetMouseY() < GetScreenHeight() * 0.6)
+	{
+		if(!IsKeyDown(KEY_LEFT_SHIFT))
+		{
+			free(_selectedNotes);
+			_amountSelectedNotes = 0;
+			_selectedNotes = 0;
+		}
+		addSelectNote(findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX())));
+	}
+
+	if (getMusicHead() < 0)
+		_musicHead = 0;
+
+	if (IsKeyPressed(KEY_ESCAPE))
+	{
+		_pGameplayFunction = &fPause;
+		_pNextGameplayFunction = &fEditor;
+		return;
+	}
+
+	if (getMusicHead() > getMusicDuration())
+		_musicHead = getMusicDuration();
+	if (_isKeyPressed)
+	{
+		float closestTime = 55;
+		int closestIndex = 0;
+		for (int i = 0; i < _amountNotes; i++)
+		{
+			if (closestTime > fabs(_papNotes[i]->time - getMusicHead()))
+			{
+				closestTime = fabs(_papNotes[i]->time - getMusicHead());
+				closestIndex = i;
+			}
+		}
+		if (IsKeyPressed(KEY_Z) && IsKeyDown(KEY_LEFT_CONTROL))
+		{
+			undo();
+		}else if (IsKeyPressed(KEY_Z) && !IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f)
+		{
+			doAction();
+			newNote(getMusicHead());
+		}
+
+		if (IsKeyPressed(KEY_X) && closestTime < _maxMargin)
+		{
+			doAction();
+			removeNote(closestIndex);
+		}
+
+		if (IsKeyPressed(KEY_C) && !_musicPlaying)
+		{
+			// todo maybe not 4 subbeats?
+			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+		}
+
+		if (IsKeyPressed(KEY_V) && IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f && _amountSelectedNotes > 0)
+		{
+			doAction();
+			//copy currently selected notes at _musichead position
+
+			//get begin point of notes
+			float firstNote = -1;
+			for(int i = 0; i < _amountSelectedNotes; i++)
+			{
+				if(firstNote == -1)
+					firstNote = _selectedNotes[i]->time;
+				else if(_selectedNotes[i]->time < firstNote)
+				{
+					firstNote = _selectedNotes[i]->time;
+				}
+			}
+			//copy over notes
+			for(int i = 0; i < _amountSelectedNotes; i++)
+			{
+				int note = newNote(_musicHead+_selectedNotes[i]->time-firstNote);
+				if(_selectedNotes[i]->anim)
+				{
+					_papNotes[note]->anim = malloc(sizeof(Frame)*_selectedNotes[i]->animSize);
+					for(int j = 0; j < _selectedNotes[i]->animSize; j++)
+					{
+						_papNotes[note]->anim[j] = _selectedNotes[i]->anim[j];
+					}
+					_papNotes[note]->animSize = _selectedNotes[i]->animSize;
+				}
+
+				if(_selectedNotes[i]->hitSE_File)
+				{
+					_papNotes[note]->hitSE_File = malloc(100);
+					strcpy(_papNotes[note]->hitSE_File, _selectedNotes[i]->hitSE_File);
+					char tmpStr[100];
+					sprintf(tmpStr, "maps/%s/%s", _map->folder, _selectedNotes[i]->hitSE_File);
+					_papNotes[note]->custSound = addCustomSound(tmpStr);
+				}
+
+				if(_selectedNotes[i]->texture_File)
+				{
+					_papNotes[note]->texture_File = malloc(100);
+					strcpy(_papNotes[note]->texture_File, _selectedNotes[i]->texture_File);
+					char tmpStr[100];
+					sprintf(tmpStr, "maps/%s/%s", _map->folder, _selectedNotes[i]->texture_File);
+					_papNotes[note]->custTex = addCustomTexture(tmpStr);
+				}
+			}
+		}
+
+		if (IsKeyPressed(KEY_E) && _barMeasureCount <= 32)
+		{
+			_barMeasureCount = _barMeasureCount * 2;
+		}
+
+		if (IsKeyPressed(KEY_Q) && _barMeasureCount >= 2)
+		{
+			_barMeasureCount = _barMeasureCount / 2;
+		}
+	}
+
+	if (IsKeyPressed(KEY_SPACE))
+	{
+		_musicPlaying = !_musicPlaying;
+		if (roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat < getMusicDuration())
+		{
+			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+			_musicHead += _map->offset/1000.0;
+		}
+	}
+}
+
+void fEditor()
+{
+	float secondsPerBeat = getMusicDuration() / getBeatsCount() / _barMeasureCount;
+	if (_musicPlaying)
+	{
+		_musicHead += GetFrameTime() * _musicSpeed;
+		if (_amountNotes > 0 && _noteIndex < _amountNotes-1 && getMusicHead() > _papNotes[_noteIndex]->time)
+		{
+			
+			if(_papNotes[_noteIndex]->custSound)
+				playAudioEffect(_papNotes[_noteIndex]->custSound->sound, _papNotes[_noteIndex]->custSound->length);
+			else
+				playAudioEffect(_pHitSE, _hitSE_Size);
+
+			while(_noteIndex < _amountNotes-1 && getMusicHead() > _papNotes[_noteIndex]->time)
+			{
+				_noteIndex++;
+			}
+		}
+
+		while(_noteIndex > 0 && getMusicHead() < _papNotes[_noteIndex-1]->time)
+			_noteIndex--;
+		
+		if (endOfMusic())
+		{
+			_musicPlaying = false;
+			_musicPlaying = false;
+		}
+	}else
+	{
+		setMusicFrameCount();
+		_noteIndex = 0;
+	}
+
+	if (!_showSettings && !_showNoteSettings)
+	{
+		editorControls();
+	}
+	
+	if(_musicHead < 0)
+		_musicHead = 0;
+	if(_musicHead > getMusicDuration())
+		_musicHead = getMusicDuration();
+
+	
+	ClearBackground(BLACK);
+
+	drawBackground();
+
+	// draw notes
+	float width = GetScreenWidth() * 0.005;
+	float middle = GetScreenWidth() / 2;
+
+	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
+
+	dNotes();
+	drawMusicGraph(0.4);
+	drawVignette();
+	drawBars();
+	if(drawProgressBarI(!_showNoteSettings && !_showSettings))
+		_musicPlaying = false;
+
+	editorSettings();
 
 	if (_amountSelectedNotes > 0)
 	{
-		if (showNoteSettings)
+		if (_showNoteSettings)
 		{
-			// Darken background
-			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ColorAlpha(BLACK, 0.5));
-			if(showAnimation)
-				DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),  ColorAlpha(BLACK, 0.3));
-
-			if (interactableButton("Animation", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.5, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
-			{
-				//Run animation tab
-				showAnimation = !showAnimation;
-				doAction();
-				return;
-			}
-
-			if (interactableButton("back", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.15, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
-			{
-				showNoteSettings = !showNoteSettings;
-				//apply changes to first note to all selected notes
-				printf("applying to all selected notes\n");
-				Note * firstNote = _selectedNotes[0];
-				printf("new size %i\n", firstNote->animSize);
-				for(int i = 1; i < _amountSelectedNotes; i++)
-				{
-					if(_selectedNotes[i]->anim == 0)
-						_selectedNotes[i]->anim = malloc(sizeof(Frame)*firstNote->animSize);
-					else
-						_selectedNotes[i]->anim = realloc(_selectedNotes[i]->anim, sizeof(Frame)*firstNote->animSize);
-					
-					_selectedNotes[i]->animSize = firstNote->animSize;
-
-					for(int key = 0; key < firstNote->animSize; key++)
-					{
-						_selectedNotes[i]->anim[key] = firstNote->anim[key];
-					}	
-				}
-				return;
-			}
-
-			if(!showAnimation)
-			{
-				char sprite[100] = {0};
-				sprite[0] = '\0';
-				if (_selectedNotes[0]->texture_File != 0)
-					sprintf(sprite, "%s", _selectedNotes[0]->texture_File);
-				static bool spriteBoxSelected = false;
-				Rectangle spriteBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.1, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
-				textBox(spriteBox, sprite, &spriteBoxSelected);
-				if (strlen(sprite) != 0)
-				{
-					if (_selectedNotes[0]->texture_File == 0)
-						_selectedNotes[0]->texture_File = malloc(sizeof(char) * 100);
-					strcpy(_selectedNotes[0]->texture_File, sprite);
-				}else if(_selectedNotes[0]->texture_File != 0)
-				{
-					free(_selectedNotes[0]->texture_File);
-					_selectedNotes[0]->texture_File = 0;
-				}
-
-				// health setting
-				char health[10] = {0};
-				bool theSame = false;
-				for (int i = 0; i < _amountSelectedNotes; i++)
-				{
-					if (_selectedNotes[0]->health != _selectedNotes[i]->health) {
-						theSame = false;
-						break;
-					}
-					else
-						theSame = true;
-				}
-				if (theSame)
-				{
-					sprintf(health, "%i", (int)(_selectedNotes[0]->health));
-				}
-				else sprintf(health, "-", "%c");
-				
-				static bool healthBoxSelected = false;
-				Rectangle healthBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.2, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
-				textBox(healthBox, health, &healthBoxSelected);
-				if (healthBoxSelected)
-				{
-					for (int i = 0; i < _amountSelectedNotes; i++)
-					{
-						_selectedNotes[i]->health = atoi(health);
-						_selectedNotes[i]->health = (int)(fmin(fmax(_selectedNotes[i]->health, 0), 9));
-					}
-				}
-				
-			}else
-			{
-				//animation :)
-				static bool timeLineSelected = false;
-				static float timeLine = 0;
-				int value = timeLine * 100;
-				
-				if(_selectedNotes[0]->anim == 0)
-				{
-					_selectedNotes[0]->anim = malloc(sizeof(Frame) * 2);
-					_selectedNotes[0]->anim[0].time = 0;
-					_selectedNotes[0]->anim[0].vec = (Vector2){.x=1, .y=0.5};
-					_selectedNotes[0]->anim[1].time = 1;
-					_selectedNotes[0]->anim[1].vec = (Vector2){.x=0, .y=0.5};
-					_selectedNotes[0]->animSize = 2;
-				}
-
-				slider((Rectangle){.x=0, .y=GetScreenHeight()*0.9, .width=GetScreenWidth(), .height=GetScreenHeight()*0.03}, &timeLineSelected, &value, 100, -100);
-				timeLine = value / 100.0;
-				drawNote(timeLine*_scrollSpeed+_selectedNotes[0]->time, _selectedNotes[0], WHITE);
-				Frame * anim = _selectedNotes[0]->anim;
-				for(int key = 0; key < _selectedNotes[0]->animSize; key++)
-				{
-					//draw keys
-					if(interactableButton("k", 0.01, (anim[key].time)*GetScreenWidth()-GetScreenWidth()*0.01, GetScreenHeight()*0.85, GetScreenWidth()*0.02, GetScreenHeight()*0.05))
-					{
-						//delete key
-						if(_selectedNotes[0]->animSize <= 2)
-							break;
-						_selectedNotes[0]->animSize --;
-						for(int k = key; k < _selectedNotes[0]->animSize; k++)
-						{
-							anim[k].time = anim[k+1].time;
-							anim[k].vec = anim[k+1].vec;
-						}
-						_selectedNotes[0]->anim = realloc(_selectedNotes[0]->anim, sizeof(Frame)*_selectedNotes[0]->animSize);
-					}
-				}
-				if(IsMouseButtonReleased(0) && GetMouseY() < GetScreenHeight()*0.85)
-				{
-					int index = -1;
-					for(int key = 0; key < _selectedNotes[0]->animSize; key++)
-					{
-						if((timeLine+1)/2 == _selectedNotes[0]->anim[key].time)
-						{
-							index = key;
-							break;
-						}
-					}
-					if(index != -1)
-					{
-						//modify existing frame
-						anim[index].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()+0.05};
-					}else
-					{
-						for(int key = 0; key < _selectedNotes[0]->animSize; key++) printf("%i  %i  %f %f %f\n", _selectedNotes[0]->animSize, key, _selectedNotes[0]->anim[key].time, _selectedNotes[0]->anim[key].vec.x, _selectedNotes[0]->anim[key].vec.y);
-						//create new frame
-						_selectedNotes[0]->animSize++;
-						_selectedNotes[0]->anim = realloc(_selectedNotes[0]->anim, _selectedNotes[0]->animSize*sizeof(Frame));
-						for(int key = _selectedNotes[0]->animSize-1; key > 0; key--)
-						{
-							if(_selectedNotes[0]->anim[key].time > (timeLine+1)/2)
-							{
-								_selectedNotes[0]->anim[key+1] = _selectedNotes[0]->anim[key];
-							}
-						}
-						int newIndex = 0;
-						for(int key = 0; key < _selectedNotes[0]->animSize-1; key++)
-						{
-							if(_selectedNotes[0]->anim[key].time == _selectedNotes[0]->anim[key+1].time)
-							{
-								newIndex = key;
-								break;
-							}
-						}
-						// printf("")
-						_selectedNotes[0]->anim[newIndex].time = (timeLine+1)/2;
-						_selectedNotes[0]->anim[newIndex].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()+0.05};
-
-						for(int key = 0; key < _selectedNotes[0]->animSize; key++) printf("%i  %i  %f %f %f\n", _selectedNotes[0]->animSize, key, _selectedNotes[0]->anim[key].time, _selectedNotes[0]->anim[key].vec.x, _selectedNotes[0]->anim[key].vec.y);
-						
-					}
-				}
-			}
+			editorNoteSettings();
 		}
 		else if (interactableButton("Note settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.15, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
 		{
-			showNoteSettings = !showNoteSettings;
+			_showNoteSettings = !_showNoteSettings;
 		}
 	}
-	if (!showNoteSettings)
+	if (!_showNoteSettings)
 	{
-		if ( (showSettings && IsKeyPressed(KEY_ESCAPE)) ||
+		if ( (_showSettings && IsKeyPressed(KEY_ESCAPE)) ||
 			interactableButton("Song settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.05, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
 		{
-			showSettings = !showSettings;
+			_showSettings = !_showSettings;
 		}
 		for(int i = 0; i < _amountSelectedNotes; i++)
 		{
@@ -1379,7 +1390,7 @@ void fEditor()
 		}
 	}
 
-	if(!showNoteSettings && !showSettings)
+	if(!_showNoteSettings && !_showSettings)
 	{
 		// Speed slider
 		static bool speedSlider = false;
