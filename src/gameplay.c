@@ -1305,9 +1305,9 @@ void editorControls()
 	if (IsKeyPressed(KEY_SPACE))
 	{
 		_musicPlaying = !_musicPlaying;
-		if (!_musicPlaying && roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat < getMusicDuration())
+		if (!_musicPlaying && floorf(getMusicHead() / secondsPerBeat) * secondsPerBeat < getMusicDuration())
 		{
-			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+			_musicHead = floorf((getMusicHead()-_map->offset/1000.0) / secondsPerBeat) * secondsPerBeat;
 			_musicHead += _map->offset/1000.0;
 		}
 		_noteIndex = findClosestNote(_papNotes, _amountNotes, _musicHead);
