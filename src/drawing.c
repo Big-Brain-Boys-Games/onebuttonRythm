@@ -212,7 +212,7 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float 
 	DrawRectangleGradientV(rect.x, rect.y+rect.height*0.4, rect.width, rect.height*imageRatio-rect.height*0.4, ColorAlpha(BLACK, 0), ColorAlpha(BLACK, 0.5));
 	
 	char text [100];
-	sprintf(text, "%s - %s", map->name, map->artist);
+	snprintf(text, 100, "%s - %s", map->name, map->artist);
 	int length = strlen(text);
 	char* textPointer = text;
 	if(length > 18)
@@ -231,20 +231,20 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float 
 	int textSize = measureText(textPointer, GetScreenWidth() * 0.03);
 	drawText(textPointer, rect.x + rect.width/2 - textSize / 2, rect.y + GetScreenHeight() * 0.01+rect.height*imageRatio, GetScreenWidth() * 0.03, DARKGRAY);
 	
-	sprintf(text, "%i", map->difficulty);
+	snprintf(text, 100, "%i", map->difficulty);
 	DrawRectangle(rect.x + rect.width*0.13, rect.y + 0.60*rect.height, rect.width*0.2, rect.height*0.20, ColorAlpha(BLACK, 0.4));
 	drawText(text, rect.x + rect.width*0.08, rect.y + 0.60*rect.height, GetScreenWidth() * 0.02625, WHITE);
-	sprintf(text, "%i:%i", (int)floorf(map->musicLength/60), (int)floorf(map->musicLength-floorf(map->musicLength/60)*60));
+	snprintf(text, 100, "%i:%i", (int)floorf(map->musicLength/60), (int)floorf(map->musicLength-floorf(map->musicLength/60)*60));
 	drawText(text, rect.x + rect.width*0.06, rect.y + 0.68*rect.height, GetScreenWidth() * 0.02625, WHITE);
 
-	sprintf(text, "%i", highScore);
+	snprintf(text, 100, "%i", highScore);
 	if(highScore !=0)
 	{
 		DrawRectangle(rect.x + rect.width*0.78, rect.y + 0.02*rect.height, rect.width*0.2, rect.height*0.20, ColorAlpha(BLACK, 0.4));
 		drawText(text, rect.x + rect.width*0.80, rect.y + 0.02*rect.height, GetScreenWidth() * 0.015, WHITE);
-		sprintf(text, "%i", combo);
+		snprintf(text, 100, "%i", combo);
 		drawText(text, rect.x + rect.width*0.82, rect.y + 0.08*rect.height, GetScreenWidth() * 0.015, WHITE);
-		sprintf(text, "%.2f", 100*(1-accuracy));
+		snprintf(text, 100, "%.2f", 100*(1-accuracy));
 		drawText(text, rect.x + rect.width*0.84, rect.y + 0.14*rect.height, GetScreenWidth() * 0.015, WHITE);
 
 		//rank
@@ -347,7 +347,7 @@ bool drawProgressBarI(bool interActable)
 	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.945, GetScreenWidth()*0.025, (Color){.r=0,.g=0,.b=0,.a=80});
 	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.94, GetScreenWidth()*0.025, _UIColor);
 	char str[50];
-	sprintf(str, "%i:%i/%i:%i", (int)floor(getMusicPosition()/60), (int)getMusicPosition()%60, (int)floor(getMusicDuration()/60), (int)getMusicDuration()%60);
+	snprintf(str, 50, "%i:%i/%i:%i", (int)floor(getMusicPosition()/60), (int)getMusicPosition()%60, (int)floor(getMusicDuration()/60), (int)getMusicDuration()%60);
 	drawText(str, GetScreenWidth()*0.85, GetScreenHeight()*0.85, GetScreenWidth()*0.03,_UIColor);
 	if(interActable)
 	{

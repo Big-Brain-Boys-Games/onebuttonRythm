@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 	initDrawing();
 	audioInit();
 	srand(time(NULL));
-	sprintf(_playerName, "guest%i", rand());
+	snprintf(_playerName, 100, "guest%i", rand());
 	loadSettings();
 
 	initFolders();

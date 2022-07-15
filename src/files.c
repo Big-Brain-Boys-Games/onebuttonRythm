@@ -641,7 +641,7 @@ void loadMap ()
 							printf("found sound %s\n", tmpStr);
 							//found hit sound
 							char fullPath [100];
-							sprintf(fullPath, "maps/%s/%s", _map->folder, tmpStr);
+							snprintf(fullPath, 100, "maps/%s/%s", _map->folder, tmpStr);
 							_papNotes[_noteIndex]->custSound = addCustomSound(fullPath);
 							_papNotes[_noteIndex]->hitSE_File = malloc(100*sizeof(char));
 							strcpy(_papNotes[_noteIndex]->hitSE_File, tmpStr);
@@ -660,7 +660,7 @@ void loadMap ()
 								fileStr[k] = tmpStr[k];
 							}
 							char fullPath [100];
-							sprintf(fullPath, "maps/%s/%s", _map->folder, fileStr);
+							snprintf(fullPath, 100, "maps/%s/%s", _map->folder, fileStr);
 							_papNotes[_noteIndex]->custTex = addCustomTexture(fullPath); 
 							_papNotes[_noteIndex]->texture_File = malloc(100*sizeof(char));
 							strcpy(_papNotes[_noteIndex]->texture_File, tmpStr);
@@ -719,7 +719,7 @@ void loadMap ()
 	free(pStr);
 	_noteIndex = 0;
 	char str [100];
-	sprintf(str, "%s - %s", _map->name, _map->artist);
+	snprintf(str, 100, "%s - %s", _map->name, _map->artist);
 	SetWindowTitle(str);
 }
 
@@ -744,10 +744,10 @@ void saveScore()
 {
 	FILE * file;
 	char str [100];
-	sprintf(str, "scores/%s", _map->name);
+	snprintf(str, 100, "scores/%s", _map->name);
 	if(!DirectoryExists(str))
 		mkdir(str);
-	sprintf(str, "scores/%s/%s", _map->name, _playerName);
+	snprintf(str, 100, "scores/%s/%s", _map->name, _playerName);
 	printf("str %s\n", str);
 	file = fopen(str, "w");
 	fprintf(file, "%i %i %f", _score, _highestCombo, _averageAccuracy);
@@ -760,7 +760,7 @@ bool readScore(Map * map, int *score, int * combo, float * accuracy)
 	*combo = 0;
 	FILE * file;
 	char str [100];
-	sprintf(str, "scores/%s/%s", map->name, _playerName);
+	snprintf(str, 100, "scores/%s/%s", map->name, _playerName);
 	if(!DirectoryExists("scores/"))
 		return false;
 	if(!FileExists(str))

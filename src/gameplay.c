@@ -222,7 +222,7 @@ void textBox(Rectangle rect, char *str, bool *selected)
 void numberBox(Rectangle rect, int *number, bool *selected)
 {
 	char str[10];
-	sprintf(str, "%i", *number);
+	snprintf(str, 10, "%i", *number);
 	drawButton(rect, str, 0.03);
 	if (mouseInRect(rect) && IsMouseButtonDown(0) || *selected)
 	{
@@ -461,7 +461,7 @@ void fCountDown()
 
 	// draw score
 	char *tmpString = malloc(9);
-	sprintf(tmpString, "%i", _score);
+	snprintf(tmpString, 9, "%i", _score);
 	drawText(tmpString, GetScreenWidth() * 0.05, GetScreenHeight() * 0.05, GetScreenWidth() * 0.05, WHITE);
 
 	drawCursor();
@@ -472,7 +472,7 @@ void fCountDown()
 	DrawTextureEx(_heartTex, (Vector2){.x = GetScreenWidth() * 0.85, .y = GetScreenHeight() * (0.85 - _health / 250)}, 0, heartScale, WHITE);
 	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
 
-	sprintf(tmpString, "%i", (int)(countDown - GetTime() + 1));
+	snprintf(tmpString, 9, "%i", (int)(countDown - GetTime() + 1));
 	float textSize = measureText(tmpString, GetScreenWidth() * 0.3);
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.3, GetScreenWidth() * 0.3, WHITE);
 	free(tmpString);
@@ -578,7 +578,7 @@ void fMainMenu()
 	drawText("Rhythm", titlePos.x, titlePos.y, tSize, WHITE);
 
 	char str[120];
-	sprintf(str, "name: %s", _playerName);
+	snprintf(str, 120, "name: %s", _playerName);
 	drawText(str, GetScreenWidth() * 0.55, GetScreenHeight() * 0.92, GetScreenWidth() * 0.04, WHITE);
 
 	drawText(_notfication, GetScreenWidth() * 0.6, GetScreenHeight() * 0.7, GetScreenWidth() * 0.02, WHITE);
@@ -620,7 +620,7 @@ void fSettings()
 
 		char zoom[10] = {0};
 		if (_settings.zoom != 0)
-			sprintf(zoom, "%i", _settings.zoom);
+			snprintf(zoom, 10, "%i", _settings.zoom);
 		static bool zoomBoxSelected = false;
 
 		Rectangle zoomBox = (Rectangle){.x = GetScreenWidth() * 0.1, .y = GetScreenHeight() * (0.7+menuScrollSmooth), .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
@@ -641,7 +641,7 @@ void fSettings()
 
 		char offset[10] = {0};
 		if (_settings.offset != 0)
-			sprintf(offset, "%i", (int)_settings.offset);
+			snprintf(offset, 10, "%i", (int)_settings.offset);
 		static bool offsetBoxSelected = false;
 		Rectangle offsetBox = (Rectangle){.x = GetScreenWidth() * 0.1, .y = GetScreenHeight() * (0.85+menuScrollSmooth), .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 		textBox(offsetBox, offset, &offsetBoxSelected);
@@ -714,22 +714,22 @@ void fEndScreen()
 	drawText("Finished", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.05, GetScreenWidth() * 0.15, WHITE);
 
 	char *tmpString = malloc(50);
-	sprintf(tmpString, "%s", _highScore < _score ? "New highscore!" : "");
+	snprintf(tmpString, 50, "%s", _highScore < _score ? "New highscore!" : "");
 	textSize = measureText(tmpString, GetScreenWidth() * 0.1);
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.2, GetScreenWidth() * 0.1, WHITE);
 
 	// draw score
-	sprintf(tmpString, "Score: %i Combo %i", _score, _highestCombo);
+	snprintf(tmpString, 50,"Score: %i Combo %i", _score, _highestCombo);
 	textSize = measureText(tmpString, GetScreenWidth() * 0.07);
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.4, GetScreenWidth() * 0.07, LIGHTGRAY);
 
 	// draw highscore
-	sprintf(tmpString, "Highscore: %i Combo :%i", _highScore, _highScoreCombo);
+	snprintf(tmpString, 50,"Highscore: %i Combo :%i", _highScore, _highScoreCombo);
 	textSize = measureText(tmpString, GetScreenWidth() * 0.05);
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.5, GetScreenWidth() * 0.05, LIGHTGRAY);
 
 	// draw extra info
-	sprintf(tmpString, "Accuracy: %.2f misses :%i", 100 * (1 - _averageAccuracy), _notesMissed);
+	snprintf(tmpString, 50,"Accuracy: %.2f misses :%i", 100 * (1 - _averageAccuracy), _notesMissed);
 	textSize = measureText(tmpString, GetScreenWidth() * 0.05);
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.6, GetScreenWidth() * 0.05, LIGHTGRAY);
 	free(tmpString);
@@ -774,13 +774,13 @@ void undo()
 		if(_papNotes[i]->hitSE_File)
 		{
 			char tmp [100];
-			sprintf(tmp, "maps/%s/%s", _map->folder, _papNotes[i]->hitSE_File);
+			snprintf(tmp, 100, "maps/%s/%s", _map->folder, _papNotes[i]->hitSE_File);
 			removeCustomSound(tmp);
 		}
 		if(_papNotes[i]->texture_File)
 		{
 			char tmp [100];
-			sprintf(tmp, "maps/%s/%s", _map->folder, _papNotes[i]->texture_File);
+			snprintf(tmp, 100, "maps/%s/%s", _map->folder, _papNotes[i]->texture_File);
 			removeCustomTexture(tmp);
 		}
 		freeArray(_papNotes[i]->hitSE_File);
@@ -810,7 +810,7 @@ void undo()
 			_papNotes[i]->hitSE_File = malloc(strlen(_paUndoBuffer[_undoBufferIndex][i].hitSE_File));
 			strcpy(_papNotes[i]->hitSE_File, _paUndoBuffer[_undoBufferIndex][i].hitSE_File);
 			char tmp [100];
-			sprintf(tmp, "maps/%s/%s", _map->folder, _papNotes[i]->hitSE_File);
+			snprintf(tmp, 100, "maps/%s/%s", _map->folder, _papNotes[i]->hitSE_File);
 			_papNotes[i]->custSound = addCustomSound(tmp);
 		}
 		if(_papNotes[i]->texture_File != 0)
@@ -818,7 +818,7 @@ void undo()
 			_papNotes[i]->texture_File = malloc(strlen(_paUndoBuffer[_undoBufferIndex][i].texture_File));
 			strcpy(_papNotes[i]->texture_File, _paUndoBuffer[_undoBufferIndex][i].texture_File);
 			char tmp [100];
-			sprintf(tmp, "maps/%s/%s", _map->folder, _papNotes[i]->texture_File);
+			snprintf(tmp, 100, "maps/%s/%s", _map->folder, _papNotes[i]->texture_File);
 			_papNotes[i]->custTex = addCustomTexture(tmp);
 		}
 	}
@@ -862,7 +862,7 @@ void doAction()
 			_paUndoBuffer[_undoBufferIndex][i].hitSE_File = malloc(100);
 			strcpy(_paUndoBuffer[_undoBufferIndex][i].hitSE_File, _papNotes[i]->hitSE_File);
 			char tmp [100];
-			sprintf(tmp, "maps/%s/%s", _map->folder, _papNotes[i]->hitSE_File);
+			snprintf(tmp, 100, "maps/%s/%s", _map->folder, _papNotes[i]->hitSE_File);
 			_paUndoBuffer[_undoBufferIndex][i].custSound = addCustomSound(tmp);
 		}
 		if(_paUndoBuffer[_undoBufferIndex][i].texture_File != 0)
@@ -870,7 +870,7 @@ void doAction()
 			_paUndoBuffer[_undoBufferIndex][i].texture_File = malloc(100);
 			strcpy(_paUndoBuffer[_undoBufferIndex][i].texture_File, _papNotes[i]->texture_File);
 			char tmp [100];
-			sprintf(tmp, "maps/%s/%s", _map->folder, _papNotes[i]->texture_File);
+			snprintf(tmp, 100, "maps/%s/%s", _map->folder, _papNotes[i]->texture_File);
 			_paUndoBuffer[_undoBufferIndex][i].custTex = addCustomTexture(tmp);
 		}
 	}
@@ -886,7 +886,7 @@ void editorSettings()
 		// BPM setting
 		char bpm[10] = {0};
 		if (_map->bpm != 0)
-			sprintf(bpm, "%i", _map->bpm);
+			snprintf(bpm, 10, "%i", _map->bpm);
 		static bool bpmBoxSelected = false;
 		Rectangle bpmBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.1, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 		textBox(bpmBox, bpm, &bpmBoxSelected);
@@ -896,7 +896,7 @@ void editorSettings()
 		// Offset setting
 		char offset[10] = {0};
 		if (_map->offset != 0)
-			sprintf(offset, "%i", _map->offset);
+			snprintf(offset, 10, "%i", _map->offset);
 		static bool offsetBoxSelected = false;
 		Rectangle offsetBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.18, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 		textBox(offsetBox, offset, &offsetBoxSelected);
@@ -905,7 +905,7 @@ void editorSettings()
 
 		// song name setting
 		char songName[50] = {0};
-		sprintf(songName, "%s", _map->name);
+		snprintf(songName, 50, "%s", _map->name);
 		static bool songNameBoxSelected = false;
 		Rectangle songNameBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.26, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 		textBox(songNameBox, songName, &songNameBoxSelected);
@@ -913,7 +913,7 @@ void editorSettings()
 
 		// song creator setting
 		char creator[50] = {0};
-		sprintf(creator, "%s", _map->artist);
+		snprintf(creator, 50, "%s", _map->artist);
 		static bool creatorBoxSelected = false;
 		Rectangle creatorBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.34, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 		textBox(creatorBox, creator, &creatorBoxSelected);
@@ -923,7 +923,7 @@ void editorSettings()
 		char musicPreviewOffset[10] = {0};
 		musicPreviewOffset[0] = '\0';
 		if (_map->musicPreviewOffset != 0)
-			sprintf(musicPreviewOffset, "%i", (int)(_map->musicPreviewOffset * 1000));
+			snprintf(musicPreviewOffset, 10, "%i", (int)(_map->musicPreviewOffset * 1000));
 		static bool musicPreviewOffsetBoxSelected = false;
 		Rectangle musicPreviewOffsetBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.42, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 		textBox(musicPreviewOffsetBox, musicPreviewOffset, &musicPreviewOffsetBoxSelected);
@@ -1002,7 +1002,7 @@ void editorNoteSettings()
 		char sprite[100] = {0};
 		sprite[0] = '\0';
 		if (_selectedNotes[0]->texture_File != 0)
-			sprintf(sprite, "%s", _selectedNotes[0]->texture_File);
+			snprintf(sprite, 100, "%s", _selectedNotes[0]->texture_File);
 		static bool spriteBoxSelected = false;
 		Rectangle spriteBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.1, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 		textBox(spriteBox, sprite, &spriteBoxSelected);
@@ -1031,9 +1031,9 @@ void editorNoteSettings()
 		}
 		if (theSame)
 		{
-			sprintf(health, "%i", (int)(_selectedNotes[0]->health));
+			snprintf(health, 10, "%i", (int)(_selectedNotes[0]->health));
 		}
-		else sprintf(health, "-", "%c");
+		else snprintf(health, 10, "-", "%c");
 		
 		static bool healthBoxSelected = false;
 		Rectangle healthBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.2, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
@@ -1275,7 +1275,7 @@ void editorControls()
 					_papNotes[note]->hitSE_File = malloc(100);
 					strcpy(_papNotes[note]->hitSE_File, _selectedNotes[i]->hitSE_File);
 					char tmpStr[100];
-					sprintf(tmpStr, "maps/%s/%s", _map->folder, _selectedNotes[i]->hitSE_File);
+					snprintf(tmpStr, 100, "maps/%s/%s", _map->folder, _selectedNotes[i]->hitSE_File);
 					_papNotes[note]->custSound = addCustomSound(tmpStr);
 				}
 
@@ -1284,7 +1284,7 @@ void editorControls()
 					_papNotes[note]->texture_File = malloc(100);
 					strcpy(_papNotes[note]->texture_File, _selectedNotes[i]->texture_File);
 					char tmpStr[100];
-					sprintf(tmpStr, "maps/%s/%s", _map->folder, _selectedNotes[i]->texture_File);
+					snprintf(tmpStr, 100, "maps/%s/%s", _map->folder, _selectedNotes[i]->texture_File);
 					_papNotes[note]->custTex = addCustomTexture(tmpStr);
 				}
 			}
@@ -1648,17 +1648,17 @@ void fPlaying()
 
 	// draw score
 	char *tmpString = malloc(20);
-	sprintf(tmpString, "score: %i", _score);
+	snprintf(tmpString, 20, "score: %i", _score);
 	drawText(tmpString, GetScreenWidth() * 0.05, GetScreenHeight() * 0.05, GetScreenWidth() * 0.05, WHITE);
 
 	// draw combo
-	sprintf(tmpString, "combo: %i", _combo);
+	snprintf(tmpString, 20, "combo: %i", _combo);
 	drawText(tmpString, GetScreenWidth() * 0.70, GetScreenHeight() * 0.05, GetScreenWidth() * 0.05, WHITE);
 
 	// draw acc
 	//  sprintf(tmpString, "acc: %.5f", (int)(100*_averageAccuracy*(_amountNotes/(_noteIndex+1))));
 	//  printf("%.2f   %.2f\n", _averageAccuracy, ((float)_amountNotes/(_noteIndex+1)));
-	sprintf(tmpString, "acc: %.2f", 100 * (1 - _averageAccuracy));
+	snprintf(tmpString, 20, "acc: %.2f", 100 * (1 - _averageAccuracy));
 	drawText(tmpString, GetScreenWidth() * 0.70, GetScreenHeight() * 0.1, GetScreenWidth() * 0.04, WHITE);
 	free(tmpString);
 	drawProgressBar();
@@ -1689,7 +1689,7 @@ void fFail()
 
 	// draw score
 	char *tmpString = malloc(9);
-	sprintf(tmpString, "%i", _score);
+	snprintf(tmpString, 9, "%i", _score);
 	textSize = measureText(tmpString, GetScreenWidth() * 0.1);
 	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.5, GetScreenWidth() * 0.1, LIGHTGRAY);
 	free(tmpString);
@@ -2025,7 +2025,7 @@ void fMapSelect()
 		{
 			bool missingLetter = false;
 			char str[100];
-			sprintf(str, "%s - %s", _pMaps[i].name, _pMaps[i].artist);
+			snprintf(str, 100, "%s - %s", _pMaps[i].name, _pMaps[i].artist);
 			int stringLength = strlen(str);
 			for (int j = 0; j < 100 && search[j] != '\0'; j++)
 			{
@@ -2136,14 +2136,14 @@ void fMapSelect()
 						char fullPath[100];
 						if(_papNotes[k]->hitSE_File)
 						{
-							sprintf(fullPath, "maps/%s/%s", _map->folder, _papNotes[k]->hitSE_File);
+							snprintf(fullPath, 100, "maps/%s/%s", _map->folder, _papNotes[k]->hitSE_File);
 							_paUndoBuffer[j][k].custSound = addCustomSound(fullPath);
 							_paUndoBuffer[j][k].hitSE_File = malloc(100);
 							strcpy(_paUndoBuffer[j][k].hitSE_File, _papNotes[k]->hitSE_File);
 						}
 						if(_papNotes[k]->texture_File)
 						{
-							sprintf(fullPath, "maps/%s/%s", _map->folder, _papNotes[k]->texture_File);
+							snprintf(fullPath, 100, "maps/%s/%s", _map->folder, _papNotes[k]->texture_File);
 							_paUndoBuffer[j][k].custTex = addCustomTexture(fullPath);
 							_paUndoBuffer[j][k].texture_File = malloc(100);
 							strcpy(_paUndoBuffer[j][k].texture_File, _papNotes[k]->texture_File);
@@ -2265,7 +2265,7 @@ void fNewMap()
 		fclose(file);
 
 		newMap.musicFile = malloc(100);
-		sprintf(newMap.musicFile, "/song%s", pMusicExt);
+		snprintf(newMap.musicFile, 100, "/song%s", pMusicExt);
 
 		strcpy(str, "maps/");
 		strcat(str, newMap.name);
@@ -2313,7 +2313,7 @@ void fNewMap()
 
 	char str[100] = {'\0'};
 	if (newMap.bpm != 0)
-		sprintf(str, "%i", newMap.bpm);
+		snprintf(str, 100, "%i", newMap.bpm);
 	static bool bpmBoxSelected = false;
 	Rectangle bpmBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.875, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 	textBox(bpmBox, str, &bpmBoxSelected);
