@@ -52,6 +52,7 @@ typedef struct Settings Settings;
 enum FilePart{fpNone, fpID, fpName, fpArtist, fpMapCreator, fpDifficulty, fpBPM, fpImage, fpMusicFile, fpMusicLength, fpMusicPreviewOffset, fpZoom, fpOffset, fpBeats, fpNotes};
 enum SettingsPart{spNone, spName, spZoom, spVolGlobal, spVolMusic, spVolSE, spOffset};
 
+void initFolders();
 Map loadMapInfo(char * file);
 void saveFile (int noteAmount);
 void loadMap();

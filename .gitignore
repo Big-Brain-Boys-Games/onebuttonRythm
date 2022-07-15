@@ -66,3 +66,4 @@ scores/*
 build/
 .depend
 maps/*
+Makefile

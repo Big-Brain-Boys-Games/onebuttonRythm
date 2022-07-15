@@ -36,6 +36,19 @@ Map _pMaps [100];
 
 FILE * _pFile;
 
+void initFolders()
+{
+	if(!DirectoryExists("maps/"))
+	{
+		mkdir("maps");
+	}
+
+	if(!DirectoryExists("scores/"))
+	{
+		mkdir("scores");
+	}
+}
+
 
 Map loadMapInfo(char * file)
 {
@@ -731,10 +744,6 @@ void saveScore()
 {
 	FILE * file;
 	char str [100];
-	if(!DirectoryExists("scores/"))
-	{
-		mkdir("scores");
-	}
 	sprintf(str, "scores/%s", _map->name);
 	if(!DirectoryExists(str))
 		mkdir(str);

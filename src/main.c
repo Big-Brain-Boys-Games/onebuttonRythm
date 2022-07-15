@@ -45,6 +45,8 @@ int main(int argc, char **argv)
 	srand(time(NULL));
 	sprintf(_playerName, "guest%i", rand());
 	loadSettings();
+
+	initFolders();
 	
 	_pGameplayFunction = &fIntro;
 	_transition = 1;

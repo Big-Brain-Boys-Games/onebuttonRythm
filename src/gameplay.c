@@ -1157,14 +1157,6 @@ void fEditor()
 		_map->musicPreviewOffset = atoi(musicPreviewOffset) / 1000.0;
 		_map->musicPreviewOffset = fmin(fmax(_map->musicPreviewOffset, 0), *_musicLength);
 
-		// Speed slider
-		static bool speedSlider = false;
-		int speed = _musicSpeed * 4;
-		slider((Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.50, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.03}, &speedSlider, &speed, 8, 1);
-		_musicSpeed = speed / 4.0;
-		if (interactableButton("reset", 0.03, GetScreenWidth() * 0.52, GetScreenHeight() * 0.50, GetScreenWidth() * 0.1, GetScreenHeight() * 0.05))
-			_musicSpeed = 1;
-
 		// Drawing text next to the buttons
 		char *text = "BPM:";
 		float tSize = GetScreenWidth() * 0.025;
@@ -1186,10 +1178,10 @@ void fEditor()
 		size = measureText(text, tSize);
 		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.36, tSize, WHITE);
 
-		text = "Playback speed:";
-		tSize = GetScreenWidth() * 0.025;
-		size = measureText(text, tSize);
-		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.50, tSize, WHITE);
+		// text = "Playback speed:";
+		// tSize = GetScreenWidth() * 0.025;
+		// size = measureText(text, tSize);
+		// drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.50, tSize, WHITE);
 	}
 
 	if (_amountSelectedNotes > 0)
@@ -1385,6 +1377,17 @@ void fEditor()
 			DrawCircle(musicTimeToScreen(_selectedNotes[i]->time), GetScreenHeight()*0.55, GetScreenWidth()*0.013, BLACK);
 			DrawCircle(musicTimeToScreen(_selectedNotes[i]->time), GetScreenHeight()*0.55, GetScreenWidth()*0.01, WHITE);
 		}
+	}
+
+	if(!showNoteSettings && !showSettings)
+	{
+		// Speed slider
+		static bool speedSlider = false;
+		int speed = _musicSpeed * 4;
+		slider((Rectangle){.x = GetScreenWidth() * 0.1, .y = GetScreenHeight() * 0.05, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.03}, &speedSlider, &speed, 8, 1);
+		_musicSpeed = speed / 4.0;
+		if (interactableButton("reset", 0.03, GetScreenWidth() * 0.32, GetScreenHeight() * 0.05, GetScreenWidth() * 0.1, GetScreenHeight() * 0.05))
+			_musicSpeed = 1;
 	}
 
 	drawCursor();
