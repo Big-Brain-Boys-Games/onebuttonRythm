@@ -97,7 +97,7 @@ void drawNote(float musicTime, Note * note, Color color)
 {
 	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
 	if(note->hit)
-		scaleNotes *= 0.5;
+		return;
 	Texture tex = _noteTex;
 	if(note->custTex)
 	{
@@ -148,7 +148,7 @@ void dNotes ()
 		if(i < 0) continue;
 		//DrawCircle( middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
 		//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
-			drawNote(_musicHead, _papNotes[i], ColorAlpha(GRAY, noteFadeOut(_papNotes[i]->time)));
+		drawNote(_musicHead, _papNotes[i], ColorAlpha(GRAY, noteFadeOut(_papNotes[i]->time)));
 
 	}
 
