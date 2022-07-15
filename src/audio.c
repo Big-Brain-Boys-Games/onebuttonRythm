@@ -13,7 +13,8 @@
 #include <string.h>
 
 extern int _amountNotes, _loading;
-extern float _musicHead, _scrollSpeed;
+extern double _musicHead;
+extern float _scrollSpeed;
 extern Map *_map;
 extern Settings _settings;
 
@@ -50,7 +51,7 @@ void *_pEffectsBuffer;
 int _effectOffset;
 
 // Where is the current audio
-float _musicHead = 0;
+double _musicHead = 0;
 float _musicPlaying = 0;
 bool _musicLoops = true, _playMenuMusic = true;
 

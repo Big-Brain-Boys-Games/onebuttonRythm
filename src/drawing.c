@@ -22,7 +22,8 @@ Color _UIColor = WHITE;
 
 Color _fade = WHITE;
 
-extern float _musicHead, _scrollSpeed;
+extern double _musicHead;
+extern float _scrollSpeed;
 extern Note ** _papNotes;
 extern int _noteIndex, _amountNotes, _clickPressSE_Size, _clickReleaseSE_Size;
 extern bool _noBackground, _isKeyPressed;
@@ -284,7 +285,7 @@ void drawBars()
 {
 	//Draw the bars
 	float middle = GetScreenWidth()/2;
-	double distBetweenBeats = (double)getMusicDuration() / getBeatsCount() / _barMeasureCount;
+	double distBetweenBeats = (60.0/_map->bpm) / _barMeasureCount;
 
 	double distBetweenBars = distBetweenBeats*4;
 	for (int i = (screenToMusicTime(0)-_map->offset/1000.0)/distBetweenBars; i < (screenToMusicTime(GetScreenWidth())-_map->offset/1000.0)/distBetweenBars; i++)
