@@ -333,6 +333,8 @@ int newNote(float time)
 
 void addSelectNote(int note)
 {
+	if(note == -1)
+		return;
 	printf("Adding note: %i\n", note);
 	for (int i = 0; i < _amountSelectedNotes; i++)
 	{
@@ -917,8 +919,8 @@ void fEditor()
 			_musicHead = (_musicHead + _map->offset / 1000.0);
 			// Add the bps to the music head
 			_musicHead += secondsPerBeat;
-			// snap it again (it's close enough right?????)
-			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+			// // snap it again (it's close enough right?????)
+			// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
 			isPlaying = false;
 		}
 
@@ -927,7 +929,7 @@ void fEditor()
 			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
 			_musicHead = (_musicHead + _map->offset / 1000.0);
 			_musicHead -= secondsPerBeat;
-			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+			// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
 			isPlaying = false;
 		}
 
@@ -1069,6 +1071,7 @@ void fEditor()
 		if (roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat < getMusicDuration())
 		{
 			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+			_musicHead += _map->offset/1000.0;
 		}
 	}
 	if(_musicHead < 0)
@@ -1153,7 +1156,6 @@ void fEditor()
 		textBox(musicPreviewOffsetBox, musicPreviewOffset, &musicPreviewOffsetBoxSelected);
 		_map->musicPreviewOffset = atoi(musicPreviewOffset) / 1000.0;
 		_map->musicPreviewOffset = fmin(fmax(_map->musicPreviewOffset, 0), *_musicLength);
-		printf("%s\n", musicPreviewOffset);
 
 		// Speed slider
 		static bool speedSlider = false;
@@ -1308,7 +1310,6 @@ void fEditor()
 					if(interactableButton("k", 0.01, (anim[key].time)*GetScreenWidth()-GetScreenWidth()*0.01, GetScreenHeight()*0.85, GetScreenWidth()*0.02, GetScreenHeight()*0.05))
 					{
 						//delete key
-						printf("poggies\n");
 						if(_selectedNotes[0]->animSize <= 2)
 							break;
 						_selectedNotes[0]->animSize --;
@@ -1374,7 +1375,8 @@ void fEditor()
 	}
 	if (!showNoteSettings)
 	{
-		if (interactableButton("Song settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.05, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+		if ( (showSettings && IsKeyPressed(KEY_ESCAPE)) ||
+			interactableButton("Song settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.05, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
 		{
 			showSettings = !showSettings;
 		}

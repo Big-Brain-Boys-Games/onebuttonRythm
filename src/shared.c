@@ -39,6 +39,9 @@ double clamp(double d, double min, double max)
 
 int findClosestNote(Note ** arr, int n, float target)
 {
+    if(n == 0)
+        return -1;
+        
     // Corner cases
     if (target <= arr[0]->time)
     {
