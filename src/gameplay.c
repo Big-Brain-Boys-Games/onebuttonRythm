@@ -1366,8 +1366,8 @@ void fEditor()
 	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
 
 	dNotes();
-	drawMusicGraph(0.4);
 	drawVignette();
+	drawMusicGraph(0.4);
 	drawBars();
 	if(drawProgressBarI(!_showNoteSettings && !_showSettings))
 		_musicPlaying = false;
