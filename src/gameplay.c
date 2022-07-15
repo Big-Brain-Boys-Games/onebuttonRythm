@@ -1177,11 +1177,18 @@ void editorControls()
 	{
 		if(!IsKeyDown(KEY_LEFT_SHIFT))
 		{
+			int note = findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX()));
+			bool unselect = false;
+			if(_amountSelectedNotes == 1 && _selectedNotes[0] == _papNotes[note])
+				unselect = true;
 			free(_selectedNotes);
 			_amountSelectedNotes = 0;
 			_selectedNotes = 0;
+			if(!unselect)
+				addSelectNote(findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX())));
 		}
-		addSelectNote(findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX())));
+		else
+			addSelectNote(findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX())));
 	}
 
 	if (getMusicHead() < 0)
@@ -1293,11 +1300,13 @@ void editorControls()
 	if (IsKeyPressed(KEY_SPACE))
 	{
 		_musicPlaying = !_musicPlaying;
-		if (roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat < getMusicDuration())
+		if (!_musicPlaying && roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat < getMusicDuration())
 		{
 			_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
 			_musicHead += _map->offset/1000.0;
 		}
+		_noteIndex = findClosestNote(_papNotes, _amountNotes, _musicHead);
+		
 	}
 }
 
@@ -1315,7 +1324,7 @@ void fEditor()
 			else
 				playAudioEffect(_pHitSE, _hitSE_Size);
 
-			while(_noteIndex < _amountNotes-1 && getMusicHead() > _papNotes[_noteIndex]->time)
+			while(_noteIndex < _amountNotes && getMusicHead() > _papNotes[_noteIndex]->time)
 			{
 				_noteIndex++;
 			}
