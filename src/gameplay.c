@@ -1135,7 +1135,7 @@ void editorNoteSettings()
 
 void editorControls()
 {
-	float secondsPerBeat = getMusicDuration() / getBeatsCount() / _barMeasureCount;
+	float secondsPerBeat = (getMusicDuration()-_map->offset/1000.0) / getBeatsCount() / _barMeasureCount;
 	if (IsKeyPressed(KEY_RIGHT))
 	{
 		float before = _musicHead;
@@ -1317,7 +1317,7 @@ void editorControls()
 
 void fEditor()
 {
-	float secondsPerBeat = getMusicDuration() / getBeatsCount() / _barMeasureCount;
+	float secondsPerBeat = (getMusicDuration()-_map->offset/1000.0) / getBeatsCount() / _barMeasureCount;
 	if (_musicPlaying)
 	{
 		_musicHead += GetFrameTime() * _musicSpeed;

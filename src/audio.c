@@ -89,12 +89,12 @@ void fixMusicTime()
 
 int getBarsCount()
 {
-	return _map->bpm * getMusicDuration() / 60 / 4;
+	return _map->bpm * (getMusicDuration()-_map->offset/1000.0) / 60 / 4;
 }
 
 int getBeatsCount()
 {
-	return _map->bpm * getMusicDuration() / 60;
+	return _map->bpm * (getMusicDuration()-_map->offset/1000.0) / 60;
 }
 
 void setMusicStart()
