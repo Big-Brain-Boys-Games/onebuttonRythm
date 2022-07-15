@@ -1138,12 +1138,13 @@ void editorControls()
 	float secondsPerBeat = getMusicDuration() / getBeatsCount() / _barMeasureCount;
 	if (IsKeyPressed(KEY_RIGHT))
 	{
+		float before = _musicHead;
 		// Snap to closest beat
 		_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
 		// Add the offset
 		_musicHead = (_musicHead + _map->offset / 1000.0);
 		// Add the bps to the music head
-		_musicHead += secondsPerBeat;
+		if(before >= _musicHead) _musicHead += secondsPerBeat;
 		// // snap it again (it's close enough right?????)
 		// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
 		_musicPlaying = false;
@@ -1151,9 +1152,11 @@ void editorControls()
 
 	if (IsKeyPressed(KEY_LEFT))
 	{
+		float before = _musicHead;
 		_musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
 		_musicHead = (_musicHead + _map->offset / 1000.0);
-		_musicHead -= secondsPerBeat;
+		if(before <= _musicHead)
+			_musicHead -= secondsPerBeat;
 		// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
 		_musicPlaying = false;
 	}
