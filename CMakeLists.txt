@@ -9,6 +9,7 @@ project(
 include_directories(src)
 add_executable(${PROJECT_NAME} src/audio.c src/drawing.c src/files.c src/gameplay.c src/main.c src/shared.c src/thread.c)
 
+set(CMAKE_DISABLE_TESTING ON)
 add_subdirectory(deps/raylib)
 add_subdirectory(deps/zip)
 
