@@ -130,7 +130,7 @@ Map loadMapInfo(char * file)
 		if(strcmp(line, "[Zoom]") == 0)					{mode = fpZoom;					continue;}
 		if(strcmp(line, "[Offset]") == 0)				{mode = fpOffset;				continue;}
 		if(strcmp(line, "[Beats]") == 0)				{mode = fpBeats;				continue;}
-		if(strcmp(line, "[Notes]") == 0)				{mode = fpNotes;				continue;}
+		if(strcmp(line, "[Notes]") == 0)				{break;}
 
 		switch(mode)
 		{
@@ -595,7 +595,7 @@ void loadMap ()
 				_papNotes[_noteIndex]->animSize = 0;
 				_papNotes[_noteIndex]->custSound = 0;
 				_papNotes[_noteIndex]->custTex = 0;
-				_papNotes[_noteIndex]->health = 0;
+				_papNotes[_noteIndex]->health = 1;
 				_papNotes[_noteIndex]->hit = 0;
 
 				int part = 0;
