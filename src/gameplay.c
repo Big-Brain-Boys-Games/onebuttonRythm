@@ -313,22 +313,19 @@ int newNote(float time)
 {
 	int closestIndex = 0;
 	_amountNotes++;
-	Note ** tmp = calloc(_amountNotes, sizeof(Note*));
+	_papNotes = realloc(_papNotes, (_amountNotes+1)* sizeof(Note*));
 	for (int i = 0; i < _amountNotes - 1; i++)
 	{
-		tmp[i] = _papNotes[i];
-		if (tmp[i]->time < time)
+		_papNotes[i] = _papNotes[i];
+		if (_papNotes[i]->time < time)
 		{
-			printf("found new closest :%i   value %.2f musicHead %.2f\n", i, tmp[i]->time, time);
 			closestIndex = i + 1;
-		}
+		}else break;
 	}
-	for (int i = closestIndex; i < _amountNotes - 1; i++)
+	for (int i = _amountNotes-2; i >= closestIndex; i--)
 	{
-		tmp[i + 1] = _papNotes[i];
+		_papNotes[i + 1] = _papNotes[i];
 	}
-	free(_papNotes);
-	_papNotes = tmp;
 	_papNotes[closestIndex] = calloc(1, sizeof(Note));
 	_papNotes[closestIndex]->time = time;
 	return closestIndex;
