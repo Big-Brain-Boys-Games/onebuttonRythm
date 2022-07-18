@@ -8,13 +8,17 @@ project(
 
 include_directories(src)
 add_executable(${PROJECT_NAME} src/audio.c src/drawing.c src/files.c src/gameplay.c src/main.c src/shared.c src/thread.c)
-
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  LINK_SEARCH_START_STATIC ON
+  LINK_SEARCH_END_STATIC ON
+)
 set(CMAKE_DISABLE_TESTING ON)
+set(ZIP_STATIC_PIC "true")
+set(RAYLIB_LIBTYPE "STATIC")
 add_subdirectory(deps/raylib)
 add_subdirectory(deps/zip)
 
-set(ZIP_STATIC_PIC "true")
-set(RAYLIB_LIBTYPE "STATIC")
+
 
 
 
@@ -24,4 +28,4 @@ target_link_directories( ${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME} raylib zip)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb -static-libgcc -static")
