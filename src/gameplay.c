@@ -299,14 +299,11 @@ void removeNote(int index)
 	removeSelectedNote(index);
 	_amountNotes--;
 	free(_papNotes[index]);
-	Note ** tmp = malloc(sizeof(Note*) * _amountNotes);
-	memcpy(tmp, _papNotes, sizeof(Note*) * _amountNotes);
 	for (int i = index; i < _amountNotes; i++)
 	{
-		tmp[i] = _papNotes[i + 1];
+		_papNotes[i] = _papNotes[i + 1];
 	}
-	free(_papNotes);
-	_papNotes = tmp;
+	_papNotes = realloc(_papNotes, (_amountNotes+1) * sizeof(Note*));
 }
 
 int newNote(float time)
