@@ -308,6 +308,7 @@ void removeNote(int index)
 
 int newNote(float time)
 {
+	printf("amountnotes %i\n", _amountNotes);
 	int closestIndex = 0;
 	_amountNotes++;
 	_papNotes = realloc(_papNotes, (_amountNotes+1)* sizeof(Note*));
@@ -325,6 +326,8 @@ int newNote(float time)
 	}
 	_papNotes[closestIndex] = calloc(1, sizeof(Note));
 	_papNotes[closestIndex]->time = time;
+	_papNotes[closestIndex]->health = 1;
+	_papNotes[closestIndex]->hit = 0;
 	return closestIndex;
 }
 
@@ -332,7 +335,7 @@ void addSelectNote(int note)
 {
 	if(note == -1)
 		return;
-	printf("Adding note: %i\n", note);
+	printf("Adding note: %i  %i\n", note, _amountSelectedNotes);
 	for (int i = 0; i < _amountSelectedNotes; i++)
 	{
 		if (_selectedNotes[i] == _papNotes[note])
@@ -353,11 +356,12 @@ void addSelectNote(int note)
 
 void removeSelectedNote(int index)
 {
-	printf("Removing note: %i\n", index);
+	printf("Removing note: %i  amount %i\n", index, _amountSelectedNotes);
 
-	for (int i = index; i < _amountSelectedNotes; i++)
+	for (int i = index; i < _amountSelectedNotes-1; i++)
 	{
 		_selectedNotes[i] = _selectedNotes[i + 1];
+		printf("%i <- %i\n", i, i+1);
 	}
 	_amountSelectedNotes--;
 	_selectedNotes = realloc(_selectedNotes, sizeof(int) * _amountSelectedNotes);
@@ -1223,8 +1227,11 @@ void editorControls()
 			undo();
 		}else if (IsKeyPressed(KEY_Z) && !IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f)
 		{
-			doAction();
+			// doAction();
+			printf("closestIndex: %i\n", closestIndex);
 			newNote(getMusicHead());
+			_noteIndex = closestIndex;
+			printf("closestIndex: %i\n", closestIndex);
 		}
 
 		if (IsKeyPressed(KEY_X) && closestTime < _maxMargin)
@@ -1327,7 +1334,7 @@ void fEditor()
 			else
 				playAudioEffect(_pHitSE, _hitSE_Size);
 
-			while(_noteIndex < _amountNotes && getMusicHead() > _papNotes[_noteIndex]->time)
+			while(_noteIndex < _amountNotes -1 && getMusicHead() > _papNotes[_noteIndex]->time)
 			{
 				_noteIndex++;
 			}
@@ -2274,10 +2281,10 @@ void fNewMap()
 		fclose(file);
 		if (newMap.bpm == 0)
 			newMap.bpm = 1;
-		_pNextGameplayFunction = &fRecording;
+		_pNextGameplayFunction = &fEditor;
 		_amountNotes = 0;
 		_noteIndex = 0;
-		_pGameplayFunction = &fCountDown;
+		_pGameplayFunction = &fEditor;
 		_transition = 0.1;
 		newMap.folder = malloc(100);
 		strcpy(newMap.folder, newMap.name);

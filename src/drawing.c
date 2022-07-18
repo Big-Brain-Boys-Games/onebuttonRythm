@@ -141,10 +141,9 @@ void dNotes ()
 	float width = GetScreenWidth() * 0.01;
 	float middle = GetScreenWidth() /2;
 	
-
 	DrawRectangle(0, GetScreenHeight()*0.35, GetScreenWidth(), GetScreenHeight()*0.3, ColorAlpha(BLACK, 0.4));
 	DrawRectangleGradientH(0,0 , middle - width / 2, GetScreenHeight(), ColorAlpha(BLACK, 0.6), ColorAlpha(BLACK, 0.3));
-	for(int i = _noteIndex; i < _amountNotes && i >= 0 && _papNotes[i]->time + _scrollSpeed > getMusicHead(); i--)
+	for(int i = _noteIndex; i >= 0; i--)
 	{
 		if(i < 0) continue;
 		//DrawCircle( middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
