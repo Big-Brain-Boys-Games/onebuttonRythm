@@ -12,6 +12,7 @@
 #include <string.h>
 #include "thread.h"
 #include <ctype.h>
+#include <time.h>
 
 extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
 extern Color _fade;
@@ -1527,7 +1528,7 @@ void fPlaying()
 		rippleEffect[i] += GetFrameTime() * 1200 * rippleEffectStrength[i];
 		rippleEffectStrength[i] = fmax(rippleEffectStrength[i] - GetFrameTime() * 5, 0);
 		float size = rippleEffect[i];
-		DrawRing((Vector2){.x = GetScreenWidth() / 2, .y = GetScreenHeight() * 0.42}, size * GetScreenWidth() * 0.001, size * 0.7 * GetScreenWidth() * 0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i] * 0.35));
+		DrawRing((Vector2){.x = GetScreenWidth() / 2, .y = GetScreenHeight() * 0.5}, size * GetScreenWidth() * 0.001, size * 0.7 * GetScreenWidth() * 0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i] * 0.35));
 	}
 
 	float width = GetScreenWidth() * 0.005;
@@ -1546,7 +1547,7 @@ void fPlaying()
 		drawText(feedbackSayings[j], GetScreenWidth() * 0.35, GetScreenHeight() * (0.6 + i * 0.1), GetScreenWidth() * 0.05 * feedbackSize[j], (Color){.r = 255, .g = 255, .b = 255, .a = noLessThanZero(150 - i * 40)});
 	}
 
-	if (_noteIndex < _amountNotes && getMusicHead() - _maxMargin > _papNotes[_noteIndex]->time)
+	if (_noteIndex < _amountNotes-1 && getMusicHead() - _maxMargin > _papNotes[_noteIndex]->time)
 	{
 		// passed note
 		_noteIndex++;
@@ -1734,7 +1735,6 @@ char **filesCaching = 0;
 void mapInfoLoading(struct mapInfoLoadingArgs *args)
 #else
 DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
-// DWORD WINAPI * decodeAudio(struct decodeAudioArgs * args)
 #endif
 {
 	lockLoadingMutex();
@@ -1876,6 +1876,32 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 	*args->amount = mapIndex;
 	free(args);
 }
+
+#ifdef __unix
+void loadMapImage(Map *map)
+#else
+DWORD WINAPI *loadMapImage(struct mapInfoLoadingArgs *args)
+#endif
+{
+	printf("loading map image %s\n", map->imageFile);
+
+	//disabled loading lock because some images refuse to load
+	// lockLoadingMutex();
+	// _loading++;
+	// unlockLoadingMutex();
+	Image img ={0};
+	char str [100];
+	snprintf(str, 100, "maps/%s/%s", map->folder, map->imageFile);
+	img = LoadImage(str);
+	map->cpuImage = img;
+	if(img.width==0) //failed to load so setting it back to -1
+		map->cpuImage.width=-2;
+	// lockLoadingMutex();
+	// _loading--;
+	// unlockLoadingMutex();
+}
+
+#include <unistd.h>
 
 void fMapSelect()
 {
@@ -2056,7 +2082,7 @@ void fMapSelect()
 		Rectangle mapButton = (Rectangle){.x = x, .y = menuScrollSmooth * GetScreenHeight() + GetScreenHeight() * ((floor(i / 3) > floor(selectedMap / 3) && selectedMap != -1 ? 0.3 : 0.225) + 0.3375 * floor(mapCount / 3)), .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.3};
 		if ((mouseInRect(mapButton) || selectedMap == i) && mouseInRect(mapSelectRect))
 		{
-			if (hoverPeriod > 1 && hoverPeriod < 2 || !_musicPlaying)
+			if (hoverPeriod > 1 && hoverPeriod < 2)
 			{
 				// play music
 				char str[100];
@@ -2077,6 +2103,13 @@ void fMapSelect()
 			hoverPeriod = 0;
 			_musicFrameCount = 1;
 		}
+					// printf("map image width %i\n", _pMaps[i].cpuImage.width);
+		if(_pMaps[i].cpuImage.width == 0)
+		{
+			_pMaps[i].cpuImage.width = -1;
+			createThread((void *(*)(void *))loadMapImage, &_pMaps[i]);
+			_pMaps[i].cpuImage.width = -1;
+		}
 		if (selectedMap == i)
 		{
 			if (IsMouseButtonReleased(0) && mouseInRect(mapButton) && mouseInRect(mapSelectRect))
@@ -2092,8 +2125,25 @@ void fMapSelect()
 				printf("selected map!\n");
 				_transition = 0.1;
 				_disableLoadingScreen = false;
-			}
+				_musicPlaying = false;
+				//wait until map image is loaded
+				if(_pGameplayFunction != &fMapSelect)
+				{
+					float startTime = (float)clock()/CLOCKS_PER_SEC;
+					for(int i = 0; i < 20 && _map->cpuImage.width < 1; i++)
+					{
+						// #ifdef _WIN32
+						// 	Sleep(100);
+						// #else
+						// 	usleep(100);
+						// #endif
+						printf("%i\n", i);
+					}
 
+					if(_map->cpuImage.width < 1)
+						_map->image = _background;
+				}
+			}
 			drawMapThumbnail(mapButton, &_pMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], true);
 			if (interactableButtonNoSprite("play", 0.0225, mapButton.x, mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
 			{

@@ -130,7 +130,7 @@ Map loadMapInfo(char * file)
 		if(strcmp(line, "[Zoom]") == 0)					{mode = fpZoom;					continue;}
 		if(strcmp(line, "[Offset]") == 0)				{mode = fpOffset;				continue;}
 		if(strcmp(line, "[Beats]") == 0)				{mode = fpBeats;				continue;}
-		if(strcmp(line, "[Notes]") == 0)				{break;}
+		if(strcmp(line, "[Notes]") == 0)				{break;} //Notes is at the end of map.data so we can just skip everything else after
 
 		switch(mode)
 		{
@@ -190,7 +190,7 @@ Map loadMapInfo(char * file)
 	{
 		printf("image: %s \n", pStr);
 		// map.image = LoadTexture(pStr);
-		map.cpuImage = LoadImage(pStr);
+		// map.cpuImage = LoadImage(pStr);
 		// strcpy(map.imageFile, pStr);
 	}
 	else{

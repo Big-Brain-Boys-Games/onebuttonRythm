@@ -143,7 +143,7 @@ void dNotes ()
 	
 	DrawRectangle(0, GetScreenHeight()*0.35, GetScreenWidth(), GetScreenHeight()*0.3, ColorAlpha(BLACK, 0.4));
 	DrawRectangleGradientH(0,0 , middle - width / 2, GetScreenHeight(), ColorAlpha(BLACK, 0.6), ColorAlpha(BLACK, 0.3));
-	for(int i = _noteIndex; i >= 0; i--)
+	for(int i = _noteIndex; i >= 0 && i < _amountNotes; i--)
 	{
 		if(i < 0) continue;
 		//DrawCircle( middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
@@ -172,16 +172,16 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float 
 	if(map->image.id == 0)
 	{
 		//load map image onto gpu(cant be loaded in sperate thread because opengl >:( )
-		if(map->cpuImage.width != 0)
+		if(map->cpuImage.width > 0)
 		{
 			map->image = LoadTextureFromImage(map->cpuImage);
+			UnloadImage(map->cpuImage);
+			map->cpuImage.width = 0;
+			if(map->image.id == 0)
+				map->image.id = -1; 
+			else
+				SetTextureFilter(map->image, TEXTURE_FILTER_BILINEAR);
 		}
-		UnloadImage(map->cpuImage);
-		map->cpuImage.width = 0;
-		if(map->image.id == 0)
-			map->image.id = -1; 
-		else
-			SetTextureFilter(map->image, TEXTURE_FILTER_BILINEAR);
 	}
 	float imageRatio = 0.8;
 	Color color = WHITE;

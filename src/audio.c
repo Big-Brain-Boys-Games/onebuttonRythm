@@ -126,8 +126,11 @@ DWORD WINAPI *decodeAudio(struct decodeAudioArgs *args)
 	unlockLoadingMutex();
 	ma_result result;
 	printf("loading sound effect %s\n", args->file);
+	float startTime = (float)clock()/CLOCKS_PER_SEC;
+
 	ma_decoder_config decoder_config = ma_decoder_config_init(ma_format_f32, 2, 48000);
-	decoder_config.resampling.linear.lpfOrder = MA_MAX_FILTER_ORDER;
+	decoder_config.resampling.linear.lpfOrder = 0;
+	// decoder_config.resampling.channels = 2;
 	ma_decoder decoder = {0};
 	long long unsigned int audioLength = 0;
 	result = ma_decoder_init_file(args->file, &decoder_config, &decoder);
@@ -146,18 +149,25 @@ DWORD WINAPI *decodeAudio(struct decodeAudioArgs *args)
 	void *pCursor = *args->buffer;
 	int size = 0;
 	lastFrame = -1;
+
+	float middleTime = (float)clock()/CLOCKS_PER_SEC;
+
+	printf("loading and allocating music file %s, took %.2f seconds\n", args->file, middleTime - startTime);
 	while (decoder.readPointerInPCMFrames != lastFrame)
 	{
 		lastFrame = decoder.readPointerInPCMFrames;
-		ma_result result = ma_decoder_read_pcm_frames(&decoder, pCursor, 256, NULL);
-		pCursor += sizeof(float) * 2 * 256;
+		ma_result result = ma_decoder_read_pcm_frames(&decoder, pCursor, 4096, NULL);
+		pCursor += sizeof(float) * 2 * 4096;
 		size++;
 	}
+	float endTime = (float)clock()/CLOCKS_PER_SEC;
+	printf("reading music file %s, took %.2f seconds\n", args->file, endTime - middleTime);
+	printf("total music file %s, took %.2f seconds\n", args->file, endTime - startTime);
 	ma_decoder_uninit(&decoder);
+	*args->audioLength = audioLength;
 	lockLoadingMutex();
 	_loading--;
 	unlockLoadingMutex();
-	*args->audioLength = audioLength;
 	free(args->file);
 	free(args);
 	return NULL;
