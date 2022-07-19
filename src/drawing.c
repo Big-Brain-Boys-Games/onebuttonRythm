@@ -56,18 +56,23 @@ void drawTransition()
 float musicTimeToScreen(float musicTime)
 {
 	float middle = GetScreenWidth() / 2;
-	return middle + middle * (musicTime - getMusicHead()) * (1 / _scrollSpeed);
+	float position = GetScreenWidth() * 0.4;
+	return position + middle * (musicTime - getMusicHead()) * (1 / _scrollSpeed);
 }
 
 float screenToMusicTime(float x)
 {
 	float middle = GetScreenWidth() / 2;
-	return (x - middle) / (middle * (1 / _scrollSpeed)) + getMusicHead();
+	float position = GetScreenWidth() * 0.4;
+	return (x - position) / (middle * (1 / _scrollSpeed)) + getMusicHead();
 }
 
 float noteFadeOut(float note)
 {
-	return fmin(1, fmax(0, (1-fabs(note - getMusicHead()) * (1/_scrollSpeed))*3));
+	if(_musicHead < note)
+		return fmin(1, fmax(0, 1 - (musicTimeToScreen(note) - musicTimeToScreen(_musicHead)) / (GetScreenWidth()*1)));
+	return fmin(1, fmax(0, 1 - (musicTimeToScreen(_musicHead) - musicTimeToScreen(note) ) / (GetScreenWidth()*0.4)));
+	
 }
 
 void drawCursor ()
@@ -140,10 +145,11 @@ void dNotes ()
 	static float fade = 0;
 	float width = GetScreenWidth() * 0.01;
 	float middle = GetScreenWidth() /2;
+	float position = musicTimeToScreen(_musicHead);
 	
 	DrawRectangle(0, GetScreenHeight()*0.35, GetScreenWidth(), GetScreenHeight()*0.3, ColorAlpha(BLACK, 0.4));
-	DrawRectangleGradientH(0,0 , middle - width / 2, GetScreenHeight(), ColorAlpha(BLACK, 0.6), ColorAlpha(BLACK, 0.3));
-	for(int i = _noteIndex; i >= 0 && i < _amountNotes; i--)
+	DrawRectangleGradientH(0,0 , position - width / 2, GetScreenHeight(), ColorAlpha(BLACK, 0.6), ColorAlpha(BLACK, 0.3));
+	for(int i = _noteIndex; i >= 0 && i < _amountNotes && musicTimeToScreen(_papNotes[i]->time) > 0; i--)
 	{
 		if(i < 0) continue;
 		//DrawCircle( middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
@@ -153,7 +159,7 @@ void dNotes ()
 	}
 
 	//draw notes before line
-	for(int i = _noteIndex; i < _amountNotes && i>= 0 && _papNotes[i]->time - _scrollSpeed < getMusicHead(); i++)
+	for(int i = _noteIndex; i < _amountNotes && i>= 0 && musicTimeToScreen(_papNotes[i]->time) < GetScreenWidth(); i++)
 	{
 		//DrawCircle( middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
 		//DrawTextureEx(_noteTex, (Vector2){.x=middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
@@ -161,7 +167,7 @@ void dNotes ()
 
 	}
 
-	DrawRectangle(middle - width / 2,0 , width, GetScreenHeight(), ColorAlpha(WHITE, 0.5*fade));
+	DrawRectangle(position - width / 2,0 , width, GetScreenHeight(), ColorAlpha(WHITE, 0.5*fade));
 	if(_isKeyPressed)
 		fade = 1;
 	fade -= GetFrameTime()*10;

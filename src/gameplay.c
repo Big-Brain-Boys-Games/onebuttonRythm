@@ -1528,7 +1528,7 @@ void fPlaying()
 		rippleEffect[i] += GetFrameTime() * 1200 * rippleEffectStrength[i];
 		rippleEffectStrength[i] = fmax(rippleEffectStrength[i] - GetFrameTime() * 5, 0);
 		float size = rippleEffect[i];
-		DrawRing((Vector2){.x = GetScreenWidth() / 2, .y = GetScreenHeight() * 0.5}, size * GetScreenWidth() * 0.001, size * 0.7 * GetScreenWidth() * 0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i] * 0.35));
+		DrawRing((Vector2){.x = musicTimeToScreen(_musicHead), .y = GetScreenHeight() * 0.5}, size * GetScreenWidth() * 0.001, size * 0.7 * GetScreenWidth() * 0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i] * 0.35));
 	}
 
 	float width = GetScreenWidth() * 0.005;
