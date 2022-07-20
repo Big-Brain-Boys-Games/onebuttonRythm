@@ -213,6 +213,26 @@ void textBox(Rectangle rect, char *str, bool *selected)
 				}
 			}
 		}
+
+		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))
+		{
+			char * clipboard = GetClipboardText();
+			int stringLength = strlen(str);
+			int cbIndex = 0;
+			for (int i = stringLength; i < 98; i++)
+			{
+				if (clipboard[cbIndex] != '\0')
+				{
+					str[i] = c;
+				}else{
+					str[i + 1] = '\0';
+					break;
+				}
+			}
+			str[99] = '\0';
+
+			free(clipboard);
+		}
 	}
 	if (*selected)
 		DrawRectangle(rect.x + rect.width * 0.2, rect.y + rect.height * 0.75, rect.width * 0.6, rect.height * 0.1, DARKGRAY);
@@ -1369,14 +1389,14 @@ void fEditor()
 	if (_musicPlaying)
 	{
 		_musicHead += GetFrameTime() * _musicSpeed;
-		if (_amountNotes > 0 && _noteIndex < _amountNotes-1 && getMusicHead() > _papNotes[_noteIndex]->time)
+		if (_amountNotes > 0 && _noteIndex < _amountNotes && getMusicHead() > _papNotes[_noteIndex]->time)
 		{
-			
 			if(_papNotes[_noteIndex]->custSound)
 				playAudioEffect(_papNotes[_noteIndex]->custSound->sound, _papNotes[_noteIndex]->custSound->length);
 			else
 				playAudioEffect(_pHitSE, _hitSE_Size);
 
+			_noteIndex++;
 			while(_noteIndex < _amountNotes -1 && getMusicHead() > _papNotes[_noteIndex]->time)
 			{
 				_noteIndex++;
@@ -2395,17 +2415,17 @@ void fNewMap()
 
 	// text boxes
 	static bool nameBoxSelected = false;
-	Rectangle nameBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.375, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+	Rectangle nameBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.375, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
 	textBox(nameBox, newMap.name, &nameBoxSelected);
 	drawText("name", middle, GetScreenHeight() * 0.325, GetScreenHeight() * 0.05, WHITE);
 
 	static bool artistBoxSelected = false;
-	Rectangle artistBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.5, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+	Rectangle artistBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.5, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
 	textBox(artistBox, newMap.artist, &artistBoxSelected);
 	drawText("artist", middle, GetScreenHeight() * 0.45, GetScreenHeight() * 0.05, WHITE);
 
 	static bool creatorBoxSelected = false;
-	Rectangle creatorBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.625, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+	Rectangle creatorBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.625, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
 	textBox(creatorBox, newMap.mapCreator, &creatorBoxSelected);
 	drawText("creator", middle, GetScreenHeight() * 0.575, GetScreenHeight() * 0.05, WHITE);
 
@@ -2413,13 +2433,13 @@ void fNewMap()
 	if (newMap.bpm != 0)
 		snprintf(str, 100, "%i", newMap.bpm);
 	static bool bpmBoxSelected = false;
-	Rectangle bpmBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.875, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+	Rectangle bpmBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.875, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
 	textBox(bpmBox, str, &bpmBoxSelected);
 	newMap.bpm = fmin(fmax(atoi(str), 0), 500);
 	drawText("bpm", middle, GetScreenHeight() * 0.825, GetScreenHeight() * 0.05, WHITE);
 
 	static bool difficultyBoxSelected = false;
-	Rectangle difficultyBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.75, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+	Rectangle difficultyBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.75, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
 	numberBox(difficultyBox, &newMap.difficulty, &difficultyBoxSelected);
 	if (newMap.difficulty < 0)
 		newMap.difficulty = 0;
