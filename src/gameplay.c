@@ -166,7 +166,7 @@ void gotoMainMenu(bool mainOrSelect)
 float getMusicHead()
 {
 	if (_musicPlaying)
-		return _musicHead - _settings.offset;
+		return _musicHead;
 	else
 		return _musicHead;
 }
@@ -576,7 +576,6 @@ void fMainMenu()
 		// Switching to settings
 		_pGameplayFunction = &fSettings;
 		_transition = 0.1;
-		_settings.offset = _settings.offset * 1000;
 	}
 
 	if (interactableButton("New Map", 0.035, middle - GetScreenWidth() * (0.03 - growTimer*0.03), GetScreenHeight() * 0.65, GetScreenWidth() * 0.2, GetScreenHeight() * 0.065))
@@ -666,12 +665,13 @@ void fSettings()
 
 		char offset[10] = {0};
 		if (_settings.offset != 0)
-			snprintf(offset, 10, "%i", (int)_settings.offset);
+			snprintf(offset, 10, "%i", (int)(_settings.offset*1000));
 		static bool offsetBoxSelected = false;
 		Rectangle offsetBox = (Rectangle){.x = GetScreenWidth() * 0.1, .y = GetScreenHeight() * (0.85+menuScrollSmooth), .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 		textBox(offsetBox, offset, &offsetBoxSelected);
 		_settings.offset = (float)atoi(offset);
 		_settings.offset = fmin(fmax(_settings.offset, 0), 300);
+		_settings.offset *= 0.001;
 		tSize = GetScreenWidth() * 0.03;
 		size = MeasureText("offset", tSize);
 		drawText("offset", offsetBox.x + offsetBox.width / 2 - size / 2, offsetBox.y - GetScreenHeight() * 0.05, tSize, WHITE);
@@ -717,7 +717,6 @@ void fSettings()
 	{
 		_pGameplayFunction = &fMainMenu;
 		_transition = 0.1;
-		_settings.offset = _settings.offset * 0.001;
 		saveSettings();
 		return;
 	}

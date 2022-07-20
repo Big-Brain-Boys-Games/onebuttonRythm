@@ -196,7 +196,8 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 	// music
 	if (_musicPlaying && _pMusic && *_pMusic && _musicLength)
 	{
-		if (*_musicLength > 0 && *_musicLength > _musicFrameCount && _musicFrameCount > 0)
+		int tmpFrameCount = _musicFrameCount + _settings.offset*48000;
+		if (*_musicLength > 0 && *_musicLength > tmpFrameCount && tmpFrameCount > 0)
 		{
 			for (int i = 0; i < frameCount * 2; i++)
 			{
@@ -204,7 +205,7 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 				int sampleCount = (int)(_musicSpeed * 100);
 				// for(int j = 0; j < sampleCount; j++)
 				// {
-				value += ((float *)*_pMusic)[(int)(i * (double)_musicSpeed + _musicFrameCount * 2)] * musicVolume;
+				value += ((float *)*_pMusic)[(int)(i * (double)_musicSpeed + tmpFrameCount * 2)] * musicVolume;
 				// }
 				((float *)pOutput)[i] = value;
 			}
@@ -225,6 +226,7 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 	_menuMusicFrameCount += frameCount;
 	// sound effects
 
+	// int tmpFrameCount = _effectOffset + _settings.offset&
 	for (int i = 0; i < frameCount * 2; i++)
 	{
 		((float *)pOutput)[i] += ((float *)_pEffectsBuffer)[(i + _effectOffset) % (48000 * 4)] * audioEffectVolume;

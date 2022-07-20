@@ -45,7 +45,7 @@ struct Settings{
 	int volumeGlobal;
 	int volumeMusic;
 	int volumeSoundEffects;
-	float offset;
+	double offset;
 };
 typedef struct Settings Settings;
 
