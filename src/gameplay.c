@@ -889,7 +889,7 @@ void editorSettings()
 		if (_map->bpm != 0)
 			snprintf(bpm, 10, "%i", _map->bpm);
 		static bool bpmBoxSelected = false;
-		Rectangle bpmBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.1, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+		Rectangle bpmBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.1, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
 		textBox(bpmBox, bpm, &bpmBoxSelected);
 		_map->bpm = atoi(bpm);
 		_map->bpm = fmin(fmax(_map->bpm, 0), 300);
@@ -899,7 +899,7 @@ void editorSettings()
 		if (_map->offset != 0)
 			snprintf(offset, 10, "%i", _map->offset);
 		static bool offsetBoxSelected = false;
-		Rectangle offsetBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.18, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+		Rectangle offsetBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.18, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
 		textBox(offsetBox, offset, &offsetBoxSelected);
 		_map->offset = atoi(offset);
 		_map->offset = fmin(fmax(_map->offset, 0), 5000);
@@ -908,7 +908,7 @@ void editorSettings()
 		char songName[50] = {0};
 		snprintf(songName, 50, "%s", _map->name);
 		static bool songNameBoxSelected = false;
-		Rectangle songNameBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.26, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+		Rectangle songNameBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.26, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
 		textBox(songNameBox, songName, &songNameBoxSelected);
 		strcpy(_map->name, songName);
 
@@ -916,7 +916,7 @@ void editorSettings()
 		char creator[50] = {0};
 		snprintf(creator, 50, "%s", _map->artist);
 		static bool creatorBoxSelected = false;
-		Rectangle creatorBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.34, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+		Rectangle creatorBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.34, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
 		textBox(creatorBox, creator, &creatorBoxSelected);
 		strcpy(_map->artist, creator);
 
@@ -926,7 +926,7 @@ void editorSettings()
 		if (_map->musicPreviewOffset != 0)
 			snprintf(musicPreviewOffset, 10, "%i", (int)(_map->musicPreviewOffset * 1000));
 		static bool musicPreviewOffsetBoxSelected = false;
-		Rectangle musicPreviewOffsetBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.42, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+		Rectangle musicPreviewOffsetBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.42, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
 		textBox(musicPreviewOffsetBox, musicPreviewOffset, &musicPreviewOffsetBoxSelected);
 		_map->musicPreviewOffset = atoi(musicPreviewOffset) / 1000.0;
 		_map->musicPreviewOffset = fmin(fmax(_map->musicPreviewOffset, 0), *_musicLength);
@@ -951,6 +951,12 @@ void editorSettings()
 		tSize = GetScreenWidth() * 0.025;
 		size = measureText(text, tSize);
 		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.36, tSize, WHITE);
+
+		text = "Preview offset:";
+		tSize = GetScreenWidth() * 0.025;
+		size = measureText(text, tSize);
+		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() *  0.42, tSize, WHITE);
+
 
 		// text = "Playback speed:";
 		// tSize = GetScreenWidth() * 0.025;
@@ -1005,7 +1011,7 @@ void editorNoteSettings()
 		if (_selectedNotes[0]->texture_File != 0)
 			snprintf(sprite, 100, "%s", _selectedNotes[0]->texture_File);
 		static bool spriteBoxSelected = false;
-		Rectangle spriteBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.1, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+		Rectangle spriteBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.1, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
 		textBox(spriteBox, sprite, &spriteBoxSelected);
 		if (strlen(sprite) != 0)
 		{
@@ -1017,6 +1023,13 @@ void editorNoteSettings()
 			free(_selectedNotes[0]->texture_File);
 			_selectedNotes[0]->texture_File = 0;
 		}
+
+		char *text = "sprite file:";
+		float tSize = GetScreenWidth() * 0.025;
+		int size = measureText(text, tSize);
+		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.1, tSize, WHITE);
+
+		
 
 		// health setting
 		char health[10] = {0};
@@ -1037,7 +1050,7 @@ void editorNoteSettings()
 		else snprintf(health, 10, "-", "%c");
 		
 		static bool healthBoxSelected = false;
-		Rectangle healthBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.2, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+		Rectangle healthBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.2, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
 		textBox(healthBox, health, &healthBoxSelected);
 		if (healthBoxSelected)
 		{
@@ -1047,6 +1060,35 @@ void editorNoteSettings()
 				_selectedNotes[i]->health = (int)(fmin(fmax(_selectedNotes[i]->health, 0), 9));
 			}
 		}
+
+		text = "health:";
+		tSize = GetScreenWidth() * 0.025;
+		size = measureText(text, tSize);
+		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.2, tSize, WHITE);
+
+
+		char hitSound[100] = {0};
+		hitSound[0] = '\0';
+		if (_selectedNotes[0]->hitSE_File != 0)
+			snprintf(hitSound, 100, "%s", _selectedNotes[0]->hitSE_File);
+		static bool hitSoundBoxSelected = false;
+		Rectangle hitSoundBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.3, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+		textBox(hitSoundBox, hitSound, &hitSoundBoxSelected);
+		if (strlen(hitSound) != 0)
+		{
+			if (_selectedNotes[0]->hitSE_File == 0)
+				_selectedNotes[0]->hitSE_File = malloc(sizeof(char) * 100);
+			strcpy(_selectedNotes[0]->hitSE_File, hitSound);
+		}else if(_selectedNotes[0]->hitSE_File != 0)
+		{
+			free(_selectedNotes[0]->hitSE_File);
+			_selectedNotes[0]->hitSE_File = 0;
+		}
+
+		text = "hitSound file:";
+		tSize = GetScreenWidth() * 0.025;
+		size = measureText(text, tSize);
+		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.3, tSize, WHITE);
 		
 	}else
 	{
