@@ -1313,22 +1313,29 @@ void editorControls()
 			undo();
 		}else if (IsKeyPressed(KEY_Z) && !IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f)
 		{
-			// doAction();
-			printf("closestIndex: %i\n", closestIndex);
+			doAction();
 			newNote(getMusicHead());
 			_noteIndex = closestIndex;
-			printf("closestIndex: %i\n", closestIndex);
+		}
+
+		if (IsKeyPressed(KEY_A))
+		{
+			doAction();
+			float pos = roundf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat + _map->offset/1000.0;
+			newNote(pos);
+			_noteIndex = closestIndex;
 		}
 
 		if (IsKeyPressed(KEY_X) && closestTime < _maxMargin)
 		{
 			doAction();
 			removeNote(closestIndex);
+			if(closestIndex >= _noteIndex)
+				_noteIndex--;
 		}
 
 		if (IsKeyPressed(KEY_C) && !_musicPlaying)
 		{
-			// todo maybe not 4 subbeats?
 			_musicHead = roundf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat + _map->offset/1000.0;
 		}
 
