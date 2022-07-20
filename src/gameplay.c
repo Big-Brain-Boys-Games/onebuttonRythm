@@ -1222,80 +1222,56 @@ void editorNoteSettings()
 void editorControls()
 {
 	float secondsPerBeat = (60.0/_map->bpm) / _barMeasureCount;
-	if (IsKeyPressed(KEY_RIGHT))
+	if (!_musicPlaying)
 	{
-		double before = _musicHead;
-		// Snap to closest beat
-		_musicHead = roundf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat;
-		// Add the offset
-		_musicHead += _map->offset / 1000.0;
-		// Add the bps to the music head
-		if(before >= _musicHead-0.001) _musicHead += secondsPerBeat;
-		if(before >= _musicHead-0.001) _musicHead += secondsPerBeat;
-		// // snap it again (it's close enough right?????)
-		// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
-		_musicPlaying = false;
-	}
-
-	if (IsKeyPressed(KEY_LEFT))
-	{
-		double before = _musicHead;
-		_musicHead = floorf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat;
-		_musicHead += _map->offset / 1000.0;	
-		printf("before %.2f  musichead %.2f\n", before, _musicHead);
-		if(before <= _musicHead+0.001)
-			_musicHead -= secondsPerBeat;
-		if(before <= _musicHead+0.001)
-			_musicHead -= secondsPerBeat;
-		// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
-		_musicPlaying = false;
-	}
-
-	if (GetMouseWheelMove() > 0)
-		_musicHead += GetFrameTime() * (_scrollSpeed * 6);
-	if (GetMouseWheelMove() < 0)
-		_musicHead -= GetFrameTime() * (_scrollSpeed * 6);
-	if (IsKeyPressed(KEY_UP) || (GetMouseWheelMove() > 0 && IsKeyDown(KEY_LEFT_CONTROL)))
-		_scrollSpeed *= 1.2;
-	if (IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL)))
-		_scrollSpeed /= 1.2;
-	if (_scrollSpeed == 0)
-		_scrollSpeed = 0.01;
-	if (IsMouseButtonDown(2))
-	{
-		_musicHead -= GetMouseDelta().x / GetScreenWidth() * _scrollSpeed;
-	}
-
-	if (IsMouseButtonPressed(0) && GetMouseY() > GetScreenHeight() * 0.3 && GetMouseY() < GetScreenHeight() * 0.6)
-	{
-		if(!IsKeyDown(KEY_LEFT_SHIFT))
+		//Snapping left and right with arrow keys
+		if (IsKeyPressed(KEY_RIGHT))
 		{
-			int note = findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX()));
-			bool unselect = false;
-			if(_amountSelectedNotes == 1 && _selectedNotes[0] == _papNotes[note])
-				unselect = true;
-			free(_selectedNotes);
-			_amountSelectedNotes = 0;
-			_selectedNotes = 0;
-			if(!unselect)
-				addSelectNote(findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX())));
+			double before = _musicHead;
+			// Snap to closest beat
+			_musicHead = roundf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat;
+			// Add the offset
+			_musicHead += _map->offset / 1000.0;
+			// Add the bps to the music head
+			if(before >= _musicHead-0.001) _musicHead += secondsPerBeat;
+			if(before >= _musicHead-0.001) _musicHead += secondsPerBeat;
+			// // snap it again (it's close enough right?????)
+			// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+			_musicPlaying = false;
 		}
-		else
-			addSelectNote(findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX())));
-	}
 
-	if (getMusicHead() < 0)
-		_musicHead = 0;
+		if (IsKeyPressed(KEY_LEFT))
+		{
+			double before = _musicHead;
+			_musicHead = floorf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat;
+			_musicHead += _map->offset / 1000.0;	
+			printf("before %.2f  musichead %.2f\n", before, _musicHead);
+			if(before <= _musicHead+0.001)
+				_musicHead -= secondsPerBeat;
+			if(before <= _musicHead+0.001)
+				_musicHead -= secondsPerBeat;
+			// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+			_musicPlaying = false;
+		}
 
-	if (IsKeyPressed(KEY_ESCAPE))
-	{
-		_pGameplayFunction = &fPause;
-		_pNextGameplayFunction = &fEditor;
-		return;
-	}
+		//Scroll timeline with mousewheel
+		if (GetMouseWheelMove() > 0)
+			_musicHead += GetFrameTime() * (_scrollSpeed * 6);
+		if (GetMouseWheelMove() < 0)
+			_musicHead -= GetFrameTime() * (_scrollSpeed * 6);
+		if (IsMouseButtonDown(2))
+		{
+			_musicHead -= GetMouseDelta().x / GetScreenWidth() * _scrollSpeed;
+		}
+		//Pause menu
+		if (IsKeyPressed(KEY_ESCAPE))
+		{
+			_pGameplayFunction = &fPause;
+			_pNextGameplayFunction = &fEditor;
+			return;
+		}
 
-	if (getMusicHead() > getMusicDuration())
-		_musicHead = getMusicDuration();
+		//Small optimisation defined in main.c
 	if (_isKeyPressed)
 	{
 		float closestTime = 55;
@@ -1399,6 +1375,40 @@ void editorControls()
 			_barMeasureCount = _barMeasureCount / 2;
 		}
 	}
+	}
+	
+	//Change scrollspeed
+	if (IsKeyPressed(KEY_UP) || (GetMouseWheelMove() > 0 && IsKeyDown(KEY_LEFT_CONTROL)))
+		_scrollSpeed *= 1.2;
+	if (IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL)))
+		_scrollSpeed /= 1.2;
+	if (_scrollSpeed == 0)
+		_scrollSpeed = 0.01;
+	
+	//Selecting notes
+	if (IsMouseButtonPressed(0) && GetMouseY() > GetScreenHeight() * 0.3 && GetMouseY() < GetScreenHeight() * 0.6)
+	{
+		if(!IsKeyDown(KEY_LEFT_SHIFT))
+		{
+			int note = findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX()));
+			bool unselect = false;
+			if(_amountSelectedNotes == 1 && _selectedNotes[0] == _papNotes[note])
+				unselect = true;
+			free(_selectedNotes);
+			_amountSelectedNotes = 0;
+			_selectedNotes = 0;
+			if(!unselect)
+				addSelectNote(findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX())));
+		}
+		else
+			addSelectNote(findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX())));
+	}
+	//prevent bugs by setting musicHead to 0 when it gets below 0
+	if (getMusicHead() < 0)
+		_musicHead = 0;
+	//prevent bugs by setting muiscHead to the max song duration
+	if (getMusicHead() > getMusicDuration())
+		_musicHead = getMusicDuration();
 
 	if (IsKeyPressed(KEY_SPACE))
 	{
