@@ -282,8 +282,10 @@ void saveFile (int noteAmount)
 		fprintf(_pFile, "%f", _papNotes[i]->time);
 		if (_papNotes[i]->hitSE_File != 0)
 			fprintf(_pFile, " \"%s\"", _papNotes[i]->hitSE_File);
+
 		if (_papNotes[i]->texture_File != 0)
 			fprintf(_pFile, " \"%s\"",_papNotes[i]->texture_File);
+
 		if (_papNotes[i]->anim && _papNotes[i]->animSize)
 		{
 			fprintf(_pFile, " \"(%i",_papNotes[i]->animSize);
@@ -293,6 +295,7 @@ void saveFile (int noteAmount)
 			}
 			fprintf(_pFile, ")\"");
 		}
+
 		if (_papNotes[i]->health > 0)
 			fprintf(_pFile, " \"h%i\"", (int)(_papNotes[i]->health));
 		
@@ -619,10 +622,9 @@ void loadMap ()
 						break;
 					}
 
-					//add texture file name
 					char tmpStr[100] = {0};
 					int strPos = 0;
-					for(int i = 0; i < 100; i++) //copy over file name
+					for(int i = 0; i < 100; i++)
 					{
 						if(line[i+part] == '"' || line[i+part] == '\0')
 						{
@@ -634,7 +636,8 @@ void loadMap ()
 					}
 					//Loading files
 					char * ext = GetFileExtension(tmpStr);
-					if(ext != NULL)
+					printf("part: %s\next: %s\n", tmpStr, ext);
+					if(ext != NULL && tmpStr[0] != '(')
 					{
 						if(strcmp(ext, ".mp3") == 0 || strcmp(ext, ".wav") == 0)
 						{
