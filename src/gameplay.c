@@ -2007,7 +2007,7 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 #ifdef __unix
 void loadMapImage(Map *map)
 #else
-DWORD WINAPI *loadMapImage(struct mapInfoLoadingArgs *args)
+DWORD WINAPI *loadMapImage(Map * map)
 #endif
 {
 	printf("loading map image %s\n", map->imageFile);
