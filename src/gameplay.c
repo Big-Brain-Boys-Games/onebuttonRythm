@@ -317,7 +317,12 @@ bool interactableButtonNoSprite(char *text, float fontScale, float x, float y, f
 
 void removeNote(int index)
 {
-	removeSelectedNote(index);
+	for(int i = 0; i < _amountSelectedNotes; i++)
+		if(_selectedNotes[i] == _papNotes[index])
+		{
+			removeSelectedNote(i);
+			break;
+		}
 	_amountNotes--;
 	free(_papNotes[index]);
 	for (int i = index; i < _amountNotes; i++)
@@ -385,7 +390,7 @@ void removeSelectedNote(int index)
 		printf("%i <- %i\n", i, i+1);
 	}
 	_amountSelectedNotes--;
-	_selectedNotes = realloc(_selectedNotes, sizeof(int) * _amountSelectedNotes);
+	_selectedNotes = realloc(_selectedNotes, sizeof(Note *) * _amountSelectedNotes);
 }
 
 void fPause()
@@ -1302,12 +1307,23 @@ void editorControls()
 			_noteIndex = closestIndex;
 		}
 
-		if (IsKeyPressed(KEY_X) && closestTime < _maxMargin)
+
+		bool delKey = IsKeyPressed(KEY_X) || IsKeyPressed(KEY_DELETE);
+		if (delKey && closestTime < _maxMargin && !_amountSelectedNotes)
 		{
 			doAction();
 			removeNote(closestIndex);
 			if(closestIndex >= _noteIndex)
 				_noteIndex--;
+		}else if(delKey)
+		{
+			while(_amountSelectedNotes > 0)
+			{
+				removeNote(findClosestNote(_papNotes, _amountNotes, _selectedNotes[0]->time));
+			}
+			free(_selectedNotes);
+			_selectedNotes = 0;
+			_amountSelectedNotes = 0;
 		}
 
 		if (IsKeyPressed(KEY_C) && !_musicPlaying)
