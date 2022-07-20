@@ -1037,17 +1037,20 @@ void editorNoteSettings()
 		printf("new size %i\n", firstNote->animSize);
 		for(int i = 1; i < _amountSelectedNotes; i++)
 		{
-			if(_selectedNotes[i]->anim == 0)
-				_selectedNotes[i]->anim = malloc(sizeof(Frame)*firstNote->animSize);
-			else
-				_selectedNotes[i]->anim = realloc(_selectedNotes[i]->anim, sizeof(Frame)*firstNote->animSize);
-			
-			_selectedNotes[i]->animSize = firstNote->animSize;
-
-			for(int key = 0; key < firstNote->animSize; key++)
+			if(firstNote->anim != 0 && firstNote->animSize > 0)
 			{
-				_selectedNotes[i]->anim[key] = firstNote->anim[key];
-			}	
+				if(_selectedNotes[i]->anim == 0)
+					_selectedNotes[i]->anim = malloc(sizeof(Frame)*firstNote->animSize);
+				else
+					_selectedNotes[i]->anim = realloc(_selectedNotes[i]->anim, sizeof(Frame)*firstNote->animSize);
+				
+				_selectedNotes[i]->animSize = firstNote->animSize;
+
+				for(int key = 0; key < firstNote->animSize; key++)
+				{
+					_selectedNotes[i]->anim[key] = firstNote->anim[key];
+				}
+			}
 		}
 		return;
 	}
@@ -1202,6 +1205,7 @@ void editorNoteSettings()
 					if(_selectedNotes[0]->anim[key].time > (timeLine+1)/2)
 					{
 						_selectedNotes[0]->anim[key+1] = _selectedNotes[0]->anim[key];
+						break;
 					}
 				}
 				int newIndex = 0;
@@ -1273,6 +1277,9 @@ void editorControls()
 		{
 			_pGameplayFunction = &fPause;
 			_pNextGameplayFunction = &fEditor;
+			free(_selectedNotes);
+			_selectedNotes = 0;
+			_amountSelectedNotes = 0;
 			return;
 		}
 
@@ -1940,7 +1947,7 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 		{
 			if (!filesCaching[j][0])
 				continue;
-			if (strcmp(filesCaching[j], files[i]) == 0)
+			if (strncmp(filesCaching[j], files[i], 100) == 0)
 			{
 				// cache hit
 				printf("cache hit! %s\n", files[i]);
