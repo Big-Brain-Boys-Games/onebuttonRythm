@@ -14,6 +14,9 @@ IF (WIN32)
     LINK_SEARCH_START_STATIC ON
     LINK_SEARCH_END_STATIC ON
   )
+  set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc -static")
+
 ENDIF()
 
 set(CMAKE_DISABLE_TESTING ON)
@@ -33,6 +36,3 @@ target_link_directories( ${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME} raylib zip)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb")
-IF (WIN32)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb -static-libgcc -static")
-ENDIF()
