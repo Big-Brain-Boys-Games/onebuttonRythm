@@ -733,28 +733,51 @@ void fEndScreen()
 	float textSize = measureText("Finished", GetScreenWidth() * 0.15);
 	drawText("Finished", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.05, GetScreenWidth() * 0.15, WHITE);
 
-	char *tmpString = malloc(50);
-	snprintf(tmpString, 50, "%s", _highScore < _score ? "New highscore!" : "");
-	textSize = measureText(tmpString, GetScreenWidth() * 0.1);
-	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.2, GetScreenWidth() * 0.1, WHITE);
-
-	// draw score
-	snprintf(tmpString, 50,"Score: %i Combo %i", _score, _highestCombo);
-	textSize = measureText(tmpString, GetScreenWidth() * 0.07);
-	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.4, GetScreenWidth() * 0.07, LIGHTGRAY);
+	char *tmpString = malloc(70);
+	snprintf(tmpString, 70, "%s", _highScore < _score ? "New highscore!" : "");
+	textSize = measureText(tmpString, GetScreenWidth() * 0.045);
+	drawText(tmpString, GetScreenWidth() * 0.55, GetScreenHeight() * 0.3, GetScreenWidth() * 0.05, WHITE);
 
 	// draw highscore
-	snprintf(tmpString, 50,"Highscore: %i Combo :%i", _highScore, _highScoreCombo);
-	textSize = measureText(tmpString, GetScreenWidth() * 0.05);
-	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.5, GetScreenWidth() * 0.05, LIGHTGRAY);
+	snprintf(tmpString, 70,"Highscore\nCombo");
+	textSize = measureText(tmpString, GetScreenWidth() * 0.045);
+	drawText(tmpString, GetScreenWidth() * 0.55, GetScreenHeight() * 0.4, GetScreenWidth() * 0.05, LIGHTGRAY);
+
+	// draw highscore values
+	snprintf(tmpString, 70,"%i\n%i", _highScore, _highScoreCombo);
+	textSize = measureText(tmpString, GetScreenWidth() * 0.045);
+	drawText(tmpString, GetScreenWidth() * 0.83, GetScreenHeight() * 0.4, GetScreenWidth() * 0.05, LIGHTGRAY);
+
+
+
+	// draw score
+	snprintf(tmpString, 70,"Score\nCombo");
+	textSize = measureText(tmpString, GetScreenWidth() * 0.045);
+	drawText(tmpString, GetScreenWidth() * 0.06, GetScreenHeight() * 0.3, GetScreenWidth() * 0.05, LIGHTGRAY);
+
+	// draw score Values
+	snprintf(tmpString, 70,"%i\n%i", _score, _highestCombo);
+	textSize = measureText(tmpString, GetScreenWidth() * 0.045);
+	drawText(tmpString, GetScreenWidth() * 0.4, GetScreenHeight() * 0.3, GetScreenWidth() * 0.05, LIGHTGRAY);
+
+
 
 	// draw extra info
-	snprintf(tmpString, 50,"Accuracy: %.2f misses :%i", 100 * (1 - _averageAccuracy), _notesMissed);
-	textSize = measureText(tmpString, GetScreenWidth() * 0.05);
-	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.6, GetScreenWidth() * 0.05, LIGHTGRAY);
+	snprintf(tmpString, 70,"Accuracy\nMisses");
+	textSize = measureText(tmpString, GetScreenWidth() * 0.045);
+	drawText(tmpString, GetScreenWidth() * 0.06, GetScreenHeight() * 0.5, GetScreenWidth() * 0.05, LIGHTGRAY);
+
+	// draw extra info Values
+	snprintf(tmpString, 70,"%.1f\n%i", 100 * (1 - _averageAccuracy), _notesMissed);
+	textSize = measureText(tmpString, GetScreenWidth() * 0.045);
+	drawText(tmpString, GetScreenWidth() * 0.4, GetScreenHeight() * 0.5, GetScreenWidth() * 0.05, LIGHTGRAY);
+
+
 	free(tmpString);
 
-	if (interactableButton("Retry", 0.05, GetScreenWidth() * 0.15, GetScreenHeight() * 0.7, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
+	drawRank(GetScreenWidth()*0.7, GetScreenHeight()*0.65, GetScreenWidth()*0.2, GetScreenWidth()*0.2, _averageAccuracy);
+
+	if (interactableButton("Retry", 0.05, GetScreenWidth() * 0.15, GetScreenHeight() * 0.72, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
 	{
 		// retrying map
 		printf("retrying map! \n");

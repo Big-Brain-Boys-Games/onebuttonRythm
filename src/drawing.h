@@ -15,6 +15,7 @@ float noteFadeOut(float note);
 void drawCursor();
 void drawNote(float musicTime, Note * note, Color color);
 void dNotes();
+void drawRank(int x, int y, int width, int height, float accuracy);
 void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float accuracy, bool selected);
 void drawBars();
 void drawBackground();
