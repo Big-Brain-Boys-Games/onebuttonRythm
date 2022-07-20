@@ -1139,6 +1139,18 @@ void editorNoteSettings()
 		tSize = GetScreenWidth() * 0.025;
 		size = measureText(text, tSize);
 		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.3, tSize, WHITE);
+
+		if (interactableButton("remove Animation", 0.025, GetScreenWidth() * 0.2, GetScreenHeight() * 0.7, GetScreenWidth() * 0.3, GetScreenHeight() * 0.07))
+		{
+			for(int i = 0; i < _amountSelectedNotes; i++)
+			{
+				if(_selectedNotes[i]->anim != 0)
+					free(_selectedNotes[i]->anim);
+
+				_selectedNotes[i]->anim = 0;
+				_selectedNotes[i]->animSize = 0;
+			}
+		}
 		
 	}else
 	{
