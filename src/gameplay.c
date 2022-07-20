@@ -1199,24 +1199,15 @@ void editorNoteSettings()
 				//create new frame
 				_selectedNotes[0]->animSize++;
 				_selectedNotes[0]->anim = realloc(_selectedNotes[0]->anim, _selectedNotes[0]->animSize*sizeof(Frame));
-				for(int key = _selectedNotes[0]->animSize-1; key > 0; key--)
+				int newIndex = 0;
+				for(int key = _selectedNotes[0]->animSize-2; key > 0; key--)
 				{
 					if(_selectedNotes[0]->anim[key].time > (timeLine+1)/2)
 					{
 						_selectedNotes[0]->anim[key+1] = _selectedNotes[0]->anim[key];
-						break;
-					}
-				}
-				int newIndex = 0;
-				for(int key = 0; key < _selectedNotes[0]->animSize-1; key++)
-				{
-					if(_selectedNotes[0]->anim[key].time == _selectedNotes[0]->anim[key+1].time)
-					{
 						newIndex = key;
-						break;
 					}
 				}
-				// printf("")
 				_selectedNotes[0]->anim[newIndex].time = (timeLine+1)/2;
 				_selectedNotes[0]->anim[newIndex].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()+0.05};
 
