@@ -436,7 +436,7 @@ void fPause()
 		_musicHead = 0;
 	}
 
-	if (interactableButton("Exit", 0.05, middle - GetScreenWidth() * 0.15, _pNextGameplayFunction == &fEditor ? GetScreenHeight() * 0.7 : GetScreenHeight() * 0.5, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
+	if (interactableButton("Exit", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.7, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
 	{
 		unloadMap();
 		gotoMainMenu(false);
@@ -784,6 +784,9 @@ void fEndScreen()
 	snprintf(tmpString, 70,"Accuracy\nMisses");
 	textSize = measureText(tmpString, GetScreenWidth() * 0.045);
 	drawText(tmpString, GetScreenWidth() * 0.06, GetScreenHeight() * 0.5, GetScreenWidth() * 0.05, LIGHTGRAY);
+
+	snprintf(tmpString, 70,"Acc: %.2fms", _averageAccuracy);
+	drawHint((Rectangle){.x=GetScreenWidth() * 0.06, .y=GetScreenHeight() * 0.5, .width=textSize, .height=GetScreenWidth() * 0.2}, tmpString);
 
 	// draw extra info Values
 	snprintf(tmpString, 70,"%.1f\n%i", 100 * (1 - _averageAccuracy), _notesMissed);

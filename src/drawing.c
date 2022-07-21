@@ -476,6 +476,28 @@ void drawButton(Rectangle rect, char * text, float fontScale)
 	drawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + rect.height*0.2, screenSize * fontScale, (color.r == GRAY.r) ? BLACK : DARKGRAY);
 }
 
+void drawHint(Rectangle rect, char * text)
+{
+	static float timerShow = 0;
+	if(!mouseInRect(rect))
+	{
+		timerShow = 0;
+	}
+
+	timerShow += GetFrameTime();
+
+	if(timerShow < 0.3f)
+		return;
+
+	float fontScale = GetScreenWidth()*0.03;
+	// DrawRectangle(rect.x, rect.y, rect.width, rect.height, ColorAlpha(color, 0.5));
+	int textSize = measureText(text, fontScale);
+	Vector2 pos = GetMousePosition();
+	pos.x += GetScreenWidth()*0.04;
+	DrawRectangle(pos.x-GetScreenWidth()*0.01, pos.y, textSize+GetScreenWidth()*0.02, GetScreenHeight()*0.05, ColorAlpha(BLACK, 0.6));
+	drawText(text, pos.x, pos.y, fontScale, WHITE);
+}
+
 void drawLoadScreen()
 {
 	static float angle = 0;
