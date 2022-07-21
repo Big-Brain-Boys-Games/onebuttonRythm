@@ -117,7 +117,7 @@ int main(int argc, char **argv)
 		{
 			drawLoadScreen();
 		}
-		DrawFPS(0, 0);
+		// DrawFPS(0, 0);
 		EndDrawing();
 	}
 	UnloadTexture(_background);
