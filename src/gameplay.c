@@ -420,11 +420,20 @@ void fPause()
 		gotoMainMenu(false);
 	}
 
+	if (_pNextGameplayFunction == &fPlaying && interactableButton("retry", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.5, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
+	{
+		_pGameplayFunction = fCountDown;
+		_noteIndex = 0;
+		_amountNotes = 0;
+		_musicHead = 0;
+	}
+
 	if (_pNextGameplayFunction == &fRecording && interactableButton("retry", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.5, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
 	{
 		_pGameplayFunction = _pNextGameplayFunction;
 		_noteIndex = 0;
 		_amountNotes = 0;
+		_musicHead = 0;
 	}
 
 	if (interactableButton("Exit", 0.05, middle - GetScreenWidth() * 0.15, _pNextGameplayFunction == &fEditor ? GetScreenHeight() * 0.7 : GetScreenHeight() * 0.5, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
@@ -460,12 +469,16 @@ void fCountDown()
 			_notesMissed = 0;
 			_averageAccuracy = 0;
 			_musicHead = 0;
-			contin = false;
 			countDown = 0;
 			_scrollSpeed = 4.2 / _map->zoom;
 			if (_settings.zoom != 0)
 				_scrollSpeed = 4.2 / _settings.zoom;
+
+			//set all note.hits to false
+			for(int i = 0; i < _amountNotes; i++)
+				_papNotes[i]->hit = false;
 		}
+		contin = false;
 		return;
 	}
 	if (_musicHead <= 0)
