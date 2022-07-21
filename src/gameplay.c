@@ -461,6 +461,7 @@ void fCountDown()
 			_averageAccuracy = 0;
 			_musicHead = 0;
 			contin = false;
+			countDown = 0;
 			_scrollSpeed = 4.2 / _map->zoom;
 			if (_settings.zoom != 0)
 				_scrollSpeed = 4.2 / _settings.zoom;
@@ -2254,22 +2255,22 @@ void fMapSelect()
 				_disableLoadingScreen = false;
 				_musicPlaying = false;
 				//wait until map image is loaded
-				if(_pGameplayFunction != &fMapSelect)
-				{
-					float startTime = (float)clock()/CLOCKS_PER_SEC;
-					for(int i = 0; i < 20 && _map->cpuImage.width < 1; i++)
-					{
-						// #ifdef _WIN32
-						// 	Sleep(100);
-						// #else
-						// 	usleep(100);
-						// #endif
-						printf("%i\n", i);
-					}
+				// if(_pGameplayFunction != &fMapSelect)
+				// {
+				// 	float startTime = (float)clock()/CLOCKS_PER_SEC;
+				// 	for(int i = 0; i < 20 && _map->cpuImage.width < 1; i++)
+				// 	{
+				// 		// #ifdef _WIN32
+				// 		// 	Sleep(100);
+				// 		// #else
+				// 		// 	usleep(100);
+				// 		// #endif
+				// 		printf("%i\n", i);
+				// 	}
 
-					if(_map->cpuImage.width < 1)
-						_map->image = _background;
-				}
+				// 	if(_map->cpuImage.width < 1)
+				// 		_map->image = _background;
+				// }
 			}
 			drawMapThumbnail(mapButton, &_pMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], true);
 			if (interactableButtonNoSprite("play", 0.0225, mapButton.x, mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))

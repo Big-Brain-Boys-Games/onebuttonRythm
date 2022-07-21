@@ -578,7 +578,11 @@ void loadMap ()
 		if(emptyLine)
 			continue;
 
-		if(strcmp(line, "[Notes]\n") == 0)			{mode = fpNotes;		continue;}
+		for(int i = 0; i < 100; i++)
+			if(line[i] == '\n' || line[i] == '\r' || !line[i])
+				line[i]= '\0';
+
+		if(strcmp(line, "[Notes]") == 0)			{mode = fpNotes;		continue;}
 		switch(mode)
 		{
 			case fpNone:
