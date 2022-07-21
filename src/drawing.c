@@ -515,6 +515,7 @@ void initDrawing()
 	SetExitKey(0);
 
 	HideCursor();
+	SetConfigFlags(FLAG_MSAA_4X_HINT);
 
 	_loadingFade = 0.3;
 
