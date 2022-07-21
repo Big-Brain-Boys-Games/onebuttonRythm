@@ -808,7 +808,8 @@ int _undoBufferIndex = 0;
 
 #define freeArray(arr) \
 	if(arr)\
-		free(arr);
+		free(arr);\
+	arr = 0;
 
 void undo()
 {
@@ -2289,15 +2290,7 @@ void fMapSelect()
 						for(int k = 0; k < _undoBufferSize[j]; k++)
 						{
 							freeArray(_paUndoBuffer[j][k].anim);
-							if(_paUndoBuffer[j][k].hitSE_File)
-							{
-								removeCustomSound(_paUndoBuffer[j][k].hitSE_File);
-							}
 							freeArray(_paUndoBuffer[j][k].hitSE_File);
-							if(_paUndoBuffer[j][k].texture_File)
-							{
-								removeCustomTexture(_paUndoBuffer[j][k].texture_File);
-							}
 							freeArray(_paUndoBuffer[j][k].texture_File);
 						}
 						free(_paUndoBuffer[j]);
@@ -2314,6 +2307,7 @@ void fMapSelect()
 
 						if(_paUndoBuffer[j][k].anim)//copy over animations
 						{
+							_paUndoBuffer[j][k].anim = malloc(sizeof(Frame)*_paUndoBuffer[j][k].animSize);
 							for(int l = 0; l < _paUndoBuffer[j][k].animSize; l++)
 								_paUndoBuffer[j][k].anim[l] = _papNotes[k]->anim[l];
 						}
