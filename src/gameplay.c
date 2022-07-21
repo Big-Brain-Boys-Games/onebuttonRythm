@@ -468,7 +468,7 @@ void fCountDown()
 		}
 		return;
 	}
-	if (getMusicHead() <= 0)
+	if (_musicHead <= 0)
 		_musicHead = GetTime() - countDown;
 	else
 		contin = true;
