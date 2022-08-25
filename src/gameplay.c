@@ -414,10 +414,11 @@ void fPause()
 		else
 			_pGameplayFunction = _pNextGameplayFunction;
 	}
-	if (_pNextGameplayFunction == &fEditor && interactableButton("Save & Exit", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.5, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
+	if (_pNextGameplayFunction == &fEditor && interactableButton("Save", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.5, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
 	{
 		saveFile(_amountNotes);
-		gotoMainMenu(false);
+		_pGameplayFunction = _pNextGameplayFunction;
+		// gotoMainMenu(false);
 	}
 
 	if (_pNextGameplayFunction == &fPlaying && interactableButton("retry", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.5, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
