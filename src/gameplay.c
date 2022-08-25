@@ -684,8 +684,21 @@ void fSettings()
 		Rectangle offsetBox = (Rectangle){.x = GetScreenWidth() * 0.1, .y = GetScreenHeight() * (0.85+menuScrollSmooth), .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
 		textBox(offsetBox, offset, &offsetBoxSelected);
 		_settings.offset = (float)atoi(offset);
-		_settings.offset = fmin(fmax(_settings.offset, 0), 300);
+		_settings.offset = fmin(fmax(_settings.offset, -300), 300);
 		_settings.offset *= 0.001;
+
+		if(offsetBoxSelected && IsKeyPressed(KEY_MINUS))
+		{
+			_settings.offset *= -1;
+		}
+		
+
+		static bool offsetSliderSelected = false;
+		Rectangle offsetSlider = (Rectangle){.x = GetScreenWidth() * 0.1, .y = GetScreenHeight() * (0.9+menuScrollSmooth), .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.03};
+		int tempOffset = _settings.offset * 1000;
+		slider(offsetSlider, &offsetSliderSelected, &tempOffset, 300, -300);
+		_settings.offset = tempOffset * 0.001;
+
 		tSize = GetScreenWidth() * 0.03;
 		size = MeasureText("offset", tSize);
 		drawText("offset", offsetBox.x + offsetBox.width / 2 - size / 2, offsetBox.y - GetScreenHeight() * 0.05, tSize, WHITE);

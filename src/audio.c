@@ -190,8 +190,8 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 	// music
 	if (_musicPlaying && _pMusic && *_pMusic && _musicLength)
 	{
-		int tmpFrameCount = _musicFrameCount + _settings.offset*48000;
-		if (*_musicLength > 0 && *_musicLength > tmpFrameCount && tmpFrameCount > 0)
+		int tmpFrameCount = _musicFrameCount - _settings.offset*48000;
+		if (*_musicLength > 0 && *_musicLength > tmpFrameCount && tmpFrameCount > 0) 
 		{
 			for (int i = 0; i < frameCount * 2; i++)
 			{
