@@ -1266,41 +1266,56 @@ void editorControls()
 	float secondsPerBeat = (60.0/_map->bpm) / _barMeasureCount;
 	if (!_musicPlaying)
 	{
+		static float timeRightKey = 0;
 		//Snapping left and right with arrow keys
-		if (IsKeyPressed(KEY_RIGHT))
+		if (IsKeyDown(KEY_RIGHT))
 		{
-			double before = _musicHead;
-			// Snap to closest beat
-			_musicHead = roundf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat;
-			// Add the offset
-			_musicHead += _map->offset / 1000.0;
-			// Add the bps to the music head
-			if(before >= _musicHead-0.001) _musicHead += secondsPerBeat;
-			if(before >= _musicHead-0.001) _musicHead += secondsPerBeat;
-			// // snap it again (it's close enough right?????)
-			// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
-			_musicPlaying = false;
-		}
+			timeRightKey += GetFrameTime()*10;
 
-		if (IsKeyPressed(KEY_LEFT))
+			if(IsKeyPressed(KEY_RIGHT) || (((int)timeRightKey)%2 == 1 && timeRightKey > 7))
+			{
+				timeRightKey += 1;
+				double before = _musicHead;
+				// Snap to closest beat
+				_musicHead = roundf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat;
+				// Add the offset
+				_musicHead += _map->offset / 1000.0;
+				// Add the bps to the music head
+				if(before >= _musicHead-0.001) _musicHead += secondsPerBeat;
+				if(before >= _musicHead-0.001) _musicHead += secondsPerBeat;
+				// // snap it again (it's close enough right?????)
+				// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+				_musicPlaying = false;
+			}
+		}else
+			timeRightKey = 0;
+
+		static float timeLeftKey = 0;
+		if (IsKeyDown(KEY_LEFT))
 		{
-			double before = _musicHead;
-			_musicHead = floorf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat;
-			_musicHead += _map->offset / 1000.0;	
-			printf("before %.2f  musichead %.2f\n", before, _musicHead);
-			if(before <= _musicHead+0.001)
-				_musicHead -= secondsPerBeat;
-			if(before <= _musicHead+0.001)
-				_musicHead -= secondsPerBeat;
-			// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
-			_musicPlaying = false;
-		}
+			timeLeftKey += GetFrameTime()*10;
+
+			if(IsKeyPressed(KEY_LEFT) || (((int)timeLeftKey)%2 == 1 && timeLeftKey > 7))
+			{
+				double before = _musicHead;
+				_musicHead = floorf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat;
+				_musicHead += _map->offset / 1000.0;	
+				printf("before %.2f  musichead %.2f\n", before, _musicHead);
+				if(before <= _musicHead+0.001) _musicHead -= secondsPerBeat;
+				if(before <= _musicHead+0.001) _musicHead -= secondsPerBeat;
+				// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
+				_musicPlaying = false;
+			}
+		}else
+			timeLeftKey = 0;
 
 		//Scroll timeline with mousewheel
+		if(GetMouseWheelMove() != 0)
+			_musicHead = roundf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat +_map->offset / 1000.0;;
 		if (GetMouseWheelMove() > 0)
-			_musicHead += GetFrameTime() * (_scrollSpeed * 6);
+			_musicHead += secondsPerBeat;
 		if (GetMouseWheelMove() < 0)
-			_musicHead -= GetFrameTime() * (_scrollSpeed * 6);
+			_musicHead -= secondsPerBeat;
 		if (IsMouseButtonDown(2))
 		{
 			_musicHead -= GetMouseDelta().x / GetScreenWidth() * _scrollSpeed;
