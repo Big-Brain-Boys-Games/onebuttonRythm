@@ -1301,7 +1301,6 @@ void editorControls()
 				double before = _musicHead;
 				_musicHead = floorf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat;
 				_musicHead += _map->offset / 1000.0;	
-				printf("before %.2f  musichead %.2f\n", before, _musicHead);
 				if(before <= _musicHead+0.001) _musicHead -= secondsPerBeat;
 				if(before <= _musicHead+0.001) _musicHead -= secondsPerBeat;
 				// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
@@ -1313,9 +1312,9 @@ void editorControls()
 		//Scroll timeline with mousewheel
 		if(GetMouseWheelMove() != 0)
 			_musicHead = roundf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat +_map->offset / 1000.0;;
-		if (GetMouseWheelMove() > 0)
-			_musicHead += secondsPerBeat;
 		if (GetMouseWheelMove() < 0)
+			_musicHead += secondsPerBeat;
+		if (GetMouseWheelMove() > 0)
 			_musicHead -= secondsPerBeat;
 		if (IsMouseButtonDown(2))
 		{
