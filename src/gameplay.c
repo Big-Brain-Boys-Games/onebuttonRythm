@@ -1203,7 +1203,7 @@ void editorNoteSettings()
 
 		slider((Rectangle){.x=0, .y=GetScreenHeight()*0.9, .width=GetScreenWidth(), .height=GetScreenHeight()*0.03}, &timeLineSelected, &value, 100, -100);
 		timeLine = value / 100.0;
-		drawNote(timeLine*_scrollSpeed+_selectedNotes[0]->time, _selectedNotes[0], WHITE);
+		drawNote(timeLine*_scrollSpeed+_selectedNotes[0]->time, _selectedNotes[0], WHITE, 0);
 		Frame * anim = _selectedNotes[0]->anim;
 		for(int key = 0; key < _selectedNotes[0]->animSize; key++)
 		{
