@@ -823,6 +823,8 @@ void makeMapZip(Map * map)
 	char ** files = GetDirectoryFiles(str, &amount);
 	for(int i = 0; i < amount; i++)
 	{
+		if(files[i][0] == '.')
+			continue;
 		zip_entry_open(zip, files[i]);
 		{
 			strcpy(str, "maps/");
