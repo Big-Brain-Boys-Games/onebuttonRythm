@@ -1009,7 +1009,7 @@ void editorSettings()
 		_map->musicPreviewOffset = atoi(musicPreviewOffset) / 1000.0;
 		_map->musicPreviewOffset = fmin(fmax(_map->musicPreviewOffset, 0), *_musicLength);
 
-		// preview offset setting
+		// difficulty setting
 		char difficulty[10] = {0};
 		difficulty[0] = '\0';
 		if (_map->difficulty != 0)
@@ -1018,6 +1018,16 @@ void editorSettings()
 		Rectangle difficultyBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.50, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
 		textBox(difficultyBox, difficulty, &difficultyBoxSelected);
 		_map->difficulty = atoi(difficulty);
+
+		// beats per bar setting
+		char beats[10] = {0};
+		beats[0] = '\0';
+		if (_map->beats != 0)
+			snprintf(beats, 10, "%i", _map->beats);
+		static bool beatsBoxSelected = false;
+		Rectangle beatsBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.58, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+		textBox(beatsBox, beats, &beatsBoxSelected);
+		_map->beats = atoi(beats);
 
 		// Drawing text next to the buttons
 		char *text = "BPM:";
@@ -1049,6 +1059,11 @@ void editorSettings()
 		tSize = GetScreenWidth() * 0.025;
 		size = measureText(text, tSize);
 		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() *  0.50, tSize, WHITE);
+
+		text = "Beats:";
+		tSize = GetScreenWidth() * 0.025;
+		size = measureText(text, tSize);
+		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() *  0.58, tSize, WHITE);
 
 
 		// text = "Playback speed:";
@@ -2470,6 +2485,7 @@ void fNewMap()
 		newMap.folder = malloc(100);
 		newMap.folder[0] = '\0';
 		newMap.bpm = 100;
+		newMap.beats = 4;
 	}
 	ClearBackground(BLACK);
 	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},

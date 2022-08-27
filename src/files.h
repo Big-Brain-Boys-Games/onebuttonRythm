@@ -15,7 +15,7 @@ struct Map{
 	int bpm;
 	int zoom;
 	int offset;
-	float beats;
+	int beats;
 	float musicPreviewOffset;
 	char * imageFile;
 	char * musicFile;

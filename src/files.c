@@ -172,7 +172,9 @@ Map loadMapInfo(char * file)
 				map.offset = atoi(line);
 				break;
 			case fpBeats:
-				map.beats = atof(line);
+				map.beats = atoi(line);
+				if(map.beats == 0)
+					map.beats = 4; //setting it to a sensable default (0 crashes game)
 				break;
 			case fpNotes:
 				//neat, notes :P

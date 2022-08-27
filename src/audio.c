@@ -90,7 +90,7 @@ void fixMusicTime()
 
 int getBarsCount()
 {
-	return _map->bpm * (getMusicDuration()-_map->offset/1000.0) / 60 / 4;
+	return _map->bpm * (getMusicDuration()-_map->offset/1000.0) / 60 / _map->beats;
 }
 
 int getBeatsCount()
