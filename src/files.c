@@ -190,8 +190,8 @@ Map loadMapInfo(char * file)
 	{
 		printf("image: %s \n", pStr);
 		// map.image = LoadTexture(pStr);
-		// map.cpuImage = LoadImage(pStr);
-		// strcpy(map.imageFile, pStr);
+		map.cpuImage = LoadImage(pStr);
+		strcpy(map.imageFile, pStr);
 	}
 	else{
 		map.image = _menuBackground;
