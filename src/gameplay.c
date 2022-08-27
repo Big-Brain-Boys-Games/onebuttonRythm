@@ -1009,6 +1009,16 @@ void editorSettings()
 		_map->musicPreviewOffset = atoi(musicPreviewOffset) / 1000.0;
 		_map->musicPreviewOffset = fmin(fmax(_map->musicPreviewOffset, 0), *_musicLength);
 
+		// preview offset setting
+		char difficulty[10] = {0};
+		difficulty[0] = '\0';
+		if (_map->difficulty != 0)
+			snprintf(difficulty, 10, "%i", _map->difficulty);
+		static bool difficultyBoxSelected = false;
+		Rectangle difficultyBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.50, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+		textBox(difficultyBox, difficulty, &difficultyBoxSelected);
+		_map->difficulty = atoi(difficulty);
+
 		// Drawing text next to the buttons
 		char *text = "BPM:";
 		float tSize = GetScreenWidth() * 0.025;
@@ -1034,6 +1044,11 @@ void editorSettings()
 		tSize = GetScreenWidth() * 0.025;
 		size = measureText(text, tSize);
 		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() *  0.42, tSize, WHITE);
+
+		text = "Difficulty:";
+		tSize = GetScreenWidth() * 0.025;
+		size = measureText(text, tSize);
+		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() *  0.50, tSize, WHITE);
 
 
 		// text = "Playback speed:";
