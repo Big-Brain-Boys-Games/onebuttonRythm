@@ -139,6 +139,9 @@ DWORD WINAPI *decodeAudio(struct decodeAudioArgs *args)
 		*args->buffer = 0;
 		*args->audioLength = 0;
 		free(args->file);
+		lockLoadingMutex();
+		_loading--;
+		unlockLoadingMutex();
 		return NULL;
 		// exit(0);
 	}
