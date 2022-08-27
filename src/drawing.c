@@ -373,7 +373,7 @@ void drawMusicGraph(float transparent)
 
 	//printf("beginning: %f \tend: %f\tamountBars: %i\ttimePerBar: %f\tsamplesPerBar: %i\tsampleBegin: %i\n",beginning,end,amountBars,timePerBar,samplesPerBar,sampleBegin);
 	//drawing stuff
-	int pixelsPerBar = GetScreenWidth()/amountBars;
+	float pixelsPerBar = GetScreenWidth()/(float)amountBars;
 	float scaleBar = GetScreenHeight()*0.2;
 	//looping through all the bars / samples
 	for(int i = 0; i < amountBars; i++)
