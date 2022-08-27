@@ -1361,7 +1361,7 @@ void editorControls()
 		if (IsKeyPressed(KEY_Z) && IsKeyDown(KEY_LEFT_CONTROL))
 		{
 			undo();
-		}else if (IsKeyPressed(KEY_Z) && !IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f)
+		}else if (IsKeyPressed(KEY_Z) && !IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.003f)
 		{
 			doAction();
 			newNote(getMusicHead());
