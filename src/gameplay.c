@@ -425,7 +425,6 @@ void fPause()
 	{
 		_pGameplayFunction = fCountDown;
 		_noteIndex = 0;
-		_amountNotes = 0;
 		_musicHead = 0;
 	}
 
@@ -460,7 +459,7 @@ void fCountDown()
 		if (!contin)
 		{
 			// switching to playing map
-			printf("switching to playing map! \n");
+			printf("reset map! \n");
 			startMusic();
 
 			_health = 50;
@@ -497,7 +496,7 @@ void fCountDown()
 
 	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
 
-	DrawRectangle(middle - width / 2, 0, width, GetScreenHeight(), (Color){.r = 255, .g = 255, .b = 255, .a = 255 / 2});
+	// DrawRectangle(middle - width / 2, 0, width, GetScreenHeight(), (Color){.r = 255, .g = 255, .b = 255, .a = 255 / 2});
 
 	// draw score
 	char *tmpString = malloc(9);
