@@ -1438,12 +1438,15 @@ void editorControls()
 			timeLeftKey = 0;
 
 		//Scroll timeline with mousewheel
-		if(GetMouseWheelMove() != 0)
-			_musicHead = roundf((getMusicHead() - timeSeg.time) / secondsPerBeat) * secondsPerBeat +timeSeg.time;
-		if (GetMouseWheelMove() < 0)
-			_musicHead += secondsPerBeat;
-		if (GetMouseWheelMove() > 0)
-			_musicHead -= secondsPerBeat;
+		if(!IsKeyDown(KEY_LEFT_CONTROL))
+		{
+			if(GetMouseWheelMove() != 0)
+				_musicHead = roundf((getMusicHead() - timeSeg.time) / secondsPerBeat) * secondsPerBeat +timeSeg.time;
+			if (GetMouseWheelMove() < 0)
+				_musicHead += secondsPerBeat;
+			if (GetMouseWheelMove() > 0)
+				_musicHead -= secondsPerBeat;
+		}
 		if (IsMouseButtonDown(2))
 		{
 			_musicHead -= GetMouseDelta().x / GetScreenWidth() * _scrollSpeed;
