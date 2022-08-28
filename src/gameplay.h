@@ -7,6 +7,10 @@
 
 #include "../deps/raylib/src/raylib.h"
 
+
+TimingSegment getTimingSignature(float time);
+TimingSegment * addTimingSignature(float time, int bpm);
+void removeTimingSignature(float time);
 void gotoMainMenu(bool mainOrSelect);
 bool mouseInRect(Rectangle rect);
 void textBox(Rectangle rect, char *str, bool *selected);

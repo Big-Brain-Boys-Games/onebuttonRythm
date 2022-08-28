@@ -60,9 +60,106 @@ bool _showAnimation = false;
 
 
 // Timestamp of all the notes
-Note ** _papNotes;
+Note ** _papNotes = 0;
+TimingSegment * _paTimingSegment = 0;
+int _amountTimingSegments = 0;
 void (*_pNextGameplayFunction)();
 void (*_pGameplayFunction)();
+
+TimingSegment getTimingSignature(float time)
+{
+	if(!_paTimingSegment || _amountTimingSegments == 0)
+		return (TimingSegment){.bpm=_map->bpm, .time=_map->offset};
+	for(int i = 0; i < _amountTimingSegments; i++)
+	{
+		if(time < _paTimingSegment[i].time)
+		{
+			i--;
+			if(i < 0)
+				return (TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0};
+			return _paTimingSegment[i];
+		}
+	}
+	return _paTimingSegment[_amountTimingSegments-1];
+}
+
+TimingSegment * addTimingSignature(float time, int bpm)
+{
+	if(!_paTimingSegment)
+	{
+		_paTimingSegment = malloc(sizeof(TimingSegment));
+		_amountTimingSegments = 1;
+		_paTimingSegment[0].time = time;
+		_paTimingSegment[0].bpm = bpm;
+		return &(_paTimingSegment[0]);
+	}
+	for(int i = 0; i < _amountTimingSegments; i++)
+	{
+		if(time < _paTimingSegment[i].time)
+		{
+			i--;
+			if(i < 0)
+				i = 0;
+
+
+			_amountTimingSegments++;
+			_paTimingSegment = realloc(_paTimingSegment, _amountTimingSegments*sizeof(TimingSegment) );
+			for(int j = _amountTimingSegments-2; j >= i; j--)
+			{
+				_paTimingSegment[j+1] = _paTimingSegment[j];
+			}
+			_paTimingSegment[i].time = time;
+			_paTimingSegment[i].bpm = bpm;
+			return &(_paTimingSegment[i]);
+		}
+	}
+
+
+	int  i = _amountTimingSegments;
+
+	_amountTimingSegments++;
+	_paTimingSegment = realloc(_paTimingSegment, _amountTimingSegments*sizeof(TimingSegment) );
+	for(int j = _amountTimingSegments-2; j >= i; j--)
+	{
+		_paTimingSegment[j+1] = _paTimingSegment[j];
+	}
+	_paTimingSegment[i].time = time;
+	_paTimingSegment[i].bpm = bpm;
+	return &(_paTimingSegment[i]);
+}
+
+void removeTimingSignature(float time)
+{
+	if(!_paTimingSegment)
+		return;
+
+	if(_amountTimingSegments == 1)
+	{
+		free(_paTimingSegment);
+		_paTimingSegment = 0;
+		_amountTimingSegments = 0;
+		return;
+	}
+	for(int i = 0; i < _amountTimingSegments; i++)
+	{
+		if(time < _paTimingSegment[i].time)
+		{
+			i--;
+			if(i < 0)
+				i = 0;
+
+			printf("removing %i\n", i);
+
+			_amountTimingSegments--;
+			_paTimingSegment = realloc(_paTimingSegment, _amountTimingSegments*sizeof(TimingSegment) );
+			for(int j = i; j < _amountTimingSegments; j++)
+			{
+				_paTimingSegment[j] = _paTimingSegment[j+1];
+			}
+			return;
+		}
+	}
+}
 
 char _notfication[100];
 
@@ -1293,7 +1390,8 @@ void editorNoteSettings()
 
 void editorControls()
 {
-	float secondsPerBeat = (60.0/_map->bpm) / _barMeasureCount;
+	TimingSegment timeSeg = getTimingSignature(_musicHead);
+	float secondsPerBeat = (60.0/timeSeg.bpm) / _barMeasureCount;
 	if (!_musicPlaying)
 	{
 		static float timeRightKey = 0;
@@ -1307,9 +1405,9 @@ void editorControls()
 				timeRightKey += 1;
 				double before = _musicHead;
 				// Snap to closest beat
-				_musicHead = roundf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat;
+				_musicHead = roundf((getMusicHead() - timeSeg.time) / secondsPerBeat) * secondsPerBeat;
 				// Add the offset
-				_musicHead += _map->offset / 1000.0;
+				_musicHead += timeSeg.time;
 				// Add the bps to the music head
 				if(before >= _musicHead-0.001) _musicHead += secondsPerBeat;
 				if(before >= _musicHead-0.001) _musicHead += secondsPerBeat;
@@ -1327,9 +1425,10 @@ void editorControls()
 
 			if(IsKeyPressed(KEY_LEFT) || (((int)timeLeftKey)%2 == 1 && timeLeftKey > 7))
 			{
+				secondsPerBeat = (60.0/getTimingSignature(_musicHead-0.001).bpm) / _barMeasureCount;
 				double before = _musicHead;
-				_musicHead = floorf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat;
-				_musicHead += _map->offset / 1000.0;	
+				_musicHead = floorf((getMusicHead() - timeSeg.time) / secondsPerBeat) * secondsPerBeat;
+				_musicHead += timeSeg.time;	
 				if(before <= _musicHead+0.001) _musicHead -= secondsPerBeat;
 				if(before <= _musicHead+0.001) _musicHead -= secondsPerBeat;
 				// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
@@ -1340,7 +1439,7 @@ void editorControls()
 
 		//Scroll timeline with mousewheel
 		if(GetMouseWheelMove() != 0)
-			_musicHead = roundf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat +_map->offset / 1000.0;;
+			_musicHead = roundf((getMusicHead() - timeSeg.time) / secondsPerBeat) * secondsPerBeat +timeSeg.time;
 		if (GetMouseWheelMove() < 0)
 			_musicHead += secondsPerBeat;
 		if (GetMouseWheelMove() > 0)
@@ -1386,9 +1485,20 @@ void editorControls()
 		if (IsKeyPressed(KEY_A))
 		{
 			doAction();
-			float pos = roundf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat + _map->offset/1000.0;
+			float pos = roundf((getMusicHead() - timeSeg.time) / secondsPerBeat) * secondsPerBeat + timeSeg.time;
 			newNote(pos);
 			_noteIndex = closestIndex;
+		}
+
+		if (IsKeyPressed(KEY_D))
+		{
+			addTimingSignature(_musicHead, _map->bpm);
+			printf("adding new time signature \n");
+		}
+
+		if (IsKeyPressed(KEY_F))
+		{
+			removeTimingSignature(_musicHead);
 		}
 
 
@@ -1412,7 +1522,7 @@ void editorControls()
 
 		if (IsKeyPressed(KEY_C) && !_musicPlaying)
 		{
-			_musicHead = roundf((getMusicHead() - _map->offset/1000.0) / secondsPerBeat) * secondsPerBeat + _map->offset/1000.0;
+			_musicHead = roundf((getMusicHead() - timeSeg.time) / secondsPerBeat) * secondsPerBeat + timeSeg.time;
 		}
 
 		if (IsKeyPressed(KEY_V) && IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f && _amountSelectedNotes > 0)
@@ -1515,8 +1625,8 @@ void editorControls()
 		_musicPlaying = !_musicPlaying;
 		if (!_musicPlaying && floorf(getMusicHead() / secondsPerBeat) * secondsPerBeat < getMusicDuration())
 		{
-			_musicHead = floorf((getMusicHead()-_map->offset/1000.0) / secondsPerBeat) * secondsPerBeat;
-			_musicHead += _map->offset/1000.0;
+			_musicHead = floorf((getMusicHead()-timeSeg.time) / secondsPerBeat) * secondsPerBeat;
+			_musicHead += timeSeg.time;
 		}
 		_noteIndex = findClosestNote(_papNotes, _amountNotes, _musicHead);
 		
@@ -1525,7 +1635,8 @@ void editorControls()
 
 void fEditor()
 {
-	float secondsPerBeat = (60.0/_map->bpm) / _barMeasureCount;
+	TimingSegment timeSeg = getTimingSignature(_musicHead);
+	float secondsPerBeat = (60.0/timeSeg.bpm) / _barMeasureCount;
 	if (_musicPlaying)
 	{
 		_musicHead += GetFrameTime() * _musicSpeed;
@@ -1584,6 +1695,11 @@ void fEditor()
 	drawBars();
 	if(drawProgressBarI(!_showNoteSettings && !_showSettings))
 		_musicPlaying = false;
+
+	for(int i = 0; i < _amountTimingSegments && _paTimingSegment; i++)
+	{
+		DrawCircle(musicTimeToScreen(_paTimingSegment[i].time), GetScreenHeight()*0.3, GetScreenWidth()*0.05, WHITE);
+	}
 
 	editorSettings();
 

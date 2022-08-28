@@ -31,6 +31,10 @@ extern void *_pHitSE;
 extern int _hitSE_Size;
 extern float _averageAccuracy;
 extern char _playerName[100];
+
+extern TimingSegment * _paTimingSegment;
+extern int _amountTimingSegments;
+
 //TODO add support for more maps
 Map _pMaps [100];
 
@@ -187,13 +191,16 @@ Map loadMapInfo(char * file)
 	if(map.imageFile[0] != '\0')
 		strcat(pStr, map.imageFile);
 	else
+	{
 		strcat(pStr, "/image.png");
+		strcpy(map.imageFile, "/image.png");
+	}
 	if(FileExists(pStr))
 	{
 		printf("image: %s \n", pStr);
 		// map.image = LoadTexture(pStr);
 		map.cpuImage = LoadImage(pStr);
-		strcpy(map.imageFile, pStr);
+		
 	}
 	else{
 		map.image = _menuBackground;
@@ -274,6 +281,14 @@ void saveFile (int noteAmount)
 	fprintf(_pFile, "%f\n", _map->musicPreviewOffset);
 	fprintf(_pFile, "[Beats]\n");
 	fprintf(_pFile, "%f\n", _map->beats);
+
+	fprintf(_pFile, "[TimeSignatures]\n");
+	
+	for(int i = 0; i < _amountTimingSegments; i++)
+	{
+		fprintf(_pFile, "%f %i\n", _paTimingSegment[i].time, _paTimingSegment[i].bpm);
+	}
+
 	fprintf(_pFile, "[Notes]\n");
 	
 	for(int i = 0; i < noteAmount; i++)
@@ -584,11 +599,33 @@ void loadMap ()
 			if(line[i] == '\n' || line[i] == '\r' || !line[i])
 				line[i]= '\0';
 
+		if(strcmp(line, "[TimeSignatures]") == 0)	{mode = fpTimeSignatures;continue;}
+
 		if(strcmp(line, "[Notes]") == 0)			{mode = fpNotes;		continue;}
 		switch(mode)
 		{
 			case fpNone:
 				break;
+			case fpTimeSignatures:
+
+				if(!_paTimingSegment)
+				{
+					_paTimingSegment = malloc(sizeof(TimingSegment));
+					_amountTimingSegments = 1;
+				}
+				else
+				{
+					_paTimingSegment = realloc(_paTimingSegment, sizeof(TimingSegment) * _amountTimingSegments);
+					_amountTimingSegments++;
+				}
+				_paTimingSegment[_amountTimingSegments-1].time = atof(line);
+				char * partLine = &(line[0]);
+				for(;*partLine != ' ' && partLine != '\0'; partLine++)
+				{ }
+				_paTimingSegment[_amountTimingSegments-1].bpm = atoi(partLine);
+				break;
+
+
 			case fpNotes:
 				// printf("new note %i\n", _noteIndex);
 				if(_noteIndex <= _amountNotes)
@@ -746,6 +783,13 @@ void freeNotes()
 		}
 
 		free(_papNotes);
+		_papNotes = 0;
+	}
+	if(_paTimingSegment)
+	{
+		free(_paTimingSegment);
+		_paTimingSegment = 0;
+		_amountTimingSegments = 0;
 	}
 }
 

@@ -49,7 +49,7 @@ struct Settings{
 };
 typedef struct Settings Settings;
 
-enum FilePart{fpNone, fpID, fpName, fpArtist, fpMapCreator, fpDifficulty, fpBPM, fpImage, fpMusicFile, fpMusicLength, fpMusicPreviewOffset, fpZoom, fpOffset, fpBeats, fpNotes};
+enum FilePart{fpNone, fpID, fpName, fpArtist, fpMapCreator, fpDifficulty, fpBPM, fpImage, fpMusicFile, fpMusicLength, fpMusicPreviewOffset, fpZoom, fpOffset, fpBeats, fpTimeSignatures, fpNotes};
 enum SettingsPart{spNone, spName, spZoom, spVolGlobal, spVolMusic, spVolSE, spOffset};
 
 void initFolders();

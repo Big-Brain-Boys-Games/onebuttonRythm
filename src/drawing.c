@@ -34,6 +34,9 @@ extern int _barMeasureCount;
 extern void (*_pGameplayFunction)();
 extern bool _musicPlaying;
 
+extern TimingSegment * _paTimingSegment;
+extern int _amountTimingSegments;
+
 
 int measureText (char * text, int fontSize)
 {
@@ -339,25 +342,83 @@ void resetBackGround()
 	_background = _menuBackground;
 }
 
+void drawActualBars(TimingSegment timseg)
+{
+	//Draw the bars
+	float middle = GetScreenWidth()/2;
+	double distBetweenBeats = (60.0/timseg.bpm) / _barMeasureCount;
+
+	double distBetweenBars = distBetweenBeats*_map->beats;
+	for (int i = (screenToMusicTime(0)-timseg.time)/distBetweenBars; i < (screenToMusicTime(GetScreenWidth())-timseg.time)/distBetweenBars; i++)
+	{
+		DrawRectangle(musicTimeToScreen(distBetweenBars*i+timseg.time)-10,GetScreenHeight()*0.6,GetScreenWidth()*0.01,GetScreenHeight()*0.3,(Color){.r=255,.g=255,.b=255,.a=180});
+	}
+
+	for (int i = (screenToMusicTime(0)-timseg.time)/distBetweenBeats; i < (screenToMusicTime(GetScreenWidth())-timseg.time)/distBetweenBeats; i++)
+	{
+		if(i % _map->beats == 0) continue;
+		DrawRectangle(musicTimeToScreen(distBetweenBeats*i+timseg.time)-10,GetScreenHeight()*0.7,GetScreenWidth()*0.01,GetScreenHeight()*0.2,(Color){.r=255,.g=255,.b=255,.a=180});
+	}
+}
+
+
 void drawBars()
 {
 	if(_map->beats < 1)
 		return;
-	//Draw the bars
-	float middle = GetScreenWidth()/2;
-	double distBetweenBeats = (60.0/_map->bpm) / _barMeasureCount;
 
-	double distBetweenBars = distBetweenBeats*_map->beats;
-	for (int i = (screenToMusicTime(0)-_map->offset/1000.0)/distBetweenBars; i < (screenToMusicTime(GetScreenWidth())-_map->offset/1000.0)/distBetweenBars; i++)
+	if(_amountTimingSegments == 0 || !_paTimingSegment)
 	{
-		DrawRectangle(musicTimeToScreen(distBetweenBars*i+_map->offset/1000.0)-10,GetScreenHeight()*0.6,GetScreenWidth()*0.01,GetScreenHeight()*0.3,(Color){.r=255,.g=255,.b=255,.a=180});
+		drawActualBars((TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0});
+		return;
 	}
 
-	for (int i = (screenToMusicTime(0)-_map->offset/1000.0)/distBetweenBeats; i < (screenToMusicTime(GetScreenWidth())-_map->offset/1000.0)/distBetweenBeats; i++)
+	int firstSeg = _amountTimingSegments-1;
+	int lastSeg = 0;
+
+	float beginTime = screenToMusicTime(0);
+	float endTime = screenToMusicTime(GetScreenWidth());
+
+	for(int i = 0; i < _amountTimingSegments; i++)
 	{
-		if(i % _map->beats == 0) continue;
-		DrawRectangle(musicTimeToScreen(distBetweenBeats*i+_map->offset/1000.0)-10,GetScreenHeight()*0.7,GetScreenWidth()*0.01,GetScreenHeight()*0.2,(Color){.r=255,.g=255,.b=255,.a=180});
+		float time = _paTimingSegment[i].time;
+		if(time < beginTime || time > endTime)
+			continue;
+		
+		if(time < _paTimingSegment[firstSeg].time)
+			firstSeg = i;
+		if(time > _paTimingSegment[lastSeg].time)
+			lastSeg = i;
 	}
+
+	firstSeg--; //we must get the one out of screen which still has an effect
+	if(firstSeg < 0)
+		firstSeg = 0;
+
+	BeginScissorMode(0, 0, fmax(musicTimeToScreen(_paTimingSegment[firstSeg].time), 0), GetScreenHeight());
+		drawActualBars((TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0});
+	EndScissorMode(); 
+	
+
+	for(int part = firstSeg; part < lastSeg; part++)
+	{
+		BeginScissorMode(fmax(musicTimeToScreen(_paTimingSegment[part].time),0 ), 0,
+				fmax( 0, fmax(musicTimeToScreen(_paTimingSegment[part+1].time),0)-fmax( 0, musicTimeToScreen(_paTimingSegment[part].time))),
+				GetScreenHeight());
+			drawActualBars(_paTimingSegment[part]);
+		EndScissorMode();
+	}
+
+	if(musicTimeToScreen(_paTimingSegment[lastSeg].time) < 0)
+	{
+		for(int i = 0; i < _amountTimingSegments; i++)
+			if(_paTimingSegment[i].time > _paTimingSegment[lastSeg].time && _paTimingSegment[i].time < screenToMusicTime(0))
+				lastSeg = i;
+	}
+
+	BeginScissorMode(fmax( 0, musicTimeToScreen(_paTimingSegment[lastSeg].time)), 0, GetScreenWidth(), GetScreenHeight());
+		drawActualBars(_paTimingSegment[lastSeg]);
+	EndScissorMode();
 }
 
 void drawMusicGraph(float transparent)
