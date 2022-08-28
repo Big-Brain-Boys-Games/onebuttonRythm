@@ -1672,7 +1672,7 @@ bool isAnyKeyDown()
 
 #define RippleAmount 10
 #define feedback(newFeedback, size)               \
-	feedbackSayings[feedbackIndex] = newFeedback; \
+	strcpy(feedbackSayings[feedbackIndex],newFeedback); \
 	feedbackSize[feedbackIndex] = size;           \
 	feedbackIndex++;                              \
 	if (feedbackIndex > 4)                        \
@@ -1683,13 +1683,33 @@ bool isAnyKeyDown()
 	rippleEffectIndex = (rippleEffectIndex + 1) % RippleAmount;
 void fPlaying()
 {
-	static char *feedbackSayings[5];
-	static float feedbackSize[5];
+	static char feedbackSayings[5][50] = {0};
+	static float feedbackSize[5] = {0};
 	static int feedbackIndex = 0;
 	static float rippleEffect[RippleAmount] = {0};
 	static float rippleEffectStrength[RippleAmount] = {0};
 	static int rippleEffectIndex = 0;
 	static float smoothHealth = 50;
+
+	if(_musicHead == 0)
+	{
+		//reset variables
+		for(int i = 0; i < 5; i++)
+		{
+			feedbackSayings[i][0] = '\0';
+			feedbackSize[i] = 0;
+		}
+
+		smoothHealth = 50;
+		feedbackIndex = 0;
+		rippleEffectIndex = 0;
+
+		for(int i = 0; i < RippleAmount; i++)
+		{
+			rippleEffect[i] = 0;
+			rippleEffectStrength[i] = 0;
+		}
+	}
 	_musicHead += GetFrameTime() * _musicSpeed;
 	_musicPlaying = true;
 	fixMusicTime();
