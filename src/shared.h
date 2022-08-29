@@ -26,6 +26,7 @@ typedef struct{
 typedef struct{
     float time;
     int bpm;
+    int beats;
 }TimingSegment;
 
 float fDistance(float x1, float y1, float x2, float y2);

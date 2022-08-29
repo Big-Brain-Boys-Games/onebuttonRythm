@@ -347,8 +347,9 @@ void drawActualBars(TimingSegment timseg)
 	//Draw the bars
 	float middle = GetScreenWidth()/2;
 	double distBetweenBeats = (60.0/timseg.bpm) / _barMeasureCount;
-
-	double distBetweenBars = distBetweenBeats*_map->beats;
+	if(timseg.beats < 1)
+		return;
+	double distBetweenBars = distBetweenBeats*timseg.beats;
 	for (int i = (screenToMusicTime(0)-timseg.time)/distBetweenBars; i < (screenToMusicTime(GetScreenWidth())-timseg.time)/distBetweenBars; i++)
 	{
 		DrawRectangle(musicTimeToScreen(distBetweenBars*i+timseg.time)-10,GetScreenHeight()*0.6,GetScreenWidth()*0.01,GetScreenHeight()*0.3,(Color){.r=255,.g=255,.b=255,.a=180});
@@ -356,7 +357,7 @@ void drawActualBars(TimingSegment timseg)
 
 	for (int i = (screenToMusicTime(0)-timseg.time)/distBetweenBeats; i < (screenToMusicTime(GetScreenWidth())-timseg.time)/distBetweenBeats; i++)
 	{
-		if(i % _map->beats == 0) continue;
+		if(i % timseg.beats == 0) continue;
 		DrawRectangle(musicTimeToScreen(distBetweenBeats*i+timseg.time)-10,GetScreenHeight()*0.7,GetScreenWidth()*0.01,GetScreenHeight()*0.2,(Color){.r=255,.g=255,.b=255,.a=180});
 	}
 }
@@ -364,12 +365,11 @@ void drawActualBars(TimingSegment timseg)
 
 void drawBars()
 {
-	if(_map->beats < 1)
-		return;
+	
 
 	if(_amountTimingSegments == 0 || !_paTimingSegment)
 	{
-		drawActualBars((TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0});
+		drawActualBars((TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0, .beats=_map->beats});
 		return;
 	}
 
@@ -396,7 +396,7 @@ void drawBars()
 		firstSeg = 0;
 
 	BeginScissorMode(0, 0, fmax(musicTimeToScreen(_paTimingSegment[firstSeg].time), 0), GetScreenHeight());
-		drawActualBars((TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0});
+		drawActualBars((TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0, .beats=_map->beats});
 	EndScissorMode(); 
 	
 

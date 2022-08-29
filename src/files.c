@@ -286,7 +286,7 @@ void saveFile (int noteAmount)
 	
 	for(int i = 0; i < _amountTimingSegments; i++)
 	{
-		fprintf(_pFile, "%f %i\n", _paTimingSegment[i].time, _paTimingSegment[i].bpm);
+		fprintf(_pFile, "%f %i %i\n", _paTimingSegment[i].time, _paTimingSegment[i].bpm, _paTimingSegment[i].beats);
 	}
 
 	fprintf(_pFile, "[Notes]\n");
@@ -622,7 +622,13 @@ void loadMap ()
 				char * partLine = &(line[0]);
 				for(;*partLine != ' ' && partLine != '\0'; partLine++)
 				{ }
+				// printf("%s\n", partLine);
 				_paTimingSegment[_amountTimingSegments-1].bpm = atoi(partLine);
+				if(*partLine != '\0') partLine++;
+				for(;*partLine != ' ' && partLine != '\0'; partLine++)
+				{ }
+				// printf("%s\n\n", partLine);
+				_paTimingSegment[_amountTimingSegments-1].beats = fmin(atoi(partLine), 32);
 				break;
 
 

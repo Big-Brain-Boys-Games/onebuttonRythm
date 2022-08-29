@@ -128,6 +128,7 @@ TimingSegment * addTimingSignature(float time, int bpm)
 			}
 			_paTimingSegment[i].time = time;
 			_paTimingSegment[i].bpm = bpm;
+			_paTimingSegment[i].beats = 4;
 			return &(_paTimingSegment[i]);
 		}
 	}
@@ -143,6 +144,7 @@ TimingSegment * addTimingSignature(float time, int bpm)
 	}
 	_paTimingSegment[i].time = time;
 	_paTimingSegment[i].bpm = bpm;
+	_paTimingSegment[i].beats = 4;
 	return &(_paTimingSegment[i]);
 }
 
@@ -165,8 +167,6 @@ void removeTimingSignature(float time)
 			i--;
 			if(i < 0)
 				i = 0;
-
-			printf("removing %i\n", i);
 
 			_amountTimingSegments--;
 			_paTimingSegment = realloc(_paTimingSegment, _amountTimingSegments*sizeof(TimingSegment) );
@@ -1212,6 +1212,16 @@ void editorSettings()
 		textBox(timeBox, time, &timeBoxSelected);
 		timSeg->time = atoi(time) / 1000.0;
 
+		// beats setting
+		char beats[10] = {0};
+		if (timSeg->beats != 0)
+			snprintf(beats, 10, "%i", timSeg->beats);
+		static bool beatsBoxSelected = false;
+		Rectangle beatsBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.26, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+		textBox(beatsBox, beats, &beatsBoxSelected);
+		timSeg->beats = atoi(beats);
+		timSeg->beats = fmin(fmax(timSeg->beats, 0), 300);
+
 		// Drawing text next to the buttons
 		char *text = "BPM:";
 		float tSize = GetScreenWidth() * 0.025;
@@ -1222,6 +1232,11 @@ void editorSettings()
 		tSize = GetScreenWidth() * 0.025;
 		size = measureText(text, tSize);
 		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.20, tSize, WHITE);
+
+		text = "Beats:";
+		tSize = GetScreenWidth() * 0.025;
+		size = measureText(text, tSize);
+		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.28, tSize, WHITE);
 	}
 }
 
@@ -1551,7 +1566,6 @@ void editorControls()
 		if (IsKeyPressed(KEY_D))
 		{
 			addTimingSignature(_musicHead, _map->bpm);
-			printf("adding new time signature \n");
 		}
 
 		if (IsKeyPressed(KEY_F))
