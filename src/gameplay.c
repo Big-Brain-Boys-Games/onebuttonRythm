@@ -1967,8 +1967,9 @@ void fPlaying()
 	//draw hitpoints
 	for (int i = 0; i < HITPOINTAMOUNT; i++)
 	{
-		float alpha = 0.1/(_musicHead-hitPointsTimes[i] + 0.000001);
+		float alpha = 1-(_musicHead-hitPointsTimes[i] + 0.000001);
 		alpha = fmin(fmax(0, alpha), 1);
+		alpha *= 0.5;
 
 		Color hpColor = WHITE;
 		if(hitPointScores[i] > 200)
@@ -1981,7 +1982,7 @@ void fPlaying()
 			hpColor = RED;
 
 		Vector3 hsv = ColorToHSV(hpColor);
-		hpColor = ColorFromHSV(hsv.x, hsv.y / 2, hsv.z);
+		hpColor = ColorFromHSV(hsv.x, 0.4, hsv.z);
 
 		DrawCircle( musicTimeToScreen(_musicHead+hitPointTimings[i]), GetScreenHeight()*0.5, hitPointSize[i], ColorAlpha(hpColor, alpha));
 	}
