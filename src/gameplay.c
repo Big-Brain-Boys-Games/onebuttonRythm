@@ -2086,6 +2086,7 @@ void fPlaying()
 	//  printf("%.2f   %.2f\n", _averageAccuracy, ((float)_amountNotes/(_noteIndex+1)));
 	snprintf(tmpString, 20, "acc: %.2f", 100 * (1 - _averageAccuracy));
 	drawText(tmpString, GetScreenWidth() * 0.70, GetScreenHeight() * 0.1, GetScreenWidth() * 0.04, WHITE);
+	drawRank(GetScreenWidth()*0.57, GetScreenHeight()*0.03, GetScreenWidth()*0.1, GetScreenWidth()*0.1, _averageAccuracy);
 	free(tmpString);
 	drawProgressBar();
 	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), _fade);
