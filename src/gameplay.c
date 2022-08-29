@@ -1980,6 +1980,9 @@ void fPlaying()
 		}else
 			hpColor = RED;
 
+		Vector3 hsv = ColorToHSV(hpColor);
+		hpColor = ColorFromHSV(hsv.x, hsv.y / 2, hsv.z);
+
 		DrawCircle( musicTimeToScreen(_musicHead+hitPointTimings[i]), GetScreenHeight()*0.5, hitPointSize[i], ColorAlpha(hpColor, alpha));
 	}
 
