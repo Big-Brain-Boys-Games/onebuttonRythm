@@ -57,6 +57,7 @@ Settings _settings = (Settings){.volumeGlobal = 50, .volumeMusic = 100, .volumeS
 bool _showSettings = false;
 bool _showNoteSettings = false;
 bool _showAnimation = false;
+bool _showTimingSettings = false;
 
 
 // Timestamp of all the notes
@@ -81,6 +82,23 @@ TimingSegment getTimingSignature(float time)
 		}
 	}
 	return _paTimingSegment[_amountTimingSegments-1];
+}
+
+TimingSegment * getTimingSignaturePointer(float time)
+{
+	if(!_paTimingSegment || _amountTimingSegments == 0)
+		return 0;
+	for(int i = 0; i < _amountTimingSegments; i++)
+	{
+		if(time < _paTimingSegment[i].time)
+		{
+			i--;
+			if(i < 0)
+				return 0;
+			return &(_paTimingSegment[i]);
+		}
+	}
+	return &(_paTimingSegment[_amountTimingSegments-1]);
 }
 
 TimingSegment * addTimingSignature(float time, int bpm)
@@ -1168,6 +1186,43 @@ void editorSettings()
 		// size = measureText(text, tSize);
 		// drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.50, tSize, WHITE);
 	}
+
+	if (_showTimingSettings)
+	{
+		// Darken background
+		DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
+
+		TimingSegment * timSeg = getTimingSignaturePointer(_musicHead);
+		// BPM setting
+		char bpm[10] = {0};
+		if (timSeg->bpm != 0)
+			snprintf(bpm, 10, "%i", timSeg->bpm);
+		static bool bpmBoxSelected = false;
+		Rectangle bpmBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.1, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+		textBox(bpmBox, bpm, &bpmBoxSelected);
+		timSeg->bpm = atoi(bpm);
+		timSeg->bpm = fmin(fmax(timSeg->bpm, 0), 300);
+
+		// time setting
+		char time[10] = {0};
+		if (timSeg->time != 0)
+			snprintf(time, 10, "%i", (int)(timSeg->time*1000));
+		static bool timeBoxSelected = false;
+		Rectangle timeBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.18, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+		textBox(timeBox, time, &timeBoxSelected);
+		timSeg->time = atoi(time) / 1000.0;
+
+		// Drawing text next to the buttons
+		char *text = "BPM:";
+		float tSize = GetScreenWidth() * 0.025;
+		int size = measureText(text, tSize);
+		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.12, tSize, WHITE);
+
+		text = "Time:";
+		tSize = GetScreenWidth() * 0.025;
+		size = measureText(text, tSize);
+		drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.20, tSize, WHITE);
+	}
 }
 
 void editorNoteSettings()
@@ -1580,12 +1635,12 @@ void editorControls()
 
 		if (IsKeyPressed(KEY_E) && _barMeasureCount <= 32)
 		{
-			_barMeasureCount = _barMeasureCount * 2;
+			_barMeasureCount += 1;
 		}
 
 		if (IsKeyPressed(KEY_Q) && _barMeasureCount >= 2)
 		{
-			_barMeasureCount = _barMeasureCount / 2;
+			_barMeasureCount -= 1;
 		}
 	}
 	}
@@ -1671,7 +1726,7 @@ void fEditor()
 		_noteIndex = 0;
 	}
 
-	if (!_showSettings && !_showNoteSettings)
+	if (!_showSettings && !_showNoteSettings && !_showTimingSettings)
 	{
 		editorControls();
 	}
@@ -1712,12 +1767,12 @@ void fEditor()
 		{
 			editorNoteSettings();
 		}
-		else if (interactableButton("Note settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.15, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+		else if (interactableButton("Note settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.25, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
 		{
 			_showNoteSettings = !_showNoteSettings;
 		}
 	}
-	if (!_showNoteSettings)
+	if (!_showNoteSettings && !_showTimingSettings)
 	{
 		if ( (_showSettings && IsKeyPressed(KEY_ESCAPE)) ||
 			interactableButton("Song settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.05, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
@@ -1731,7 +1786,16 @@ void fEditor()
 		}
 	}
 
-	if(!_showNoteSettings && !_showSettings)
+	if(!_showSettings && !_showNoteSettings && getTimingSignaturePointer(_musicHead))
+	{
+		if ( (_showTimingSettings && IsKeyPressed(KEY_ESCAPE)) ||
+			interactableButton("Timing settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.15, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+		{
+			_showTimingSettings = !_showTimingSettings;
+		}
+	}
+
+	if(!_showNoteSettings && !_showSettings && !_showTimingSettings)
 	{
 		// Speed slider
 		static bool speedSlider = false;
