@@ -1867,6 +1867,8 @@ bool isAnyKeyDown()
 		   IsGamepadButtonPressed(3, GetGamepadButtonPressed());
 }
 
+#define HITPOINTAMOUNT 10
+
 #define RippleAmount 10
 #define feedback(newFeedback, size)               \
 	strcpy(feedbackSayings[feedbackIndex],newFeedback); \
@@ -1888,6 +1890,10 @@ void fPlaying()
 	static int rippleEffectIndex = 0;
 	static float smoothHealth = 50;
 
+	static float hitPointTimings [HITPOINTAMOUNT] = {0}; //how off they are
+	static float hitPointsTimes [HITPOINTAMOUNT] = {0}; //when they're hit
+	static int hitPointsIndex = 0;
+
 	if(_musicHead == 0)
 	{
 		//reset variables
@@ -1905,6 +1911,12 @@ void fPlaying()
 		{
 			rippleEffect[i] = 0;
 			rippleEffectStrength[i] = 0;
+		}
+
+		for(int i = 0; i < HITPOINTAMOUNT; i++)
+		{
+			hitPointTimings[i] = 0;
+			hitPointsTimes[i] = -99;
 		}
 	}
 	_musicHead += GetFrameTime() * _musicSpeed;
@@ -1948,6 +1960,15 @@ void fPlaying()
 		rippleEffectStrength[i] = fmax(rippleEffectStrength[i] - GetFrameTime() * 5, 0);
 		float size = rippleEffect[i];
 		DrawRing((Vector2){.x = musicTimeToScreen(_musicHead), .y = GetScreenHeight() * 0.5}, size * GetScreenWidth() * 0.001, size * 0.7 * GetScreenWidth() * 0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i] * 0.35));
+	}
+
+	//draw hitpoints
+	for (int i = 0; i < HITPOINTAMOUNT; i++)
+	{
+		float alpha = 0.1/(_musicHead-hitPointsTimes[i] + 0.000001);
+		alpha = fmin(fmax(0, alpha), 1);
+
+		DrawCircle( musicTimeToScreen(_musicHead+hitPointTimings[i]), GetScreenHeight()*0.5, GetScreenWidth()*0.04, ColorAlpha(WHITE, alpha));
 	}
 
 	float width = GetScreenWidth() * 0.005;
@@ -2024,6 +2045,11 @@ void fPlaying()
 			_papNotes[_noteIndex]->hit = 1;
 			_noteIndex++;
 			_combo++;
+
+			hitPointTimings[hitPointsIndex] = _papNotes[closestIndex]->time - _musicHead;
+			hitPointsTimes[hitPointsIndex] = _musicHead;
+			hitPointsIndex = (hitPointsIndex+1)%HITPOINTAMOUNT;
+
 			if(_papNotes[closestIndex]->custSound)
 				playAudioEffect(_papNotes[closestIndex]->custSound->sound, _papNotes[closestIndex]->custSound->length);
 			else	
