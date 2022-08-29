@@ -1892,6 +1892,8 @@ void fPlaying()
 
 	static float hitPointTimings [HITPOINTAMOUNT] = {0}; //how off they are
 	static float hitPointsTimes [HITPOINTAMOUNT] = {0}; //when they're hit
+	static int hitPointScores [HITPOINTAMOUNT] = {0}; //score for hit
+	static float hitPointSize [HITPOINTAMOUNT] = {0}; //score for hit
 	static int hitPointsIndex = 0;
 
 	if(_musicHead == 0)
@@ -1968,7 +1970,17 @@ void fPlaying()
 		float alpha = 0.1/(_musicHead-hitPointsTimes[i] + 0.000001);
 		alpha = fmin(fmax(0, alpha), 1);
 
-		DrawCircle( musicTimeToScreen(_musicHead+hitPointTimings[i]), GetScreenHeight()*0.5, GetScreenWidth()*0.04, ColorAlpha(WHITE, alpha));
+		Color hpColor = WHITE;
+		if(hitPointScores[i] > 200)
+		{
+			hpColor = GREEN;
+		}else if (hitPointScores[i] > 100)
+		{
+			hpColor = YELLOW;
+		}else
+			hpColor = RED;
+
+		DrawCircle( musicTimeToScreen(_musicHead+hitPointTimings[i]), GetScreenHeight()*0.5, hitPointSize[i], ColorAlpha(hpColor, alpha));
 	}
 
 	float width = GetScreenWidth() * 0.005;
@@ -2046,8 +2058,36 @@ void fPlaying()
 			_noteIndex++;
 			_combo++;
 
+			float noteDist = 99;
+
+			if(closestIndex > 0)
+			{
+				noteDist = fabsf(_papNotes[closestIndex]->time - _papNotes[closestIndex-1]->time);
+			}
+			if(closestIndex < _amountNotes-1)
+			{
+				float tmp = fabsf(_papNotes[closestIndex]->time - _papNotes[closestIndex+1]->time);
+				noteDist = fmin(tmp, noteDist);
+			}
+
+			float customScale = GetScreenWidth() * 0.04;
+			float maxDistance = (float)(GetScreenWidth() / _noteTex.width) / 9 / 2;
+
+			float middle = GetScreenWidth() / 2;
+			maxDistance =  maxDistance / (middle * (1 / _scrollSpeed));
+
+			maxDistance = (1/_scrollSpeed) * 0.075;
+
+			if(noteDist < maxDistance)
+			{
+				customScale = (noteDist/maxDistance) * GetScreenWidth() * 0.05;
+			}
+
+
 			hitPointTimings[hitPointsIndex] = _papNotes[closestIndex]->time - _musicHead;
 			hitPointsTimes[hitPointsIndex] = _musicHead;
+			hitPointScores[hitPointsIndex] = scoreAdded;
+			hitPointSize[hitPointsIndex] = customScale;
 			hitPointsIndex = (hitPointsIndex+1)%HITPOINTAMOUNT;
 
 			if(_papNotes[closestIndex]->custSound)
