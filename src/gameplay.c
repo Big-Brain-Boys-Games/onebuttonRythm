@@ -873,6 +873,9 @@ void fEndScreen()
 	drawBackground();
 	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
 
+
+	DrawRectangle(GetScreenWidth()*0.04, GetScreenHeight()*0.27, GetScreenWidth()*0.5, GetScreenHeight()*0.7, (Color){.r = 0, .g = 0, .b = 0, .a = 128});
+
 	int middle = GetScreenWidth() / 2;
 	// draw menu
 
@@ -924,6 +927,7 @@ void fEndScreen()
 
 	free(tmpString);
 
+	drawText("Rank", GetScreenWidth() * 0.55, GetScreenHeight() * 0.75, GetScreenWidth() * 0.05, LIGHTGRAY);
 	drawRank(GetScreenWidth()*0.7, GetScreenHeight()*0.65, GetScreenWidth()*0.2, GetScreenWidth()*0.2, _averageAccuracy);
 
 	if (interactableButton("Retry", 0.05, GetScreenWidth() * 0.15, GetScreenHeight() * 0.72, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))

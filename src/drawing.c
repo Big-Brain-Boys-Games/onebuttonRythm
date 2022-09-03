@@ -227,18 +227,34 @@ void drawRank(int x, int y, int width, int height, float accuracy)
 {
 	//rank
 	Color colRank = LIGHTGRAY;
+	char * text;
 	if(accuracy < 0.7)
+	{
 		colRank = WHITE;
+		text = "D";
+	}
 	if(accuracy < 0.4)
+	{
 		colRank = GREEN;
+		text = "C";
+	}
 	if(accuracy < 0.3)
+	{
 		colRank = YELLOW;
+		text = "B";
+	}
 	if(accuracy < 0.2)
+	{
 		colRank = ORANGE;
+		text = "A";
+	}
 	if(accuracy < 0.1)
+	{
 		colRank = RED;
+		text = "S";
+	}
 	DrawTexturePro(_noteTex, (Rectangle){.x=0, .y=0, .width=_noteTex.width, .height=_noteTex.height}, (Rectangle){.x=x, .y=y, .width=width, .height=height}, (Vector2) {.x=0, .y=0}, 0, colRank);
-
+	drawText(text, x+width*0.2, y+height*0.03, width, WHITE);
 }
 
 void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float accuracy, bool selected)
