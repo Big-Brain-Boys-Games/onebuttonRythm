@@ -35,8 +35,7 @@ extern char _playerName[100];
 extern TimingSegment * _paTimingSegment;
 extern int _amountTimingSegments;
 
-//TODO add support for more maps
-Map _pMaps [100];
+Map * _paMaps = 0;
 
 FILE * _pFile;
 

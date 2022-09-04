@@ -33,7 +33,7 @@ extern int _finishSE_Size;
 
 extern int _loading;
 
-extern Map *_pMaps;
+extern Map *_paMaps;
 extern char _playerName[100];
 float _scrollSpeed = 0.6;
 int _noteIndex = 0, _amountNotes = 0;
@@ -2261,12 +2261,12 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 		Map *tmp2 = calloc(amount, sizeof(Map));
 		for (int i = 0; i < amount && i < oldAmount; i++)
 		{
-			tmp2[i] = _pMaps[i];
+			tmp2[i] = _paMaps[i];
 		}
 		for (int i = amount; i < oldAmount; i++)
-			freeMap(&_pMaps[i]);
-		free(_pMaps);
-		_pMaps = tmp2;
+			freeMap(&_paMaps[i]);
+		free(_paMaps);
+		_paMaps = tmp2;
 	}
 	else
 	{
@@ -2276,7 +2276,7 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 		filesCaching = calloc(amount, sizeof(char *));
 		for (int i = 0; i < amount; i++)
 			filesCaching[i] = calloc(100, sizeof(char));
-		_pMaps = calloc(amount, sizeof(Map));
+		_paMaps = calloc(amount, sizeof(Map));
 	}
 	oldAmount = amount;
 	int mapIndex = 0;
@@ -2301,9 +2301,9 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 				}
 				char str[100];
 				strcpy(filesCaching[mapIndex], filesCaching[j]);
-				_pMaps[mapIndex] = _pMaps[j];
-				_pMaps[j] = (Map){0};
-				readScore(&_pMaps[mapIndex],
+				_paMaps[mapIndex] = _paMaps[j];
+				_paMaps[j] = (Map){0};
+				readScore(&_paMaps[mapIndex],
 						  &((*args->highScores)[mapIndex]),
 						  &((*args->combos)[mapIndex]),
 						  &((*args->accuracy)[mapIndex]));
@@ -2318,16 +2318,16 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 		printf("cache miss %s %i\n", files[i], mapIndex);
 		// cache miss
 
-		freeMap(&_pMaps[mapIndex]);
-		_pMaps[mapIndex] = loadMapInfo(files[i]);
-		if(_pMaps[mapIndex].name == 0)
+		freeMap(&_paMaps[mapIndex]);
+		_paMaps[mapIndex] = loadMapInfo(files[i]);
+		if(_paMaps[mapIndex].name == 0)
 		{
 			printf("skipping map, failed to load\n");
 			continue;
 		}
-		if (_pMaps[mapIndex].name != 0)
+		if (_paMaps[mapIndex].name != 0)
 		{
-			readScore(&_pMaps[mapIndex],
+			readScore(&_paMaps[mapIndex],
 					  &((*args->highScores)[mapIndex]),
 					  &((*args->combos)[mapIndex]),
 					  &((*args->accuracy)[mapIndex]));
@@ -2512,7 +2512,7 @@ void fMapSelect()
 		_disableLoadingScreen = true;
 		hoverPeriod += GetFrameTime();
 		if (!_musicLength || !*_musicLength)
-			_musicFrameCount = _pMaps[hoverMap].musicPreviewOffset * 48000 * 2;
+			_musicFrameCount = _paMaps[hoverMap].musicPreviewOffset * 48000 * 2;
 	}
 	// draw map button
 	Rectangle mapSelectRect = (Rectangle){.x = 0, .y = GetScreenHeight() * 0.13, .width = GetScreenWidth(), .height = GetScreenHeight()};
@@ -2525,7 +2525,7 @@ void fMapSelect()
 		{
 			bool missingLetter = false;
 			char str[100];
-			snprintf(str, 100, "%s - %s", _pMaps[i].name, _pMaps[i].artist);
+			snprintf(str, 100, "%s - %s", _paMaps[i].name, _paMaps[i].artist);
 			int stringLength = strlen(str);
 			for (int j = 0; j < 100 && search[j] != '\0'; j++)
 			{
@@ -2554,9 +2554,9 @@ void fMapSelect()
 			{
 				// play music
 				char str[100];
-				loadMusic(&_pMaps[i]);
+				loadMusic(&_paMaps[i]);
 				_playMenuMusic = false;
-				_musicFrameCount = _pMaps[i].musicPreviewOffset * 48000 * 2;
+				_musicFrameCount = _paMaps[i].musicPreviewOffset * 48000 * 2;
 				_musicPlaying = true;
 				hoverPeriod++;
 			}
@@ -2572,11 +2572,11 @@ void fMapSelect()
 			_musicFrameCount = 1;
 		}
 
-		if(_pMaps[i].cpuImage.width == 0)
+		if(_paMaps[i].cpuImage.width == 0)
 		{
-			_pMaps[i].cpuImage.width = -1;
-			createThread((void *(*)(void *))loadMapImage, &_pMaps[i]);
-			_pMaps[i].cpuImage.width = -1;
+			_paMaps[i].cpuImage.width = -1;
+			createThread((void *(*)(void *))loadMapImage, &_paMaps[i]);
+			_paMaps[i].cpuImage.width = -1;
 		}
 		if (selectedMap == i)
 		{
@@ -2586,7 +2586,7 @@ void fMapSelect()
 			Rectangle buttons = (Rectangle){.x = mapButton.x, .y = mapButton.y + mapButton.height, .width = mapButton.width, .height = mapButton.height * 0.15 * selectMapTransition};
 			if (mouseInRect(buttons) && IsMouseButtonReleased(0) && mouseInRect(mapSelectRect))
 			{
-				_map = &_pMaps[i];
+				_map = &_paMaps[i];
 				loadMap();
 				setMusicStart();
 				_musicHead = 0;
@@ -2611,7 +2611,7 @@ void fMapSelect()
 				// 		_map->image = _background;
 				// }
 			}
-			drawMapThumbnail(mapButton, &_pMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], true);
+			drawMapThumbnail(mapButton, &_paMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], true);
 			if (interactableButtonNoSprite("play", 0.0225, mapButton.x, mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
 			{
 				_pNextGameplayFunction = &fPlaying;
@@ -2679,7 +2679,7 @@ void fMapSelect()
 		}
 		else
 		{
-			drawMapThumbnail(mapButton, &_pMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], false);
+			drawMapThumbnail(mapButton, &_paMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], false);
 
 			if (IsMouseButtonReleased(0) && mouseInRect(mapButton) && mouseInRect(mapSelectRect))
 			{
@@ -2691,7 +2691,7 @@ void fMapSelect()
 			}
 		}
 	}
-	// DrawRectangleGradientV(mapSelectRect.x, mapSelectRect.y, mapSelectRect.width, mapSelectRect.height*0.2, ColorAlpha(BLACK, 1), ColorAlpha(BLACK, 0));
+	
 	drawVignette();
 
 	EndScissorMode();
@@ -2699,12 +2699,12 @@ void fMapSelect()
 	if (hoverMap != -1 || selectedMap != -1)
 	{
 		int selMap = selectedMap != -1 ? selectedMap : hoverMap;
-		if(_pMaps[selMap].name != 0)
+		if(_paMaps[selMap].name != 0)
 		{
 			char str[100];
-			strcpy(str, _pMaps[selMap].name);
+			strcpy(str, _paMaps[selMap].name);
 			strcat(str, " - ");
-			strcat(str, _pMaps[selMap].artist);
+			strcat(str, _paMaps[selMap].artist);
 			int textSize = measureText(str, GetScreenWidth() * 0.05);
 			drawText(str, GetScreenWidth() * 0.9 - textSize, GetScreenHeight() * 0.92, GetScreenWidth() * 0.05, WHITE);
 		}
