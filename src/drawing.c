@@ -189,8 +189,6 @@ void dNotes ()
 	//draw notes before line
 	for(int i = _noteIndex >= _amountNotes ? _amountNotes-1 : _noteIndex; i < _amountNotes && i>= 0 && musicTimeToScreen(_papNotes[i]->time) < GetScreenWidth(); i++)
 	{
-		//DrawCircle( middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
-		//DrawTextureEx(_noteTex, (Vector2){.x=middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
 		float closestNote = 999;
 		if(i != 0)
 			closestNote = _papNotes[i]->time - _papNotes[i-1]->time;
@@ -205,7 +203,6 @@ void dNotes ()
 
 		maxDistance = (1/_scrollSpeed) * 0.075;
 
-		// printf("closestNote: %f\tmaxDistance: %f\n", closestNote, maxDistance);
 
 		
 		if(closestNote < maxDistance)
@@ -450,7 +447,6 @@ void drawMusicGraph(float transparent)
 	int samplesPerBar = getSamplePosition(timePerBar);
 	int sampleBegin = getSamplePosition(beginning);
 
-	//printf("beginning: %f \tend: %f\tamountBars: %i\ttimePerBar: %f\tsamplesPerBar: %i\tsampleBegin: %i\n",beginning,end,amountBars,timePerBar,samplesPerBar,sampleBegin);
 	//drawing stuff
 	float pixelsPerBar = GetScreenWidth()/(float)amountBars;
 	float scaleBar = GetScreenHeight()*0.2;
@@ -475,6 +471,7 @@ void drawVignette()
 }
 
 //TODO don't do this, pls fix
+// no
 void drawProgressBar() {drawProgressBarI(false);}
 
 bool drawProgressBarI(bool interActable)
@@ -493,10 +490,8 @@ bool drawProgressBarI(bool interActable)
 		float y = GetScreenHeight()*0.94;
 		if(fDistance(x, y, GetMouseX(), GetMouseY()) < GetScreenWidth()*0.03 && IsMouseButtonDown(0) || isGrabbed)
 		{
-			//printf("grabbed %.2f  ", _musicHead);
 			isGrabbed = true;
 			_musicHead = clamp(GetMouseX()/(float)GetScreenWidth()*getMusicDuration(), 0, getMusicDuration());
-			//printf("%.2f \n", _musicHead);
 		}
 		if(!IsMouseButtonDown(0))
 			isGrabbed = false;
@@ -565,7 +560,6 @@ void drawBox(Rectangle rect, Color color)
 
 	//fully tiled method v
 
-	// printf("sections %i %i  \tsecSize: %.2f %.2f\n", sectionsX, sectionsY, secSizeX, secSizeY);
 	// for(int y = 0; y < sectionsY; y++)
 	// 	for(int x = 0; x < sectionsX; x++)
 	// 	{
@@ -581,7 +575,6 @@ void drawBox(Rectangle rect, Color color)
 	// 			sY = 2;
 	// 		Rectangle source = (Rectangle){.x=0, .y=0, .width=_buttonTile[sX][sY].width, .height=_buttonTile[sX][sY].height};
 	// 		Rectangle dest = (Rectangle){.x=rect.x+secSizeX*x, .y=rect.y+secSizeY*y, .width=secSizeX, .height=secSizeY};
-	// 		// printf("dest %i %i\t %i %i\n", x, y, sX, sY);
 	// 		DrawTexturePro(_buttonTile[sX][sY], source, dest, (Vector2){.x=0, .y=0}, 0, color);
 	// 	}
 }

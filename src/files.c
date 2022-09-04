@@ -198,7 +198,6 @@ Map loadMapInfo(char * file)
 	if(FileExists(pStr))
 	{
 		printf("image: %s \n", pStr);
-		// map.image = LoadTexture(pStr);
 		map.cpuImage = LoadImage(pStr);
 		
 	}
@@ -249,7 +248,6 @@ void saveFile (int noteAmount)
 	strcpy(str, "maps/");
 	strcat(str, _map->folder);
 	strcat(str, "/map.data");
-	printf("poggies: %s\n", str);
 	_pFile = fopen(str, "w");
 	printf("written map data\n");
 	fprintf(_pFile, "[ID]\n");
@@ -325,7 +323,6 @@ void saveFile (int noteAmount)
 //custom note assets
 
 //load all custom note textures & hit sounds
-//todo, dynamic allocation
 CustomTexture ** _paCustomTextures = 0;
 int _customTexturesSize = 0;
 CustomSound ** _paCustomSounds = 0;
@@ -398,10 +395,8 @@ void removeCustomTexture(char * file)
 		return;
 
 	_paCustomTextures[index]->uses--;
-	printf("uses %s %i\n", file, _paCustomTextures[index]->uses);
 	if(_paCustomTextures[index]->uses <= 0)
 	{
-		printf("no uses for it anymore, removing %s\n", file);
 		//free texture
 		UnloadTexture(_paCustomTextures[index]->texture);
 		free(_paCustomTextures[index]->file);
@@ -499,10 +494,8 @@ void removeCustomSound(char * file)
 		return;
 
 	_paCustomSounds[index]->uses--;
-	printf("uses %s %i\n", file, _paCustomSounds[index]->uses);
 	if(_paCustomSounds[index]->uses <= 0)
 	{
-		printf("no uses for it anymore, removing %s\n", file);
 		//free music
 		free(_paCustomSounds[index]->sound);
 		free(_paCustomSounds[index]->file);
@@ -622,18 +615,15 @@ void loadMap ()
 				char * partLine = &(line[0]);
 				for(;*partLine != ' ' && partLine != '\0'; partLine++)
 				{ }
-				// printf("%s\n", partLine);
 				_paTimingSegment[_amountTimingSegments-1].bpm = atoi(partLine);
 				if(*partLine != '\0') partLine++;
 				for(;*partLine != ' ' && partLine != '\0'; partLine++)
 				{ }
-				// printf("%s\n\n", partLine);
 				_paTimingSegment[_amountTimingSegments-1].beats = fmin(atoi(partLine), 32);
 				break;
 
 
 			case fpNotes:
-				// printf("new note %i\n", _noteIndex);
 				if(_noteIndex <= _amountNotes)
 				{
 					_amountNotes += 50;
@@ -807,7 +797,6 @@ void saveScore()
 	if(!DirectoryExists(str))
 		mkdir(str);
 	snprintf(str, 100, "scores/%s/%s", _map->name, _playerName);
-	printf("str %s\n", str);
 	file = fopen(str, "w");
 	fprintf(file, "%i %i %f", _score, _highestCombo, _averageAccuracy);
 	fclose(file);

@@ -240,7 +240,7 @@ void audioInit()
 	_pEffectsBuffer = calloc(sizeof(char), EFFECT_BUFFER_SIZE); // 4 second long buffer
 	loadAudio(&_pHitSE, "assets/hit.mp3", &_hitSE_Size);
 	loadAudio(&_pMissHitSE, "assets/missHit.mp3", &_missHitSE_Size);
-	printf("%s \t %p\n", "assets/missHit.mp3", _pMissSE);
+
 	loadAudio(&_pMissSE, "assets/missHit.mp3", &_missSE_Size);
 	loadAudio(&_pButtonSE, "assets/button.mp3", &_buttonSE_Size);
 

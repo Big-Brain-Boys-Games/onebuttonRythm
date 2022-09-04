@@ -643,25 +643,7 @@ void fMainMenu()
 
 	int middle = GetScreenWidth() / 2;
 	drawVignette();
-	// draw main menu
 
-	// Rectangle playButton = (Rectangle){.x=middle - GetScreenWidth()*0.10, .y=GetScreenHeight() * 0.3, .width=GetScreenWidth()*0.2,.height=GetScreenHeight()*0.08};
-	//  drawButton(playButton,"play", 0.04);
-	//  Rectangle editorButton = (Rectangle){.x=middle - GetScreenWidth()*0.10, .y=GetScreenHeight() * 0.45, .width=GetScreenWidth()*0.2,.height=GetScreenHeight()*0.08};
-	//  drawButton(editorButton,"Editor", 0.04);
-	//  Rectangle SettingsButton = (Rectangle){.x=middle - GetScreenWidth()*0.10, .y=GetScreenHeight() * 0.60, .width=GetScreenWidth()*0.2,.height=GetScreenHeight()*0.08};
-	//  drawButton(SettingsButton,"Settings", 0.04);
-	//  Rectangle recordingButton = (Rectangle){.x=middle - GetScreenWidth()*0.10, .y=GetScreenHeight() * 0.75, .width=GetScreenWidth()*0.2,.height=GetScreenHeight()*0.08};
-	//  drawButton(recordingButton,"Record", 0.04);
-
-	// if (interactableButton("Play", 0.04, middle - GetScreenWidth() * 0.3, GetScreenHeight() * 0.3, GetScreenWidth() * 0.2, GetScreenHeight() * 0.08))
-	// {
-	// 	// switching to playing map
-	// 	printf("switching to playing map!\n");
-	// 	_pNextGameplayFunction = &fPlaying;
-	// 	_pGameplayFunction = &fMapSelect;
-	// 	_transition = 0.1;
-	// }
 	float fontScale = 0.075;
 	//play button
 	Rectangle button = (Rectangle){.x = GetScreenWidth() * 0.05, .y = GetScreenHeight() * 0.25, .width = GetScreenWidth() * 0.32, .height = GetScreenWidth() * 0.32};
@@ -1265,7 +1247,6 @@ void editorNoteSettings()
 		//apply changes to first note to all selected notes
 		printf("applying to all selected notes\n");
 		Note * firstNote = _selectedNotes[0];
-		printf("new size %i\n", firstNote->animSize);
 		for(int i = 1; i < _amountSelectedNotes; i++)
 		{
 			if(firstNote->anim != 0 && firstNote->animSize > 0)
@@ -1439,7 +1420,6 @@ void editorNoteSettings()
 				anim[index].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()+0.05};
 			}else
 			{
-				for(int key = 0; key < _selectedNotes[0]->animSize; key++) printf("%i  %i  %f %f %f\n", _selectedNotes[0]->animSize, key, _selectedNotes[0]->anim[key].time, _selectedNotes[0]->anim[key].vec.x, _selectedNotes[0]->anim[key].vec.y);
 				//create new frame
 				_selectedNotes[0]->animSize++;
 				_selectedNotes[0]->anim = realloc(_selectedNotes[0]->anim, _selectedNotes[0]->animSize*sizeof(Frame));
@@ -1454,9 +1434,6 @@ void editorNoteSettings()
 				}
 				_selectedNotes[0]->anim[newIndex].time = (timeLine+1)/2;
 				_selectedNotes[0]->anim[newIndex].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()+0.05};
-
-				for(int key = 0; key < _selectedNotes[0]->animSize; key++) printf("%i  %i  %f %f %f\n", _selectedNotes[0]->animSize, key, _selectedNotes[0]->anim[key].time, _selectedNotes[0]->anim[key].vec.x, _selectedNotes[0]->anim[key].vec.y);
-				
 			}
 		}
 	}
@@ -2156,8 +2133,6 @@ void fPlaying()
 	drawText(tmpString, GetScreenWidth() * 0.70, GetScreenHeight() * 0.05, GetScreenWidth() * 0.05, WHITE);
 
 	// draw acc
-	//  sprintf(tmpString, "acc: %.5f", (int)(100*_averageAccuracy*(_amountNotes/(_noteIndex+1))));
-	//  printf("%.2f   %.2f\n", _averageAccuracy, ((float)_amountNotes/(_noteIndex+1)));
 	snprintf(tmpString, 20, "acc: %.2f", 100 * (1 - _averageAccuracy));
 	drawText(tmpString, GetScreenWidth() * 0.70, GetScreenHeight() * 0.1, GetScreenWidth() * 0.04, WHITE);
 	drawRank(GetScreenWidth()*0.57, GetScreenHeight()*0.03, GetScreenWidth()*0.1, GetScreenWidth()*0.1, _averageAccuracy);
@@ -2311,7 +2286,6 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 			continue;
 		// check for cache
 		bool cacheHit = false;
-		//todo reenable cache when memory leak is fixed and music isn't unloaded
 		for (int j = 0; j < amount; j++)
 		{
 			if (!filesCaching[j][0])
@@ -2597,7 +2571,7 @@ void fMapSelect()
 			hoverPeriod = 0;
 			_musicFrameCount = 1;
 		}
-					// printf("map image width %i\n", _pMaps[i].cpuImage.width);
+
 		if(_pMaps[i].cpuImage.width == 0)
 		{
 			_pMaps[i].cpuImage.width = -1;
@@ -2631,7 +2605,6 @@ void fMapSelect()
 				// 		// #else
 				// 		// 	usleep(100);
 				// 		// #endif
-				// 		printf("%i\n", i);
 				// 	}
 
 				// 	if(_map->cpuImage.width < 1)
@@ -2729,7 +2702,6 @@ void fMapSelect()
 		if(_pMaps[selMap].name != 0)
 		{
 			char str[100];
-			// printf("%p\n", _pMaps[selMap].name);
 			strcpy(str, _pMaps[selMap].name);
 			strcat(str, " - ");
 			strcat(str, _pMaps[selMap].artist);
@@ -2893,7 +2865,6 @@ void fNewMap()
 	// file dropping
 	if (IsFileDropped() || IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))
 	{
-		printf("yoo new file dropped boys\n");
 		int amount = 0;
 		char **files;
 		bool keyOrDrop = true;
@@ -2903,10 +2874,9 @@ void fNewMap()
 			const char *str = GetClipboardText();
 
 			int file = 0;
-			char part[100] = {0};
 			int partIndex = 0;
-			// todo no hardcode, bad hardcode!
-			files = malloc(100);
+			files = malloc(strlen(str));
+			char * part = calloc( strlen(str), sizeof(char));
 			for (int i = 0; str[i] != '\0'; i++)
 			{
 				part[partIndex++] = str[i];
@@ -2933,7 +2903,6 @@ void fNewMap()
 		for (int i = 0; i < amount; i++)
 		{
 			const char *ext = GetFileExtension(files[i]);
-			printf("%s\n", ext);
 			if (strcmp(ext, ".png") == 0)
 			{
 				if (newMap.image.id != 0)
