@@ -105,7 +105,7 @@ int main(int argc, char **argv)
 			if (_transition > 2)
 				_transition = 0;
 			if (_transition == 0 || _transition > 1)
-				(*_pGameplayFunction)();
+				(*_pGameplayFunction)(false);
 
 			if (_transition != 0)
 			{

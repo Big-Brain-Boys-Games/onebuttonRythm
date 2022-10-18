@@ -64,8 +64,8 @@ bool _showTimingSettings = false;
 Note ** _papNotes = 0;
 TimingSegment * _paTimingSegment = 0;
 int _amountTimingSegments = 0;
-void (*_pNextGameplayFunction)();
-void (*_pGameplayFunction)();
+void (*_pNextGameplayFunction)(bool);
+void (*_pGameplayFunction)(bool);
 
 TimingSegment getTimingSignature(float time)
 {
@@ -510,7 +510,7 @@ void removeSelectedNote(int index)
 	_selectedNotes = realloc(_selectedNotes, sizeof(Note *) * _amountSelectedNotes);
 }
 
-void fPause()
+void fPause(bool reset)
 {
 	_musicPlaying = false;
 	ClearBackground(BLACK);
@@ -561,14 +561,15 @@ void fPause()
 	drawCursor();
 }
 
-void fCountDown()
+void fCountDown(bool reset)
 {
 	_musicLoops = false;
 	_musicPlaying = false;
 	static float countDown = 0;
 	static bool contin = false;
-	if (countDown == 0)
+	if (reset)
 		countDown = GetTime() + 3;
+
 	if (countDown - GetTime() + GetFrameTime() <= 0)
 	{
 		countDown = 0;
@@ -635,7 +636,7 @@ void fCountDown()
 	drawVignette();
 }
 
-void fMainMenu()
+void fMainMenu(bool reset)
 {
 	checkFileDropped();
 	_musicLoops = true;
@@ -723,8 +724,18 @@ void fMainMenu()
 	drawCursor();
 }
 
-void fSettings()
+void fSettings(bool reset)
 {
+
+	static float menuScroll = 0;
+	static float menuScrollSmooth = 0;
+	if(reset)
+	{
+		menuScroll = 0;
+		menuScrollSmooth = 0;
+		return;
+	}
+	
 	_musicPlaying = false;
 	ClearBackground(BLACK);
 	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
@@ -741,8 +752,7 @@ void fSettings()
 	// real title
 	drawText(title, middle - size / 2, GetScreenHeight() * 0.02, tSize, WHITE);
 
-	static float menuScroll = 0;
-	static float menuScrollSmooth = 0;
+	
 	menuScroll += GetMouseWheelMove() * .04;
 	menuScrollSmooth += (menuScroll - menuScrollSmooth) * GetFrameTime() * 15;
 	if (IsMouseButtonDown(0))
@@ -850,7 +860,7 @@ void fSettings()
 	drawCursor();
 }
 
-void fEndScreen()
+void fEndScreen(bool reset)
 {
 	_musicPlaying = false;
 	ClearBackground(BLACK);
@@ -1688,7 +1698,7 @@ void editorControls()
 	}
 }
 
-void fEditor()
+void fEditor(bool reset)
 {
 	TimingSegment timeSeg = getTimingSignature(_musicHead);
 	float secondsPerBeat = (60.0/timeSeg.bpm) / _barMeasureCount;
@@ -1806,7 +1816,7 @@ void fEditor()
 	drawCursor();
 }
 
-void fRecording()
+void fRecording(bool reset)
 {
 	if (IsKeyPressed(KEY_ESCAPE))
 	{
@@ -1863,7 +1873,7 @@ bool isAnyKeyDown()
 	rippleEffect[rippleEffectIndex] = 0;                 \
 	rippleEffectStrength[rippleEffectIndex] = newRipple; \
 	rippleEffectIndex = (rippleEffectIndex + 1) % RippleAmount;
-void fPlaying()
+void fPlaying(bool reset)
 {
 	static char feedbackSayings[5][50] = {0};
 	static float feedbackSize[5] = {0};
@@ -2143,7 +2153,7 @@ void fPlaying()
 	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), _fade);
 }
 
-void fFail()
+void fFail(bool reset)
 {
 	_musicPlaying = false;
 	ClearBackground(BLACK);
@@ -2373,7 +2383,7 @@ DWORD WINAPI *loadMapImage(Map * map)
 
 #include <unistd.h>
 
-void fMapSelect()
+void fMapSelect(bool reset)
 {
 	static int amount = 0;
 	static int *highScores;
@@ -2715,7 +2725,7 @@ void fMapSelect()
 	drawCursor();
 }
 
-void fExport()
+void fExport(bool reset)
 {
 	_pGameplayFunction = &fMainMenu;
 	makeMapZip(_map);
@@ -2729,7 +2739,7 @@ void fExport()
 	strcpy(_notfication, "exported map");
 }
 
-void fNewMap()
+void fNewMap(bool reset)
 {
 	static Map newMap = {0};
 	static void *pMusic = 0;
@@ -2964,10 +2974,10 @@ void fNewMap()
 	}
 }
 
-void fIntro()
+void fIntro(bool reset)
 {
 	static float time = 0;
-	fMainMenu();
+	fMainMenu(true);
 	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ColorAlpha(BLACK, (1 - time) * 0.7));
 	DrawRing((Vector2){.x = GetScreenWidth() / 2, .y = GetScreenHeight() / 2}, time * GetScreenWidth() * 1, time * GetScreenWidth() * 0.8, 0, 360, 360, ColorAlpha(WHITE, 1 - time));
 	time += fmin(GetFrameTime() / 2, 0.016);
