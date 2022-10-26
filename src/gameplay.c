@@ -1724,6 +1724,60 @@ void editorControls()
 
 void fEditor(bool reset)
 {
+	if(reset)
+	{
+		for(int j = 0; j < UNDOBUFFER; j++)
+		{
+			if(_paUndoBuffer[j])
+			{
+				for(int k = 0; k < _undoBufferSize[j]; k++)
+				{
+					freeArray(_paUndoBuffer[j][k].anim);
+					freeArray(_paUndoBuffer[j][k].hitSE_File);
+					freeArray(_paUndoBuffer[j][k].texture_File);
+				}
+				free(_paUndoBuffer[j]);
+			}
+			_paUndoBuffer[j] = malloc(_amountNotes*sizeof(Note));
+			
+
+			//copy everything over
+			for(int k = 0; k < _amountNotes; k++)
+			{
+				_paUndoBuffer[j][k] = *_papNotes[k];
+				_paUndoBuffer[j][k].custSound = 0;
+				_paUndoBuffer[j][k].custTex = 0;
+
+				if(_paUndoBuffer[j][k].anim)//copy over animations
+				{
+					_paUndoBuffer[j][k].anim = malloc(sizeof(Frame)*_paUndoBuffer[j][k].animSize);
+					for(int l = 0; l < _paUndoBuffer[j][k].animSize; l++)
+						_paUndoBuffer[j][k].anim[l] = _papNotes[k]->anim[l];
+				}
+				char fullPath[100];
+				if(_papNotes[k]->hitSE_File)
+				{
+					snprintf(fullPath, 100, "maps/%s/%s", _map->folder, _papNotes[k]->hitSE_File);
+					_paUndoBuffer[j][k].custSound = addCustomSound(fullPath);
+					_paUndoBuffer[j][k].hitSE_File = malloc(100);
+					strcpy(_paUndoBuffer[j][k].hitSE_File, _papNotes[k]->hitSE_File);
+				}
+				if(_papNotes[k]->texture_File)
+				{
+					snprintf(fullPath, 100, "maps/%s/%s", _map->folder, _papNotes[k]->texture_File);
+					_paUndoBuffer[j][k].custTex = addCustomTexture(fullPath);
+					_paUndoBuffer[j][k].texture_File = malloc(100);
+					strcpy(_paUndoBuffer[j][k].texture_File, _papNotes[k]->texture_File);
+				}
+			}
+			// memcpy(_paUndoBuffer[j], _papNotes, _amountNotes*sizeof(Note));
+			_undoBufferSize[j] = _amountNotes;
+		}
+		startMusic();
+		_musicPlaying = false;
+		return;
+	}
+	
 	TimingSegment timeSeg = getTimingSignature(_musicHead);
 	float secondsPerBeat = (60.0/timeSeg.bpm) / _barMeasureCount;
 	if (_musicPlaying)
@@ -2661,55 +2715,7 @@ void fMapSelect(bool reset)
 			{
 				_pNextGameplayFunction = &fEditor;
 				_pGameplayFunction = &fEditor;
-				for(int j = 0; j < UNDOBUFFER; j++)
-				{
-					if(_paUndoBuffer[j])
-					{
-						for(int k = 0; k < _undoBufferSize[j]; k++)
-						{
-							freeArray(_paUndoBuffer[j][k].anim);
-							freeArray(_paUndoBuffer[j][k].hitSE_File);
-							freeArray(_paUndoBuffer[j][k].texture_File);
-						}
-						free(_paUndoBuffer[j]);
-					}
-					_paUndoBuffer[j] = malloc(_amountNotes*sizeof(Note));
-					
-
-					//copy everything over
-					for(int k = 0; k < _amountNotes; k++)
-					{
-						_paUndoBuffer[j][k] = *_papNotes[k];
-						_paUndoBuffer[j][k].custSound = 0;
-						_paUndoBuffer[j][k].custTex = 0;
-
-						if(_paUndoBuffer[j][k].anim)//copy over animations
-						{
-							_paUndoBuffer[j][k].anim = malloc(sizeof(Frame)*_paUndoBuffer[j][k].animSize);
-							for(int l = 0; l < _paUndoBuffer[j][k].animSize; l++)
-								_paUndoBuffer[j][k].anim[l] = _papNotes[k]->anim[l];
-						}
-						char fullPath[100];
-						if(_papNotes[k]->hitSE_File)
-						{
-							snprintf(fullPath, 100, "maps/%s/%s", _map->folder, _papNotes[k]->hitSE_File);
-							_paUndoBuffer[j][k].custSound = addCustomSound(fullPath);
-							_paUndoBuffer[j][k].hitSE_File = malloc(100);
-							strcpy(_paUndoBuffer[j][k].hitSE_File, _papNotes[k]->hitSE_File);
-						}
-						if(_papNotes[k]->texture_File)
-						{
-							snprintf(fullPath, 100, "maps/%s/%s", _map->folder, _papNotes[k]->texture_File);
-							_paUndoBuffer[j][k].custTex = addCustomTexture(fullPath);
-							_paUndoBuffer[j][k].texture_File = malloc(100);
-							strcpy(_paUndoBuffer[j][k].texture_File, _papNotes[k]->texture_File);
-						}
-					}
-					// memcpy(_paUndoBuffer[j], _papNotes, _amountNotes*sizeof(Note));
-					_undoBufferSize[j] = _amountNotes;
-				}
-				startMusic();
-				_musicPlaying = false;
+				fEditor(true);
 			}
 			if (interactableButtonNoSprite("export", 0.0225, mapButton.x + mapButton.width * (1 / 3.0 * 2), mapButton.y + mapButton.height, mapButton.width * (1 / 3.0), mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
 			{
