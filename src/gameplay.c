@@ -1726,6 +1726,7 @@ void fEditor(bool reset)
 {
 	if(reset)
 	{
+		loadMap();
 		for(int j = 0; j < UNDOBUFFER; j++)
 		{
 			if(_paUndoBuffer[j])
@@ -1775,9 +1776,14 @@ void fEditor(bool reset)
 		}
 		startMusic();
 		_musicPlaying = false;
+
+		_showSettings = false;
+		_showAnimation = false;
+		_showNoteSettings = false;
+		_showTimingSettings = false;
 		return;
 	}
-	
+
 	TimingSegment timeSeg = getTimingSignature(_musicHead);
 	float secondsPerBeat = (60.0/timeSeg.bpm) / _barMeasureCount;
 	if (_musicPlaying)
@@ -1969,6 +1975,8 @@ void fPlaying(bool reset)
 
 	if(reset)
 	{
+		loadMap();
+
 		//reset variables
 		for(int i = 0; i < 5; i++)
 		{
@@ -2679,7 +2687,6 @@ void fMapSelect(bool reset)
 			if (mouseInRect(buttons) && IsMouseButtonReleased(0) && mouseInRect(mapSelectRect))
 			{
 				_map = &_paMaps[i];
-				loadMap();
 				setMusicStart();
 				_musicHead = 0;
 				printf("selected map!\n");
@@ -2719,6 +2726,7 @@ void fMapSelect(bool reset)
 			}
 			if (interactableButtonNoSprite("export", 0.0225, mapButton.x + mapButton.width * (1 / 3.0 * 2), mapButton.y + mapButton.height, mapButton.width * (1 / 3.0), mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
 			{
+				loadMap();
 				_pGameplayFunction = &fExport;
 			}
 			DrawRectangleGradientV(mapButton.x, mapButton.y + mapButton.height, mapButton.width, mapButton.height * 0.05 * selectMapTransition, ColorAlpha(BLACK, 0.3), ColorAlpha(BLACK, 0));
