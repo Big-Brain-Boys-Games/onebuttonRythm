@@ -763,6 +763,16 @@ void loadMap ()
 	SetWindowTitle(str);
 }
 
+void freeNote(Note * note)
+{
+	removeCustomSound(note->hitSE_File);
+	removeCustomTexture(note->texture_File);
+	freeArray(note->anim);
+	freeArray(note->hitSE_File);
+	freeArray(note->texture_File);
+	// free(note);
+}
+
 void freeNotes()
 {
 	if(_papNotes)
@@ -770,10 +780,7 @@ void freeNotes()
 		int amountTex = 0;
 		for(int i = 0; i < _amountNotes; i++)
 		{
-			freeArray(_papNotes[i]->anim);
-			freeArray(_papNotes[i]->hitSE_File);
-			freeArray(_papNotes[i]->texture_File);
-			free(_papNotes[i]);
+			freeNote(_papNotes[i]);
 		}
 
 		free(_papNotes);

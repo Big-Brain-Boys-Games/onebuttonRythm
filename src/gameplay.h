@@ -2,7 +2,7 @@
 #define GAME_GAMEPLAY
 
 #include <stdbool.h>
-#include "shared.h"
+#include "files.h"
 #include "audio.h"
 
 #include "../deps/raylib/src/raylib.h"

@@ -7,8 +7,8 @@
 // #include "include/miniaudio.h"
 #include "../deps/raylib/src/raylib.h"
 
-#include "shared.h"
 #include "files.h"
+#include "shared.h"
 #include "drawing.h"
 #include "gameplay.h"
 #include "thread.h"
