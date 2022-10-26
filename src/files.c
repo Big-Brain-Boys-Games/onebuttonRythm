@@ -674,7 +674,6 @@ void loadMap ()
 					}
 					//Loading files
 					char * ext = GetFileExtension(tmpStr);
-					printf("part: %s\next: %s\n", tmpStr, ext);
 					if(ext != NULL && tmpStr[0] != '(')
 					{
 						if(strcmp(ext, ".mp3") == 0 || strcmp(ext, ".wav") == 0)

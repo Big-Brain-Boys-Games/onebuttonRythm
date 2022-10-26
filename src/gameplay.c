@@ -527,7 +527,10 @@ void fPause(bool reset)
 	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("Continue", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.3, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
 	{
 		if (_pNextGameplayFunction == &fPlaying)
+		{
 			_pGameplayFunction = &fCountDown;
+			fCountDown(true);
+		}
 		else
 			_pGameplayFunction = _pNextGameplayFunction;
 	}
@@ -543,6 +546,8 @@ void fPause(bool reset)
 		_pGameplayFunction = fCountDown;
 		_noteIndex = 0;
 		_musicHead = 0;
+		fCountDown(true);
+		fPlaying(true);
 	}
 
 	if (_pNextGameplayFunction == &fRecording && interactableButton("retry", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.5, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
@@ -551,6 +556,7 @@ void fPause(bool reset)
 		_noteIndex = 0;
 		_amountNotes = 0;
 		_musicHead = 0;
+		fRecording(true);
 	}
 
 	if (interactableButton("Exit", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.7, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
@@ -563,21 +569,42 @@ void fPause(bool reset)
 
 void fCountDown(bool reset)
 {
-	_musicLoops = false;
-	_musicPlaying = false;
+	
 	static float countDown = 0;
 	static bool contin = false;
 	if (reset)
-		countDown = GetTime() + 3;
+	{
+		if(_musicHead <= 0)
+		{
+			contin = false;	
+		}else
+		{
+			contin = true;
+		}
+		countDown = 3 + GetTime();
+		printf("fCountDown reset (%i)\n", contin);
+		return;
+	}
 
-	if (countDown - GetTime() + GetFrameTime() <= 0)
+	_musicLoops = false;
+	_musicPlaying = false;
+
+	printf("musichead %.2f\n", _musicHead);
+	if( _musicHead <= 0 )
+		_musicHead = GetTime() - countDown;
+
+	printf("musichead %.2f\n", _musicHead);
+	
+
+
+	if (GetTime() + GetFrameTime() >= countDown)
 	{
 		countDown = 0;
 		_pGameplayFunction = _pNextGameplayFunction;
 		if (!contin)
 		{
 			// switching to playing map
-			printf("reset map! \n");
+			printf("switch to Playing\n");
 			startMusic();
 
 			_health = 50;
@@ -599,10 +626,6 @@ void fCountDown(bool reset)
 		contin = false;
 		return;
 	}
-	if (_musicHead <= 0)
-		_musicHead = GetTime() - countDown;
-	else
-		contin = true;
 	ClearBackground(BLACK);
 	drawBackground();
 
@@ -930,6 +953,7 @@ void fEndScreen(bool reset)
 		printf("retrying map! \n");
 
 		_pGameplayFunction = &fCountDown;
+		fCountDown(true);
 		_musicHead = 0;
 		_transition = 0.1;
 	}
@@ -1830,7 +1854,7 @@ void fRecording(bool reset)
 	ClearBackground(BLACK);
 	drawBackground();
 
-	if (_isKeyPressed && getMusicHead != 0)
+	if (_isKeyPressed && getMusicHead() >= 0)
 	{
 		printf("keyPressed! \n");
 
@@ -1889,7 +1913,7 @@ void fPlaying(bool reset)
 	static float hitPointSize [HITPOINTAMOUNT] = {0}; //score for hit
 	static int hitPointsIndex = 0;
 
-	if(_musicHead == 0)
+	if(reset)
 	{
 		//reset variables
 		for(int i = 0; i < 5; i++)
@@ -1913,6 +1937,7 @@ void fPlaying(bool reset)
 			hitPointTimings[i] = 0;
 			hitPointsTimes[i] = -99;
 		}
+		return;
 	}
 	_musicHead += GetFrameTime() * _musicSpeed;
 	_musicPlaying = true;
@@ -2187,12 +2212,13 @@ void fFail(bool reset)
 		// retrying map
 		printf("retrying map! \n");
 		_pGameplayFunction = &fCountDown;
+		fCountDown(true);
 		_musicHead = 0;
 		_transition = 0.7;
 	}
 	if (interactableButton("Exit", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.85, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
 	{
-		// retrying map
+		// exiting map
 		printf("going to main Menu! \n");
 		unloadMap();
 		gotoMainMenu(false);
@@ -2628,6 +2654,8 @@ void fMapSelect(bool reset)
 			{
 				_pNextGameplayFunction = &fPlaying;
 				_pGameplayFunction = &fCountDown;
+				fCountDown(true);
+				fPlaying(true);
 			}
 			if (interactableButtonNoSprite("editor", 0.0225, mapButton.x + mapButton.width * (1 / 3.0), mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
 			{
