@@ -10,7 +10,7 @@
 #include "windowsDefs.h"
 #include "../deps/zip/src/zip.h"
 
-#include "gameplay.h"
+// #include "gameplay.h"
 #include "audio.h"
 
 #ifdef __unix
@@ -107,9 +107,9 @@ Map loadMapInfo(char * file)
 	enum FilePart mode = fpNone;
 	while(fgets(line,sizeof(line),f)!= 0)
 	{
-		int stringLenght = strlen(line);
+		int stringLength = strlen(line);
 		bool emptyLine = true;
-		for(int i = 0; i < stringLenght; i++)
+		for(int i = 0; i < stringLength; i++)
 			if(line[i] != ' ' && line[i] != '\n' && line[i] != '\r')
 				emptyLine = false;
 		
@@ -578,16 +578,16 @@ void loadMap ()
 
 	while(fgets(line,sizeof(line),_pFile)!= NULL)
 	{
-		int stringLenght = strlen(line);
+		int stringLength = strlen(line);
 		bool emptyLine = true;
-		for(int i = 0; i < stringLenght; i++)
+		for(int i = 0; i < stringLength; i++)
 			if(line[i] != ' ' && line[i] != '\n' && line[i] != '\r')
 				emptyLine = false;
 		
 		if(emptyLine)
 			continue;
 
-		for(int i = 0; i < 100; i++)
+		for(int i = 0; i < stringLength; i++)
 			if(line[i] == '\n' || line[i] == '\r' || !line[i])
 				line[i]= '\0';
 
@@ -612,11 +612,11 @@ void loadMap ()
 				}
 				_paTimingSegment[_amountTimingSegments-1].time = atof(line);
 				char * partLine = &(line[0]);
-				for(;*partLine != ' ' && partLine != '\0'; partLine++)
+				for(;*partLine != ' ' && *partLine != '\0'; partLine++)
 				{ }
 				_paTimingSegment[_amountTimingSegments-1].bpm = atoi(partLine);
 				if(*partLine != '\0') partLine++;
-				for(;*partLine != ' ' && partLine != '\0'; partLine++)
+				for(;*partLine != ' ' && *partLine != '\0'; partLine++)
 				{ }
 				_paTimingSegment[_amountTimingSegments-1].beats = fmin(atoi(partLine), 32);
 				break;
@@ -674,7 +674,6 @@ void loadMap ()
 					}
 					//Loading files
 					char * ext = GetFileExtension(tmpStr);
-					printf("part: %s\next: %s\n", tmpStr, ext);
 					if(ext != NULL && tmpStr[0] != '(')
 					{
 						if(strcmp(ext, ".mp3") == 0 || strcmp(ext, ".wav") == 0)
@@ -758,10 +757,19 @@ void loadMap ()
 	_noteIndex = 0;
 	fclose(_pFile);
 	free(pStr);
-	_noteIndex = 0;
 	char str [100];
 	snprintf(str, 100, "%s - %s", _map->name, _map->artist);
 	SetWindowTitle(str);
+}
+
+void freeNote(Note * note)
+{
+	if(note->hitSE_File) removeCustomSound(note->hitSE_File);
+	if(note->texture_File) removeCustomTexture(note->texture_File);
+	freeArray(note->anim);
+	freeArray(note->hitSE_File);
+	freeArray(note->texture_File);
+	// free(note);
 }
 
 void freeNotes()
@@ -771,10 +779,7 @@ void freeNotes()
 		int amountTex = 0;
 		for(int i = 0; i < _amountNotes; i++)
 		{
-			freeArray(_papNotes[i]->anim);
-			freeArray(_papNotes[i]->hitSE_File);
-			freeArray(_papNotes[i]->texture_File);
-			free(_papNotes[i]);
+			freeNote(_papNotes[i]);
 		}
 
 		free(_papNotes);
@@ -930,9 +935,9 @@ void loadSettings()
 	enum SettingsPart mode = spNone;
 	while(fgets(line,sizeof(line),f)!= 0)
 	{
-		int stringLenght = strlen(line);
+		int stringLength = strlen(line);
 		bool emptyLine = true;
-		for(int i = 0; i < stringLenght; i++)
+		for(int i = 0; i < stringLength; i++)
 			if(line[i] != ' ' && line[i] != '\n')
 				emptyLine = false;
 		
@@ -945,7 +950,7 @@ void loadSettings()
 		if(strcmp(line, "[Volume Sound Effects]\n") == 0)	{mode = spVolSE;		continue;}
 		if(strcmp(line, "[Zoom]\n") == 0)					{mode = spZoom;			continue;}
 		if(strcmp(line, "[Offset]\n") == 0)					{mode = spOffset;		continue;}
-		for(int i = 0; i < 100; i++)
+		for(int i = 0; i < stringLength; i++)
 					if(line[i] == '\n') line[i]= '\0';
 		switch(mode)
 		{

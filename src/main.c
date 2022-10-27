@@ -1,27 +1,26 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 
 // #include "include/miniaudio.h"
 #include "../deps/raylib/src/raylib.h"
 
-#include "shared.h"
 #include "files.h"
+#include "shared.h"
 #include "drawing.h"
-#include "gameplay.h"
 #include "thread.h"
+#include "audio.h"
 
-// #include "shared.c"
-// #include "drawing.c"
-// #include "gameplay.c"
-// #include "files.c"
+#include "gameplay/menus.h"
+#include "gameplay/gameplay.h"
+
 
 extern Texture2D _heartTex, _healthBarTex, _noteTex, _cursorTex, _background, _menuBackground;
 extern void *_pEffectsBuffer, *_pHitSE, *_pMissHitSE, *_pMissSE;
 extern int _hitSE_Size, _missHitSE_Size, _missSE_Size;
-extern void (*_pGameplayFunction)();
+extern void (*_pGameplayFunction)(bool);
 extern Font _font;
 extern bool _mapRefresh;
 
@@ -105,7 +104,7 @@ int main(int argc, char **argv)
 			if (_transition > 2)
 				_transition = 0;
 			if (_transition == 0 || _transition > 1)
-				(*_pGameplayFunction)();
+				(*_pGameplayFunction)(false);
 
 			if (_transition != 0)
 			{

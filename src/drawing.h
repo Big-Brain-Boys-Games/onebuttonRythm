@@ -1,9 +1,9 @@
 #ifndef GAME_DRAW_OBJECTS
 #define GAME_DRAW_OBJECTS
 
-#include "shared.h"
+// #include "shared.h"
 #include "files.h"
-#include "gameplay.h"
+// #include "gameplay.h"
 
 #include "../deps/raylib/src/raylib.h"
 
@@ -26,7 +26,6 @@ bool drawProgressBarI(bool interactable);
 void drawHint(Rectangle rect, char * text);
 void drawButton(Rectangle rect, char *text, float fontScale);
 void drawButtonNoSprite(Rectangle rect, char *text, float fontScale);
-void fMapSelect();
 void drawMusicGraph(float transparent);
 void drawTransition();
 void initDrawing();

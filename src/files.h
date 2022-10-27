@@ -1,7 +1,6 @@
 #ifndef GAME_FILE_HANDLING
 #define GAME_FILE_HANDLING
 
-// #include "shared.h"
 #include <stdbool.h>
 #include "../deps/raylib/src/raylib.h"
 
@@ -52,12 +51,16 @@ typedef struct Settings Settings;
 enum FilePart{fpNone, fpID, fpName, fpArtist, fpMapCreator, fpDifficulty, fpBPM, fpImage, fpMusicFile, fpMusicLength, fpMusicPreviewOffset, fpZoom, fpOffset, fpBeats, fpTimeSignatures, fpNotes};
 enum SettingsPart{spNone, spName, spZoom, spVolGlobal, spVolMusic, spVolSE, spOffset};
 
+#include "shared.h"
+
+
 void initFolders();
 Map loadMapInfo(char * file);
 void saveFile (int noteAmount);
 void loadMap();
 void unloadMap();
 void freeMap(Map * map);
+void freeNote(Note * note);
 void freeNotes();
 void saveScore();
 bool readScore(Map * map, int *score, int * combo, float * accuracy);

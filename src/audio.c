@@ -4,7 +4,7 @@
 #include "../deps/miniaudio/miniaudio.h"
 
 #include "files.h"
-#include "gameplay.h"
+#include "gameplay/gameplay.h"
 #include "thread.h"
 
 #include <math.h>
@@ -52,7 +52,7 @@ int _effectOffset;
 
 // Where is the current audio
 double _musicHead = 0;
-float _musicPlaying = 0;
+bool _musicPlaying = 0;
 bool _musicLoops = true, _playMenuMusic = true;
 
 int _musicFrameCount = 0;
@@ -65,7 +65,7 @@ void *_pMenuMusic = 0;
 int _menuMusicFrameCount = 0;
 int _menuMusicLength = 0;
 
-float _musicSpeed = 1;
+double _musicSpeed = 1;
 
 int getSamplePosition(float time)
 {
@@ -281,6 +281,7 @@ void audioInit()
 
 void loadMusic(Map *map)
 {
+	_musicLength = 0;
 	_musicPlaying = false;
 	char str[100];
 	if (map->folder == NULL || map->musicFile == NULL)

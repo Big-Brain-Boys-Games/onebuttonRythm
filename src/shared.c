@@ -1,3 +1,4 @@
+#include "files.h"
 #include "shared.h"
 #include <stdbool.h>
 #include <math.h>
@@ -105,4 +106,31 @@ int findClosestNote(Note ** arr, int n, float target)
 
     // Only single element left after search
     return mid;
+}
+
+void MakeNoteCopy(Note src, Note * dest)
+{
+    *dest = src;
+
+    if(src.hitSE_File != 0)
+    {
+        dest->hitSE_File = malloc(strlen(src.hitSE_File));
+        strcpy(src.hitSE_File, dest->hitSE_File);
+
+        dest->custSound = addCustomSound(src.custSound->file);
+    }
+
+    if(src.texture_File != 0)
+    {
+        dest->texture_File = malloc(strlen(src.texture_File));
+        strcpy(src.texture_File, dest->texture_File);
+
+        dest->custTex = addCustomTexture(src.custTex->file);
+    }
+
+    if(src.animSize)
+    {
+        dest->anim = malloc(src.animSize);
+        memcpy(dest->anim, src.anim, sizeof(Frame)*src.animSize);
+    }
 }
