@@ -221,6 +221,8 @@ void fPlaying(bool reset)
 	_musicPlaying = true;
 	fixMusicTime();
 
+    float margin = _maxMargin * getMarginMod();
+
 
 	_musicSpeed = getSpeedMod();
 
@@ -300,7 +302,7 @@ void fPlaying(bool reset)
 		drawText(feedbackSayings[j], GetScreenWidth() * 0.35, GetScreenHeight() * (0.6 + i * 0.1), GetScreenWidth() * 0.05 * feedbackSize[j], (Color){.r = 255, .g = 255, .b = 255, .a = noLessThanZero(150 - i * 40)});
 	}
 
-    if (_noteIndex < _amountNotes-1 && getMusicHead() - _maxMargin > _papNotes[_noteIndex]->time)
+    if (_noteIndex < _amountNotes-1 && getMusicHead() - margin > _papNotes[_noteIndex]->time)
 	{
 		// passed note
 		_noteIndex++;
@@ -317,14 +319,14 @@ void fPlaying(bool reset)
 		int closestIndex = 0;
 		for (int i = _noteIndex; i <= _noteIndex + 1 && i < _amountNotes; i++)
 		{
-			if (closestNote > _papNotes[i]->time - getMusicHead() - _maxMargin)
+			if (closestNote > _papNotes[i]->time - getMusicHead() - margin)
 			{
-				closestNote = _papNotes[i]->time - getMusicHead() - _maxMargin;
+				closestNote = _papNotes[i]->time - getMusicHead() - margin;
 				closestTime = fabs(_papNotes[i]->time - getMusicHead());
 				closestIndex = i;
 			}
 		}
-		if (fabs(closestTime) < _maxMargin * getMarginMod())
+		if (fabs(closestTime) < margin)
 		{
 			while (_noteIndex < closestIndex)
 			{
@@ -334,11 +336,11 @@ void fPlaying(bool reset)
 				_health -= _missPenalty * getHealthMod() * _papNotes[_noteIndex]->health;
 				_notesMissed++;
 			}
-			_averageAccuracy = ((_averageAccuracy * (_noteIndex - _notesMissed)) + ((1 / _maxMargin) * closestTime)) / (_noteIndex - _notesMissed + 1);
+			_averageAccuracy = ((_averageAccuracy * (_noteIndex - _notesMissed)) + ((1 / margin) * closestTime)) / (_noteIndex - _notesMissed + 1);
 			// _averageAccuracy = 0.5/_amountNotes;
-			int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / _maxMargin * getMarginMod())) * _papNotes[_noteIndex]->health;
+			int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / margin)) * _papNotes[_noteIndex]->health;
 			_health += healthAdded * (1 / (getHealthMod() + 0.1));
-			int scoreAdded = noLessThanZero(300 - closestTime * (300 / _maxMargin * getMarginMod())) * getScoreMod();
+			int scoreAdded = noLessThanZero(300 - closestTime * (300 / margin)) * getScoreMod();
 			if (scoreAdded > 200)
 			{
 				feedback("300!", 1.2);
