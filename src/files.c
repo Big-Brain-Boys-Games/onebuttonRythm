@@ -107,9 +107,9 @@ Map loadMapInfo(char * file)
 	enum FilePart mode = fpNone;
 	while(fgets(line,sizeof(line),f)!= 0)
 	{
-		int stringLenght = strlen(line);
+		int stringLength = strlen(line);
 		bool emptyLine = true;
-		for(int i = 0; i < stringLenght; i++)
+		for(int i = 0; i < stringLength; i++)
 			if(line[i] != ' ' && line[i] != '\n' && line[i] != '\r')
 				emptyLine = false;
 		
@@ -578,16 +578,16 @@ void loadMap ()
 
 	while(fgets(line,sizeof(line),_pFile)!= NULL)
 	{
-		int stringLenght = strlen(line);
+		int stringLength = strlen(line);
 		bool emptyLine = true;
-		for(int i = 0; i < stringLenght; i++)
+		for(int i = 0; i < stringLength; i++)
 			if(line[i] != ' ' && line[i] != '\n' && line[i] != '\r')
 				emptyLine = false;
 		
 		if(emptyLine)
 			continue;
 
-		for(int i = 0; i < 100; i++)
+		for(int i = 0; i < stringLength; i++)
 			if(line[i] == '\n' || line[i] == '\r' || !line[i])
 				line[i]= '\0';
 
@@ -935,9 +935,9 @@ void loadSettings()
 	enum SettingsPart mode = spNone;
 	while(fgets(line,sizeof(line),f)!= 0)
 	{
-		int stringLenght = strlen(line);
+		int stringLength = strlen(line);
 		bool emptyLine = true;
-		for(int i = 0; i < stringLenght; i++)
+		for(int i = 0; i < stringLength; i++)
 			if(line[i] != ' ' && line[i] != '\n')
 				emptyLine = false;
 		
@@ -950,7 +950,7 @@ void loadSettings()
 		if(strcmp(line, "[Volume Sound Effects]\n") == 0)	{mode = spVolSE;		continue;}
 		if(strcmp(line, "[Zoom]\n") == 0)					{mode = spZoom;			continue;}
 		if(strcmp(line, "[Offset]\n") == 0)					{mode = spOffset;		continue;}
-		for(int i = 0; i < 100; i++)
+		for(int i = 0; i < stringLength; i++)
 					if(line[i] == '\n') line[i]= '\0';
 		switch(mode)
 		{

@@ -281,6 +281,7 @@ void audioInit()
 
 void loadMusic(Map *map)
 {
+	_musicLength = 0;
 	_musicPlaying = false;
 	char str[100];
 	if (map->folder == NULL || map->musicFile == NULL)

@@ -373,7 +373,7 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 		snprintf(str, 100, "maps/%s/map.data", files[i]);
 		if(FileExists(str))
 		{
-			newFiles[j] = malloc(sizeof(char) * strlen(files[i]));
+			newFiles[j] = malloc(sizeof(char) * (strlen(files[i])+1));
 			strcpy(newFiles[j], files[i]);
 			j++;
 		}
@@ -654,8 +654,9 @@ void fMapSelect(bool reset)
 	{
 		_disableLoadingScreen = true;
 		hoverPeriod += GetFrameTime();
-		if (!_musicLength || !*_musicLength)
-			_musicFrameCount = _paMaps[hoverMap].musicPreviewOffset * 48000 * 2;
+		// if(_musicLength)
+		// 	if (!*_musicLength)
+		// 		_musicFrameCount = _paMaps[hoverMap].musicPreviewOffset * 48000 * 2;
 	}
 	// draw map button
 	Rectangle mapSelectRect = (Rectangle){.x = 0, .y = GetScreenHeight() * 0.13, .width = GetScreenWidth(), .height = GetScreenHeight()};
@@ -697,6 +698,7 @@ void fMapSelect(bool reset)
 			{
 				// play music
 				char str[100];
+				_musicLength = 0;
 				loadMusic(&_paMaps[i]);
 				_playMenuMusic = false;
 				_musicFrameCount = _paMaps[i].musicPreviewOffset * 48000 * 2;
