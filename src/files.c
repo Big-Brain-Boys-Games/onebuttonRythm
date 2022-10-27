@@ -765,8 +765,8 @@ void loadMap ()
 
 void freeNote(Note * note)
 {
-	removeCustomSound(note->hitSE_File);
-	removeCustomTexture(note->texture_File);
+	if(note->hitSE_File) removeCustomSound(note->hitSE_File);
+	if(note->texture_File) removeCustomTexture(note->texture_File);
 	freeArray(note->anim);
 	freeArray(note->hitSE_File);
 	freeArray(note->texture_File);
