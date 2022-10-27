@@ -53,7 +53,7 @@ int _barMeasureCount = 2;
 TimingSegment getTimingSignature(float time)
 {
 	if(!_paTimingSegment || _amountTimingSegments == 0)
-		return (TimingSegment){.bpm=_map->bpm, .time=_map->offset};
+		return (TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0};
 	for(int i = 0; i < _amountTimingSegments; i++)
 	{
 		if(time < _paTimingSegment[i].time)
