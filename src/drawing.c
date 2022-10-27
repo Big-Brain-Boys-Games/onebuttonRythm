@@ -1,14 +1,22 @@
 
-#include "drawing.h"
 #include <stdbool.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "shared.h"
-#include "gameplay.h"
 #include "../deps/raylib/src/raylib.h"
+
+
+#include "files.h"
+#include "drawing.h"
+#include "audio.h"
+
+#include "gameplay/editor.h"
+#include "gameplay/gameplay.h"
+#include "gameplay/menus.h"
+
+
 Texture2D _cursorTex;
 Texture2D _noteTex;
 Texture2D _healthBarTex;
@@ -31,7 +39,7 @@ extern void ** _pMusic, *_pClickPress, *_pClickRelease;
 extern float _transition, _loadingFade;
 extern Map * _map;
 extern int _barMeasureCount;
-extern void (*_pGameplayFunction)();
+extern void (*_pGameplayFunction)(bool);
 extern bool _musicPlaying;
 
 extern TimingSegment * _paTimingSegment;
@@ -224,7 +232,7 @@ void drawRank(int x, int y, int width, int height, float accuracy)
 {
 	//rank
 	Color colRank = LIGHTGRAY;
-	char * text;
+	char * text = "F";
 	if(accuracy < 0.7)
 	{
 		colRank = WHITE;

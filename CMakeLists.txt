@@ -7,7 +7,8 @@ project(
 )
 
 include_directories(src)
-add_executable(${PROJECT_NAME} src/audio.c src/drawing.c src/files.c src/gameplay.c src/main.c src/shared.c src/thread.c)
+add_executable(${PROJECT_NAME} src/audio.c src/drawing.c src/files.c src/main.c src/shared.c src/thread.c
+  src/gameplay/gameplay.c src/gameplay/editor.c src/gameplay/menus.c src/gameplay/playing.c src/gameplay/recording.c)
 
 IF (WIN32)
   set_target_properties(${PROJECT_NAME} PROPERTIES

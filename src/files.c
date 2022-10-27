@@ -10,7 +10,7 @@
 #include "windowsDefs.h"
 #include "../deps/zip/src/zip.h"
 
-#include "gameplay.h"
+// #include "gameplay.h"
 #include "audio.h"
 
 #ifdef __unix
@@ -612,11 +612,11 @@ void loadMap ()
 				}
 				_paTimingSegment[_amountTimingSegments-1].time = atof(line);
 				char * partLine = &(line[0]);
-				for(;*partLine != ' ' && partLine != '\0'; partLine++)
+				for(;*partLine != ' ' && *partLine != '\0'; partLine++)
 				{ }
 				_paTimingSegment[_amountTimingSegments-1].bpm = atoi(partLine);
 				if(*partLine != '\0') partLine++;
-				for(;*partLine != ' ' && partLine != '\0'; partLine++)
+				for(;*partLine != ' ' && *partLine != '\0'; partLine++)
 				{ }
 				_paTimingSegment[_amountTimingSegments-1].beats = fmin(atoi(partLine), 32);
 				break;
@@ -757,7 +757,6 @@ void loadMap ()
 	_noteIndex = 0;
 	fclose(_pFile);
 	free(pStr);
-	_noteIndex = 0;
 	char str [100];
 	snprintf(str, 100, "%s - %s", _map->name, _map->artist);
 	SetWindowTitle(str);
