@@ -746,6 +746,14 @@ void fEditorAnimation (bool reset)
 			_selectedNotes[0]->anim = realloc(_selectedNotes[0]->anim, sizeof(Frame)*_selectedNotes[0]->animSize);
 		}
 	}
+
+	if (interactableButton("back", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.5, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+	{
+		//Run animation tab
+		_pGameplayFunction = &fEditorNoteSettings;
+		return;
+	}
+
 	if(IsMouseButtonReleased(0) && GetMouseY() < GetScreenHeight()*0.85)
 	{
 		int index = -1;
@@ -778,12 +786,6 @@ void fEditorAnimation (bool reset)
 			_selectedNotes[0]->anim[newIndex].time = (timeLine+1)/2;
 			_selectedNotes[0]->anim[newIndex].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()+0.05};
 		}
-	}
-
-	if (interactableButton("back", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.5, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
-	{
-		//Run animation tab
-		_pGameplayFunction = &fEditorNoteSettings;
 	}
 
 	drawCursor();

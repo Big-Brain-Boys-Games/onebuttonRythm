@@ -730,7 +730,7 @@ void loadMap ()
 						}
 					}
 					//Loading animation
-					else if(line[index] == '(')
+					if(line[index] == '(')
 					{
 						//found animation
 						_papNotes[_noteIndex]->animSize = atoi(&(line[index+1]));
