@@ -79,12 +79,6 @@ int main(int argc, char **argv)
 				oldPosX = GetWindowPosition().x;
 				oldPosY = GetWindowPosition().y;
 				SetWindowSize(GetMonitorWidth(GetCurrentMonitor()), GetMonitorHeight(GetCurrentMonitor()));
-				while (!IsWindowResized() && !WindowShouldClose())
-				{
-					BeginDrawing();
-					drawLoadScreen();
-					EndDrawing();
-				}
 				ToggleFullscreen();
 			}
 			else

@@ -35,8 +35,6 @@
 
 Map * _paMaps = 0;
 
-FILE * _pFile;
-
 void initFolders()
 {
 	if(!DirectoryExists("maps/"))
@@ -116,8 +114,8 @@ Map loadMapInfo(char * file)
 			continue;
 
 		for(int i = 0; i < 100; i++)
-			if(line[i] == '\n' || line[i] == '\r' || !line[i])
-				line[i]= '\0';
+			if(line[i] == '\n' || line[i] == '\r' || line[i] == 0)
+				line[i] = '\0';
 		
 		if(strcmp(line, "[ID]") == 0)					{mode = fpID;					continue;}
 		if(strcmp(line, "[Name]") == 0)					{mode = fpName;					continue;}
@@ -175,7 +173,7 @@ Map loadMapInfo(char * file)
 				break;
 			case fpBeats:
 				map.beats = atoi(line);
-				if(map.beats == 0)
+				if(map.beats < 1)
 					map.beats = 4; //setting it to a sensable default (0 crashes game)
 				break;
 			case fpNotes:
@@ -247,75 +245,75 @@ void saveFile (int noteAmount)
 	strcpy(str, "maps/");
 	strcat(str, _map->folder);
 	strcat(str, "/map.data");
-	_pFile = fopen(str, "w");
+	FILE * pFile = fopen(str, "w");
 	printf("written map data\n");
-	fprintf(_pFile, "[ID]\n");
-	fprintf(_pFile, "%i\n", _map->id);
-	fprintf(_pFile, "[Name]\n");
-	fprintf(_pFile, "%s\n", _map->name);
-	fprintf(_pFile, "[Artist]\n");
-	fprintf(_pFile, "%s\n", _map->artist);
-	fprintf(_pFile, "[Map Creator]\n");
-	fprintf(_pFile, "%s\n", _map->mapCreator);
-	fprintf(_pFile, "[Difficulty]\n");
-	fprintf(_pFile, "%i\n", _map->difficulty);
-	fprintf(_pFile, "[BPM]\n");
-	fprintf(_pFile, "%i\n", _map->bpm);
+	fprintf(pFile, "[ID]\n");
+	fprintf(pFile, "%i\n", _map->id);
+	fprintf(pFile, "[Name]\n");
+	fprintf(pFile, "%s\n", _map->name);
+	fprintf(pFile, "[Artist]\n");
+	fprintf(pFile, "%s\n", _map->artist);
+	fprintf(pFile, "[Map Creator]\n");
+	fprintf(pFile, "%s\n", _map->mapCreator);
+	fprintf(pFile, "[Difficulty]\n");
+	fprintf(pFile, "%i\n", _map->difficulty);
+	fprintf(pFile, "[BPM]\n");
+	fprintf(pFile, "%i\n", _map->bpm);
 	if(_map->imageFile != 0)
 	{
-		fprintf(_pFile, "[Image]\n");
-		fprintf(_pFile, "%s\n", _map->imageFile);
+		fprintf(pFile, "[Image]\n");
+		fprintf(pFile, "%s\n", _map->imageFile);
 	}
-	fprintf(_pFile, "[MusicFile]\n");
-	fprintf(_pFile, "%s\n", _map->musicFile);
-	fprintf(_pFile, "[MusicLength]\n");
-	fprintf(_pFile, "%i\n", _map->musicLength);
-	fprintf(_pFile, "[Zoom]\n");
-	fprintf(_pFile, "%i\n", _map->zoom);
-	fprintf(_pFile, "[Offset]\n");
-	fprintf(_pFile, "%i\n", _map->offset);
-	fprintf(_pFile, "[MusicPreviewOffset]\n");
-	fprintf(_pFile, "%f\n", _map->musicPreviewOffset);
-	fprintf(_pFile, "[Beats]\n");
-	fprintf(_pFile, "%f\n", _map->beats);
+	fprintf(pFile, "[MusicFile]\n");
+	fprintf(pFile, "%s\n", _map->musicFile);
+	fprintf(pFile, "[MusicLength]\n");
+	fprintf(pFile, "%i\n", _map->musicLength);
+	fprintf(pFile, "[Zoom]\n");
+	fprintf(pFile, "%i\n", _map->zoom);
+	fprintf(pFile, "[Offset]\n");
+	fprintf(pFile, "%i\n", _map->offset);
+	fprintf(pFile, "[MusicPreviewOffset]\n");
+	fprintf(pFile, "%f\n", _map->musicPreviewOffset);
+	fprintf(pFile, "[Beats]\n");
+	fprintf(pFile, "%f\n", _map->beats);
 
-	fprintf(_pFile, "[TimeSignatures]\n");
+	fprintf(pFile, "[TimeSignatures]\n");
 	
 	for(int i = 0; i < _amountTimingSegments; i++)
 	{
-		fprintf(_pFile, "%f %i %i\n", _paTimingSegment[i].time, _paTimingSegment[i].bpm, _paTimingSegment[i].beats);
+		fprintf(pFile, "%f %i %i\n", _paTimingSegment[i].time, _paTimingSegment[i].bpm, _paTimingSegment[i].beats);
 	}
 
-	fprintf(_pFile, "[Notes]\n");
+	fprintf(pFile, "[Notes]\n");
 	
 	for(int i = 0; i < noteAmount; i++)
 	{
 		if(_papNotes[i]->time == 0)
 			continue;
 		
-		fprintf(_pFile, "%f", _papNotes[i]->time);
+		fprintf(pFile, "%f", _papNotes[i]->time);
 		if (_papNotes[i]->hitSE_File != 0)
-			fprintf(_pFile, " \"%s\"", _papNotes[i]->hitSE_File);
+			fprintf(pFile, " \"%s\"", _papNotes[i]->hitSE_File);
 
 		if (_papNotes[i]->texture_File != 0)
-			fprintf(_pFile, " \"%s\"",_papNotes[i]->texture_File);
+			fprintf(pFile, " \"%s\"",_papNotes[i]->texture_File);
 
 		if (_papNotes[i]->anim && _papNotes[i]->animSize)
 		{
-			fprintf(_pFile, " \"(%i",_papNotes[i]->animSize);
+			fprintf(pFile, " \"(%i",_papNotes[i]->animSize);
 			for(int j = 0; j < _papNotes[i]->animSize; j++)
 			{
-				fprintf(_pFile, " %f,%f,%f", _papNotes[i]->anim[j].time, _papNotes[i]->anim[j].vec.x, _papNotes[i]->anim[j].vec.y);
+				fprintf(pFile, " %f,%f,%f", _papNotes[i]->anim[j].time, _papNotes[i]->anim[j].vec.x, _papNotes[i]->anim[j].vec.y);
 			}
-			fprintf(_pFile, ")\"");
+			fprintf(pFile, ")\"");
 		}
 
 		if (_papNotes[i]->health > 0)
-			fprintf(_pFile, " \"h%i\"", (int)(_papNotes[i]->health));
+			fprintf(pFile, " \"h%i\"", (int)(_papNotes[i]->health));
 		
-		fprintf(_pFile, "\n");
+		fprintf(pFile, "\n");
 	}
-	fclose(_pFile);
+	fclose(pFile);
 	
 }
 
@@ -524,9 +522,6 @@ void freeAllCustomSounds ()
 	_paCustomSounds = 0;
 }
 
-
-//Load the map. Use 1 parameter to only open the file
-//TODO Change to loadNotes();
 void loadMap ()
 {
 	char * map = malloc(100);
@@ -534,6 +529,7 @@ void loadMap ()
 	strcat(map, _map->folder);
 	char * pStr = malloc(100);
 	_background = _map->image;
+	_noBackground = false;
 
 	strcpy(pStr, map);
 	if(_map->musicFile == 0)
@@ -541,27 +537,28 @@ void loadMap ()
 		_map->musicFile = malloc(100);
 		strcpy(_map->musicFile, "/song.mp3");
 	}
+	strcat(pStr, _map->musicFile);
+
 	if(_map->imageFile == 0)
 	{
 		_map->imageFile = malloc(100);
 		strcpy(_map->imageFile, "/image.png");
 	}
-	strcat(pStr, _map->musicFile);
 
-	_noBackground = 0;
+
 	if(_map->image.id == _menuBackground.id)
 		_noBackground = 1;
 
-	// ma_result result
 	if(_map->music.data==0 || _map->music.size == 0)
 		loadMusic(_map);
+	
 	_pMusic = &_map->music;
 	_map->musicLength = (int)getMusicDuration();
 	
 
 	strcpy(pStr, map);
 	strcat(pStr, "/map.data");
-	_pFile = fopen(pStr, "r");
+	FILE * pFile = fopen(pStr, "r");
 
 	freeNotes();
 	freeAllCustomSounds();
@@ -576,7 +573,7 @@ void loadMap ()
 	_noteIndex = 0;
 
 
-	while(fgets(line,sizeof(line),_pFile)!= NULL)
+	while(fgets(line,sizeof(line),pFile)!= NULL)
 	{
 		int stringLength = strlen(line);
 		bool emptyLine = true;
@@ -591,15 +588,29 @@ void loadMap ()
 			if(line[i] == '\n' || line[i] == '\r' || !line[i])
 				line[i]= '\0';
 
-		if(strcmp(line, "[TimeSignatures]") == 0)	{mode = fpTimeSignatures;continue;}
 
-		if(strcmp(line, "[Notes]") == 0)			{mode = fpNotes;		continue;}
+		if(strcmp(line, "[ID]") == 0)					{mode = fpID;					continue;}
+		if(strcmp(line, "[Name]") == 0)					{mode = fpName;					continue;}
+		if(strcmp(line, "[Artist]") == 0)				{mode = fpArtist;				continue;}
+		if(strcmp(line, "[Map Creator]") == 0)			{mode = fpMapCreator;			continue;}
+		if(strcmp(line, "[Difficulty]") == 0)			{mode = fpDifficulty;			continue;}
+		if(strcmp(line, "[BPM]") == 0)					{mode = fpBPM;					continue;}
+		if(strcmp(line, "[Image]") == 0)				{mode = fpImage;				continue;}
+		if(strcmp(line, "[MusicFile]") == 0)			{mode = fpMusicFile;			continue;}
+		if(strcmp(line, "[MusicLength]") == 0)			{mode = fpMusicLength;			continue;}
+		if(strcmp(line, "[MusicPreviewOffset]") == 0)	{mode = fpMusicPreviewOffset;	continue;}
+		if(strcmp(line, "[Zoom]") == 0)					{mode = fpZoom;					continue;}
+		if(strcmp(line, "[Offset]") == 0)				{mode = fpOffset;				continue;}
+		if(strcmp(line, "[Beats]") == 0)				{mode = fpBeats;				continue;}
+		if(strcmp(line, "[TimeSignatures]") == 0)		{mode = fpTimeSignatures;		continue;}
+		if(strcmp(line, "[Notes]") == 0)				{mode = fpNotes;				continue;}
+
 		switch(mode)
 		{
 			case fpNone:
 				break;
 			case fpTimeSignatures:
-
+				printf("_paTimingSemgent %d\n", _paTimingSegment);
 				if(!_paTimingSegment)
 				{
 					_paTimingSegment = malloc(sizeof(TimingSegment));
@@ -607,17 +618,26 @@ void loadMap ()
 				}
 				else
 				{
-					_paTimingSegment = realloc(_paTimingSegment, sizeof(TimingSegment) * _amountTimingSegments);
 					_amountTimingSegments++;
+					_paTimingSegment = realloc(_paTimingSegment, sizeof(TimingSegment) * _amountTimingSegments);
 				}
+				printf("amountTimingSegments %i\n", _amountTimingSegments);
 				_paTimingSegment[_amountTimingSegments-1].time = atof(line);
+
 				char * partLine = &(line[0]);
+
+				//skip to ' '
 				for(;*partLine != ' ' && *partLine != '\0'; partLine++)
 				{ }
+
 				_paTimingSegment[_amountTimingSegments-1].bpm = atoi(partLine);
+
 				if(*partLine != '\0') partLine++;
+
+				//skip to ' '
 				for(;*partLine != ' ' && *partLine != '\0'; partLine++)
 				{ }
+
 				_paTimingSegment[_amountTimingSegments-1].beats = fmin(atoi(partLine), 32);
 				break;
 
@@ -639,42 +659,45 @@ void loadMap ()
 				_papNotes[_noteIndex]->health = 1;
 				_papNotes[_noteIndex]->hit = 0;
 
-				int part = 0;
-				for(int j = 0; j < 2 && part != -1; j++)
+				int index = 0;
+				for(int j = 0; j < 2; j++)
 				{
-					for(int i = part+1; i < 1000; i++)
+					//find " or end of line
+					for(int i = index+1; i < 1000; i++)
 					{
 						if(line[i] == '\r' || line[i] == '\n' || line[i] == '\0' || line[i] == 0)
 						{
-							part = -1;
+							index = -1;
 							break;
 						}
 						if(line[i] == '"')
 						{
-							part = i+1;
+							index = i+1;
 							break;
 						}
 					}
-					if(part == -1)
-					{
+
+					if(index == -1)
 						break;
-					}
+					
 
 					char tmpStr[100] = {0};
 					int strPos = 0;
 					for(int i = 0; i < 100; i++)
 					{
-						if(line[i+part] == '"' || line[i+part] == '\0')
+						if(line[i+index] == '"' || line[i+index] == '\0')
 						{
 							tmpStr[strPos] = '\0';
 							break;
 						}
-						tmpStr[strPos] = line[i+part];
+						tmpStr[strPos] = line[i+index];
 						strPos++;
 					}
-					//Loading files
+
 					char * ext = (char *) GetFileExtension(tmpStr);
-					if(ext != NULL && tmpStr[0] != '(')
+
+					//Loading files
+					if(ext != NULL)
 					{
 						if(strcmp(ext, ".mp3") == 0 || strcmp(ext, ".wav") == 0)
 						{
@@ -707,47 +730,56 @@ void loadMap ()
 						}
 					}
 					//Loading animation
-					else if(line[part] == '(')
+					else if(line[index] == '(')
 					{
 						//found animation
-						_papNotes[_noteIndex]->animSize = atoi(&(line[part+1]));
+						_papNotes[_noteIndex]->animSize = atoi(&(line[index+1]));
 						_papNotes[_noteIndex]->anim = calloc(_papNotes[_noteIndex]->animSize, sizeof(Frame));
-						while(line[part] != ' ')
-								part++;
-						part++;
-						printf("found animation %i  ", _papNotes[_noteIndex]->animSize);
+
+						//skip to first frame
+						while(line[index] != ' ')
+								index++;
+
+						index++; //skip space
+
+						printf("found animation %i\n", _papNotes[_noteIndex]->animSize);
+
 						for(int i = 0; i < _papNotes[_noteIndex]->animSize; i++)
 						{
-							part++; //skip space
-							_papNotes[_noteIndex]->anim[i].time = atof(&(line[part]));
-							while(line[part] != ',')
-								part++;
-							part++;
-							_papNotes[_noteIndex]->anim[i].vec.x = atof(&(line[part]));
-							while(line[part] != ',')
-								part++;
-							part++;
-							_papNotes[_noteIndex]->anim[i].vec.y = atof(&(line[part]));
-							while(line[part] != ' ')
-								part++;
-							printf("%f  %f  %f    ", _papNotes[_noteIndex]->anim[i].time, _papNotes[_noteIndex]->anim[i].vec.x, _papNotes[_noteIndex]->anim[i].vec.y);
+							_papNotes[_noteIndex]->anim[i].time = atof(&(line[index]));
+							
+							while(line[index] != ',')
+								index++;
+							index++;
+
+							_papNotes[_noteIndex]->anim[i].vec.x = atof(&(line[index]));
+
+							while(line[index] != ',')
+								index++;
+							index++;
+
+							_papNotes[_noteIndex]->anim[i].vec.y = atof(&(line[index]));
+
+							while(line[index] != ' ')
+								index++;
+							index++;
 						}
-						printf("\n");
 					}
-					else if (line[part] == 'h')
+					else if (line[index] == 'h')
 					{
-						part++;
+						index++;
 						//found health
-						_papNotes[_noteIndex]->health = atof(&(line[part]));
+						_papNotes[_noteIndex]->health = atof(&(line[index]));
 					}
 
-					free(ext);
-					
-					for(int i = part; i < 1000; i++)
+					// free(ext);
+
+					//go to end of part
+					for(int i = index; i < 1000; i++)
 					{
 						if(line[i] == '"')
 						{
-							part = i+1;
+							index = i+1;
 							break;
 						}
 					}
@@ -758,7 +790,7 @@ void loadMap ()
 	}
 	_amountNotes = _noteIndex;
 	_noteIndex = 0;
-	fclose(_pFile);
+	fclose(pFile);
 	free(pStr);
 	char str [100];
 	snprintf(str, 100, "%s - %s", _map->name, _map->artist);
@@ -783,6 +815,7 @@ void freeNotes()
 		for(int i = 0; i < _amountNotes; i++)
 		{
 			freeNote(_papNotes[i]);
+			free(_papNotes[i]);
 		}
 
 		free(_papNotes);
@@ -790,6 +823,7 @@ void freeNotes()
 	}
 	if(_paTimingSegment)
 	{
+		printf("%d\n", _paTimingSegment);
 		free(_paTimingSegment);
 		_paTimingSegment = 0;
 		_amountTimingSegments = 0;
@@ -816,10 +850,13 @@ bool readScore(Map * map, int *score, int * combo, float * accuracy)
 	FILE * file;
 	char str [100];
 	snprintf(str, 100, "scores/%s/%s", map->name, _playerName);
+
 	if(!DirectoryExists("scores/"))
 		return false;
+	
 	if(!FileExists(str))
 		return false;
+	
 	file = fopen(str, "r");
 	char line [1000];
 	while(fgets(line,sizeof(line),file)!= NULL)

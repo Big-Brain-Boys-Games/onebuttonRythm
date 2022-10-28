@@ -5,7 +5,7 @@
 
 typedef struct Audio
 {
-    void * data;
+    float * data;
     int size;
 } Audio;
 

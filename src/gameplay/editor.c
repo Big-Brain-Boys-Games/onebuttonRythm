@@ -254,12 +254,16 @@ void removeNote(int index)
 			removeSelectedNote(i);
 			break;
 		}
+	
 	_amountNotes--;
 	freeNote(_papNotes[index]);
+	free(_papNotes[index]);
+
 	for (int i = index; i < _amountNotes; i++)
 	{
 		_papNotes[i] = _papNotes[i + 1];
 	}
+	
 	_papNotes = realloc(_papNotes, (_amountNotes+1) * sizeof(Note*));
 }
 

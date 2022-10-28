@@ -38,7 +38,7 @@ Audio _menuMusic;
 Audio *_pMusic = 0;
 
 
-void *_pEffectsBuffer;
+float *_pEffectsBuffer;
 int _effectOffset;
 
 double _musicHead = 0, _musicSpeed = 1;
@@ -128,12 +128,11 @@ DWORD WINAPI *decodeAudio(struct decodeAudioArgs *args)
 		return NULL;
 		// exit(0);
 	}
-	int lastFrame = -1;
 	ma_decoder_get_length_in_pcm_frames(&decoder, &audioLength);
 	*args->buffer = calloc(sizeof(float) * 2 * 2, audioLength);
 	void *pCursor = *args->buffer;
 	int size = 0;
-	lastFrame = -1;
+	int lastFrame = -1;
 
 
 	while (decoder.readPointerInPCMFrames != lastFrame)
@@ -155,16 +154,13 @@ DWORD WINAPI *decodeAudio(struct decodeAudioArgs *args)
 
 void loadAudio(Audio * audio, char *file)
 {
-	static int threadIndex = 0;
-
 	audio->size = 0;
 	struct decodeAudioArgs *args = malloc(sizeof(struct decodeAudioArgs));
 	args->audioLength = &audio->size;
-	args->buffer = &audio->data;
+	args->buffer = (void*)&audio->data;
 	args->file = malloc(strlen(file) + 5);
 	strcpy(args->file, file);
 	createThread((void *(*)(void *))decodeAudio, args);
-	threadIndex++;
 }
 
 void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount)
@@ -181,13 +177,7 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 		{
 			for (int i = 0; i < frameCount * 2; i++)
 			{
-				float value = 0;
-				int sampleCount = (int)(_musicSpeed * 100);
-				// for(int j = 0; j < sampleCount; j++)
-				// {
-				value += ((float *)_pMusic->data)[(int)(i * (double)_musicSpeed + tmpFrameCount * 2)] * musicVolume;
-				// }
-				((float *)pOutput)[i] = value;
+				((float *)pOutput)[i] = _pMusic->data[(int)(i * _musicSpeed + tmpFrameCount * 2)] * musicVolume;;
 			}
 		}
 		else if (_musicLoops && _pMusic->size > 0)
@@ -198,19 +188,18 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 	{
 		for (int i = 0; i < frameCount * 2; i++)
 		{
-			((float *)pOutput)[i] += ((float *)_menuMusic.data)[i + _menuMusicFrameCount * 2] * musicVolume * (1 - _musicPlaying) * _playMenuMusic;
+			((float *)pOutput)[i] += _menuMusic.data[i + _menuMusicFrameCount * 2] * musicVolume * (1 - _musicPlaying) * _playMenuMusic;
 		}
 	}
 	if (_menuMusic.size != 0)
 		_menuMusicFrameCount = _menuMusicFrameCount % _menuMusic.size;
 	_menuMusicFrameCount += frameCount;
-	// sound effects
 
-	// int tmpFrameCount = _effectOffset + _settings.offset&
+	// sound effects
 	for (int i = 0; i < frameCount * 2; i++)
 	{
-		((float *)pOutput)[i] += ((float *)_pEffectsBuffer)[(i + _effectOffset) % (48000 * 4)] * audioEffectVolume;
-		((float *)_pEffectsBuffer)[(i + _effectOffset) % (48000 * 4)] = 0;
+		((float *)pOutput)[i] += _pEffectsBuffer[(i + _effectOffset) % (48000 * 4)] * audioEffectVolume;
+		_pEffectsBuffer[(i + _effectOffset) % (48000 * 4)] = 0;
 	}
 	_effectOffset += frameCount * 2;
 
@@ -219,7 +208,6 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 
 void audioInit()
 {
-	// todo do this smarter
 	_pEffectsBuffer = calloc(sizeof(char), EFFECT_BUFFER_SIZE); // 4 second long buffer
 	loadAudio(&_hitSe, "assets/hit.mp3");
 	loadAudio(&_missHitSe, "assets/missHit.mp3");
@@ -244,7 +232,7 @@ void audioInit()
 	_deviceConfig.playback.channels = 2;
 	_deviceConfig.sampleRate = 48000;
 	_deviceConfig.dataCallback = data_callback;
-	// _deviceConfig.periodSizeInMilliseconds = 300;
+	_deviceConfig.periodSizeInMilliseconds = 1;
 	if (ma_device_init(NULL, &_deviceConfig, &_device) != MA_SUCCESS)
 	{
 		printf("Failed to open playback device.\n");
@@ -285,7 +273,7 @@ void playAudioEffect(Audio effect)
 {
 	for (int i = 0; i < effect.size; i++)
 	{
-		((float *)_pEffectsBuffer)[(i + _effectOffset) % (48000 * 4)] += ((float *)effect.data)[i];
+		_pEffectsBuffer[(i + _effectOffset) % (48000 * 4)] += effect.data[i];
 	}
 }
 
