@@ -23,6 +23,11 @@
 TimingSegment getTimingSignature(float time);
 TimingSegment * addTimingSignature(float time, int bpm);
 void removeTimingSignature(float time);
+
+void fEditorSongSettings(bool reset);
+void fEditorTimingSettings (bool reset);
+void fEditorNoteSettings(bool reset);
+void fEditorAnimation (bool reset);
 void fEditor(bool reset);
 void removeNote(int index);
 int newNote(float time);
