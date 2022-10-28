@@ -710,6 +710,13 @@ void fEditorAnimation (bool reset)
 	ClearBackground(BLACK);
 	drawVignette();
 
+	float position = musicTimeToScreen(_musicHead);
+	DrawRectangle(0, 0, position, GetScreenHeight(), ColorAlpha(WHITE, 0.15));
+
+	float middle = GetScreenWidth()*0.5;
+	float timingHelper = GetScreenWidth()*0.005;
+	DrawRectangle(middle-timingHelper, GetScreenHeight()*0.85, timingHelper*2, GetScreenHeight(), ColorAlpha(WHITE, 0.3));
+
 	//animation :)
 	static bool timeLineSelected = false;
 	static float timeLine = 0;
