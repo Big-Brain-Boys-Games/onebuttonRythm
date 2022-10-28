@@ -36,4 +36,4 @@ target_link_directories( ${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME} raylib zip)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb -Wall")

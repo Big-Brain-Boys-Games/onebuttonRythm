@@ -88,7 +88,7 @@ float getMarginMod()
 	return value;
 }
 
-bool checkFileDropped()
+void checkFileDropped()
 {
 	if (IsFileDropped())
 	{

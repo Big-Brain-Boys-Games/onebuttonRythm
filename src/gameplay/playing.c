@@ -91,12 +91,7 @@ void fCountDown(bool reset)
 	drawBackground();
 
 	// draw notes
-	float width = GetScreenWidth() * 0.005;
-	float middle = GetScreenWidth() / 2;
-
 	dNotes();
-
-	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
 
 	// DrawRectangle(middle - width / 2, 0, width, GetScreenHeight(), (Color){.r = 255, .g = 255, .b = 255, .a = 255 / 2});
 
@@ -149,7 +144,6 @@ void fPlaying(bool reset)
 	static float hitPointTimings [HITPOINTAMOUNT] = {0}; //how off they are
 	static float hitPointsTimes [HITPOINTAMOUNT] = {0}; //when they're hit
 	static int hitPointScores [HITPOINTAMOUNT] = {0}; //score for hit
-	static float hitPointSize [HITPOINTAMOUNT] = {0}; //score for hit
 	static int hitPointsIndex = 0;
 
 	if(reset)
@@ -199,9 +193,8 @@ void fPlaying(bool reset)
 		if (_highScore < _score)
 		{
 			saveScore();
-			int tmp = 0;
-			// submitScore(_map->id, _score, &tmp);
 		}
+
 		_pGameplayFunction = &fEndScreen;
 		playAudioEffect(_finishSe);
 		_transition = 0.1;
@@ -250,9 +243,6 @@ void fPlaying(bool reset)
 
 		DrawCircle( musicTimeToScreen(_musicHead+hitPointTimings[i]), GetScreenHeight()*0.4, GetScreenWidth()*0.017, ColorAlpha(hpColor, alpha));
 	}
-
-	float width = GetScreenWidth() * 0.005;
-	float middle = GetScreenWidth() / 2;
 
 	dNotes();
 
@@ -338,24 +328,9 @@ void fPlaying(bool reset)
 				noteDist = fmin(tmp, noteDist);
 			}
 
-			float customScale = GetScreenWidth() * 0.04;
-			float maxDistance = (float)(GetScreenWidth() / _noteTex.width) / 9 / 2;
-
-			float middle = GetScreenWidth() / 2;
-			maxDistance =  maxDistance / (middle * (1 / _scrollSpeed));
-
-			maxDistance = (1/_scrollSpeed) * 0.075;
-
-			if(noteDist < maxDistance)
-			{
-				customScale = (noteDist/maxDistance) * GetScreenWidth() * 0.05;
-			}
-
-
 			hitPointTimings[hitPointsIndex] = _papNotes[closestIndex]->time - _musicHead;
 			hitPointsTimes[hitPointsIndex] = _musicHead;
 			hitPointScores[hitPointsIndex] = scoreAdded;
-			hitPointSize[hitPointsIndex] = customScale;
 			hitPointsIndex = (hitPointsIndex+1)%HITPOINTAMOUNT;
 
 			if(_papNotes[closestIndex]->custSound)
@@ -439,7 +414,6 @@ void fEndScreen(bool reset)
 
 	DrawRectangle(GetScreenWidth()*0.04, GetScreenHeight()*0.27, GetScreenWidth()*0.5, GetScreenHeight()*0.7, (Color){.r = 0, .g = 0, .b = 0, .a = 128});
 
-	int middle = GetScreenWidth() / 2;
 	// draw menu
 
 	float textSize = measureText("Finished", GetScreenWidth() * 0.15);

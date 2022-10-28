@@ -152,7 +152,6 @@ void dNotes ()
 {
 	static float fade = 0;
 	float width = GetScreenWidth() * 0.01;
-	float middle = GetScreenWidth() /2;
 	float position = musicTimeToScreen(_musicHead);
 	
 	DrawRectangle(0, GetScreenHeight()*0.35, GetScreenWidth(), GetScreenHeight()*0.3, ColorAlpha(BLACK, 0.4));
@@ -358,7 +357,6 @@ void resetBackGround()
 void drawActualBars(TimingSegment timseg)
 {
 	//Draw the bars
-	float middle = GetScreenWidth()/2;
 	double distBetweenBeats = (60.0/timseg.bpm) / _barMeasureCount;
 	if(timseg.beats < 1)
 		return;
@@ -488,7 +486,7 @@ bool drawProgressBarI(bool interActable)
 	{
 		float x = getMusicPosition()/ getMusicDuration()*GetScreenWidth();
 		float y = GetScreenHeight()*0.94;
-		if(fDistance(x, y, GetMouseX(), GetMouseY()) < GetScreenWidth()*0.03 && IsMouseButtonDown(0) || isGrabbed)
+		if((fDistance(x, y, GetMouseX(), GetMouseY()) < GetScreenWidth()*0.03 && IsMouseButtonDown(0)) || isGrabbed)
 		{
 			isGrabbed = true;
 			_musicHead = clamp(GetMouseX()/(float)GetScreenWidth()*getMusicDuration(), 0, getMusicDuration());

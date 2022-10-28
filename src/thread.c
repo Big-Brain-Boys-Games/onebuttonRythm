@@ -18,7 +18,7 @@ void createThread(DWORD WINAPI *(*func)(void *), void *args)
 {
 #ifdef __unix
     pthread_t id = 0;
-    int tmp = pthread_create(&id, NULL, func, args);
+    pthread_create(&id, NULL, func, args);
 #else
     CreateThread(NULL, 0, func, args, 0, NULL);
 #endif

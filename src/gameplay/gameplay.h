@@ -41,7 +41,7 @@ typedef struct
 
 
 void gotoMainMenu(bool mainOrSelect);
-bool checkFileDropped();
+void checkFileDropped();
 double getMusicHead();
 bool isAnyKeyDown();
 

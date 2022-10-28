@@ -56,12 +56,10 @@ void fMainMenu(bool reset)
 	float fontScale = 0.075;
 	//play button
 	Rectangle button = (Rectangle){.x = GetScreenWidth() * 0.05, .y = GetScreenHeight() * 0.25, .width = GetScreenWidth() * 0.32, .height = GetScreenWidth() * 0.32};
-	Color color = WHITE;
 	static float growTimer = 0;
 	if(mouseInRect(button))
 	{
 		growTimer += GetFrameTime() * 12;
-		color = LIGHTGRAY;
 	}else
 		growTimer -= GetFrameTime() * 12;
 
@@ -74,10 +72,8 @@ void fMainMenu(bool reset)
 
 	DrawTexturePro(_noteTex, (Rectangle){.x=0, .y=0, .width=_noteTex.width, .height=_noteTex.height}, (Rectangle){.x=button.x, .y=button.y, .width=button.width, .height=button.width}, (Vector2) {.x=0, .y=0}, 0, WHITE);
 
-	// DrawTexturePro(_noteTex, (Rectangle){.x=0, .y=0, .width=_noteTex.width, .height=_noteTex.height}, (Rectangle){.x=0, .y=0, .width=button.width, .height=button.height}, (Vector2){.x=button.x, .y=button.y}, 0, WHITE);
-	// drawBox(button, color);
+
 	fontScale *= 1.3;
-	// DrawRectangle(rect.x, rect.y, rect.width, rect.height, ColorAlpha(color, 0.5));
 	int screenSize = GetScreenWidth() > GetScreenHeight() ? GetScreenHeight() : GetScreenWidth();
 	int textSize = measureText("Play", screenSize * fontScale);
 	drawText("Play", button.x + button.width / 2 - textSize / 2, button.y + button.height*0.5-GetScreenHeight()*0.045, screenSize * fontScale, DARKGRAY);
@@ -107,7 +103,6 @@ void fMainMenu(bool reset)
 	// gigantic ass title
 	char *title = "One Button";
 	float tSize = GetScreenWidth() * 0.07;
-	int size = MeasureText(title, tSize);
 	Vector2 titlePos = (Vector2){.x=GetScreenWidth()*0.5, .y=GetScreenHeight()*0.2};
 	// dropshadow
 	drawText("One Button", titlePos.x + GetScreenWidth() * 0.004, titlePos.y + GetScreenHeight()* 0.007, tSize, ColorAlpha(BLACK, 0.4));
@@ -436,7 +431,6 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 				{
 					break;
 				}
-				char str[100];
 				strcpy(filesCaching[mapIndex], filesCaching[j]);
 				_paMaps[mapIndex] = _paMaps[j];
 				_paMaps[j] = (Map){0};
@@ -605,7 +599,6 @@ void fMapSelect(bool reset)
 		drawCursor();
 		return;
 	}
-	int middle = GetScreenWidth() / 2;
 	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight()*0.13, BLACK);
 	static float menuScroll = 0;
 	static float menuScrollSmooth = 0;
@@ -691,7 +684,6 @@ void fMapSelect(bool reset)
 			if (hoverPeriod > 1 && hoverPeriod < 2)
 			{
 				// play music
-				char str[100];
 				loadMusic(&_paMaps[i]);
 				_playMenuMusic = false;
 				_musicFrameCount = _paMaps[i].musicPreviewOffset * 48000 * 2;
@@ -958,7 +950,7 @@ void fNewMap(bool reset)
 	drawCursor();
 
 	// file dropping
-	if (IsFileDropped() || IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))
+	if (IsFileDropped() || ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))))
 	{
 		int amount = 0;
 		char **files;
@@ -1084,7 +1076,7 @@ bool mouseInRect(Rectangle rect)
 void textBox(Rectangle rect, char *str, bool *selected)
 {
 	drawButton(rect, str, 0.03);
-	if (mouseInRect(rect) && IsMouseButtonDown(0) || *selected)
+	if ((mouseInRect(rect) && IsMouseButtonDown(0)) || *selected)
 	{
 		*selected = true;
 		char c = GetCharPressed();
@@ -1145,7 +1137,7 @@ void numberBox(Rectangle rect, int *number, bool *selected)
 	char str[10];
 	snprintf(str, 10, "%i", *number);
 	drawButton(rect, str, 0.03);
-	if (mouseInRect(rect) && IsMouseButtonDown(0) || *selected)
+	if ((mouseInRect(rect) && IsMouseButtonDown(0)) || *selected)
 	{
 		*selected = true;
 		char c = GetCharPressed();

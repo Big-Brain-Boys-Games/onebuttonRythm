@@ -176,6 +176,7 @@ Map loadMapInfo(char * file)
 				if(map.beats < 1)
 					map.beats = 4; //setting it to a sensable default (0 crashes game)
 				break;
+			case fpTimeSignatures:
 			case fpNotes:
 				//neat, notes :P
 				//not needed for loadmapinfo, is used for loadmap
@@ -607,7 +608,7 @@ void loadMap ()
 
 		switch(mode)
 		{
-			case fpNone:
+			default:
 				break;
 			case fpTimeSignatures:
 				if(!_paTimingSegment)
@@ -810,7 +811,6 @@ void freeNotes()
 {
 	if(_papNotes)
 	{
-		int amountTex = 0;
 		for(int i = 0; i < _amountNotes; i++)
 		{
 			freeNote(_papNotes[i]);

@@ -138,7 +138,7 @@ DWORD WINAPI *decodeAudio(struct decodeAudioArgs *args)
 	while (decoder.readPointerInPCMFrames != lastFrame)
 	{
 		lastFrame = decoder.readPointerInPCMFrames;
-		ma_result result = ma_decoder_read_pcm_frames(&decoder, pCursor, 4096, NULL);
+		ma_decoder_read_pcm_frames(&decoder, pCursor, 4096, NULL);
 		pCursor += sizeof(float) * 2 * 4096;
 		size++;
 	}

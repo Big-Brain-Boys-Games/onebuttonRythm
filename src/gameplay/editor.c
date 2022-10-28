@@ -569,6 +569,7 @@ void fEditorNoteSettings(bool reset)
 	sprite[0] = '\0';
 	if (_selectedNotes[0]->texture_File != 0)
 		snprintf(sprite, 100, "%s", _selectedNotes[0]->texture_File);
+	
 	static bool spriteBoxSelected = false;
 	Rectangle spriteBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.1, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
 	textBox(spriteBox, sprite, &spriteBoxSelected);
@@ -606,7 +607,6 @@ void fEditorNoteSettings(bool reset)
 	{
 		snprintf(health, 10, "%i", (int)(_selectedNotes[0]->health));
 	}
-	else snprintf(health, 10, "-", "%c");
 	
 	static bool healthBoxSelected = false;
 	Rectangle healthBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.2, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};

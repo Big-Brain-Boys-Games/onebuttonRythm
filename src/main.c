@@ -50,7 +50,6 @@ int main(int argc, char **argv)
 	
 	_pGameplayFunction = &fIntro;
 	_transition = 1;
-	float loadTimer = 0;
 	while (!WindowShouldClose())
 	{
 		lockLoadingMutex();	
