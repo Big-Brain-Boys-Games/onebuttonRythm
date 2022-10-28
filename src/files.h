@@ -1,10 +1,14 @@
 #ifndef GAME_FILE_HANDLING
 #define GAME_FILE_HANDLING
 
+
+
 #include <stdbool.h>
 #include "../deps/raylib/src/raylib.h"
 
-struct Map{
+#include "audio.h"
+
+typedef struct Map{
 	int id;
 	char * folder;
 	char * name;
@@ -18,26 +22,15 @@ struct Map{
 	float musicPreviewOffset;
 	char * imageFile;
 	char * musicFile;
-	void * music;
-	int musicLengthFrames;
+	Audio music;
 	int musicLength;
 	Texture2D image;
 	Image cpuImage;
-};
-typedef struct Map Map;
+} Map;
 
-typedef struct{
-	char * file;
-	Texture texture;
-	int uses;
-}CustomTexture;
-
-typedef struct{
-	char * file;
-	void * sound;
-	int length;
-	int uses;
-}CustomSound;
+#ifdef EXTERN_FILES
+extern Map * _paMaps;
+#endif
 
 struct Settings{
 	int zoom;

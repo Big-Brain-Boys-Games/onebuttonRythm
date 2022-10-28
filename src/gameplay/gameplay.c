@@ -11,59 +11,35 @@
 #include "../deps/raylib/src/raylib.h"
 
 
-
-
-#include "../drawing.h"
+#define EXTERN_MAIN
+#define EXTERN_MENUS
+#define EXTERN_AUDIO
 
 #include "gameplay.h"
+
+#include "../drawing.h"
+#include "../main.h"
+#include "../audio.h"
+
 #include "playing.h"
 #include "menus.h"
 
 
 
-extern bool _musicPlaying;
-extern bool _musicLoops, _playMenuMusic;
-extern double _musicHead;
-extern void *_pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE, **_pMusic;
-extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size, _musicFrameCount, *_musicLength;
-extern double _musicSpeed, *_musicPreviewOffset;
-
-extern bool _disableLoadingScreen;
-
-
-extern int _loading;
-
-extern Map *_paMaps;
-extern char _playerName[100];
-
-extern Modifier _mods[];
-extern Modifier *_activeMod[100];
-
-
-
-
 Map *_map;
 
-int _noteIndex = 0, _amountNotes = 0;
+int _noteIndex = 0, _amountNotes = 0, _notesMissed = 0;
 
-float _scrollSpeed = 0.6;
-float _maxMargin = 0.1;
-
-
-
-int _notesMissed = 0;
-float _averageAccuracy = 0;
+float _scrollSpeed = 0.6, _maxMargin = 0.1, _averageAccuracy = 0;
 int _highScore, _score, _combo, _highestCombo, _highScoreCombo;
 bool _noBackground = false;
 
 Note ** _papNotes = 0;
 
-
 Settings _settings = (Settings){.volumeGlobal = 50, .volumeMusic = 100, .volumeSoundEffects = 100, .zoom = 7, .offset = 0};
 
 void (*_pNextGameplayFunction)(bool);
 void (*_pGameplayFunction)(bool);
-
 
 char _notfication[100];
 

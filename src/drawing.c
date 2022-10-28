@@ -8,9 +8,16 @@
 #include "../deps/raylib/src/raylib.h"
 
 
-#include "files.h"
+#define EXTERN_MAIN
+#define EXTERN_GAMEPLAY
+#define EXTERN_AUDIO
+#define EXTERN_EDITOR
+
 #include "drawing.h"
+
 #include "audio.h"
+#include "files.h"
+#include "main.h"
 
 #include "gameplay/editor.h"
 #include "gameplay/gameplay.h"
@@ -29,21 +36,6 @@ Font _font;
 Color _UIColor = WHITE;
 
 Color _fade = WHITE;
-
-extern double _musicHead;
-extern float _scrollSpeed;
-extern Note ** _papNotes;
-extern int _noteIndex, _amountNotes, _clickPressSE_Size, _clickReleaseSE_Size;
-extern bool _noBackground, _isKeyPressed;
-extern void ** _pMusic, *_pClickPress, *_pClickRelease;
-extern float _transition, _loadingFade;
-extern Map * _map;
-extern int _barMeasureCount;
-extern void (*_pGameplayFunction)(bool);
-extern bool _musicPlaying;
-
-extern TimingSegment * _paTimingSegment;
-extern int _amountTimingSegments;
 
 
 int measureText (char * text, int fontSize)
@@ -94,11 +86,11 @@ void drawCursor ()
 	if(IsMouseButtonPressed(0))
 	{
 		printf("pressed \n");
-		playAudioEffect(_pClickPress, _clickPressSE_Size);
+		playAudioEffect(_clickPressSe);
 	}else if(IsMouseButtonReleased(0))
 	{
 		printf("released \n");
-		playAudioEffect(_pClickRelease, _clickReleaseSE_Size);
+		playAudioEffect(_clickReleaseSe);
 	}
 	if(IsMouseButtonDown(0))
 	{
@@ -444,7 +436,7 @@ void drawBars()
 
 void drawMusicGraph(float transparent)
 {
-	if(_pMusic == 0 || *_pMusic == 0)
+	if(!_pMusic || !_pMusic->size || !_pMusic->data)
 		return;
 	
 	//music stuff
@@ -464,8 +456,8 @@ void drawMusicGraph(float transparent)
 		float highest = 0;
 		int sampleHead = sampleBegin + samplesPerBar*i;
 		for(int j = 0; j < samplesPerBar; j++)
-			if(sampleHead+j > 0 && fabs(((float*)*_pMusic)[sampleHead+j]) > highest)
-				highest = fabs(((float*)*_pMusic)[sampleHead+j]);
+			if(sampleHead+j > 0 && fabs(((float*)_pMusic->data)[sampleHead+j]) > highest)
+				highest = fabs(((float*)_pMusic->data)[sampleHead+j]);
 
 		DrawRectangle(i*pixelsPerBar, GetScreenHeight()-highest*scaleBar, pixelsPerBar, highest*scaleBar, ColorAlpha(WHITE, transparent));
 	}

@@ -3,6 +3,12 @@
 
 #include "../deps/raylib/src/raylib.h"
 
+
+#define EXTERN_GAMEPLAY
+#define EXTERN_AUDIO
+#define EXTERN_MAIN
+
+#include "recording.h"
 #include "menus.h"
 #include "gameplay.h"
 #include "editor.h"
@@ -10,14 +16,8 @@
 #include "../drawing.h"
 #include "../audio.h"
 #include "../files.h"
+#include "../main.h"
 
-extern void (*_pNextGameplayFunction)(bool);
-extern void (*_pGameplayFunction)(bool);
-
-
-extern double _musicHead;
-extern bool _isKeyPressed;
-extern int _amountNotes;
 
 void fRecording(bool reset)
 {

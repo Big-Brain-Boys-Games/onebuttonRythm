@@ -2,7 +2,37 @@
 #define GAME_AUDIO_INTERFACE
 
 #include <stdbool.h>
+
+typedef struct Audio
+{
+    void * data;
+    int size;
+} Audio;
+
 #include "files.h"
+
+
+
+#ifdef EXTERN_AUDIO
+    extern double _musicHead, _musicSpeed;
+    extern bool _musicPlaying, _musicLoops, _playMenuMusic;
+
+    extern int _musicFrameCount;
+    extern float _musicPreviewOffset;
+
+    extern Audio _hitSe;
+    extern Audio _missHitSe;
+    extern Audio _missSe;
+    extern Audio _buttonSe;
+    extern Audio _clickPressSe;
+    extern Audio _clickReleaseSe;
+    extern Audio _failSe;
+    extern Audio _finishSe;
+    extern Audio _menuMusic;
+
+    extern Audio *_pMusic;
+
+#endif
 
 int getSamplePosition(float time);
 float getMusicDuration();
@@ -14,9 +44,9 @@ void setMusicStart();
 void randomMusicPoint();
 void audioInit();
 void loadMusic(Map *map);
-void loadAudio(void **buffer, char *file, int *audioLength);
+void loadAudio(Audio * audio, char *file);
 bool endOfMusic();
-void playAudioEffect(void *effect, int size);
+void playAudioEffect(Audio audio);
 void startMusic();
 void stopMusic();
 void setMusicFrameCount();
