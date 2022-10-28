@@ -293,7 +293,7 @@ void fPause(bool reset)
 	}
 	if (_pNextGameplayFunction == &fEditor && interactableButton("Save", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.5, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
 	{
-		saveFile(_amountNotes);
+		saveMap();
 		_pGameplayFunction = _pNextGameplayFunction;
 		// gotoMainMenu(false);
 	}
@@ -893,7 +893,8 @@ void fNewMap(bool reset)
 		newMap.folder = malloc(100);
 		strcpy(newMap.folder, newMap.name);
 		_map = &newMap;
-		saveFile(0);
+		freeNotes();
+		saveMap();
 		printf("map : %s\n", newMap.name);
 		loadMap();
 		_noBackground = 0;

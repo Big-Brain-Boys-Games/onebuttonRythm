@@ -49,7 +49,7 @@ enum SettingsPart{spNone, spName, spZoom, spVolGlobal, spVolMusic, spVolSE, spOf
 
 void initFolders();
 Map loadMapInfo(char * file);
-void saveFile (int noteAmount);
+void saveMap ();
 void loadMap();
 void unloadMap();
 void freeMap(Map * map);

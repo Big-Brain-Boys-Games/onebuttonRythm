@@ -47,7 +47,7 @@ void fRecording(bool reset)
 	drawProgressBar();
 	if (endOfMusic())
 	{
-		saveFile(_amountNotes);
+		saveMap();
 		unloadMap();
 		gotoMainMenu(true);
 	}

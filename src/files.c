@@ -239,7 +239,7 @@ void freeMap(Map * map)
 	map->id = 0;
 }
 
-void saveFile (int noteAmount)
+void saveMap ()
 {
 	char str [100];
 	strcpy(str, "maps/");
@@ -286,7 +286,7 @@ void saveFile (int noteAmount)
 
 	fprintf(pFile, "[Notes]\n");
 	
-	for(int i = 0; i < noteAmount; i++)
+	for(int i = 0; i < _amountNotes; i++)
 	{
 		if(_papNotes[i]->time == 0)
 			continue;
@@ -610,7 +610,6 @@ void loadMap ()
 			case fpNone:
 				break;
 			case fpTimeSignatures:
-				printf("_paTimingSemgent %d\n", _paTimingSegment);
 				if(!_paTimingSegment)
 				{
 					_paTimingSegment = malloc(sizeof(TimingSegment));
@@ -621,7 +620,7 @@ void loadMap ()
 					_amountTimingSegments++;
 					_paTimingSegment = realloc(_paTimingSegment, sizeof(TimingSegment) * _amountTimingSegments);
 				}
-				printf("amountTimingSegments %i\n", _amountTimingSegments);
+				
 				_paTimingSegment[_amountTimingSegments-1].time = atof(line);
 
 				char * partLine = &(line[0]);
