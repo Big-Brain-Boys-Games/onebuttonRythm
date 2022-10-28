@@ -275,7 +275,7 @@ void saveMap ()
 	fprintf(pFile, "[MusicPreviewOffset]\n");
 	fprintf(pFile, "%f\n", _map->musicPreviewOffset);
 	fprintf(pFile, "[Beats]\n");
-	fprintf(pFile, "%f\n", _map->beats);
+	fprintf(pFile, "%d\n", _map->beats);
 
 	fprintf(pFile, "[TimeSignatures]\n");
 	
@@ -620,7 +620,7 @@ void loadMap ()
 					_amountTimingSegments++;
 					_paTimingSegment = realloc(_paTimingSegment, sizeof(TimingSegment) * _amountTimingSegments);
 				}
-				
+
 				_paTimingSegment[_amountTimingSegments-1].time = atof(line);
 
 				char * partLine = &(line[0]);
@@ -702,10 +702,10 @@ void loadMap ()
 						{
 							printf("found sound %s\n", tmpStr);
 							//found hit sound
-							char fullPath [100];
-							snprintf(fullPath, 100, "maps/%s/%s", _map->folder, tmpStr);
+							char fullPath [200];
+							snprintf(fullPath, 200, "maps/%s/%s", _map->folder, tmpStr);
 							_papNotes[_noteIndex]->custSound = addCustomSound(fullPath);
-							_papNotes[_noteIndex]->hitSE_File = malloc(100*sizeof(char));
+							_papNotes[_noteIndex]->hitSE_File = malloc(200*sizeof(char));
 							strcpy(_papNotes[_noteIndex]->hitSE_File, tmpStr);
 						}else if(strcmp(ext, ".jpg") == 0 || strcmp(ext, ".png")  == 0 || strcmp(ext, ".jpeg") == 0)
 						{
@@ -822,7 +822,6 @@ void freeNotes()
 	}
 	if(_paTimingSegment)
 	{
-		printf("%d\n", _paTimingSegment);
 		free(_paTimingSegment);
 		_paTimingSegment = 0;
 		_amountTimingSegments = 0;
@@ -832,11 +831,12 @@ void freeNotes()
 void saveScore()
 {
 	FILE * file;
-	char str [100];
-	snprintf(str, 100, "scores/%s", _map->name);
+	char str [200];
+	snprintf(str, 200, "scores/%s", _map->name);
 	if(!DirectoryExists(str))
 		mkdir(str);
-	snprintf(str, 100, "scores/%s/%s", _map->name, _playerName);
+	
+	snprintf(str, 200, "scores/%s/%s", _map->name, _playerName);
 	file = fopen(str, "w");
 	fprintf(file, "%i %i %f", _score, _highestCombo, _averageAccuracy);
 	fclose(file);
@@ -847,8 +847,8 @@ bool readScore(Map * map, int *score, int * combo, float * accuracy)
 	*score = 0;
 	*combo = 0;
 	FILE * file;
-	char str [100];
-	snprintf(str, 100, "scores/%s/%s", map->name, _playerName);
+	char str [200];
+	snprintf(str, 200, "scores/%s/%s", map->name, _playerName);
 
 	if(!DirectoryExists("scores/"))
 		return false;
