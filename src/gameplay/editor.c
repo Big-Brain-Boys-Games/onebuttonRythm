@@ -545,6 +545,21 @@ void fEditorNoteSettings(bool reset)
 		//apply changes to first note to all selected notes
 		printf("applying to all selected notes\n");
 		Note * firstNote = _selectedNotes[0];
+
+		char path[100];
+
+		if(firstNote->texture_File)
+		{
+			snprintf(path, 100, "maps/%s/%s", _map->folder, firstNote->texture_File);
+			firstNote->custTex = addCustomTexture(path);
+		}
+		
+		if(firstNote->hitSE_File)
+		{
+			snprintf(path, 100, "maps/%s/%s", _map->folder, firstNote->hitSE_File);
+			firstNote->custSound = addCustomSound(firstNote->hitSE_File);
+		}
+
 		for(int i = 1; i < _amountSelectedNotes; i++)
 		{
 			if(firstNote->anim != 0 && firstNote->animSize > 0)
@@ -561,6 +576,32 @@ void fEditorNoteSettings(bool reset)
 					_selectedNotes[i]->anim[key] = firstNote->anim[key];
 				}
 			}
+			
+			if(firstNote->custSound != 0 && firstNote->custSound != _selectedNotes[i]->custSound)
+			{
+				if(_selectedNotes[i]->custSound != 0)
+				{
+					removeCustomSound(_selectedNotes[i]->hitSE_File);
+					freeArray(_selectedNotes[i]->hitSE_File);
+				}
+				_selectedNotes[i]->hitSE_File = malloc(strlen(firstNote->hitSE_File)+1);
+				strcpy(_selectedNotes[i]->hitSE_File, firstNote->hitSE_File);
+				_selectedNotes[i]->custSound = addCustomSound(firstNote->custSound->file);
+			}
+
+			if(firstNote->custTex != 0 && firstNote->custTex != _selectedNotes[i]->custTex)
+			{
+				if(_selectedNotes[i]->custTex != 0)
+				{
+					removeCustomTexture(_selectedNotes[i]->texture_File);
+					freeArray(_selectedNotes[i]->texture_File);
+				}
+				_selectedNotes[i]->texture_File = malloc(strlen(firstNote->texture_File)+1);
+				strcpy(_selectedNotes[i]->texture_File, firstNote->texture_File);
+				_selectedNotes[i]->custTex = addCustomTexture(firstNote->custTex->file);
+			}
+
+			_selectedNotes[i]->health = firstNote->health;
 		}
 		return;
 	}

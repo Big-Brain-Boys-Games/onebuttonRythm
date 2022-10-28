@@ -328,7 +328,7 @@ int _customSoundsSize = 0;
 
 CustomTexture * addCustomTexture(char * file)
 {
-	if(file == 0 || !strlen(file))
+	if(file == 0 || !strlen(file) || !FileExists(file))
 	{
 		printf("addCustomTexture got empty file\n");
 		return 0; // >:(
@@ -426,7 +426,7 @@ void freeAllCustomTextures ()
 
 CustomSound * addCustomSound(char * file)
 {
-	if(file == 0 || !strlen(file))
+	if(file == 0 || !strlen(file) || !FileExists(file))
 	{
 		printf("addCustomSound got empty file\n");
 		return 0; // >:(
