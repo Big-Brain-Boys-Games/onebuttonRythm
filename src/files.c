@@ -338,7 +338,7 @@ CustomTexture * addCustomTexture(char * file)
 		_customTexturesSize++;
 		_paCustomTextures = malloc(_customTexturesSize*sizeof(CustomTexture));
 		_paCustomTextures[0] = malloc(sizeof(CustomTexture));
-		_paCustomTextures[0]->file = malloc(strlen(file));
+		_paCustomTextures[0]->file = malloc(strlen(file)+1);
 		strcpy(_paCustomTextures[0]->file, file);
 		_paCustomTextures[0]->texture = LoadTexture(file);
 		_paCustomTextures[0]->uses = 1;
@@ -436,7 +436,7 @@ CustomSound * addCustomSound(char * file)
 		_customSoundsSize++;
 		_paCustomSounds = malloc(_customSoundsSize*sizeof(CustomSound));
 		_paCustomSounds[0] = malloc(sizeof(CustomSound));
-		_paCustomSounds[0]->file = malloc(strlen(file));
+		_paCustomSounds[0]->file = malloc(strlen(file)+1);
 		strcpy(_paCustomSounds[0]->file, file);
 		loadAudio(&_paCustomSounds[0]->sound, file);
 		_paCustomSounds[0]->uses = 1;
