@@ -1,4 +1,19 @@
+#ifndef GAME_MENUS
+#define GAME_MENUS
+
 #include "../deps/raylib/src/raylib.h"
+
+#include "gameplay.h"
+
+#ifdef EXTERN_MENUS
+
+    extern Modifier *_activeMod[100];
+
+    extern Modifier _mods[];
+
+    extern bool _mapRefresh;
+
+#endif
 
 
 void fPause(bool reset);
@@ -15,3 +30,5 @@ void fNewMap(bool reset);
 void fMapSelect(bool reset);
 void fExport(bool reset);
 void fIntro(bool reset);
+
+#endif

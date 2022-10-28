@@ -9,7 +9,15 @@
 
 #include "../deps/raylib/src/raylib.h"
 
+
+#define EXTERN_MAIN
+#define EXTERN_GAMEPLAY
+#define EXTERN_DRAWING
+#define EXTERN_AUDIO
+#define EXTERN_FILES
+
 #include "menus.h"
+
 #include "gameplay.h"
 #include "playing.h"
 #include "recording.h"
@@ -18,21 +26,7 @@
 #include "../files.h"
 #include "../drawing.h"
 #include "../thread.h"
-
-extern bool _musicLoops, _musicPlaying, _playMenuMusic, _disableLoadingScreen, _noBackground;
-extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
-extern void *_pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE, **_pMusic;
-extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size, _musicFrameCount, *_musicLength;
-extern Settings _settings;
-extern float _transition;
-extern double _musicHead, _musicSpeed;
-extern int _amountNotes, _noteIndex, _loading;
-extern void (*_pNextGameplayFunction)(bool);
-extern void (*_pGameplayFunction)(bool);
-extern Map *_paMaps;
-extern Map *_map;
-extern char _playerName[100];
-extern char _notfication[100];
+#include "../main.h"
 
 
 Modifier *_activeMod[100] = {0}; // we dont even have that many
@@ -90,7 +84,7 @@ void fMainMenu(bool reset)
 
 	if (IsMouseButtonReleased(0) && mouseInRect(button))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		playAudioEffect(_buttonSe);
 		printf("switching to playing map!\n");
 		_pNextGameplayFunction = &fPlaying;
 		_pGameplayFunction = &fMapSelect;
@@ -698,7 +692,6 @@ void fMapSelect(bool reset)
 			{
 				// play music
 				char str[100];
-				_musicLength = 0;
 				loadMusic(&_paMaps[i]);
 				_playMenuMusic = false;
 				_musicFrameCount = _paMaps[i].musicPreviewOffset * 48000 * 2;
@@ -782,7 +775,7 @@ void fMapSelect(bool reset)
 
 			if (IsMouseButtonReleased(0) && mouseInRect(mapButton) && mouseInRect(mapSelectRect))
 			{
-				playAudioEffect(_pButtonSE, _buttonSE_Size);
+				playAudioEffect(_buttonSe);
 				selectedMap = i;
 				selectMapTransition = 0;
 				hoverPeriod = 0;
@@ -1203,7 +1196,7 @@ bool interactableButton(char *text, float fontScale, float x, float y, float wid
 
 	if (IsMouseButtonReleased(0) && mouseInRect(button))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		playAudioEffect(_buttonSe);
 		return true;
 	}
 	return false;
@@ -1216,7 +1209,7 @@ bool interactableButtonNoSprite(char *text, float fontScale, float x, float y, f
 
 	if (IsMouseButtonReleased(0) && mouseInRect(button))
 	{
-		playAudioEffect(_pButtonSE, _buttonSE_Size);
+		playAudioEffect(_buttonSe);
 		return true;
 	}
 	return false;

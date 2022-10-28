@@ -1,3 +1,6 @@
+#ifndef THREADS
+#define THREADS
+
 struct thread;
 typedef struct thread thread;
 
@@ -14,3 +17,5 @@ void LoadingMutexInit();
 void lockLoadingMutex();
 
 void unlockLoadingMutex();
+
+#endif

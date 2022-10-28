@@ -2,10 +2,29 @@
 #define GAME_DRAW_OBJECTS
 
 // #include "shared.h"
-#include "files.h"
+#include "audio.h"
 // #include "gameplay.h"
 
 #include "../deps/raylib/src/raylib.h"
+
+
+#ifdef EXTERN_DRAWING
+
+    extern Texture2D _cursorTex;
+    extern Texture2D _noteTex;
+    extern Texture2D _healthBarTex;
+    extern Texture2D _heartTex;
+    extern Texture2D _background, _menuBackground;
+    extern Texture2D _buttonTile[3][3];
+
+    extern Font _font;
+
+    extern Color _UIColor;
+
+    extern Color _fade;
+
+#endif
+
 
 int measureText(char *text, int fontSize);
 void drawText(char *str, int x, int y, int fontSize, Color color);

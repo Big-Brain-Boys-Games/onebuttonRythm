@@ -3,36 +3,23 @@
 #include <math.h>
 #include <string.h>
 
+#define EXTERN_FILES
+#define EXTERN_AUDIO
+#define EXTERN_GAMEPLAY
+#define EXTERN_MAIN
+#define EXTERN_DRAWING
+
+
+#include "editor.h"
 
 #include "playing.h"
 #include "menus.h"
-#include "editor.h"
 #include "gameplay.h"
 
 #include "../files.h"
 #include "../drawing.h"
 #include "../audio.h"
-
-extern Note ** _papNotes;
-extern int _noteIndex, _amountNotes;
-extern Map *_map;
-extern int *_musicLength;
-extern double _musicHead, _musicSpeed;
-extern float _scrollSpeed;
-extern bool _musicPlaying, _musicLoops;
-
-extern void (*_pNextGameplayFunction)(bool);
-extern void (*_pGameplayFunction)(bool);
-
-extern bool _isKeyPressed, _disableLoadingScreen;
-
-extern float _maxMargin;
-
-extern void *_pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE, **_pMusic;
-extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size, _musicFrameCount, *_musicLength;
-
-extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
-
+#include "../main.h"
 
 
 bool _showSettings = false;
@@ -40,8 +27,6 @@ bool _showNoteSettings = false;
 bool _showAnimation = false;
 bool _showTimingSettings = false;
 
-
-// Timestamp of all the notes
 TimingSegment * _paTimingSegment = 0;
 int _amountTimingSegments = 0;
 
@@ -386,7 +371,7 @@ void editorSettings()
 		Rectangle musicPreviewOffsetBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.42, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
 		textBox(musicPreviewOffsetBox, musicPreviewOffset, &musicPreviewOffsetBoxSelected);
 		_map->musicPreviewOffset = atoi(musicPreviewOffset) / 1000.0;
-		_map->musicPreviewOffset = fmin(fmax(_map->musicPreviewOffset, 0), *_musicLength);
+		_map->musicPreviewOffset = fmin(fmax(_map->musicPreviewOffset, 0), _pMusic->size);
 
 		// difficulty setting
 		char difficulty[10] = {0};
@@ -997,9 +982,9 @@ void fEditor(bool reset)
 		if (_amountNotes > 0 && _noteIndex < _amountNotes && getMusicHead() > _papNotes[_noteIndex]->time)
 		{
 			if(_papNotes[_noteIndex]->custSound)
-				playAudioEffect(_papNotes[_noteIndex]->custSound->sound, _papNotes[_noteIndex]->custSound->length);
+				playAudioEffect(_papNotes[_noteIndex]->custSound->sound);
 			else
-				playAudioEffect(_pHitSE, _hitSE_Size);
+				playAudioEffect(_hitSe);
 
 			_noteIndex++;
 			while(_noteIndex < _amountNotes -1 && getMusicHead() > _papNotes[_noteIndex]->time)

@@ -1,39 +1,37 @@
 
-#include "files.h"
-
 #include <stdbool.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "../deps/raylib/src/raylib.h"
 #include "windowsDefs.h"
 #include "../deps/zip/src/zip.h"
 
-// #include "gameplay.h"
+
+#define EXTERN_DRAWING
+#define EXTERN_GAMEPLAY
+#define EXTERN_EDITOR
+#define EXTERN_AUDIO
+#define EXTERN_MAIN
+#define EXTERN_MENUS
+
 #include "audio.h"
+#include "files.h"
+#include "drawing.h"
+#include "main.h"
+
+#include "gameplay/gameplay.h"
+#include "gameplay/menus.h"
+#include "gameplay/editor.h"
+
+
 
 #ifdef __unix
 #include <sys/stat.h>
 #define mkdir(dir) mkdir(dir, 0777)
 #endif
-
-
-extern Texture2D _background, _menuBackground, _noteTex;
-extern Note ** _papNotes;
-extern float _scrollSpeed;
-extern Map *_map;
-extern int _amountNotes, _noteIndex, _score, _highestCombo;
-extern bool _noBackground, _mapRefresh;
-extern Settings _settings;
-extern void ** _pMusic;
-extern void *_pHitSE;
-extern int _hitSE_Size;
-extern float _averageAccuracy;
-extern char _playerName[100];
-
-extern TimingSegment * _paTimingSegment;
-extern int _amountTimingSegments;
 
 Map * _paMaps = 0;
 
@@ -64,7 +62,8 @@ Map loadMapInfo(char * file)
 	map.folder = malloc(100);
 	map.musicLength = 0;
 	map.musicFile = 0;
-	map.music = 0;
+	map.music.size = 0;
+	map.music.data = 0;
 	map.beats = 4;
 	strcpy(map.folder, file);
 	char * pStr = malloc(strlen(mapStr) + 30);
@@ -232,7 +231,8 @@ void freeMap(Map * map)
 	freeArray(map->folder);
 	freeArray(map->imageFile);
 	freeArray(map->musicFile);
-	freeArray(map->music);
+	freeArray(map->music.data);
+	map->music.size = 0;
 	map->bpm = 0;
 	map->difficulty = 0;
 	map->zoom = 7;
@@ -440,7 +440,7 @@ CustomSound * addCustomSound(char * file)
 		_paCustomSounds[0] = malloc(sizeof(CustomSound));
 		_paCustomSounds[0]->file = malloc(strlen(file));
 		strcpy(_paCustomSounds[0]->file, file);
-		loadAudio(&_paCustomSounds[0]->sound, file, &_paCustomSounds[0]->length);
+		loadAudio(&_paCustomSounds[0]->sound, file);
 		_paCustomSounds[0]->uses = 1;
 
 		return _paCustomSounds[0];
@@ -461,7 +461,7 @@ CustomSound * addCustomSound(char * file)
 			_paCustomSounds = realloc(_paCustomSounds, (_customSoundsSize+1) * sizeof(CustomSound));
 			_paCustomSounds[_customSoundsSize] = malloc(sizeof(CustomSound));
 			_paCustomSounds[_customSoundsSize]->file = file;
-			loadAudio(&_paCustomSounds[found]->sound, file, &_paCustomSounds[found]->length);
+			loadAudio(&_paCustomSounds[found]->sound, file);
 			_paCustomSounds[_customSoundsSize]->uses = 1;
 			_customSoundsSize++;
 			return _paCustomSounds[_customSoundsSize-1];
@@ -496,8 +496,8 @@ void removeCustomSound(char * file)
 	if(_paCustomSounds[index]->uses <= 0)
 	{
 		//free music
-		free(_paCustomSounds[index]->sound);
-		free(_paCustomSounds[index]->file);
+		freeArray(_paCustomSounds[index]->sound.data);
+		freeArray(_paCustomSounds[index]->file);
 		free(_paCustomSounds[index]);
 		_customSoundsSize--;
 		for(int i = index; i < _customSoundsSize; i++)
@@ -514,8 +514,8 @@ void freeAllCustomSounds ()
 	{
 		for(int i = 0; i < _customSoundsSize; i++)
 		{
-			free(_paCustomSounds[i]->file);
-			free(_paCustomSounds[i]->sound);
+			freeArray(_paCustomSounds[i]->file);
+			freeArray(_paCustomSounds[i]->sound.data);
 			free(_paCustomSounds[i]);
 		}
 		free(_paCustomSounds);
@@ -553,7 +553,7 @@ void loadMap ()
 		_noBackground = 1;
 
 	// ma_result result
-	if(_map->music==0)
+	if(_map->music.data==0 || _map->music.size == 0)
 		loadMusic(_map);
 	_pMusic = &_map->music;
 	_map->musicLength = (int)getMusicDuration();

@@ -6,57 +6,22 @@
 
 #include "../deps/raylib/src/raylib.h"
 
-#include "../files.h"
-#include "../drawing.h"
-#include "../audio.h"
+
+#define EXTERN_AUDIO
+#define EXTERN_DRAWING
+#define EXTERN_GAMEPLAY
+#define EXTERN_MAIN
 
 #include "playing.h"
+
+#include "../drawing.h"
+#include "../audio.h"
+#include "../main.h"
+
 #include "editor.h"
 #include "menus.h"
 #include "recording.h"
 #include "gameplay.h"
-
-
-extern double _musicHead, _musicSpeed;
-extern bool _musicPlaying, _musicLoops;
-extern float _transition;
-
-extern void *_pFailSE;
-extern int _failSE_Size;
-
-extern void *_pFinishSE;
-extern int _finishSE_Size;
-
-extern void *_pHitSE, *_pMissHitSE, *_pMissSE, *_pButtonSE, **_pMusic;
-extern int _hitSE_Size, _missHitSE_Size, _missSE_Size, _buttonSE_Size, _musicFrameCount, *_musicLength;
-
-extern bool _isKeyPressed, _disableLoadingScreen;
-
-extern Color _fade;
-extern Texture2D _noteTex, _background, _heartTex, _healthBarTex;
-
-extern void (*_pNextGameplayFunction)(bool);
-extern void (*_pGameplayFunction)(bool);
-
-
-extern int _noteIndex, _notesMissed;
-
-extern int _highScore, _score, _combo, _highestCombo, _highScoreCombo;
-
-
-extern float _averageAccuracy, _scrollSpeed;
-extern int _amountNotes;
-
-extern Map * _map;
-extern Settings _settings;
-
-extern Note ** _papNotes;
-
-extern float _maxMargin;
-
-extern bool _noBackground;
-
-
 
 
 float _health = 50;
@@ -238,7 +203,7 @@ void fPlaying(bool reset)
 			// submitScore(_map->id, _score, &tmp);
 		}
 		_pGameplayFunction = &fEndScreen;
-		playAudioEffect(_pFinishSE, _finishSE_Size);
+		playAudioEffect(_finishSe);
 		_transition = 0.1;
 		return;
 	}
@@ -309,7 +274,7 @@ void fPlaying(bool reset)
 		feedback("miss!", 1.3 - _health / 100);
 		_health -= _missPenalty * getHealthMod() * _papNotes[_noteIndex]->health;
 		_combo = 0;
-		playAudioEffect(_pMissSE, _missSE_Size);
+		playAudioEffect(_missSe);
 	}
 
 	if (_isKeyPressed && _noteIndex < _amountNotes)
@@ -394,9 +359,9 @@ void fPlaying(bool reset)
 			hitPointsIndex = (hitPointsIndex+1)%HITPOINTAMOUNT;
 
 			if(_papNotes[closestIndex]->custSound)
-				playAudioEffect(_papNotes[closestIndex]->custSound->sound, _papNotes[closestIndex]->custSound->length);
+				playAudioEffect(_papNotes[closestIndex]->custSound->sound);
 			else	
-				playAudioEffect(_pHitSE, _hitSE_Size);
+				playAudioEffect(_hitSe);
 		}
 		else
 		{
@@ -404,7 +369,7 @@ void fPlaying(bool reset)
 			feedback("miss!", 1.3 - _health / 100);
 			_combo = 0;
 			_health -= _missPenalty * getHealthMod() * _papNotes[_noteIndex]->health;
-			playAudioEffect(_pMissHitSE, _missHitSE_Size);
+			playAudioEffect(_missHitSe);
 			_notesMissed++;
 		}
 		ClearBackground(BLACK);
@@ -436,7 +401,7 @@ void fPlaying(bool reset)
 		// goto fFail
 		stopMusic();
 		_pGameplayFunction = &fFail;
-		playAudioEffect(_pFailSE, _failSE_Size);
+		playAudioEffect(_failSe);
 		_transition = 0.1;
 	}
 	drawVignette();

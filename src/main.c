@@ -7,22 +7,23 @@
 // #include "include/miniaudio.h"
 #include "../deps/raylib/src/raylib.h"
 
+
+#define EXTERN_GAMEPLAY
+#define EXTERN_MENUS
+#define EXTERN_DRAWING
+
+#include "main.h"
+#include "audio.h"
 #include "files.h"
 #include "shared.h"
 #include "drawing.h"
 #include "thread.h"
-#include "audio.h"
+
+
 
 #include "gameplay/menus.h"
 #include "gameplay/gameplay.h"
 
-
-extern Texture2D _heartTex, _healthBarTex, _noteTex, _cursorTex, _background, _menuBackground;
-extern void *_pEffectsBuffer, *_pHitSE, *_pMissHitSE, *_pMissSE;
-extern int _hitSE_Size, _missHitSE_Size, _missSE_Size;
-extern void (*_pGameplayFunction)(bool);
-extern Font _font;
-extern bool _mapRefresh;
 
 bool _disableLoadingScreen = false;
 int _loading = 0;

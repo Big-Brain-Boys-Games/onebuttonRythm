@@ -1,13 +1,17 @@
-#include "files.h"
-#include "shared.h"
 #include <stdbool.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-extern Note ** _papNotes;
-extern int _amountNotes;
+
+#define EXTERN_GAMEPLAY
+
+// #include "shared.h"
+
+#include "audio.h"
+#include "gameplay/gameplay.h"
+
 
 float noLessThanZero(float var)
 {
