@@ -74,7 +74,7 @@ Map loadMapInfo(char * file)
 	{
 		free(pStr);
 		printf("map.data doesn't exist\n");
-		return (Map){.name=0};
+		return (Map){0};
 	}
 	FILE * f;
 	f = fopen(pStr, "r");
