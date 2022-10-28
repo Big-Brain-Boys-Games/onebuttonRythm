@@ -673,7 +673,7 @@ void loadMap ()
 						strPos++;
 					}
 					//Loading files
-					char * ext = GetFileExtension(tmpStr);
+					char * ext = (char *) GetFileExtension(tmpStr);
 					if(ext != NULL && tmpStr[0] != '(')
 					{
 						if(strcmp(ext, ".mp3") == 0 || strcmp(ext, ".wav") == 0)
@@ -740,6 +740,9 @@ void loadMap ()
 						//found health
 						_papNotes[_noteIndex]->health = atof(&(line[part]));
 					}
+
+					free(ext);
+					
 					for(int i = part; i < 1000; i++)
 					{
 						if(line[i] == '"')
