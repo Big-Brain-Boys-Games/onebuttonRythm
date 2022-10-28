@@ -125,7 +125,7 @@ void fMainMenu(bool reset)
 	snprintf(str, 120, "name: %s", _playerName);
 	drawText(str, GetScreenWidth() * 0.55, GetScreenHeight() * 0.92, GetScreenWidth() * 0.04, WHITE);
 
-	drawText(_notfication, GetScreenWidth() * 0.6, GetScreenHeight() * 0.7, GetScreenWidth() * 0.02, WHITE);
+	drawText(_notfication, GetScreenWidth() * 0.6, GetScreenHeight() * 0.8, GetScreenWidth() * 0.02, WHITE);
 
 	drawCursor();
 }
