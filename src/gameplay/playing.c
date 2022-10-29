@@ -296,7 +296,7 @@ void fPlaying(bool reset)
 			// _averageAccuracy = 0.5/_amountNotes;
 			int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / margin)) * _papNotes[_noteIndex]->health;
 			_health += healthAdded * (1 / (getHealthMod() + 0.1));
-			int scoreAdded = noLessThanZero(300 - closestTime * (300 / margin)) * getScoreMod();
+			int scoreAdded = noLessThanZero(300 - closestTime * (300 / margin));
 			if (scoreAdded > 200)
 			{
 				feedback("300!", 1.2);
@@ -312,7 +312,7 @@ void fPlaying(bool reset)
 				feedback("100!", 0.8);
 				addRipple(0.6);
 			}
-			_score += scoreAdded * (1 + _combo / 100);
+			_score += scoreAdded * (1 + _combo / 100) * getScoreMod();
 			_papNotes[_noteIndex]->hit = 1;
 			_noteIndex++;
 			_combo++;
