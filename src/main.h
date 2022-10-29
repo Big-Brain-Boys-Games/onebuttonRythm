@@ -11,5 +11,8 @@
 
 #endif
 
+int getWidth();
+int getHeight();
+void exitGame();
 
 #endif

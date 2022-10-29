@@ -36,16 +36,44 @@ float _transition = 0;
 
 char _playerName[100];
 
+int getWidth()
+{
+	if(IsWindowFullscreen())
+	{
+		return GetMonitorWidth(GetCurrentMonitor());
+	}
+	return GetScreenWidth();
+}
+
+int getHeight()
+{
+	if(IsWindowFullscreen())
+	{
+		return GetMonitorHeight(GetCurrentMonitor());
+	}
+	return GetScreenHeight();
+}
+
+void exitGame()
+{
+	_settings.fullscreen = IsWindowFullscreen();
+	_settings.resolutionX = getWidth();
+	_settings.resolutionY = getHeight();
+	saveSettings();
+	CloseWindow();
+	exit(0);
+}
+
 #define GLSL_VERSION 330
 
 int main(int argc, char **argv)
 {
+	loadSettings();
 	LoadingMutexInit();
 	initDrawing();
 	audioInit();
 	srand(time(NULL));
 	snprintf(_playerName, 100, "guest%i", rand());
-	loadSettings();
 
 	initFolders();
 	
@@ -120,7 +148,6 @@ int main(int argc, char **argv)
 		// DrawFPS(0, 0);
 		EndDrawing();
 	}
-	UnloadTexture(_background);
-	CloseWindow();
+	exitGame();
 	return 0;
 }

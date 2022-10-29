@@ -989,8 +989,13 @@ void loadSettings()
 		if(strcmp(line, "[Zoom]\n") == 0)					{mode = spZoom;			continue;}
 		if(strcmp(line, "[NoteSize]\n") == 0)				{mode = spNoteSize;		continue;}
 		if(strcmp(line, "[Offset]\n") == 0)					{mode = spOffset;		continue;}
+		if(strcmp(line, "[ResolutionX]\n") == 0)			{mode = spResX;			continue;}
+		if(strcmp(line, "[ResolutionY]\n") == 0)			{mode = spResY;			continue;}
+		if(strcmp(line, "[Fullscreen]\n") == 0)				{mode = spFS;			continue;}
+		
 		for(int i = 0; i < stringLength; i++)
 					if(line[i] == '\n') line[i]= '\0';
+		
 		switch(mode)
 		{
 			case spNone:
@@ -1014,6 +1019,15 @@ void loadSettings()
 				break;
 			case spOffset:
 				_settings.offset = atof(line);
+				break;
+			case spResX:
+				_settings.resolutionX = atoi(line);
+				break;
+			case spResY:
+				_settings.resolutionY = atoi(line);
+				break;
+			case spFS:
+				_settings.fullscreen = atoi(line);
 				break;
 		}
 	}
@@ -1039,5 +1053,11 @@ void saveSettings ()
 	fprintf(file, "%i\n", _settings.noteSize);
 	fprintf(file, "[Offset]\n");
 	fprintf(file, "%f\n", _settings.offset);
+	fprintf(file, "[ResolutionX]\n");
+	fprintf(file, "%i\n", _settings.resolutionX);
+	fprintf(file, "[ResolutionY]\n");
+	fprintf(file, "%i\n", _settings.resolutionY);
+	fprintf(file, "[Fullscreen]\n");
+	fprintf(file, "%i\n", _settings.fullscreen);
 	fclose(file);
 }

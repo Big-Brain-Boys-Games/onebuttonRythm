@@ -51,30 +51,30 @@ void drawText(char * str, int x, int y, int fontSize, Color color)
 void drawTransition()
 {
 	if(_transition < 1)
-		DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ColorAlpha(BLACK, GetFrameTime()*5));
+		DrawRectangle(0, 0, getWidth(), getHeight(), ColorAlpha(BLACK, GetFrameTime()*5));
 	else
-		DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ColorAlpha(BLACK, fmax(2-_transition, 0)));
+		DrawRectangle(0, 0, getWidth(), getHeight(), ColorAlpha(BLACK, fmax(2-_transition, 0)));
 }
 
 float musicTimeToScreen(float musicTime)
 {
-	float middle = GetScreenWidth() / 2;
-	float position = GetScreenWidth() * 0.4;
+	float middle = getWidth() / 2;
+	float position = getWidth() * 0.4;
 	return position + middle * (musicTime - getMusicHead()) * (1 / _scrollSpeed);
 }
 
 float screenToMusicTime(float x)
 {
-	float middle = GetScreenWidth() / 2;
-	float position = GetScreenWidth() * 0.4;
+	float middle = getWidth() / 2;
+	float position = getWidth() * 0.4;
 	return (x - position) / (middle * (1 / _scrollSpeed)) + getMusicHead();
 }
 
 float noteFadeOut(float note)
 {
 	if(_musicHead < note)
-		return fmin(1, fmax(0, 1 - (musicTimeToScreen(note) - musicTimeToScreen(_musicHead)) / (GetScreenWidth()*1)));
-	return fmin(1, fmax(0, 1 - (musicTimeToScreen(_musicHead) - musicTimeToScreen(note) ) / (GetScreenWidth()*0.4)));
+		return fmin(1, fmax(0, 1 - (musicTimeToScreen(note) - musicTimeToScreen(_musicHead)) / (getWidth()*1)));
+	return fmin(1, fmax(0, 1 - (musicTimeToScreen(_musicHead) - musicTimeToScreen(note) ) / (getWidth()*0.4)));
 	
 }
 
@@ -96,7 +96,7 @@ void drawCursor ()
 	{
 		lastClick = GetTime();
 	}
-	float size = (GetScreenWidth() * (0.06 - 0.1 * noLessThanZero(0.06 + (lastClick - GetTime())) )) / _cursorTex.width;
+	float size = (getWidth() * (0.06 - 0.1 * noLessThanZero(0.06 + (lastClick - GetTime())) )) / _cursorTex.width;
 	float xOffset = _cursorTex.width*size*0.3;
 	float yOffset = _cursorTex.height*size*0.2;
 	DrawTextureEx(_cursorTex, (Vector2){.x=GetMouseX()-xOffset, .y=GetMouseY()-yOffset}, 0, size, WHITE);
@@ -104,7 +104,7 @@ void drawCursor ()
 
 void drawNote(float musicTime, Note * note, Color color, float customScaling)
 {
-	float scaleNotes = (float)(GetScreenWidth() / _noteTex.width) / 9;
+	float scaleNotes = (float)(getWidth() / _noteTex.width) / 9;
 
 	if(note->hit)
 		return;
@@ -120,11 +120,11 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 	scaleNotes *= (_settings.noteSize / 10.0);
 	
 	if(!note->anim)
-		DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 -tex.height * scaleNotes/2}, 0,  scaleNotes, color);
+		DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=getHeight() / 2 -tex.height * scaleNotes/2}, 0,  scaleNotes, color);
 	else if(note->animSize)
 	{
 		if(_pGameplayFunction == &fEditor)
-			DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 -tex.height * scaleNotes/2}, 0,  scaleNotes, ColorAlpha(GRAY, 0.5));
+			DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=getHeight() / 2 -tex.height * scaleNotes/2}, 0,  scaleNotes, ColorAlpha(GRAY, 0.5));
 		//draw animated note
 		float time = (musicTime - note->time) / (_scrollSpeed);
 		// if(time < note->anim[0].time || time < time < note->anim[note->animSize].time)
@@ -146,18 +146,18 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 		Vector2 pos;
 		pos.x = frame1.vec.x + (frame2.vec.x-frame1.vec.x)*betweenFrames;
 		pos.y = frame1.vec.y + (frame2.vec.y-frame1.vec.y)*betweenFrames;
-		DrawTextureEx(tex, (Vector2){.x=pos.x*GetScreenWidth() - tex.width * scaleNotes / 2, .y=pos.y*GetScreenHeight() - tex.height * scaleNotes/2}, 0,  scaleNotes, color);
+		DrawTextureEx(tex, (Vector2){.x=pos.x*getWidth() - tex.width * scaleNotes / 2, .y=pos.y*getHeight() - tex.height * scaleNotes/2}, 0,  scaleNotes, color);
 	}
 }
 
 void dNotes () 
 {
 	static float fade = 0;
-	float width = GetScreenWidth() * 0.01;
+	float width = getWidth() * 0.01;
 	float position = musicTimeToScreen(_musicHead);
 	
-	DrawRectangle(0, GetScreenHeight()*0.35, GetScreenWidth(), GetScreenHeight()*0.3, ColorAlpha(BLACK, 0.4));
-	DrawRectangleGradientH(0,0 , position - width / 2, GetScreenHeight(), ColorAlpha(BLACK, 0.6), ColorAlpha(BLACK, 0.3));
+	DrawRectangle(0, getHeight()*0.35, getWidth(), getHeight()*0.3, ColorAlpha(BLACK, 0.4));
+	DrawRectangleGradientH(0,0 , position - width / 2, getHeight(), ColorAlpha(BLACK, 0.6), ColorAlpha(BLACK, 0.3));
 	for(int i = _noteIndex >= _amountNotes ? _amountNotes-1 : _noteIndex; i >= 0 && i < _amountNotes && musicTimeToScreen(_papNotes[i]->time) > 0; i--)
 	{
 		if(i < 0) continue;
@@ -174,7 +174,7 @@ void dNotes ()
 
 		if(closestNote < maxDistance)
 		{
-			customScale = (closestNote/maxDistance) * (GetScreenWidth() / _noteTex.width) / 9;
+			customScale = (closestNote/maxDistance) * (getWidth() / _noteTex.width) / 9;
 		}
 
 		drawNote(_musicHead, _papNotes[i], ColorAlpha(GRAY, noteFadeOut(_papNotes[i]->time)), customScale);
@@ -182,7 +182,7 @@ void dNotes ()
 	}
 
 	//draw notes before line
-	for(int i = _noteIndex >= _amountNotes ? _amountNotes-1 : _noteIndex; i < _amountNotes && i>= 0 && musicTimeToScreen(_papNotes[i]->time) < GetScreenWidth(); i++)
+	for(int i = _noteIndex >= _amountNotes ? _amountNotes-1 : _noteIndex; i < _amountNotes && i>= 0 && musicTimeToScreen(_papNotes[i]->time) < getWidth(); i++)
 	{
 		float closestNote = 999;
 		if(i != 0)
@@ -196,14 +196,14 @@ void dNotes ()
 
 		if(closestNote < maxDistance)
 		{
-			customScale = (closestNote/maxDistance) * (GetScreenWidth() / _noteTex.width) / 9;
+			customScale = (closestNote/maxDistance) * (getWidth() / _noteTex.width) / 9;
 		}
 
 		drawNote(_musicHead, _papNotes[i], ColorAlpha(WHITE, noteFadeOut(_papNotes[i]->time)), customScale);
 
 	}
 
-	DrawRectangle(position - width / 2,0 , width, GetScreenHeight(), ColorAlpha(WHITE, 0.5*fade));
+	DrawRectangle(position - width / 2,0 , width, getHeight(), ColorAlpha(WHITE, 0.5*fade));
 	if(_isKeyPressed)
 		fade = 1;
 	fade -= GetFrameTime()*10;
@@ -304,24 +304,24 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float 
 			text[19] = '\0';
 		}
 	}
-	int textSize = measureText(textPointer, GetScreenWidth() * 0.03);
-	drawText(textPointer, rect.x + rect.width/2 - textSize / 2, rect.y + GetScreenHeight() * 0.01+rect.height*imageRatio, GetScreenWidth() * 0.03, DARKGRAY);
+	int textSize = measureText(textPointer, getWidth() * 0.03);
+	drawText(textPointer, rect.x + rect.width/2 - textSize / 2, rect.y + getHeight() * 0.01+rect.height*imageRatio, getWidth() * 0.03, DARKGRAY);
 	
 	snprintf(text, 100, "%i", map->difficulty);
 	DrawRectangle(rect.x + rect.width*0.13, rect.y + 0.60*rect.height, rect.width*0.2, rect.height*0.20, ColorAlpha(BLACK, 0.4));
-	drawText(text, rect.x + rect.width*0.08, rect.y + 0.60*rect.height, GetScreenWidth() * 0.02625, WHITE);
+	drawText(text, rect.x + rect.width*0.08, rect.y + 0.60*rect.height, getWidth() * 0.02625, WHITE);
 	snprintf(text, 100, "%i:%i", (int)floorf(map->musicLength/60), (int)floorf(map->musicLength-floorf(map->musicLength/60)*60));
-	drawText(text, rect.x + rect.width*0.06, rect.y + 0.68*rect.height, GetScreenWidth() * 0.02625, WHITE);
+	drawText(text, rect.x + rect.width*0.06, rect.y + 0.68*rect.height, getWidth() * 0.02625, WHITE);
 
 	snprintf(text, 100, "%i", highScore);
 	if(highScore !=0)
 	{
 		DrawRectangle(rect.x + rect.width*0.78, rect.y + 0.02*rect.height, rect.width*0.2, rect.height*0.20, ColorAlpha(BLACK, 0.4));
-		drawText(text, rect.x + rect.width*0.80, rect.y + 0.02*rect.height, GetScreenWidth() * 0.015, WHITE);
+		drawText(text, rect.x + rect.width*0.80, rect.y + 0.02*rect.height, getWidth() * 0.015, WHITE);
 		snprintf(text, 100, "%i", combo);
-		drawText(text, rect.x + rect.width*0.82, rect.y + 0.08*rect.height, GetScreenWidth() * 0.015, WHITE);
+		drawText(text, rect.x + rect.width*0.82, rect.y + 0.08*rect.height, getWidth() * 0.015, WHITE);
 		snprintf(text, 100, "%.2f", 100*(1-accuracy));
-		drawText(text, rect.x + rect.width*0.84, rect.y + 0.14*rect.height, GetScreenWidth() * 0.015, WHITE);
+		drawText(text, rect.x + rect.width*0.84, rect.y + 0.14*rect.height, getWidth() * 0.015, WHITE);
 		drawRank(rect.x+rect.width*0.03, rect.y+rect.width*0.03, rect.width*0.08, rect.width*0.08, accuracy);
 
 	}
@@ -331,11 +331,11 @@ void drawBackground()
 {
 	if(!_noBackground)
 	{
-		float scale = (float)GetScreenWidth() / (float)_background.width;
-		DrawTextureEx(_background, (Vector2){.x=0, .y=(GetScreenHeight() - _background.height * scale)/2}, 0, scale,WHITE);
+		float scale = (float)getWidth() / (float)_background.width;
+		DrawTextureEx(_background, (Vector2){.x=0, .y=(getHeight() - _background.height * scale)/2}, 0, scale,WHITE);
 	}else{
 		DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
-		(Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
+		(Rectangle){.x=0, .y=0, .height = getHeight(), .width= getWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
 	}
 }
 
@@ -351,15 +351,15 @@ void drawActualBars(TimingSegment timseg)
 	if(timseg.beats < 1)
 		return;
 	double distBetweenBars = distBetweenBeats*timseg.beats;
-	for (int i = (screenToMusicTime(0)-timseg.time)/distBetweenBars; i < (screenToMusicTime(GetScreenWidth())-timseg.time)/distBetweenBars; i++)
+	for (int i = (screenToMusicTime(0)-timseg.time)/distBetweenBars; i < (screenToMusicTime(getWidth())-timseg.time)/distBetweenBars; i++)
 	{
-		DrawRectangle(musicTimeToScreen(distBetweenBars*i+timseg.time)-10,GetScreenHeight()*0.6,GetScreenWidth()*0.01,GetScreenHeight()*0.3,(Color){.r=255,.g=255,.b=255,.a=180});
+		DrawRectangle(musicTimeToScreen(distBetweenBars*i+timseg.time)-10,getHeight()*0.6,getWidth()*0.01,getHeight()*0.3,(Color){.r=255,.g=255,.b=255,.a=180});
 	}
 
-	for (int i = (screenToMusicTime(0)-timseg.time)/distBetweenBeats; i < (screenToMusicTime(GetScreenWidth())-timseg.time)/distBetweenBeats; i++)
+	for (int i = (screenToMusicTime(0)-timseg.time)/distBetweenBeats; i < (screenToMusicTime(getWidth())-timseg.time)/distBetweenBeats; i++)
 	{
 		if(i % timseg.beats == 0) continue;
-		DrawRectangle(musicTimeToScreen(distBetweenBeats*i+timseg.time)-10,GetScreenHeight()*0.7,GetScreenWidth()*0.01,GetScreenHeight()*0.2,(Color){.r=255,.g=255,.b=255,.a=180});
+		DrawRectangle(musicTimeToScreen(distBetweenBeats*i+timseg.time)-10,getHeight()*0.7,getWidth()*0.01,getHeight()*0.2,(Color){.r=255,.g=255,.b=255,.a=180});
 	}
 }
 
@@ -378,7 +378,7 @@ void drawBars()
 	int lastSeg = 0;
 
 	float beginTime = screenToMusicTime(0);
-	float endTime = screenToMusicTime(GetScreenWidth());
+	float endTime = screenToMusicTime(getWidth());
 
 	for(int i = 0; i < _amountTimingSegments; i++)
 	{
@@ -396,7 +396,7 @@ void drawBars()
 	if(firstSeg < 0)
 		firstSeg = 0;
 
-	BeginScissorMode(0, 0, fmax(musicTimeToScreen(_paTimingSegment[firstSeg].time), 0), GetScreenHeight());
+	BeginScissorMode(0, 0, fmax(musicTimeToScreen(_paTimingSegment[firstSeg].time), 0), getHeight());
 		drawActualBars((TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0, .beats=_map->beats});
 	EndScissorMode(); 
 	
@@ -405,7 +405,7 @@ void drawBars()
 	{
 		BeginScissorMode(fmax(musicTimeToScreen(_paTimingSegment[part].time),0 ), 0,
 				fmax( 0, fmax(musicTimeToScreen(_paTimingSegment[part+1].time),0)-fmax( 0, musicTimeToScreen(_paTimingSegment[part].time))),
-				GetScreenHeight());
+				getHeight());
 			drawActualBars(_paTimingSegment[part]);
 		EndScissorMode();
 	}
@@ -417,7 +417,7 @@ void drawBars()
 				lastSeg = i;
 	}
 
-	BeginScissorMode(fmax( 0, musicTimeToScreen(_paTimingSegment[lastSeg].time)), 0, GetScreenWidth(), GetScreenHeight());
+	BeginScissorMode(fmax( 0, musicTimeToScreen(_paTimingSegment[lastSeg].time)), 0, getWidth(), getHeight());
 		drawActualBars(_paTimingSegment[lastSeg]);
 	EndScissorMode();
 }
@@ -429,15 +429,15 @@ void drawMusicGraph(float transparent)
 	
 	//music stuff
 	float beginning = screenToMusicTime(0);
-	float end = screenToMusicTime(GetScreenWidth());
-	int amountBars = GetScreenWidth()/2;
+	float end = screenToMusicTime(getWidth());
+	int amountBars = getWidth()/2;
 	float timePerBar = (end-beginning)/amountBars;
 	int samplesPerBar = getSamplePosition(timePerBar);
 	int sampleBegin = getSamplePosition(beginning);
 
 	//drawing stuff
-	float pixelsPerBar = GetScreenWidth()/(float)amountBars;
-	float scaleBar = GetScreenHeight()*0.2;
+	float pixelsPerBar = getWidth()/(float)amountBars;
+	float scaleBar = getHeight()*0.2;
 	//looping through all the bars / samples
 	for(int i = 0; i < amountBars; i++)
 	{
@@ -447,15 +447,15 @@ void drawMusicGraph(float transparent)
 			if(sampleHead+j > 0 && fabs(((float*)_pMusic->data)[sampleHead+j]) > highest)
 				highest = fabs(((float*)_pMusic->data)[sampleHead+j]);
 
-		DrawRectangle(i*pixelsPerBar, GetScreenHeight()-highest*scaleBar, pixelsPerBar, highest*scaleBar, ColorAlpha(WHITE, transparent));
+		DrawRectangle(i*pixelsPerBar, getHeight()-highest*scaleBar, pixelsPerBar, highest*scaleBar, ColorAlpha(WHITE, transparent));
 	}
 
 }
 
 void drawVignette()
 {
-	DrawRectangleGradientV(0, 0, GetScreenWidth(), GetScreenHeight()*0.3, ColorAlpha(BLACK, 0.5), ColorAlpha(BLACK, 0));
-	DrawRectangleGradientV(0, GetScreenHeight()*0.7, GetScreenWidth(), GetScreenHeight()*0.3, ColorAlpha(BLACK, 0), ColorAlpha(BLACK, 0.5));
+	DrawRectangleGradientV(0, 0, getWidth(), getHeight()*0.3, ColorAlpha(BLACK, 0.5), ColorAlpha(BLACK, 0));
+	DrawRectangleGradientV(0, getHeight()*0.7, getWidth(), getHeight()*0.3, ColorAlpha(BLACK, 0), ColorAlpha(BLACK, 0.5));
 }
 
 //TODO don't do this, pls fix
@@ -465,21 +465,21 @@ void drawProgressBar() {drawProgressBarI(false);}
 bool drawProgressBarI(bool interActable)
 {
 	static bool isGrabbed = false;
-	DrawRectangle( GetScreenWidth()*0.01, GetScreenHeight()*0.93, GetScreenWidth()*0.98, GetScreenHeight()*0.02, (Color){.r=_UIColor.r,.g=_UIColor.g,.b=_UIColor.b,.a=126});
+	DrawRectangle( getWidth()*0.01, getHeight()*0.93, getWidth()*0.98, getHeight()*0.02, (Color){.r=_UIColor.r,.g=_UIColor.g,.b=_UIColor.b,.a=126});
 	//drop shadow
-	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.945, GetScreenWidth()*0.025, (Color){.r=0,.g=0,.b=0,.a=80});
-	DrawCircle(getMusicPosition()/ getMusicDuration()*GetScreenWidth(), GetScreenHeight()*0.94, GetScreenWidth()*0.025, _UIColor);
+	DrawCircle(getMusicPosition()/ getMusicDuration()*getWidth(), getHeight()*0.945, getWidth()*0.025, (Color){.r=0,.g=0,.b=0,.a=80});
+	DrawCircle(getMusicPosition()/ getMusicDuration()*getWidth(), getHeight()*0.94, getWidth()*0.025, _UIColor);
 	char str[50];
 	snprintf(str, 50, "%i:%i/%i:%i", (int)floor(getMusicPosition()/60), (int)getMusicPosition()%60, (int)floor(getMusicDuration()/60), (int)getMusicDuration()%60);
-	drawText(str, GetScreenWidth()*0.85, GetScreenHeight()*0.85, GetScreenWidth()*0.03,_UIColor);
+	drawText(str, getWidth()*0.85, getHeight()*0.85, getWidth()*0.03,_UIColor);
 	if(interActable)
 	{
-		float x = getMusicPosition()/ getMusicDuration()*GetScreenWidth();
-		float y = GetScreenHeight()*0.94;
-		if((fDistance(x, y, GetMouseX(), GetMouseY()) < GetScreenWidth()*0.03 && IsMouseButtonDown(0)) || isGrabbed)
+		float x = getMusicPosition()/ getMusicDuration()*getWidth();
+		float y = getHeight()*0.94;
+		if((fDistance(x, y, GetMouseX(), GetMouseY()) < getWidth()*0.03 && IsMouseButtonDown(0)) || isGrabbed)
 		{
 			isGrabbed = true;
-			_musicHead = clamp(GetMouseX()/(float)GetScreenWidth()*getMusicDuration(), 0, getMusicDuration());
+			_musicHead = clamp(GetMouseX()/(float)getWidth()*getMusicDuration(), 0, getMusicDuration());
 		}
 		if(!IsMouseButtonDown(0))
 			isGrabbed = false;
@@ -491,7 +491,7 @@ bool drawProgressBarI(bool interActable)
 
 void drawBox(Rectangle rect, Color color)
 {
-	double size = GetScreenWidth()*0.02;
+	double size = getWidth()*0.02;
 	while(rect.height < size*2)
 		size *=0.5;
 
@@ -578,7 +578,7 @@ void drawButton(Rectangle rect, char * text, float fontScale)
 	drawBox(rect, color);
 	fontScale *= 1.3;
 	// DrawRectangle(rect.x, rect.y, rect.width, rect.height, ColorAlpha(color, 0.5));
-	int screenSize = GetScreenWidth() > GetScreenHeight() ? GetScreenHeight() : GetScreenWidth();
+	int screenSize = getWidth() > getHeight() ? getHeight() : getWidth();
 	int textSize = measureText(text, screenSize * fontScale);
 	drawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + rect.height*0.2, screenSize * fontScale, (color.r == GRAY.r) ? BLACK : DARKGRAY);
 }
@@ -596,12 +596,12 @@ void drawHint(Rectangle rect, char * text)
 	if(timerShow < 0.3f)
 		return;
 
-	float fontScale = GetScreenWidth()*0.03;
+	float fontScale = getWidth()*0.03;
 	// DrawRectangle(rect.x, rect.y, rect.width, rect.height, ColorAlpha(color, 0.5));
 	int textSize = measureText(text, fontScale);
 	Vector2 pos = GetMousePosition();
-	pos.x += GetScreenWidth()*0.04;
-	DrawRectangle(pos.x-GetScreenWidth()*0.01, pos.y, textSize+GetScreenWidth()*0.02, GetScreenHeight()*0.05, ColorAlpha(BLACK, 0.6));
+	pos.x += getWidth()*0.04;
+	DrawRectangle(pos.x-getWidth()*0.01, pos.y, textSize+getWidth()*0.02, getHeight()*0.05, ColorAlpha(BLACK, 0.6));
 	drawText(text, pos.x, pos.y, fontScale, WHITE);
 }
 
@@ -611,10 +611,10 @@ void drawLoadScreen()
 	angle += GetFrameTime()*(sinf(GetTime()*4)+1.5)*300;
 
 	DrawTextureTiled(_menuBackground, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _menuBackground.height, .width = _menuBackground.width},
-					 (Rectangle){.x = 0, .y = 0, .height = GetScreenHeight(), .width = GetScreenWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, ColorAlpha(WHITE, _loadingFade));
+					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, ColorAlpha(WHITE, _loadingFade));
 	// DrawTextureTiled(_menuBackground, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
-		// (Rectangle){.x=0, .y=0, .height = GetScreenHeight(), .width= GetScreenWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, ColorAlpha(WHITE, _loadingFade));
-	DrawRing((Vector2){.x=GetScreenWidth()/2, .y=GetScreenHeight()/2}, GetScreenWidth()*0.1, GetScreenWidth()*0.15, angle, angle+170, 50, ColorAlpha(WHITE, _loadingFade));
+		// (Rectangle){.x=0, .y=0, .height = getHeight(), .width= getWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, ColorAlpha(WHITE, _loadingFade));
+	DrawRing((Vector2){.x=getWidth()/2, .y=getHeight()/2}, getWidth()*0.1, getWidth()*0.15, angle, angle+170, 50, ColorAlpha(WHITE, _loadingFade));
 	if(_loadingFade== 1)
 	{
 		drawVignette();
@@ -633,7 +633,7 @@ void drawButtonNoSprite(Rectangle rect, char * text, float fontScale)
 	DrawRectangle(rect.x, rect.y, rect.width, rect.height, color);
 	fontScale *= 1.3;
 	// DrawRectangle(rect.x, rect.y, rect.width, rect.height, ColorAlpha(color, 0.5));
-	int screenSize = GetScreenWidth() > GetScreenHeight() ? GetScreenHeight() : GetScreenWidth();
+	int screenSize = getWidth() > getHeight() ? getHeight() : getWidth();
 	int textSize = measureText(text, screenSize * fontScale);
 	drawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + rect.height*0.2, screenSize * fontScale, (color.r == GRAY.r) ? BLACK : DARKGRAY);
 }
@@ -641,7 +641,14 @@ void drawButtonNoSprite(Rectangle rect, char * text, float fontScale)
 void initDrawing()
 {
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-	InitWindow(800, 600, "One Button Rythm");
+	if(_settings.fullscreen)
+	{
+		// SetConfigFlags(FLAG_FULLSCREEN_MODE);
+		InitWindow(GetMonitorWidth(GetCurrentMonitor()), GetMonitorHeight(GetCurrentMonitor()), "One Button Rythm");
+		ToggleFullscreen();
+	}else
+		InitWindow(_settings.resolutionX, _settings.resolutionY, "One Button Rythm");
+	
 	SetWindowIcon(LoadImage("assets/note.png"));
 	SetTargetFPS(360);
 	SetExitKey(0);
@@ -657,7 +664,7 @@ void initDrawing()
 	_loadingFade += 0.1;
 	BeginDrawing();
 		ClearBackground(BLACK);
-		DrawText("Loading", GetScreenWidth()*0.4, GetScreenHeight()*0.4, GetScreenWidth()*0.05, WHITE);
+		DrawText("Loading", getWidth()*0.4, getHeight()*0.4, getWidth()*0.05, WHITE);
 		// drawLoadScreen();
 	EndDrawing();
 

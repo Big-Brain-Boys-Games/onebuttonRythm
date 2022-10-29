@@ -18,8 +18,8 @@ IF (WIN32)
     LINK_SEARCH_START_STATIC ON
     LINK_SEARCH_END_STATIC ON
   )
-  set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc -static")
+  set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static -Wl,-subsystem,windows")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc -static -Wl,-subsystem,windows")
 
 ENDIF()
 

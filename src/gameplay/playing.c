@@ -94,24 +94,24 @@ void fCountDown(bool reset)
 	// draw notes
 	dNotes();
 
-	// DrawRectangle(middle - width / 2, 0, width, GetScreenHeight(), (Color){.r = 255, .g = 255, .b = 255, .a = 255 / 2});
+	// DrawRectangle(middle - width / 2, 0, width, getHeight(), (Color){.r = 255, .g = 255, .b = 255, .a = 255 / 2});
 
 	// draw score
 	char *tmpString = malloc(9);
 	snprintf(tmpString, 9, "%i", _score);
-	drawText(tmpString, GetScreenWidth() * 0.05, GetScreenHeight() * 0.05, GetScreenWidth() * 0.05, WHITE);
+	drawText(tmpString, getWidth() * 0.05, getHeight() * 0.05, getWidth() * 0.05, WHITE);
 
 	drawCursor();
 
-	float heartScale = (GetScreenWidth() * 0.08) / _heartTex.width;
-	float healthBarScale = (GetScreenHeight() * 0.4) / _healthBarTex.height;
-	DrawTextureEx(_healthBarTex, (Vector2){.x = GetScreenWidth() * 0.85 + (_heartTex.width / 2) * heartScale - (_healthBarTex.width / 2) * healthBarScale, .y = GetScreenHeight() * 0.85 - _healthBarTex.height * healthBarScale + (_heartTex.height / 2) * heartScale}, 0, healthBarScale, WHITE);
-	DrawTextureEx(_heartTex, (Vector2){.x = GetScreenWidth() * 0.85, .y = GetScreenHeight() * (0.85 - _health / 250)}, 0, heartScale, WHITE);
-	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
+	float heartScale = (getWidth() * 0.08) / _heartTex.width;
+	float healthBarScale = (getHeight() * 0.4) / _healthBarTex.height;
+	DrawTextureEx(_healthBarTex, (Vector2){.x = getWidth() * 0.85 + (_heartTex.width / 2) * heartScale - (_healthBarTex.width / 2) * healthBarScale, .y = getHeight() * 0.85 - _healthBarTex.height * healthBarScale + (_heartTex.height / 2) * heartScale}, 0, healthBarScale, WHITE);
+	DrawTextureEx(_heartTex, (Vector2){.x = getWidth() * 0.85, .y = getHeight() * (0.85 - _health / 250)}, 0, heartScale, WHITE);
+	DrawRectangle(0, 0, getWidth(), getHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
 
 	snprintf(tmpString, 9, "%i", (int)(countDown - GetTime() + 1));
-	float textSize = measureText(tmpString, GetScreenWidth() * 0.3);
-	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.3, GetScreenWidth() * 0.3, WHITE);
+	float textSize = measureText(tmpString, getWidth() * 0.3);
+	drawText(tmpString, getWidth() * 0.5 - textSize / 2, getHeight() * 0.3, getWidth() * 0.3, WHITE);
 	free(tmpString);
 	drawVignette();
 }
@@ -219,7 +219,7 @@ void fPlaying(bool reset)
 		rippleEffect[i] += GetFrameTime() * 1200 * rippleEffectStrength[i];
 		rippleEffectStrength[i] = fmax(rippleEffectStrength[i] - GetFrameTime() * 5, 0);
 		float size = rippleEffect[i];
-		DrawRing((Vector2){.x = musicTimeToScreen(_musicHead), .y = GetScreenHeight() * 0.5}, size * GetScreenWidth() * 0.001, size * 0.7 * GetScreenWidth() * 0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i] * 0.35));
+		DrawRing((Vector2){.x = musicTimeToScreen(_musicHead), .y = getHeight() * 0.5}, size * getWidth() * 0.001, size * 0.7 * getWidth() * 0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i] * 0.35));
 	}
 
 	//draw hitpoints
@@ -242,7 +242,7 @@ void fPlaying(bool reset)
 		Vector3 hsv = ColorToHSV(hpColor);
 		hpColor = ColorFromHSV(hsv.x, 0.4, hsv.z);
 
-		DrawCircle( musicTimeToScreen(_musicHead+hitPointTimings[i]), GetScreenHeight()*0.4, GetScreenWidth()*0.017, ColorAlpha(hpColor, alpha));
+		DrawCircle( musicTimeToScreen(_musicHead+hitPointTimings[i]), getHeight()*0.4, getWidth()*0.017, ColorAlpha(hpColor, alpha));
 	}
 
 	dNotes();
@@ -255,7 +255,7 @@ void fPlaying(bool reset)
 	{
 		if (j < 0)
 			j = 4;
-		drawText(feedbackSayings[j], GetScreenWidth() * 0.35, GetScreenHeight() * (0.6 + i * 0.1), GetScreenWidth() * 0.05 * feedbackSize[j], (Color){.r = 255, .g = 255, .b = 255, .a = noLessThanZero(150 - i * 40)});
+		drawText(feedbackSayings[j], getWidth() * 0.35, getHeight() * (0.6 + i * 0.1), getWidth() * 0.05 * feedbackSize[j], (Color){.r = 255, .g = 255, .b = 255, .a = noLessThanZero(150 - i * 40)});
 	}
 
     if (_noteIndex < _amountNotes-1 && getMusicHead() - margin > _papNotes[_noteIndex]->time)
@@ -365,10 +365,10 @@ void fPlaying(bool reset)
 	if (feedbackIndex >= 5)
 		feedbackIndex = 0;
 
-	float heartScale = (GetScreenWidth() * 0.08) / _heartTex.width;
-	float healthBarScale = (GetScreenHeight() * 0.4) / _healthBarTex.height;
-	DrawTextureEx(_healthBarTex, (Vector2){.x = GetScreenWidth() * 0.85 + (_heartTex.width / 2) * heartScale - (_healthBarTex.width / 2) * healthBarScale, .y = GetScreenHeight() * 0.85 - _healthBarTex.height * healthBarScale + (_heartTex.height / 2) * heartScale}, 0, healthBarScale, WHITE);
-	DrawTextureEx(_heartTex, (Vector2){.x = GetScreenWidth() * 0.85, .y = GetScreenHeight() * (0.85 - smoothHealth / 250)}, 0, heartScale, WHITE);
+	float heartScale = (getWidth() * 0.08) / _heartTex.width;
+	float healthBarScale = (getHeight() * 0.4) / _healthBarTex.height;
+	DrawTextureEx(_healthBarTex, (Vector2){.x = getWidth() * 0.85 + (_heartTex.width / 2) * heartScale - (_healthBarTex.width / 2) * healthBarScale, .y = getHeight() * 0.85 - _healthBarTex.height * healthBarScale + (_heartTex.height / 2) * heartScale}, 0, healthBarScale, WHITE);
+	DrawTextureEx(_heartTex, (Vector2){.x = getWidth() * 0.85, .y = getHeight() * (0.85 - smoothHealth / 250)}, 0, heartScale, WHITE);
 
 	if (_health <= 0)
 	{
@@ -384,19 +384,19 @@ void fPlaying(bool reset)
 	// draw score
 	char *tmpString = malloc(20);
 	snprintf(tmpString, 20, "score: %i", _score);
-	drawText(tmpString, GetScreenWidth() * 0.05, GetScreenHeight() * 0.05, GetScreenWidth() * 0.05, WHITE);
+	drawText(tmpString, getWidth() * 0.05, getHeight() * 0.05, getWidth() * 0.05, WHITE);
 
 	// draw combo
 	snprintf(tmpString, 20, "combo: %i", _combo);
-	drawText(tmpString, GetScreenWidth() * 0.70, GetScreenHeight() * 0.05, GetScreenWidth() * 0.05, WHITE);
+	drawText(tmpString, getWidth() * 0.70, getHeight() * 0.05, getWidth() * 0.05, WHITE);
 
 	// draw acc
 	snprintf(tmpString, 20, "acc: %.2f", 100 * (1 - _averageAccuracy));
-	drawText(tmpString, GetScreenWidth() * 0.70, GetScreenHeight() * 0.1, GetScreenWidth() * 0.04, WHITE);
-	drawRank(GetScreenWidth()*0.57, GetScreenHeight()*0.03, GetScreenWidth()*0.1, GetScreenWidth()*0.1, _averageAccuracy);
+	drawText(tmpString, getWidth() * 0.70, getHeight() * 0.1, getWidth() * 0.04, WHITE);
+	drawRank(getWidth()*0.57, getHeight()*0.03, getWidth()*0.1, getWidth()*0.1, _averageAccuracy);
 	free(tmpString);
 	drawProgressBar();
-	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), _fade);
+	DrawRectangle(0, 0, getWidth(), getHeight(), _fade);
 }
 
 
@@ -409,65 +409,65 @@ void fEndScreen(bool reset)
 	_musicPlaying = false;
 	ClearBackground(BLACK);
 	drawBackground();
-	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
+	DrawRectangle(0, 0, getWidth(), getHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
 
 
-	DrawRectangle(GetScreenWidth()*0.04, GetScreenHeight()*0.27, GetScreenWidth()*0.5, GetScreenHeight()*0.7, (Color){.r = 0, .g = 0, .b = 0, .a = 128});
+	DrawRectangle(getWidth()*0.04, getHeight()*0.27, getWidth()*0.5, getHeight()*0.7, (Color){.r = 0, .g = 0, .b = 0, .a = 128});
 
 	// draw menu
 
-	float textSize = measureText("Finished", GetScreenWidth() * 0.15);
-	drawText("Finished", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.05, GetScreenWidth() * 0.15, WHITE);
+	float textSize = measureText("Finished", getWidth() * 0.15);
+	drawText("Finished", getWidth() * 0.5 - textSize / 2, getHeight() * 0.05, getWidth() * 0.15, WHITE);
 
 	char *tmpString = malloc(70);
 	snprintf(tmpString, 70, "%s", _highScore < _score ? "New highscore!" : "");
-	textSize = measureText(tmpString, GetScreenWidth() * 0.045);
-	drawText(tmpString, GetScreenWidth() * 0.55, GetScreenHeight() * 0.3, GetScreenWidth() * 0.05, WHITE);
+	textSize = measureText(tmpString, getWidth() * 0.045);
+	drawText(tmpString, getWidth() * 0.55, getHeight() * 0.3, getWidth() * 0.05, WHITE);
 
 	// draw highscore
 	snprintf(tmpString, 70,"Highscore\nCombo");
-	textSize = measureText(tmpString, GetScreenWidth() * 0.045);
-	drawText(tmpString, GetScreenWidth() * 0.55, GetScreenHeight() * 0.4, GetScreenWidth() * 0.05, LIGHTGRAY);
+	textSize = measureText(tmpString, getWidth() * 0.045);
+	drawText(tmpString, getWidth() * 0.55, getHeight() * 0.4, getWidth() * 0.05, LIGHTGRAY);
 
 	// draw highscore values
 	snprintf(tmpString, 70,"%i\n%i", _highScore, _highScoreCombo);
-	textSize = measureText(tmpString, GetScreenWidth() * 0.045);
-	drawText(tmpString, GetScreenWidth() * 0.83, GetScreenHeight() * 0.4, GetScreenWidth() * 0.05, LIGHTGRAY);
+	textSize = measureText(tmpString, getWidth() * 0.045);
+	drawText(tmpString, getWidth() * 0.83, getHeight() * 0.4, getWidth() * 0.05, LIGHTGRAY);
 
 
 
 	// draw score
 	snprintf(tmpString, 70,"Score\nCombo");
-	textSize = measureText(tmpString, GetScreenWidth() * 0.045);
-	drawText(tmpString, GetScreenWidth() * 0.06, GetScreenHeight() * 0.3, GetScreenWidth() * 0.05, LIGHTGRAY);
+	textSize = measureText(tmpString, getWidth() * 0.045);
+	drawText(tmpString, getWidth() * 0.06, getHeight() * 0.3, getWidth() * 0.05, LIGHTGRAY);
 
 	// draw score Values
 	snprintf(tmpString, 70,"%i\n%i", _score, _highestCombo);
-	textSize = measureText(tmpString, GetScreenWidth() * 0.045);
-	drawText(tmpString, GetScreenWidth() * 0.4, GetScreenHeight() * 0.3, GetScreenWidth() * 0.05, LIGHTGRAY);
+	textSize = measureText(tmpString, getWidth() * 0.045);
+	drawText(tmpString, getWidth() * 0.4, getHeight() * 0.3, getWidth() * 0.05, LIGHTGRAY);
 
 
 
 	// draw extra info
 	snprintf(tmpString, 70,"Accuracy\nMisses");
-	textSize = measureText(tmpString, GetScreenWidth() * 0.045);
-	drawText(tmpString, GetScreenWidth() * 0.06, GetScreenHeight() * 0.5, GetScreenWidth() * 0.05, LIGHTGRAY);
+	textSize = measureText(tmpString, getWidth() * 0.045);
+	drawText(tmpString, getWidth() * 0.06, getHeight() * 0.5, getWidth() * 0.05, LIGHTGRAY);
 
 	snprintf(tmpString, 70,"Acc: %.2fms", _averageAccuracy);
-	drawHint((Rectangle){.x=GetScreenWidth() * 0.06, .y=GetScreenHeight() * 0.5, .width=textSize, .height=GetScreenWidth() * 0.2}, tmpString);
+	drawHint((Rectangle){.x=getWidth() * 0.06, .y=getHeight() * 0.5, .width=textSize, .height=getWidth() * 0.2}, tmpString);
 
 	// draw extra info Values
 	snprintf(tmpString, 70,"%.1f\n%i", 100 * (1 - _averageAccuracy), _notesMissed);
-	textSize = measureText(tmpString, GetScreenWidth() * 0.045);
-	drawText(tmpString, GetScreenWidth() * 0.4, GetScreenHeight() * 0.5, GetScreenWidth() * 0.05, LIGHTGRAY);
+	textSize = measureText(tmpString, getWidth() * 0.045);
+	drawText(tmpString, getWidth() * 0.4, getHeight() * 0.5, getWidth() * 0.05, LIGHTGRAY);
 
 
 	free(tmpString);
 
-	drawText("Rank", GetScreenWidth() * 0.55, GetScreenHeight() * 0.75, GetScreenWidth() * 0.05, LIGHTGRAY);
-	drawRank(GetScreenWidth()*0.7, GetScreenHeight()*0.65, GetScreenWidth()*0.2, GetScreenWidth()*0.2, _averageAccuracy);
+	drawText("Rank", getWidth() * 0.55, getHeight() * 0.75, getWidth() * 0.05, LIGHTGRAY);
+	drawRank(getWidth()*0.7, getHeight()*0.65, getWidth()*0.2, getWidth()*0.2, _averageAccuracy);
 
-	if (interactableButton("Retry", 0.05, GetScreenWidth() * 0.15, GetScreenHeight() * 0.72, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
+	if (interactableButton("Retry", 0.05, getWidth() * 0.15, getHeight() * 0.72, getWidth() * 0.3, getHeight() * 0.1))
 	{
 		// retrying map
 		printf("retrying map! \n");
@@ -477,7 +477,7 @@ void fEndScreen(bool reset)
 		_musicHead = 0;
 		_transition = 0.1;
 	}
-	if (interactableButton("Main Menu", 0.05, GetScreenWidth() * 0.15, GetScreenHeight() * 0.85, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
+	if (interactableButton("Main Menu", 0.05, getWidth() * 0.15, getHeight() * 0.85, getWidth() * 0.3, getHeight() * 0.1))
 	{
 		unloadMap();
 		gotoMainMenu(false);
@@ -496,30 +496,30 @@ void fFail(bool reset)
 	ClearBackground(BLACK);
 	if (!_noBackground)
 	{
-		float scale = (float)GetScreenWidth() / (float)_background.width;
-		DrawTextureEx(_background, (Vector2){.x = 0, .y = (GetScreenHeight() - _background.height * scale) / 2}, 0, scale, WHITE);
+		float scale = (float)getWidth() / (float)_background.width;
+		DrawTextureEx(_background, (Vector2){.x = 0, .y = (getHeight() - _background.height * scale) / 2}, 0, scale, WHITE);
 	}
 	else
 	{
 		DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
-						 (Rectangle){.x = 0, .y = 0, .height = GetScreenHeight(), .width = GetScreenWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
+						 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
 	}
-	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
+	DrawRectangle(0, 0, getWidth(), getHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
 
-	int middle = GetScreenWidth() / 2;
+	int middle = getWidth() / 2;
 	// draw menu
 
-	float textSize = measureText("You Failed", GetScreenWidth() * 0.15);
-	drawText("You Failed", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.2, GetScreenWidth() * 0.15, WHITE);
+	float textSize = measureText("You Failed", getWidth() * 0.15);
+	drawText("You Failed", getWidth() * 0.5 - textSize / 2, getHeight() * 0.2, getWidth() * 0.15, WHITE);
 
 	// draw score
 	char *tmpString = malloc(9);
 	snprintf(tmpString, 9, "%i", _score);
-	textSize = measureText(tmpString, GetScreenWidth() * 0.1);
-	drawText(tmpString, GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.5, GetScreenWidth() * 0.1, LIGHTGRAY);
+	textSize = measureText(tmpString, getWidth() * 0.1);
+	drawText(tmpString, getWidth() * 0.5 - textSize / 2, getHeight() * 0.5, getWidth() * 0.1, LIGHTGRAY);
 	free(tmpString);
 
-	if (interactableButton("Retry", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.7, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
+	if (interactableButton("Retry", 0.05, middle - getWidth() * 0.15, getHeight() * 0.7, getWidth() * 0.3, getHeight() * 0.1))
 	{
 		// retrying map
 		printf("retrying map! \n");
@@ -528,7 +528,7 @@ void fFail(bool reset)
 		_musicHead = 0;
 		_transition = 0.7;
 	}
-	if (interactableButton("Exit", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.85, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
+	if (interactableButton("Exit", 0.05, middle - getWidth() * 0.15, getHeight() * 0.85, getWidth() * 0.3, getHeight() * 0.1))
 	{
 		// exiting map
 		printf("going to main Menu! \n");

@@ -48,14 +48,14 @@ void fMainMenu(bool reset)
 	_musicLoops = true;
 	ClearBackground(BLACK);
 	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
-					 (Rectangle){.x = 0, .y = 0, .height = GetScreenHeight(), .width = GetScreenWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
+					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
 
-	int middle = GetScreenWidth() / 2;
+	int middle = getWidth() / 2;
 	drawVignette();
 
 	float fontScale = 0.075;
 	//play button
-	Rectangle button = (Rectangle){.x = GetScreenWidth() * 0.05, .y = GetScreenHeight() * 0.25, .width = GetScreenWidth() * 0.32, .height = GetScreenWidth() * 0.32};
+	Rectangle button = (Rectangle){.x = getWidth() * 0.05, .y = getHeight() * 0.25, .width = getWidth() * 0.32, .height = getWidth() * 0.32};
 	static float growTimer = 0;
 	if(mouseInRect(button))
 	{
@@ -65,18 +65,18 @@ void fMainMenu(bool reset)
 
 	growTimer = fmax(fmin(growTimer, 1), 0);
 	
-	button.width += GetScreenWidth()*0.1*growTimer;
-	button.height += GetScreenWidth()*0.1*growTimer;
-	button.x -= GetScreenWidth()*0.05*growTimer;
-	button.y -= GetScreenWidth()*0.05*growTimer;
+	button.width += getWidth()*0.1*growTimer;
+	button.height += getWidth()*0.1*growTimer;
+	button.x -= getWidth()*0.05*growTimer;
+	button.y -= getWidth()*0.05*growTimer;
 
 	DrawTexturePro(_noteTex, (Rectangle){.x=0, .y=0, .width=_noteTex.width, .height=_noteTex.height}, (Rectangle){.x=button.x, .y=button.y, .width=button.width, .height=button.width}, (Vector2) {.x=0, .y=0}, 0, WHITE);
 
 
 	fontScale *= 1.3;
-	int screenSize = GetScreenWidth() > GetScreenHeight() ? GetScreenHeight() : GetScreenWidth();
+	int screenSize = getWidth() > getHeight() ? getHeight() : getWidth();
 	int textSize = measureText("Play", screenSize * fontScale);
-	drawText("Play", button.x + button.width / 2 - textSize / 2, button.y + button.height*0.5-GetScreenHeight()*0.045, screenSize * fontScale, DARKGRAY);
+	drawText("Play", button.x + button.width / 2 - textSize / 2, button.y + button.height*0.5-getHeight()*0.045, screenSize * fontScale, DARKGRAY);
 
 	if (IsMouseButtonReleased(0) && mouseInRect(button))
 	{
@@ -87,39 +87,44 @@ void fMainMenu(bool reset)
 		_transition = 0.1;
 	}
 
-	if (interactableButton("Settings", 0.035, middle - GetScreenWidth() * (0.12-growTimer*0.03), GetScreenHeight() * 0.55, GetScreenWidth() * 0.2, GetScreenHeight() * 0.065))
+	if (interactableButton("Settings", 0.035, middle - getWidth() * (0.12-growTimer*0.03), getHeight() * 0.55, getWidth() * 0.2, getHeight() * 0.065))
 	{
 		// Switching to settings
 		_pGameplayFunction = &fSettings;
 		_transition = 0.1;
 	}
 
-	if (interactableButton("New Map", 0.035, middle - GetScreenWidth() * (0.03 - growTimer*0.03), GetScreenHeight() * 0.65, GetScreenWidth() * 0.2, GetScreenHeight() * 0.065))
+	if (interactableButton("New Map", 0.035, middle - getWidth() * (0.03 - growTimer*0.03), getHeight() * 0.65, getWidth() * 0.2, getHeight() * 0.065))
 	{
 		_pGameplayFunction = &fNewMap;
 		_transition = 0.1;
 	}
 
+	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("Exit", 0.035, middle - getWidth() * (-0.07 - growTimer*0.03), getHeight() * 0.75, getWidth() * 0.2, getHeight() * 0.065))
+	{
+		exitGame(0);
+	}
+
 	// gigantic title
-	float tSize = GetScreenWidth() * 0.07;
-	Vector2 titlePos = (Vector2){.x=GetScreenWidth()*0.5, .y=GetScreenHeight()*0.2};
+	float tSize = getWidth() * 0.07;
+	Vector2 titlePos = (Vector2){.x=getWidth()*0.5, .y=getHeight()*0.2};
 	// dropshadow
-	drawText("One Button", titlePos.x + GetScreenWidth() * 0.004, titlePos.y + GetScreenHeight()* 0.007, tSize, ColorAlpha(BLACK, 0.4));
+	drawText("One Button", titlePos.x + getWidth() * 0.004, titlePos.y + getHeight()* 0.007, tSize, ColorAlpha(BLACK, 0.4));
 	// real title
 	drawText("One Button", titlePos.x, titlePos.y, tSize, WHITE);
 
-	titlePos.x += GetScreenWidth()*0.07;
-	titlePos.y += GetScreenHeight()*0.1;
+	titlePos.x += getWidth()*0.07;
+	titlePos.y += getHeight()*0.1;
 	// dropshadow
-	drawText("Rhythm", titlePos.x + GetScreenWidth() * 0.004, titlePos.y + GetScreenHeight()* 0.007, tSize, ColorAlpha(BLACK, 0.4));
+	drawText("Rhythm", titlePos.x + getWidth() * 0.004, titlePos.y + getHeight()* 0.007, tSize, ColorAlpha(BLACK, 0.4));
 	// real title
 	drawText("Rhythm", titlePos.x, titlePos.y, tSize, WHITE);
 
 	char str[120];
 	snprintf(str, 120, "name: %s", _playerName);
-	drawText(str, GetScreenWidth() * 0.55, GetScreenHeight() * 0.92, GetScreenWidth() * 0.04, WHITE);
+	drawText(str, getWidth() * 0.55, getHeight() * 0.92, getWidth() * 0.04, WHITE);
 
-	drawText(_notfication, GetScreenWidth() * 0.6, GetScreenHeight() * 0.8, GetScreenWidth() * 0.02, WHITE);
+	drawText(_notfication, getWidth() * 0.6, getHeight() * 0.8, getWidth() * 0.02, WHITE);
 
 	drawCursor();
 }
@@ -139,30 +144,30 @@ void fSettings(bool reset)
 	_musicPlaying = false;
 	ClearBackground(BLACK);
 	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
-					 (Rectangle){.x = 0, .y = 0, .height = GetScreenHeight(), .width = GetScreenWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
-	int middle = GetScreenWidth() / 2;
+					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
+	int middle = getWidth() / 2;
 
-	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight()*0.13, ColorAlpha(BLACK ,0.4));
+	DrawRectangle(0, 0, getWidth(), getHeight()*0.13, ColorAlpha(BLACK ,0.4));
 	// gigantic ass settings title
 	char *title = "Settings";
-	float tSize = GetScreenWidth() * 0.05;
+	float tSize = getWidth() * 0.05;
 	int size = MeasureText(title, tSize);
 	// dropshadow
-	drawText(title, middle - size / 2 + GetScreenWidth() * 0.004, GetScreenHeight() * 0.03, tSize, DARKGRAY);
+	drawText(title, middle - size / 2 + getWidth() * 0.004, getHeight() * 0.03, tSize, DARKGRAY);
 	// real title
-	drawText(title, middle - size / 2, GetScreenHeight() * 0.02, tSize, WHITE);
+	drawText(title, middle - size / 2, getHeight() * 0.02, tSize, WHITE);
 
 	
 	menuScroll += GetMouseWheelMove() * .04;
 	menuScrollSmooth += (menuScroll - menuScrollSmooth) * GetFrameTime() * 15;
 	if (IsMouseButtonDown(0))
 	{ // scroll by dragging
-		menuScroll += GetMouseDelta().y / GetScreenHeight();
+		menuScroll += GetMouseDelta().y / getHeight();
 	}
 
 	menuScroll = (int)fmin(fmax(menuScroll, 0), 1);
 
-	Rectangle settingsRect = (Rectangle){.x=0, .y=GetScreenHeight()*0.13, .width=GetScreenWidth(), .height=GetScreenHeight()};
+	Rectangle settingsRect = (Rectangle){.x=0, .y=getHeight()*0.13, .width=getWidth(), .height=getHeight()};
 	BeginScissorMode(settingsRect.x, settingsRect.y, settingsRect.width, settingsRect.height);
 
 		char zoom[10] = {0};
@@ -170,7 +175,7 @@ void fSettings(bool reset)
 			snprintf(zoom, 10, "%i", _settings.zoom);
 		static bool zoomBoxSelected = false;
 
-		Rectangle zoomBox = (Rectangle){.x = GetScreenWidth() * 0.1, .y = GetScreenHeight() * (0.7+menuScrollSmooth), .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+		Rectangle zoomBox = (Rectangle){.x = getWidth() * 0.1, .y = getHeight() * (0.7+menuScrollSmooth), .width = getWidth() * 0.2, .height = getHeight() * 0.07};
 		textBox(zoomBox, zoom, &zoomBoxSelected);
 
 		if(!mouseInRect(settingsRect))
@@ -178,9 +183,9 @@ void fSettings(bool reset)
 
 		_settings.zoom = atoi(zoom);
 		_settings.zoom = fmin(fmax(_settings.zoom, 0), 300);
-		tSize = GetScreenWidth() * 0.03;
+		tSize = getWidth() * 0.03;
 		size = MeasureText("zoom", tSize);
-		drawText("zoom", zoomBox.x + zoomBox.width / 2 - size / 2, zoomBox.y - GetScreenHeight() * 0.05, tSize, WHITE);
+		drawText("zoom", zoomBox.x + zoomBox.width / 2 - size / 2, zoomBox.y - getHeight() * 0.05, tSize, WHITE);
 
 
 		
@@ -189,7 +194,7 @@ void fSettings(bool reset)
 			snprintf(noteSize, 10, "%i", _settings.noteSize);
 		static bool noteSizeBoxSelected = false;
 
-		Rectangle noteSizeBox = (Rectangle){.x = GetScreenWidth() * 0.52, .y = GetScreenHeight() * (0.5+menuScrollSmooth), .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+		Rectangle noteSizeBox = (Rectangle){.x = getWidth() * 0.52, .y = getHeight() * (0.5+menuScrollSmooth), .width = getWidth() * 0.2, .height = getHeight() * 0.07};
 		textBox(noteSizeBox, noteSize, &noteSizeBoxSelected);
 
 		if(!mouseInRect(settingsRect))
@@ -197,9 +202,9 @@ void fSettings(bool reset)
 
 		_settings.noteSize = atoi(noteSize);
 		_settings.noteSize = fmin(fmax(_settings.noteSize, 0), 20);
-		tSize = GetScreenWidth() * 0.03;
+		tSize = getWidth() * 0.03;
 		size = MeasureText("noteSize", tSize);
-		drawText("noteSize", noteSizeBox.x + noteSizeBox.width / 2 - size / 2, noteSizeBox.y - GetScreenHeight() * 0.05, tSize, WHITE);
+		drawText("noteSize", noteSizeBox.x + noteSizeBox.width / 2 - size / 2, noteSizeBox.y - getHeight() * 0.05, tSize, WHITE);
 
 
 
@@ -207,14 +212,14 @@ void fSettings(bool reset)
 
 
 		static bool nameBoxSelected = false;
-		Rectangle nameBox = (Rectangle){.x = GetScreenWidth() * 0.52, .y = GetScreenHeight() * (0.3+menuScrollSmooth), .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+		Rectangle nameBox = (Rectangle){.x = getWidth() * 0.52, .y = getHeight() * (0.3+menuScrollSmooth), .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 		textBox(nameBox, _playerName, &nameBoxSelected);
 
 		char offset[10] = {0};
 		if (_settings.offset != 0)
 			snprintf(offset, 10, "%i", (int)(_settings.offset*1000));
 		static bool offsetBoxSelected = false;
-		Rectangle offsetBox = (Rectangle){.x = GetScreenWidth() * 0.1, .y = GetScreenHeight() * (0.85+menuScrollSmooth), .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+		Rectangle offsetBox = (Rectangle){.x = getWidth() * 0.1, .y = getHeight() * (0.85+menuScrollSmooth), .width = getWidth() * 0.2, .height = getHeight() * 0.07};
 		textBox(offsetBox, offset, &offsetBoxSelected);
 		_settings.offset = (float)atoi(offset);
 		_settings.offset = fmin(fmax(_settings.offset, -300), 300);
@@ -227,45 +232,45 @@ void fSettings(bool reset)
 		
 
 		static bool offsetSliderSelected = false;
-		Rectangle offsetSlider = (Rectangle){.x = GetScreenWidth() * 0.1, .y = GetScreenHeight() * (0.9+menuScrollSmooth), .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.03};
+		Rectangle offsetSlider = (Rectangle){.x = getWidth() * 0.1, .y = getHeight() * (0.9+menuScrollSmooth), .width = getWidth() * 0.2, .height = getHeight() * 0.03};
 		int tempOffset = _settings.offset * 1000;
 		slider(offsetSlider, &offsetSliderSelected, &tempOffset, 300, -300);
 		_settings.offset = tempOffset * 0.001;
 
-		tSize = GetScreenWidth() * 0.03;
+		tSize = getWidth() * 0.03;
 		size = MeasureText("offset", tSize);
-		drawText("offset", offsetBox.x + offsetBox.width / 2 - size / 2, offsetBox.y - GetScreenHeight() * 0.05, tSize, WHITE);
+		drawText("offset", offsetBox.x + offsetBox.width / 2 - size / 2, offsetBox.y - getHeight() * 0.05, tSize, WHITE);
 
 		if(!mouseInRect(settingsRect))
 			offsetBoxSelected = false;
 
 		static bool gvBoolSelected = false;
-		Rectangle gvSlider = (Rectangle){.x = GetScreenWidth() * 0.05, .y = GetScreenHeight() * (0.3+menuScrollSmooth), .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.03};
+		Rectangle gvSlider = (Rectangle){.x = getWidth() * 0.05, .y = getHeight() * (0.3+menuScrollSmooth), .width = getWidth() * 0.3, .height = getHeight() * 0.03};
 		slider(gvSlider, &gvBoolSelected, &_settings.volumeGlobal, 100, 0);
-		tSize = GetScreenWidth() * 0.03;
+		tSize = getWidth() * 0.03;
 		size = MeasureText("global volume", tSize);
-		drawText("global volume", gvSlider.x + gvSlider.width / 2 - size / 2, gvSlider.y - GetScreenHeight() * 0.05, tSize, WHITE);
+		drawText("global volume", gvSlider.x + gvSlider.width / 2 - size / 2, gvSlider.y - getHeight() * 0.05, tSize, WHITE);
 
 		if(!mouseInRect(settingsRect))
 			gvBoolSelected = false;
 
 		static bool mvBoolSelected = false;
-		Rectangle mvSlider = (Rectangle){.x = GetScreenWidth() * 0.05, .y = GetScreenHeight() * (0.45+menuScrollSmooth), .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.03};
+		Rectangle mvSlider = (Rectangle){.x = getWidth() * 0.05, .y = getHeight() * (0.45+menuScrollSmooth), .width = getWidth() * 0.3, .height = getHeight() * 0.03};
 		slider(mvSlider, &mvBoolSelected, &_settings.volumeMusic, 100, 0);
-		tSize = GetScreenWidth() * 0.03;
+		tSize = getWidth() * 0.03;
 		size = MeasureText("music volume", tSize);
-		drawText("music volume", mvSlider.x + mvSlider.width / 2 - size / 2, mvSlider.y - GetScreenHeight() * 0.05, tSize, WHITE);
+		drawText("music volume", mvSlider.x + mvSlider.width / 2 - size / 2, mvSlider.y - getHeight() * 0.05, tSize, WHITE);
 
 		if(!mouseInRect(settingsRect))
 			mvBoolSelected = false;
 
 
 		static bool aevBoolSelected = false;
-		Rectangle aevSlider = (Rectangle){.x = GetScreenWidth() * 0.05, .y = GetScreenHeight() * (0.6+menuScrollSmooth), .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.03};
+		Rectangle aevSlider = (Rectangle){.x = getWidth() * 0.05, .y = getHeight() * (0.6+menuScrollSmooth), .width = getWidth() * 0.3, .height = getHeight() * 0.03};
 		slider(aevSlider, &aevBoolSelected, &_settings.volumeSoundEffects, 100, 0);
-		tSize = GetScreenWidth() * 0.03;
+		tSize = getWidth() * 0.03;
 		size = MeasureText("sound sffect volume", tSize);
-		drawText("sound Effect volume", aevSlider.x + aevSlider.width / 2 - size / 2, aevSlider.y - GetScreenHeight() * 0.05, tSize, WHITE);
+		drawText("sound Effect volume", aevSlider.x + aevSlider.width / 2 - size / 2, aevSlider.y - getHeight() * 0.05, tSize, WHITE);
 
 		if(!mouseInRect(settingsRect))
 			aevBoolSelected = false;
@@ -273,7 +278,7 @@ void fSettings(bool reset)
 		drawVignette();
 	EndScissorMode();
 
-	if ( IsKeyPressed(KEY_ESCAPE) || interactableButton("Back", 0.03, GetScreenWidth() * 0.05, GetScreenHeight() * 0.05, GetScreenWidth() * 0.1, GetScreenHeight() * 0.05))
+	if ( IsKeyPressed(KEY_ESCAPE) || interactableButton("Back", 0.03, getWidth() * 0.05, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
 	{
 		_pGameplayFunction = &fMainMenu;
 		_transition = 0.1;
@@ -298,12 +303,12 @@ void fPause(bool reset)
 	dNotes();
 	drawVignette();
 	drawProgressBar();
-	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
+	DrawRectangle(0, 0, getWidth(), getHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
 
 	// TODO dynamically change seperation depending on the amount of buttons?
-	float middle = GetScreenWidth() / 2;
+	float middle = getWidth() / 2;
 
-	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("Continue", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.3, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
+	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("Continue", 0.05, middle - getWidth() * 0.15, getHeight() * 0.3, getWidth() * 0.3, getHeight() * 0.1))
 	{
 		if (_pNextGameplayFunction == &fPlaying)
 		{
@@ -313,14 +318,14 @@ void fPause(bool reset)
 		else
 			_pGameplayFunction = _pNextGameplayFunction;
 	}
-	if (_pNextGameplayFunction == &fEditor && interactableButton("Save", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.5, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
+	if (_pNextGameplayFunction == &fEditor && interactableButton("Save", 0.05, middle - getWidth() * 0.15, getHeight() * 0.5, getWidth() * 0.3, getHeight() * 0.1))
 	{
 		saveMap();
 		_pGameplayFunction = _pNextGameplayFunction;
 		// gotoMainMenu(false);
 	}
 
-	if (_pNextGameplayFunction == &fPlaying && interactableButton("retry", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.5, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
+	if (_pNextGameplayFunction == &fPlaying && interactableButton("retry", 0.05, middle - getWidth() * 0.15, getHeight() * 0.5, getWidth() * 0.3, getHeight() * 0.1))
 	{
 		_pGameplayFunction = fCountDown;
 		_noteIndex = 0;
@@ -329,7 +334,7 @@ void fPause(bool reset)
 		fPlaying(true);
 	}
 
-	if (_pNextGameplayFunction == &fRecording && interactableButton("retry", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.5, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
+	if (_pNextGameplayFunction == &fRecording && interactableButton("retry", 0.05, middle - getWidth() * 0.15, getHeight() * 0.5, getWidth() * 0.3, getHeight() * 0.1))
 	{
 		_pGameplayFunction = _pNextGameplayFunction;
 		_noteIndex = 0;
@@ -338,7 +343,7 @@ void fPause(bool reset)
 		fRecording(true);
 	}
 
-	if (interactableButton("Exit", 0.05, middle - GetScreenWidth() * 0.15, GetScreenHeight() * 0.7, GetScreenWidth() * 0.3, GetScreenHeight() * 0.1))
+	if (interactableButton("Exit", 0.05, middle - getWidth() * 0.15, getHeight() * 0.7, getWidth() * 0.3, getHeight() * 0.1))
 	{
 		unloadMap();
 		gotoMainMenu(false);
@@ -557,7 +562,7 @@ void fMapSelect(bool reset)
 	}
 	ClearBackground(BLACK);
 	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
-					 (Rectangle){.x = 0, .y = 0, .height = GetScreenHeight(), .width = GetScreenWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
+					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
 
 	if (selectingMods)
 	{
@@ -565,7 +570,7 @@ void fMapSelect(bool reset)
 		_musicPlaying = false;
 		hoverPeriod = 0;
 		drawVignette();
-		if (interactableButton("Back", 0.03, GetScreenWidth() * 0.05, GetScreenHeight() * 0.05, GetScreenWidth() * 0.1, GetScreenHeight() * 0.05))
+		if (IsKeyPressed(KEY_ESCAPE) || interactableButton("Back", 0.03, getWidth() * 0.05, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
 		{
 			selectingMods = false;
 			return;
@@ -576,7 +581,7 @@ void fMapSelect(bool reset)
 		{
 			int x = i % 3;
 			int y = i / 3;
-			if (interactableButton(_mods[i].name, 0.03, GetScreenWidth() * (0.2 + x * 0.22), GetScreenHeight() * (0.6 + y * 0.12), GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+			if (interactableButton(_mods[i].name, 0.03, getWidth() * (0.2 + x * 0.22), getHeight() * (0.6 + y * 0.12), getWidth() * 0.2, getHeight() * 0.07))
 			{
 				// enable mod
 				int modId = _mods[i].id;
@@ -614,7 +619,7 @@ void fMapSelect(bool reset)
 		{
 			if (_activeMod[i] != 0)
 			{
-				drawText(_activeMod[i]->name, GetScreenWidth() * (0.05 + 0.12 * modsSoFar), GetScreenHeight() * 0.9, GetScreenWidth() * 0.03, WHITE);
+				drawText(_activeMod[i]->name, getWidth() * (0.05 + 0.12 * modsSoFar), getHeight() * 0.9, getWidth() * 0.03, WHITE);
 				modsSoFar++;
 			}
 		}
@@ -622,14 +627,14 @@ void fMapSelect(bool reset)
 		drawCursor();
 		return;
 	}
-	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight()*0.13, BLACK);
+	DrawRectangle(0, 0, getWidth(), getHeight()*0.13, BLACK);
 	static float menuScroll = 0;
 	static float menuScrollSmooth = 0;
 	menuScroll += GetMouseWheelMove() * .04;
 	menuScrollSmooth += (menuScroll - menuScrollSmooth) * GetFrameTime() * 15;
 	if (IsMouseButtonDown(0))
 	{ // scroll by dragging
-		menuScroll += GetMouseDelta().y / GetScreenHeight();
+		menuScroll += GetMouseDelta().y / getHeight();
 	}
 	const float scrollSpeed = .03;
 	if (IsKeyDown(KEY_UP))
@@ -642,18 +647,18 @@ void fMapSelect(bool reset)
 	}
 	menuScroll = clamp(menuScroll, -.5 * floor(amount / 2), 0);
 
-	if (interactableButton("Mods", 0.03, GetScreenWidth() * 0.2, GetScreenHeight() * 0.05, GetScreenWidth() * 0.1, GetScreenHeight() * 0.05))
+	if (interactableButton("Mods", 0.03, getWidth() * 0.2, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
 	{
 		selectingMods = true;
 	}
 
-	if (interactableButton("Back", 0.03, GetScreenWidth() * 0.05, GetScreenHeight() * 0.05, GetScreenWidth() * 0.1, GetScreenHeight() * 0.05))
+	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("Back", 0.03, getWidth() * 0.05, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
 	{
 		_pGameplayFunction = &fMainMenu;
 		_transition = 0.1;
 	}
 
-	textBox((Rectangle){.x = GetScreenWidth() * 0.35, .y = GetScreenHeight() * 0.05, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.05}, search, &searchSelected);
+	textBox((Rectangle){.x = getWidth() * 0.35, .y = getHeight() * 0.05, .width = getWidth() * 0.2, .height = getHeight() * 0.05}, search, &searchSelected);
 
 	if (hoverMap == -1)
 	{
@@ -669,7 +674,7 @@ void fMapSelect(bool reset)
 		// 		_musicFrameCount = _paMaps[hoverMap].musicPreviewOffset * 48000 * 2;
 	}
 	// draw map button
-	Rectangle mapSelectRect = (Rectangle){.x = 0, .y = GetScreenHeight() * 0.13, .width = GetScreenWidth(), .height = GetScreenHeight()};
+	Rectangle mapSelectRect = (Rectangle){.x = 0, .y = getHeight() * 0.13, .width = getWidth(), .height = getHeight()};
 	BeginScissorMode(mapSelectRect.x, mapSelectRect.y, mapSelectRect.width, mapSelectRect.height);
 	int mapCount = -1;
 	for (int i = 0; i < amount; i++)
@@ -700,8 +705,8 @@ void fMapSelect(bool reset)
 		}
 
 		mapCount++;
-		int x = GetScreenWidth() * 0.02 + GetScreenWidth() * 0.32 * (mapCount % 3);
-		Rectangle mapButton = (Rectangle){.x = x, .y = menuScrollSmooth * GetScreenHeight() + GetScreenHeight() * ((floor(i / 3) > floor(selectedMap / 3) && selectedMap != -1 ? 0.3 : 0.225) + 0.3375 * floor(mapCount / 3)), .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.3};
+		int x = getWidth() * 0.02 + getWidth() * 0.32 * (mapCount % 3);
+		Rectangle mapButton = (Rectangle){.x = x, .y = menuScrollSmooth * getHeight() + getHeight() * ((floor(i / 3) > floor(selectedMap / 3) && selectedMap != -1 ? 0.3 : 0.225) + 0.3375 * floor(mapCount / 3)), .width = getWidth() * 0.3, .height = getHeight() * 0.3};
 		if ((mouseInRect(mapButton) || selectedMap == i) && mouseInRect(mapSelectRect))
 		{
 			if (hoverPeriod > 1 && hoverPeriod < 2)
@@ -814,8 +819,8 @@ void fMapSelect(bool reset)
 			strcpy(str, _paMaps[selMap].name);
 			strcat(str, " - ");
 			strcat(str, _paMaps[selMap].artist);
-			int textSize = measureText(str, GetScreenWidth() * 0.05);
-			drawText(str, GetScreenWidth() * 0.9 - textSize, GetScreenHeight() * 0.92, GetScreenWidth() * 0.05, WHITE);
+			int textSize = measureText(str, getWidth() * 0.05);
+			drawText(str, getWidth() * 0.9 - textSize, getHeight() * 0.92, getWidth() * 0.05, WHITE);
 		}
 	}
 
@@ -864,18 +869,18 @@ void fNewMap(bool reset)
 	}
 	ClearBackground(BLACK);
 	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
-					 (Rectangle){.x = 0, .y = 0, .height = GetScreenHeight(), .width = GetScreenWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
+					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
 
-	int middle = GetScreenWidth() / 2;
+	int middle = getWidth() / 2;
 
-	if (interactableButton("Back", 0.03, GetScreenWidth() * 0.05, GetScreenHeight() * 0.05, GetScreenWidth() * 0.1, GetScreenHeight() * 0.05))
+	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("Back", 0.03, getWidth() * 0.05, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
 	{
 		_pGameplayFunction = &fMainMenu;
 		_transition = 0.1;
 		return;
 	}
 
-	if (interactableButton("Finish", 0.02, GetScreenWidth() * 0.85, GetScreenHeight() * 0.85, GetScreenWidth() * 0.1, GetScreenHeight() * 0.05))
+	if (interactableButton("Finish", 0.02, getWidth() * 0.85, getHeight() * 0.85, getWidth() * 0.1, getHeight() * 0.05))
 	{
 		if (pMusic == 0)
 			return;
@@ -925,52 +930,52 @@ void fNewMap(bool reset)
 
 	// text boxes
 	static bool nameBoxSelected = false;
-	Rectangle nameBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.375, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle nameBox = (Rectangle){.x = middle, .y = getHeight() * 0.375, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	textBox(nameBox, newMap.name, &nameBoxSelected);
-	drawText("name", middle, GetScreenHeight() * 0.325, GetScreenHeight() * 0.05, WHITE);
+	drawText("name", middle, getHeight() * 0.325, getHeight() * 0.05, WHITE);
 
 	static bool artistBoxSelected = false;
-	Rectangle artistBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.5, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle artistBox = (Rectangle){.x = middle, .y = getHeight() * 0.5, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	textBox(artistBox, newMap.artist, &artistBoxSelected);
-	drawText("artist", middle, GetScreenHeight() * 0.45, GetScreenHeight() * 0.05, WHITE);
+	drawText("artist", middle, getHeight() * 0.45, getHeight() * 0.05, WHITE);
 
 	static bool creatorBoxSelected = false;
-	Rectangle creatorBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.625, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle creatorBox = (Rectangle){.x = middle, .y = getHeight() * 0.625, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	textBox(creatorBox, newMap.mapCreator, &creatorBoxSelected);
-	drawText("creator", middle, GetScreenHeight() * 0.575, GetScreenHeight() * 0.05, WHITE);
+	drawText("creator", middle, getHeight() * 0.575, getHeight() * 0.05, WHITE);
 
 	char str[100] = {'\0'};
 	if (newMap.bpm != 0)
 		snprintf(str, 100, "%i", newMap.bpm);
 	static bool bpmBoxSelected = false;
-	Rectangle bpmBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.875, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle bpmBox = (Rectangle){.x = middle, .y = getHeight() * 0.875, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	textBox(bpmBox, str, &bpmBoxSelected);
 	newMap.bpm = fmin(fmax(atoi(str), 0), 500);
-	drawText("bpm", middle, GetScreenHeight() * 0.825, GetScreenHeight() * 0.05, WHITE);
+	drawText("bpm", middle, getHeight() * 0.825, getHeight() * 0.05, WHITE);
 
 	static bool difficultyBoxSelected = false;
-	Rectangle difficultyBox = (Rectangle){.x = middle, .y = GetScreenHeight() * 0.75, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle difficultyBox = (Rectangle){.x = middle, .y = getHeight() * 0.75, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	numberBox(difficultyBox, &newMap.difficulty, &difficultyBoxSelected);
 	if (newMap.difficulty < 0)
 		newMap.difficulty = 0;
 	if (newMap.difficulty > 9)
 		newMap.difficulty = 0;
-	drawText("difficulty", middle, GetScreenHeight() * 0.70, GetScreenHeight() * 0.05, WHITE);
+	drawText("difficulty", middle, getHeight() * 0.70, getHeight() * 0.05, WHITE);
 
-	int textSize = measureText("Drop in .png, .wav or .mp3", GetScreenWidth() * 0.04);
-	drawText("Drop in .png, .wav or .mp3", GetScreenWidth() * 0.5 - textSize / 2, GetScreenHeight() * 0.2, GetScreenWidth() * 0.04, WHITE);
+	int textSize = measureText("Drop in .png, .wav or .mp3", getWidth() * 0.04);
+	drawText("Drop in .png, .wav or .mp3", getWidth() * 0.5 - textSize / 2, getHeight() * 0.2, getWidth() * 0.04, WHITE);
 
-	textSize = measureText("missing music file", GetScreenWidth() * 0.03);
+	textSize = measureText("missing music file", getWidth() * 0.03);
 	if (pMusic == 0)
-		drawText("missing music file", GetScreenWidth() * 0.2 - textSize / 2, GetScreenHeight() * 0.6, GetScreenWidth() * 0.03, WHITE);
+		drawText("missing music file", getWidth() * 0.2 - textSize / 2, getHeight() * 0.6, getWidth() * 0.03, WHITE);
 	else
-		drawText("got music file", GetScreenWidth() * 0.2 - textSize / 2, GetScreenHeight() * 0.6, GetScreenWidth() * 0.03, WHITE);
+		drawText("got music file", getWidth() * 0.2 - textSize / 2, getHeight() * 0.6, getWidth() * 0.03, WHITE);
 
-	textSize = measureText("missing image file", GetScreenWidth() * 0.03);
+	textSize = measureText("missing image file", getWidth() * 0.03);
 	if (pImage == 0)
-		drawText("missing image file", GetScreenWidth() * 0.2 - textSize / 2, GetScreenHeight() * 0.7, GetScreenWidth() * 0.03, WHITE);
+		drawText("missing image file", getWidth() * 0.2 - textSize / 2, getHeight() * 0.7, getWidth() * 0.03, WHITE);
 	else
-		drawText("got image file", GetScreenWidth() * 0.2 - textSize / 2, GetScreenHeight() * 0.7, GetScreenWidth() * 0.03, WHITE);
+		drawText("got image file", getWidth() * 0.2 - textSize / 2, getHeight() * 0.7, getWidth() * 0.03, WHITE);
 
 	drawCursor();
 
@@ -1084,8 +1089,8 @@ void fIntro(bool reset)
 {
 	static float time = 0;
 	fMainMenu(true);
-	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ColorAlpha(BLACK, (1 - time) * 0.7));
-	DrawRing((Vector2){.x = GetScreenWidth() / 2, .y = GetScreenHeight() / 2}, time * GetScreenWidth() * 1, time * GetScreenWidth() * 0.8, 0, 360, 360, ColorAlpha(WHITE, 1 - time));
+	DrawRectangle(0, 0, getWidth(), getHeight(), ColorAlpha(BLACK, (1 - time) * 0.7));
+	DrawRing((Vector2){.x = getWidth() / 2, .y = getHeight() / 2}, time * getWidth() * 1, time * getWidth() * 0.8, 0, 360, 360, ColorAlpha(WHITE, 1 - time));
 	time += fmin(GetFrameTime() / 2, 0.016);
 	if (time > 1)
 	{

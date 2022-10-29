@@ -345,13 +345,13 @@ void fEditorSongSettings(bool reset)
 	drawVignette();
 
 	// Darken background
-	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
+	DrawRectangle(0, 0, getWidth(), getHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
 	// BPM setting
 	char bpm[10] = {0};
 	if (_map->bpm != 0)
 		snprintf(bpm, 10, "%i", _map->bpm);
 	static bool bpmBoxSelected = false;
-	Rectangle bpmBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.1, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle bpmBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.1, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	textBox(bpmBox, bpm, &bpmBoxSelected);
 	_map->bpm = atoi(bpm);
 	_map->bpm = fmin(fmax(_map->bpm, 0), 300);
@@ -361,7 +361,7 @@ void fEditorSongSettings(bool reset)
 	if (_map->offset != 0)
 		snprintf(offset, 10, "%i", _map->offset);
 	static bool offsetBoxSelected = false;
-	Rectangle offsetBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.18, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle offsetBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.18, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	textBox(offsetBox, offset, &offsetBoxSelected);
 	_map->offset = atoi(offset);
 	_map->offset = fmin(fmax(_map->offset, 0), 5000);
@@ -370,7 +370,7 @@ void fEditorSongSettings(bool reset)
 	char songName[50] = {0};
 	snprintf(songName, 50, "%s", _map->name);
 	static bool songNameBoxSelected = false;
-	Rectangle songNameBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.26, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle songNameBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.26, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	textBox(songNameBox, songName, &songNameBoxSelected);
 	strcpy(_map->name, songName);
 
@@ -378,7 +378,7 @@ void fEditorSongSettings(bool reset)
 	char creator[50] = {0};
 	snprintf(creator, 50, "%s", _map->artist);
 	static bool creatorBoxSelected = false;
-	Rectangle creatorBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.34, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle creatorBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.34, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	textBox(creatorBox, creator, &creatorBoxSelected);
 	strcpy(_map->artist, creator);
 
@@ -388,7 +388,7 @@ void fEditorSongSettings(bool reset)
 	if (_map->musicPreviewOffset != 0)
 		snprintf(musicPreviewOffset, 10, "%i", (int)(_map->musicPreviewOffset * 1000));
 	static bool musicPreviewOffsetBoxSelected = false;
-	Rectangle musicPreviewOffsetBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.42, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle musicPreviewOffsetBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.42, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	textBox(musicPreviewOffsetBox, musicPreviewOffset, &musicPreviewOffsetBoxSelected);
 	_map->musicPreviewOffset = atoi(musicPreviewOffset) / 1000.0;
 	_map->musicPreviewOffset = fmin(fmax(_map->musicPreviewOffset, 0), _pMusic->size);
@@ -399,7 +399,7 @@ void fEditorSongSettings(bool reset)
 	if (_map->difficulty != 0)
 		snprintf(difficulty, 10, "%i", _map->difficulty);
 	static bool difficultyBoxSelected = false;
-	Rectangle difficultyBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.50, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle difficultyBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.50, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	textBox(difficultyBox, difficulty, &difficultyBoxSelected);
 	_map->difficulty = atoi(difficulty);
 
@@ -409,54 +409,54 @@ void fEditorSongSettings(bool reset)
 	if (_map->beats != 0)
 		snprintf(beats, 10, "%i", _map->beats);
 	static bool beatsBoxSelected = false;
-	Rectangle beatsBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.58, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle beatsBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.58, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	textBox(beatsBox, beats, &beatsBoxSelected);
 	_map->beats = atoi(beats);
 
 	// Drawing text next to the buttons
 	char *text = "BPM:";
-	float tSize = GetScreenWidth() * 0.025;
+	float tSize = getWidth() * 0.025;
 	int size = measureText(text, tSize);
-	drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.12, tSize, WHITE);
+	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.12, tSize, WHITE);
 
 	text = "Song Offset:";
-	tSize = GetScreenWidth() * 0.025;
+	tSize = getWidth() * 0.025;
 	size = measureText(text, tSize);
-	drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.20, tSize, WHITE);
+	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.20, tSize, WHITE);
 
 	text = "Song name:";
-	tSize = GetScreenWidth() * 0.025;
+	tSize = getWidth() * 0.025;
 	size = measureText(text, tSize);
-	drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.28, tSize, WHITE);
+	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.28, tSize, WHITE);
 
 	text = "Artist:";
-	tSize = GetScreenWidth() * 0.025;
+	tSize = getWidth() * 0.025;
 	size = measureText(text, tSize);
-	drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.36, tSize, WHITE);
+	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.36, tSize, WHITE);
 
 	text = "Preview offset:";
-	tSize = GetScreenWidth() * 0.025;
+	tSize = getWidth() * 0.025;
 	size = measureText(text, tSize);
-	drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() *  0.42, tSize, WHITE);
+	drawText(text, getWidth() * 0.2 - size / 2, getHeight() *  0.42, tSize, WHITE);
 
 	text = "Difficulty:";
-	tSize = GetScreenWidth() * 0.025;
+	tSize = getWidth() * 0.025;
 	size = measureText(text, tSize);
-	drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() *  0.50, tSize, WHITE);
+	drawText(text, getWidth() * 0.2 - size / 2, getHeight() *  0.50, tSize, WHITE);
 
 	text = "Beats:";
-	tSize = GetScreenWidth() * 0.025;
+	tSize = getWidth() * 0.025;
 	size = measureText(text, tSize);
-	drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() *  0.58, tSize, WHITE);
+	drawText(text, getWidth() * 0.2 - size / 2, getHeight() *  0.58, tSize, WHITE);
 
 
 	// text = "Playback speed:";
-	// tSize = GetScreenWidth() * 0.025;
+	// tSize = getWidth() * 0.025;
 	// size = measureText(text, tSize);
-	// drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.50, tSize, WHITE);
+	// drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.50, tSize, WHITE);
 
 	if(IsKeyPressed(KEY_ESCAPE) ||
-		interactableButton("back", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.05, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+		interactableButton("back", 0.025, getWidth() * 0.8, getHeight() * 0.05, getWidth() * 0.2, getHeight() * 0.07))
 	{
 		_pGameplayFunction = &fEditor;
 	}
@@ -476,11 +476,11 @@ void fEditorTimingSettings (bool reset)
 
 	for(int i = 0; i < _amountTimingSegments && _paTimingSegment; i++)
 	{
-		DrawCircle(musicTimeToScreen(_paTimingSegment[i].time), GetScreenHeight()*0.3, GetScreenWidth()*0.05, WHITE);
+		DrawCircle(musicTimeToScreen(_paTimingSegment[i].time), getHeight()*0.3, getWidth()*0.05, WHITE);
 	}
 
 	// Darken background
-	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
+	DrawRectangle(0, 0, getWidth(), getHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
 
 	TimingSegment * timSeg = getTimingSignaturePointer(_musicHead);
 	// BPM setting
@@ -488,7 +488,7 @@ void fEditorTimingSettings (bool reset)
 	if (timSeg->bpm != 0)
 		snprintf(bpm, 10, "%i", timSeg->bpm);
 	static bool bpmBoxSelected = false;
-	Rectangle bpmBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.1, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle bpmBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.1, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	textBox(bpmBox, bpm, &bpmBoxSelected);
 	timSeg->bpm = atoi(bpm);
 	timSeg->bpm = fmin(fmax(timSeg->bpm, 0), 300);
@@ -498,7 +498,7 @@ void fEditorTimingSettings (bool reset)
 	if (timSeg->time != 0)
 		snprintf(time, 10, "%i", (int)(timSeg->time*1000));
 	static bool timeBoxSelected = false;
-	Rectangle timeBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.18, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle timeBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.18, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	textBox(timeBox, time, &timeBoxSelected);
 	timSeg->time = atoi(time) / 1000.0;
 
@@ -507,28 +507,28 @@ void fEditorTimingSettings (bool reset)
 	if (timSeg->beats != 0)
 		snprintf(beats, 10, "%i", timSeg->beats);
 	static bool beatsBoxSelected = false;
-	Rectangle beatsBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.26, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle beatsBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.26, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	textBox(beatsBox, beats, &beatsBoxSelected);
 	timSeg->beats = atoi(beats);
 	timSeg->beats = fmin(fmax(timSeg->beats, 0), 300);
 
 	// Drawing text next to the buttons
 	char *text = "BPM:";
-	float tSize = GetScreenWidth() * 0.025;
+	float tSize = getWidth() * 0.025;
 	int size = measureText(text, tSize);
-	drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.12, tSize, WHITE);
+	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.12, tSize, WHITE);
 
 	text = "Time:";
-	tSize = GetScreenWidth() * 0.025;
+	tSize = getWidth() * 0.025;
 	size = measureText(text, tSize);
-	drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.20, tSize, WHITE);
+	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.20, tSize, WHITE);
 
 	text = "Beats:";
-	tSize = GetScreenWidth() * 0.025;
+	tSize = getWidth() * 0.025;
 	size = measureText(text, tSize);
-	drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.28, tSize, WHITE);
+	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.28, tSize, WHITE);
 
-	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("back", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.15, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("back", 0.025, getWidth() * 0.8, getHeight() * 0.15, getWidth() * 0.2, getHeight() * 0.07))
 	{
 		_pGameplayFunction = &fEditor;
 	}
@@ -546,16 +546,16 @@ void fEditorNoteSettings(bool reset)
 	drawBars();
 	drawProgressBarI(false);
 	// Darken background
-	DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ColorAlpha(BLACK, 0.5));
+	DrawRectangle(0, 0, getWidth(), getHeight(), ColorAlpha(BLACK, 0.5));
 
-	if (interactableButton("Animation", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.5, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+	if (interactableButton("Animation", 0.025, getWidth() * 0.8, getHeight() * 0.5, getWidth() * 0.2, getHeight() * 0.07))
 	{
 		//Run animation tab
 		_pGameplayFunction = &fEditorAnimation;
 		return;
 	}
 
-	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("back", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.15, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("back", 0.025, getWidth() * 0.8, getHeight() * 0.15, getWidth() * 0.2, getHeight() * 0.07))
 	{
 		_pGameplayFunction = &fEditor;
 		//apply changes to first note to all selected notes
@@ -632,7 +632,7 @@ void fEditorNoteSettings(bool reset)
 		snprintf(sprite, 100, "%s", _selectedNotes[0]->texture_File);
 	
 	static bool spriteBoxSelected = false;
-	Rectangle spriteBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.1, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle spriteBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.1, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	textBox(spriteBox, sprite, &spriteBoxSelected);
 	if (strlen(sprite) != 0)
 	{
@@ -646,9 +646,9 @@ void fEditorNoteSettings(bool reset)
 	}
 
 	char *text = "sprite file:";
-	float tSize = GetScreenWidth() * 0.025;
+	float tSize = getWidth() * 0.025;
 	int size = measureText(text, tSize);
-	drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.1, tSize, WHITE);
+	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.1, tSize, WHITE);
 
 	
 
@@ -670,7 +670,7 @@ void fEditorNoteSettings(bool reset)
 	}
 	
 	static bool healthBoxSelected = false;
-	Rectangle healthBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.2, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle healthBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.2, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	textBox(healthBox, health, &healthBoxSelected);
 	if (healthBoxSelected)
 	{
@@ -682,9 +682,9 @@ void fEditorNoteSettings(bool reset)
 	}
 
 	text = "health:";
-	tSize = GetScreenWidth() * 0.025;
+	tSize = getWidth() * 0.025;
 	size = measureText(text, tSize);
-	drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.2, tSize, WHITE);
+	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.2, tSize, WHITE);
 
 
 	char hitSound[100] = {0};
@@ -692,7 +692,7 @@ void fEditorNoteSettings(bool reset)
 	if (_selectedNotes[0]->hitSE_File != 0)
 		snprintf(hitSound, 100, "%s", _selectedNotes[0]->hitSE_File);
 	static bool hitSoundBoxSelected = false;
-	Rectangle hitSoundBox = (Rectangle){.x = GetScreenWidth() * 0.3, .y = GetScreenHeight() * 0.3, .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
+	Rectangle hitSoundBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.3, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
 	textBox(hitSoundBox, hitSound, &hitSoundBoxSelected);
 	if (strlen(hitSound) != 0)
 	{
@@ -706,11 +706,11 @@ void fEditorNoteSettings(bool reset)
 	}
 
 	text = "hitSound file:";
-	tSize = GetScreenWidth() * 0.025;
+	tSize = getWidth() * 0.025;
 	size = measureText(text, tSize);
-	drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.3, tSize, WHITE);
+	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.3, tSize, WHITE);
 
-	if (interactableButton("remove Animation", 0.025, GetScreenWidth() * 0.2, GetScreenHeight() * 0.7, GetScreenWidth() * 0.3, GetScreenHeight() * 0.07))
+	if (interactableButton("remove Animation", 0.025, getWidth() * 0.2, getHeight() * 0.7, getWidth() * 0.3, getHeight() * 0.07))
 	{
 		for(int i = 0; i < _amountSelectedNotes; i++)
 		{
@@ -731,11 +731,11 @@ void fEditorAnimation (bool reset)
 	drawVignette();
 
 	float position = musicTimeToScreen(_musicHead);
-	DrawRectangle(0, 0, position, GetScreenHeight(), ColorAlpha(WHITE, 0.15));
+	DrawRectangle(0, 0, position, getHeight(), ColorAlpha(WHITE, 0.15));
 
-	float middle = GetScreenWidth()*0.5;
-	float timingHelper = GetScreenWidth()*0.005;
-	DrawRectangle(middle-timingHelper, GetScreenHeight()*0.85, timingHelper*2, GetScreenHeight(), ColorAlpha(WHITE, 0.3));
+	float middle = getWidth()*0.5;
+	float timingHelper = getWidth()*0.005;
+	DrawRectangle(middle-timingHelper, getHeight()*0.85, timingHelper*2, getHeight(), ColorAlpha(WHITE, 0.3));
 
 	//animation :)
 	static bool timeLineSelected = false;
@@ -752,14 +752,14 @@ void fEditorAnimation (bool reset)
 		_selectedNotes[0]->animSize = 2;
 	}
 
-	slider((Rectangle){.x=0, .y=GetScreenHeight()*0.9, .width=GetScreenWidth(), .height=GetScreenHeight()*0.03}, &timeLineSelected, &value, 100, -100);
+	slider((Rectangle){.x=0, .y=getHeight()*0.9, .width=getWidth(), .height=getHeight()*0.03}, &timeLineSelected, &value, 100, -100);
 	timeLine = value / 100.0;
 	drawNote(timeLine*_scrollSpeed+_selectedNotes[0]->time, _selectedNotes[0], WHITE, 0);
 	Frame * anim = _selectedNotes[0]->anim;
 	for(int key = 0; key < _selectedNotes[0]->animSize; key++)
 	{
 		//draw keys
-		if(interactableButton("k", 0.01, (anim[key].time)*GetScreenWidth()-GetScreenWidth()*0.01, GetScreenHeight()*0.85, GetScreenWidth()*0.02, GetScreenHeight()*0.05))
+		if(interactableButton("k", 0.01, (anim[key].time)*getWidth()-getWidth()*0.01, getHeight()*0.85, getWidth()*0.02, getHeight()*0.05))
 		{
 			//delete key
 			if(_selectedNotes[0]->animSize <= 2)
@@ -774,14 +774,14 @@ void fEditorAnimation (bool reset)
 		}
 	}
 
-	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("back", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.5, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("back", 0.025, getWidth() * 0.8, getHeight() * 0.5, getWidth() * 0.2, getHeight() * 0.07))
 	{
 		//Run animation tab
 		_pGameplayFunction = &fEditorNoteSettings;
 		return;
 	}
 
-	if(IsMouseButtonReleased(0) && GetMouseY() < GetScreenHeight()*0.85)
+	if(IsMouseButtonReleased(0) && GetMouseY() < getHeight()*0.85)
 	{
 		int index = -1;
 		for(int key = 0; key < _selectedNotes[0]->animSize; key++)
@@ -795,7 +795,7 @@ void fEditorAnimation (bool reset)
 		if(index != -1)
 		{
 			//modify existing frame
-			anim[index].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()+0.05};
+			anim[index].vec = (Vector2){.x=GetMouseX()/(float)getWidth(),.y=GetMouseY()/(float)getHeight()+0.05};
 		}else
 		{
 			//create new frame
@@ -811,7 +811,7 @@ void fEditorAnimation (bool reset)
 				}
 			}
 			_selectedNotes[0]->anim[newIndex].time = (timeLine+1)/2;
-			_selectedNotes[0]->anim[newIndex].vec = (Vector2){.x=GetMouseX()/(float)GetScreenWidth(),.y=GetMouseY()/(float)GetScreenHeight()+0.05};
+			_selectedNotes[0]->anim[newIndex].vec = (Vector2){.x=GetMouseX()/(float)getWidth(),.y=GetMouseY()/(float)getHeight()+0.05};
 		}
 	}
 
@@ -845,7 +845,7 @@ void fEditor(bool reset)
 
 	for(int i = 0; i < _amountTimingSegments && _paTimingSegment; i++)
 	{
-		DrawCircle(musicTimeToScreen(_paTimingSegment[i].time), GetScreenHeight()*0.3, GetScreenWidth()*0.05, WHITE);
+		DrawCircle(musicTimeToScreen(_paTimingSegment[i].time), getHeight()*0.3, getWidth()*0.05, WHITE);
 	}
 
 	TimingSegment timeSeg = getTimingSignature(_musicHead);
@@ -934,7 +934,7 @@ void fEditor(bool reset)
 		}
 		if (IsMouseButtonDown(2))
 		{
-			_musicHead -= GetMouseDelta().x / GetScreenWidth() * _scrollSpeed;
+			_musicHead -= GetMouseDelta().x / getWidth() * _scrollSpeed;
 		}
 		//Pause menu
 		if (IsKeyPressed(KEY_ESCAPE))
@@ -1086,7 +1086,7 @@ void fEditor(bool reset)
 		_scrollSpeed = 0.01;
 	
 	//Selecting notes
-	if (IsMouseButtonPressed(0) && GetMouseY() > GetScreenHeight() * 0.3 && GetMouseY() < GetScreenHeight() * 0.6)
+	if (IsMouseButtonPressed(0) && GetMouseY() > getHeight() * 0.3 && GetMouseY() < getHeight() * 0.6)
 	{
 		if(!IsKeyDown(KEY_LEFT_SHIFT))
 		{
@@ -1130,7 +1130,7 @@ void fEditor(bool reset)
 
 	if (_amountSelectedNotes > 0)
 	{
-		if (interactableButton("Note settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.25, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+		if (interactableButton("Note settings", 0.025, getWidth() * 0.8, getHeight() * 0.25, getWidth() * 0.2, getHeight() * 0.07))
 		{
 			_musicPlaying = false;
 			_pGameplayFunction = &fEditorNoteSettings;
@@ -1139,7 +1139,7 @@ void fEditor(bool reset)
 		}
 	}
 
-	if (interactableButton("Song settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.05, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+	if (interactableButton("Song settings", 0.025, getWidth() * 0.8, getHeight() * 0.05, getWidth() * 0.2, getHeight() * 0.07))
 	{
 		_musicPlaying = false;
 		_pGameplayFunction = &fEditorSongSettings;
@@ -1147,13 +1147,13 @@ void fEditor(bool reset)
 
 	for(int i = 0; i < _amountSelectedNotes; i++)
 	{
-		DrawCircle(musicTimeToScreen(_selectedNotes[i]->time), GetScreenHeight()*0.55, GetScreenWidth()*0.013, BLACK);
-		DrawCircle(musicTimeToScreen(_selectedNotes[i]->time), GetScreenHeight()*0.55, GetScreenWidth()*0.01, WHITE);
+		DrawCircle(musicTimeToScreen(_selectedNotes[i]->time), getHeight()*0.55, getWidth()*0.013, BLACK);
+		DrawCircle(musicTimeToScreen(_selectedNotes[i]->time), getHeight()*0.55, getWidth()*0.01, WHITE);
 	}
 	
 	if(getTimingSignaturePointer(_musicHead))
 	{
-		if (interactableButton("Timing settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.15, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+		if (interactableButton("Timing settings", 0.025, getWidth() * 0.8, getHeight() * 0.15, getWidth() * 0.2, getHeight() * 0.07))
 		{
 			_musicPlaying = false;
 			_pGameplayFunction = &fEditorTimingSettings;
@@ -1163,9 +1163,9 @@ void fEditor(bool reset)
 	// Speed slider
 	static bool speedSlider = false;
 	int speed = _musicSpeed * 4;
-	slider((Rectangle){.x = GetScreenWidth() * 0.1, .y = GetScreenHeight() * 0.05, .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.03}, &speedSlider, &speed, 8, 1);
+	slider((Rectangle){.x = getWidth() * 0.1, .y = getHeight() * 0.05, .width = getWidth() * 0.2, .height = getHeight() * 0.03}, &speedSlider, &speed, 8, 1);
 	_musicSpeed = speed / 4.0;
-	if (interactableButton("reset", 0.03, GetScreenWidth() * 0.32, GetScreenHeight() * 0.05, GetScreenWidth() * 0.1, GetScreenHeight() * 0.05))
+	if (interactableButton("reset", 0.03, getWidth() * 0.32, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
 		_musicSpeed = 1;
 
 	drawCursor();
