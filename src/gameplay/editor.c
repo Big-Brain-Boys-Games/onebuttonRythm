@@ -820,8 +820,12 @@ void fEditorAnimation (bool reset)
 
 void fEditor(bool reset)
 {
+	static bool showTools = false;
+
 	if(reset)
 	{
+		showTools = false;
+		
 		loadMap();
 		for(int i = 0; i < COMMANDBUFFER; i++)
 		{
@@ -847,6 +851,13 @@ void fEditor(bool reset)
 	{
 		DrawCircle(musicTimeToScreen(_paTimingSegment[i].time), getHeight()*0.3, getWidth()*0.05, WHITE);
 	}
+
+	if (interactableButton("Tools", 0.02, getWidth() * 0.45, getHeight() * 0.05, getWidth() * 0.05, getHeight() * 0.03))
+	{
+		showTools = !showTools;
+	}
+
+
 
 	TimingSegment timeSeg = getTimingSignature(_musicHead);
 	float secondsPerBeat = (60.0/timeSeg.bpm) / _barMeasureCount;
@@ -946,142 +957,158 @@ void fEditor(bool reset)
 			_amountSelectedNotes = 0;
 			return;
 		}
-		//Small optimisation defined in main.c
-		if (_isKeyPressed)
+		
+		float closestTime = 55;
+		int closestIndex = 0;
+		for (int i = 0; i < _amountNotes; i++)
 		{
-			float closestTime = 55;
-			int closestIndex = 0;
-			for (int i = 0; i < _amountNotes; i++)
+			if (closestTime > fabs(_papNotes[i]->time - getMusicHead()))
 			{
-				if (closestTime > fabs(_papNotes[i]->time - getMusicHead()))
+				closestTime = fabs(_papNotes[i]->time - getMusicHead());
+				closestIndex = i;
+			}
+		}
+		if (IsKeyPressed(KEY_Z) && IsKeyDown(KEY_LEFT_CONTROL))
+		{
+			undo();
+		}
+		
+		if (closestTime > 0.003f && ((IsKeyPressed(KEY_Z) && !IsKeyDown(KEY_LEFT_CONTROL)) || 
+			(showTools && interactableButton("O", 0.02, getWidth() * 0.57, getHeight() * 0.02, getWidth() * 0.02, getHeight() * 0.03))))
+		{
+			doAction(ComAdd, newNote(getMusicHead()), 1);
+			_noteIndex = closestIndex;
+		}
+
+		if (IsKeyPressed(KEY_A))
+		{
+			float pos = roundf((getMusicHead() - timeSeg.time) / secondsPerBeat) * secondsPerBeat + timeSeg.time;
+			doAction(ComAdd, newNote(pos), 1);
+			_noteIndex = closestIndex;
+		}
+
+		if (IsKeyPressed(KEY_D) || 
+			(showTools && interactableButton("T+", 0.02, getWidth() * 0.60, getHeight() * 0.02, getWidth() * 0.02, getHeight() * 0.03)))
+		{
+			addTimingSignature(_musicHead, _map->bpm);
+		}
+
+		if (IsKeyPressed(KEY_F) || 
+			(showTools && interactableButton("T-", 0.02, getWidth() * 0.60, getHeight() * 0.05, getWidth() * 0.02, getHeight() * 0.03)))
+		{
+			removeTimingSignature(_musicHead);
+		}
+
+
+		bool delKey = IsKeyPressed(KEY_X) || IsKeyPressed(KEY_DELETE);
+		if(showTools && interactableButton("X", 0.02, getWidth() * 0.57, getHeight() * 0.05, getWidth() * 0.02, getHeight() * 0.03))
+			delKey = true;
+		
+		if (delKey && closestTime < _maxMargin && !_amountSelectedNotes)
+		{
+			doAction(ComRemove, closestIndex, 1);
+
+			removeNote(closestIndex);
+			if(closestIndex >= _noteIndex)
+				_noteIndex--;
+		}else if(delKey)
+		{
+			int cost = 1;
+			while(_amountSelectedNotes > 0)
+			{
+				int index = findClosestNote(_papNotes, _amountNotes, _selectedNotes[0]->time);
+				doAction(ComRemove, index, cost);
+				cost = 0;
+				removeNote(index);
+			}
+			freeArray(_selectedNotes);
+			_amountSelectedNotes = 0;
+		}
+
+		if (IsKeyPressed(KEY_C) && !_musicPlaying)
+		{
+			_musicHead = roundf((getMusicHead() - timeSeg.time) / secondsPerBeat) * secondsPerBeat + timeSeg.time;
+		}
+
+		if (IsKeyPressed(KEY_V) && IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f && _amountSelectedNotes > 0)
+		{
+			//copy currently selected notes at _musichead position
+
+			//get begin point of notes
+			float firstNote = -1;
+			for(int i = 0; i < _amountSelectedNotes; i++)
+			{
+				if(firstNote == -1)
+					firstNote = _selectedNotes[i]->time;
+				else if(_selectedNotes[i]->time < firstNote)
 				{
-					closestTime = fabs(_papNotes[i]->time - getMusicHead());
-					closestIndex = i;
+					firstNote = _selectedNotes[i]->time;
 				}
 			}
-			if (IsKeyPressed(KEY_Z) && IsKeyDown(KEY_LEFT_CONTROL))
+			//copy over notes
+			int cost = 1;
+			for(int i = 0; i < _amountSelectedNotes; i++)
 			{
-				undo();
-			}else if (IsKeyPressed(KEY_Z) && !IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.003f)
-			{
-				doAction(ComAdd, newNote(getMusicHead()), 1);
-				_noteIndex = closestIndex;
-			}
-
-			if (IsKeyPressed(KEY_A))
-			{
-				float pos = roundf((getMusicHead() - timeSeg.time) / secondsPerBeat) * secondsPerBeat + timeSeg.time;
-				doAction(ComAdd, newNote(pos), 1);
-				_noteIndex = closestIndex;
-			}
-
-			if (IsKeyPressed(KEY_D))
-			{
-				addTimingSignature(_musicHead, _map->bpm);
-			}
-
-			if (IsKeyPressed(KEY_F))
-			{
-				removeTimingSignature(_musicHead);
-			}
-
-
-			bool delKey = IsKeyPressed(KEY_X) || IsKeyPressed(KEY_DELETE);
-			if (delKey && closestTime < _maxMargin && !_amountSelectedNotes)
-			{
-				doAction(ComRemove, closestIndex, 1);
-
-				removeNote(closestIndex);
-				if(closestIndex >= _noteIndex)
-					_noteIndex--;
-			}else if(delKey)
-			{
-				int cost = 1;
-				while(_amountSelectedNotes > 0)
+				int note = newNote(_musicHead+_selectedNotes[i]->time-firstNote);
+				doAction(ComAdd, note, cost);
+				cost = 0;
+				if(_selectedNotes[i]->anim)
 				{
-					int index = findClosestNote(_papNotes, _amountNotes, _selectedNotes[0]->time);
-					doAction(ComRemove, index, cost);
-					cost = 0;
-					removeNote(index);
+					_papNotes[note]->anim = malloc(sizeof(Frame)*_selectedNotes[i]->animSize);
+					for(int j = 0; j < _selectedNotes[i]->animSize; j++)
+					{
+						_papNotes[note]->anim[j] = _selectedNotes[i]->anim[j];
+					}
+					_papNotes[note]->animSize = _selectedNotes[i]->animSize;
 				}
-				freeArray(_selectedNotes);
-				_amountSelectedNotes = 0;
-			}
 
-			if (IsKeyPressed(KEY_C) && !_musicPlaying)
-			{
-				_musicHead = roundf((getMusicHead() - timeSeg.time) / secondsPerBeat) * secondsPerBeat + timeSeg.time;
-			}
-
-			if (IsKeyPressed(KEY_V) && IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f && _amountSelectedNotes > 0)
-			{
-				//copy currently selected notes at _musichead position
-
-				//get begin point of notes
-				float firstNote = -1;
-				for(int i = 0; i < _amountSelectedNotes; i++)
+				if(_selectedNotes[i]->hitSE_File)
 				{
-					if(firstNote == -1)
-						firstNote = _selectedNotes[i]->time;
-					else if(_selectedNotes[i]->time < firstNote)
-					{
-						firstNote = _selectedNotes[i]->time;
-					}
+					_papNotes[note]->hitSE_File = malloc(100);
+					strcpy(_papNotes[note]->hitSE_File, _selectedNotes[i]->hitSE_File);
+					char tmpStr[100];
+					snprintf(tmpStr, 100, "%s/%s", _map->folder, _selectedNotes[i]->hitSE_File);
+					_papNotes[note]->custSound = addCustomSound(tmpStr);
 				}
-				//copy over notes
-				int cost = 1;
-				for(int i = 0; i < _amountSelectedNotes; i++)
+
+				if(_selectedNotes[i]->texture_File)
 				{
-					int note = newNote(_musicHead+_selectedNotes[i]->time-firstNote);
-					doAction(ComAdd, note, cost);
-					cost = 0;
-					if(_selectedNotes[i]->anim)
-					{
-						_papNotes[note]->anim = malloc(sizeof(Frame)*_selectedNotes[i]->animSize);
-						for(int j = 0; j < _selectedNotes[i]->animSize; j++)
-						{
-							_papNotes[note]->anim[j] = _selectedNotes[i]->anim[j];
-						}
-						_papNotes[note]->animSize = _selectedNotes[i]->animSize;
-					}
-
-					if(_selectedNotes[i]->hitSE_File)
-					{
-						_papNotes[note]->hitSE_File = malloc(100);
-						strcpy(_papNotes[note]->hitSE_File, _selectedNotes[i]->hitSE_File);
-						char tmpStr[100];
-						snprintf(tmpStr, 100, "%s/%s", _map->folder, _selectedNotes[i]->hitSE_File);
-						_papNotes[note]->custSound = addCustomSound(tmpStr);
-					}
-
-					if(_selectedNotes[i]->texture_File)
-					{
-						_papNotes[note]->texture_File = malloc(100);
-						strcpy(_papNotes[note]->texture_File, _selectedNotes[i]->texture_File);
-						char tmpStr[100];
-						snprintf(tmpStr, 100, "%s/%s", _map->folder, _selectedNotes[i]->texture_File);
-						_papNotes[note]->custTex = addCustomTexture(tmpStr);
-					}
+					_papNotes[note]->texture_File = malloc(100);
+					strcpy(_papNotes[note]->texture_File, _selectedNotes[i]->texture_File);
+					char tmpStr[100];
+					snprintf(tmpStr, 100, "%s/%s", _map->folder, _selectedNotes[i]->texture_File);
+					_papNotes[note]->custTex = addCustomTexture(tmpStr);
 				}
 			}
+		}
 
-			if (IsKeyPressed(KEY_E) && _barMeasureCount <= 32)
-			{
-				_barMeasureCount += 1;
-			}
+		if (_barMeasureCount <= 32 && (IsKeyPressed(KEY_E) || 
+			(showTools && interactableButton("B+", 0.02, getWidth() * 0.54, getHeight() * 0.02, getWidth() * 0.02, getHeight() * 0.03))))
+		{
+			_barMeasureCount += 1;
+		}
 
-			if (IsKeyPressed(KEY_Q) && _barMeasureCount >= 2)
-			{
-				_barMeasureCount -= 1;
-			}
+		if (_barMeasureCount >= 2 && (IsKeyPressed(KEY_E) || 
+			(showTools && interactableButton("B-", 0.02, getWidth() * 0.54, getHeight() * 0.05, getWidth() * 0.02, getHeight() * 0.03))))
+		{
+			_barMeasureCount -= 1;
 		}
 	}
 
 	//Change scrollspeed
-	if (IsKeyPressed(KEY_UP) || (GetMouseWheelMove() > 0 && IsKeyDown(KEY_LEFT_CONTROL)))
-		_scrollSpeed *= 1.2;
-	if (IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL)))
+	if (IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL)) || 
+		(showTools && interactableButton("+", 0.02, getWidth() * 0.51, getHeight() * 0.05, getWidth() * 0.02, getHeight() * 0.03)))
 		_scrollSpeed /= 1.2;
+
+	drawHint((Rectangle){.x=getWidth() * 0.51, .y=getHeight() * 0.02, .width=getWidth()*0.02, .height=getWidth() * 0.03}, "down arrow");
+	
+	if (IsKeyPressed(KEY_UP) || (GetMouseWheelMove() > 0 && IsKeyDown(KEY_LEFT_CONTROL)) || 
+		(showTools && interactableButton("-", 0.03, getWidth() * 0.51, getHeight() * 0.02, getWidth() * 0.02, getHeight() * 0.03)))
+		_scrollSpeed *= 1.2;
+	
+	drawHint((Rectangle){.x=getWidth() * 0.51, .y=getHeight() * 0.06, .width=getWidth()*0.02, .height=getWidth() * 0.03}, "up arrow");
+	
+	
 	if (_scrollSpeed == 0)
 		_scrollSpeed = 0.01;
 	

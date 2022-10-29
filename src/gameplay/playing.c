@@ -410,6 +410,7 @@ void fEndScreen(bool reset)
 	ClearBackground(BLACK);
 	drawBackground();
 	DrawRectangle(0, 0, getWidth(), getHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
+	drawVignette();
 
 
 	DrawRectangle(getWidth()*0.04, getHeight()*0.27, getWidth()*0.5, getHeight()*0.7, (Color){.r = 0, .g = 0, .b = 0, .a = 128});
@@ -483,7 +484,6 @@ void fEndScreen(bool reset)
 		gotoMainMenu(false);
 		_pNextGameplayFunction = &fPlaying;
 	}
-	drawVignette();
 	drawCursor();
 }
 

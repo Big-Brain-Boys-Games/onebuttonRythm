@@ -580,7 +580,7 @@ void drawButton(Rectangle rect, char * text, float fontScale)
 	// DrawRectangle(rect.x, rect.y, rect.width, rect.height, ColorAlpha(color, 0.5));
 	int screenSize = getWidth() > getHeight() ? getHeight() : getWidth();
 	int textSize = measureText(text, screenSize * fontScale);
-	drawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + rect.height*0.2, screenSize * fontScale, (color.r == GRAY.r) ? BLACK : DARKGRAY);
+	drawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + rect.height*0.15, screenSize * fontScale, (color.r == GRAY.r) ? BLACK : DARKGRAY);
 }
 
 void drawHint(Rectangle rect, char * text)
