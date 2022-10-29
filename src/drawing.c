@@ -167,20 +167,14 @@ void dNotes ()
 			closestNote = fmin(closestNote, _papNotes[i+1]->time - _papNotes[i]->time);
 
 		float customScale = 0;
-		float maxDistance = (float)(GetScreenWidth() / _noteTex.width) / 9 / 2;
 
-		float middle = GetScreenWidth() / 2;
-		maxDistance =  maxDistance / (middle * (1 / _scrollSpeed));
-
-		maxDistance = (1/_scrollSpeed) * 0.075;
+		float maxDistance = _scrollSpeed * _maxMargin*2;
 
 		if(closestNote < maxDistance)
 		{
 			customScale = (closestNote/maxDistance) * (GetScreenWidth() / _noteTex.width) / 9;
 		}
 
-		//DrawCircle( middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed) ,GetScreenHeight() / 2, GetScreenWidth() / 20, WHITE);
-		//DrawTextureEx(noteTex, (Vector2){.x=middle + middle * (_pNotes[i].time - getMusicHead()) * (1/_scrollSpeed), .y=GetScreenHeight() / 2}, 0, GetScreenWidth() / 20,WHITE);
 		drawNote(_musicHead, _papNotes[i], ColorAlpha(GRAY, noteFadeOut(_papNotes[i]->time)), customScale);
 
 	}
@@ -195,15 +189,9 @@ void dNotes ()
 			closestNote = fmin(closestNote, _papNotes[i+1]->time - _papNotes[i]->time);
 
 		float customScale = 0;
-		float maxDistance = (float)(GetScreenWidth() / _noteTex.width) / 9 / 2;
 
-		float middle = GetScreenWidth() / 2;
-		maxDistance =  maxDistance / (middle * (1 / _scrollSpeed));
+		float maxDistance = _scrollSpeed * _maxMargin*2;
 
-		maxDistance = (1/_scrollSpeed) * 0.075;
-
-
-		
 		if(closestNote < maxDistance)
 		{
 			customScale = (closestNote/maxDistance) * (GetScreenWidth() / _noteTex.width) / 9;

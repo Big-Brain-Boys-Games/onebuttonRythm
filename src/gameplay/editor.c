@@ -528,7 +528,7 @@ void fEditorTimingSettings (bool reset)
 	size = measureText(text, tSize);
 	drawText(text, GetScreenWidth() * 0.2 - size / 2, GetScreenHeight() * 0.28, tSize, WHITE);
 
-	if (interactableButton("back", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.15, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("back", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.15, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
 	{
 		_pGameplayFunction = &fEditor;
 	}
@@ -555,7 +555,7 @@ void fEditorNoteSettings(bool reset)
 		return;
 	}
 
-	if (interactableButton("back", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.15, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("back", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.15, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
 	{
 		_pGameplayFunction = &fEditor;
 		//apply changes to first note to all selected notes
@@ -774,7 +774,7 @@ void fEditorAnimation (bool reset)
 		}
 	}
 
-	if (interactableButton("back", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.5, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
+	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("back", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.5, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
 	{
 		//Run animation tab
 		_pGameplayFunction = &fEditorNoteSettings;
@@ -1132,6 +1132,7 @@ void fEditor(bool reset)
 	{
 		if (interactableButton("Note settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.25, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
 		{
+			_musicPlaying = false;
 			_pGameplayFunction = &fEditorNoteSettings;
 			for(int i = 0; i < _amountSelectedNotes; i++)
 				doAction(ComChangeNote, findClosestNote(_papNotes, _amountNotes, _selectedNotes[i]->time), i == 0);
@@ -1140,6 +1141,7 @@ void fEditor(bool reset)
 
 	if (interactableButton("Song settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.05, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
 	{
+		_musicPlaying = false;
 		_pGameplayFunction = &fEditorSongSettings;
 	}
 
@@ -1153,6 +1155,7 @@ void fEditor(bool reset)
 	{
 		if (interactableButton("Timing settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.15, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
 		{
+			_musicPlaying = false;
 			_pGameplayFunction = &fEditorTimingSettings;
 		}
 	}
