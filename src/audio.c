@@ -121,6 +121,8 @@ DWORD WINAPI *decodeAudio(struct decodeAudioArgs *args)
 		// exit(0);
 	}
 	ma_decoder_get_length_in_pcm_frames(&decoder, &audioLength);
+	if(*args->audioLength && *args->buffer)
+		free(*args->buffer);
 	*args->buffer = calloc(sizeof(float) * 2 * 2, audioLength);
 	void *pCursor = *args->buffer;
 	int size = 0;
