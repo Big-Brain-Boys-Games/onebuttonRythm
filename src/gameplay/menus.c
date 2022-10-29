@@ -182,6 +182,30 @@ void fSettings(bool reset)
 		size = MeasureText("zoom", tSize);
 		drawText("zoom", zoomBox.x + zoomBox.width / 2 - size / 2, zoomBox.y - GetScreenHeight() * 0.05, tSize, WHITE);
 
+
+		
+		char noteSize[10] = {0};
+		if (_settings.noteSize != 0)
+			snprintf(noteSize, 10, "%i", _settings.noteSize);
+		static bool noteSizeBoxSelected = false;
+
+		Rectangle noteSizeBox = (Rectangle){.x = GetScreenWidth() * 0.52, .y = GetScreenHeight() * (0.5+menuScrollSmooth), .width = GetScreenWidth() * 0.2, .height = GetScreenHeight() * 0.07};
+		textBox(noteSizeBox, noteSize, &noteSizeBoxSelected);
+
+		if(!mouseInRect(settingsRect))
+			noteSizeBoxSelected = false;
+
+		_settings.noteSize = atoi(noteSize);
+		_settings.noteSize = fmin(fmax(_settings.noteSize, 1), 20);
+		tSize = GetScreenWidth() * 0.03;
+		size = MeasureText("noteSize", tSize);
+		drawText("noteSize", noteSizeBox.x + noteSizeBox.width / 2 - size / 2, noteSizeBox.y - GetScreenHeight() * 0.05, tSize, WHITE);
+
+
+
+
+
+
 		static bool nameBoxSelected = false;
 		Rectangle nameBox = (Rectangle){.x = GetScreenWidth() * 0.52, .y = GetScreenHeight() * (0.3+menuScrollSmooth), .width = GetScreenWidth() * 0.3, .height = GetScreenHeight() * 0.07};
 		textBox(nameBox, _playerName, &nameBoxSelected);

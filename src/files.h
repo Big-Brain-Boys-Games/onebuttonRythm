@@ -37,12 +37,13 @@ struct Settings{
 	int volumeGlobal;
 	int volumeMusic;
 	int volumeSoundEffects;
+	int noteSize;
 	double offset;
 };
 typedef struct Settings Settings;
 
 enum FilePart{fpNone, fpID, fpName, fpArtist, fpMapCreator, fpDifficulty, fpBPM, fpImage, fpMusicFile, fpMusicLength, fpMusicPreviewOffset, fpZoom, fpOffset, fpBeats, fpTimeSignatures, fpNotes};
-enum SettingsPart{spNone, spName, spZoom, spVolGlobal, spVolMusic, spVolSE, spOffset};
+enum SettingsPart{spNone, spName, spZoom, spVolGlobal, spVolMusic, spVolSE, spOffset, spNoteSize};
 
 #include "shared.h"
 

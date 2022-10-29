@@ -116,6 +116,8 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 
 	if(customScaling != 0)
 		scaleNotes = customScaling;
+
+	scaleNotes *= (_settings.noteSize / 10.0);
 	
 	if(!note->anim)
 		DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=GetScreenHeight() / 2 -tex.height * scaleNotes/2}, 0,  scaleNotes, color);
