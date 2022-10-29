@@ -19,7 +19,6 @@
 
 #endif
 
-
 TimingSegment getTimingSignature(float time);
 TimingSegment * addTimingSignature(float time, int bpm);
 void removeTimingSignature(float time);

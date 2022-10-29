@@ -11,6 +11,7 @@
 #define EXTERN_GAMEPLAY
 #define EXTERN_MENUS
 #define EXTERN_DRAWING
+#define EXTERN_AUDIO
 
 #include "main.h"
 #include "audio.h"
@@ -59,6 +60,12 @@ int main(int argc, char **argv)
 		if (_loadingFade < _loading)
 			_loadingFade = 1;
 		unlockLoadingMutex();
+
+		//ugly workaround for audio.c needing both raylib and windows.h
+		_framesOffset = _settings.offset*48000;
+		float globalVolume = _settings.volumeGlobal / 100.0;
+		_musicVolume = _settings.volumeMusic / 100.0 * globalVolume;
+		_audioEffectVolume = _settings.volumeSoundEffects / 100.0 * globalVolume;
 		
 		_isKeyPressed = isAnyKeyDown();
 		if (_pGameplayFunction != &fMapSelect)

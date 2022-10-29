@@ -15,7 +15,7 @@
 #include "thread.h"
 #include "main.h"
 
-#include "gameplay/gameplay.h"
+// #include "gameplay/gameplay.h"
 
 
 
@@ -46,6 +46,9 @@ bool _musicPlaying = false, _musicLoops = true, _playMenuMusic = true;
 int _musicFrameCount = 0;
 float _musicPreviewOffset;
 
+float _musicVolume, _audioEffectVolume;
+int _framesOffset;
+
 
 int _menuMusicFrameCount = 0;
 
@@ -68,16 +71,6 @@ void fixMusicTime()
 {
 	if (fabs(getMusicHead() - getMusicPosition()) > 0.1)
 		_musicHead = getMusicPosition();
-}
-
-int getBarsCount()
-{
-	return _map->bpm * (getMusicDuration()-_map->offset/1000.0) / 60 / _map->beats;
-}
-
-int getBeatsCount()
-{
-	return _map->bpm * (getMusicDuration()-_map->offset/1000.0) / 60;
 }
 
 void setMusicStart()
@@ -164,19 +157,15 @@ void loadAudio(Audio * audio, char *file)
 
 void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount)
 {
-	float globalVolume = _settings.volumeGlobal / 100.0;
-	float musicVolume = _settings.volumeMusic / 100.0 * globalVolume;
-	float audioEffectVolume = _settings.volumeSoundEffects / 100.0 * globalVolume;
-
 	// music
 	if (_musicPlaying && _pMusic && _pMusic->size)
 	{
-		int tmpFrameCount = _musicFrameCount - _settings.offset*48000;
+		int tmpFrameCount = _musicFrameCount - _framesOffset;
 		if (_pMusic->size > 0 && _pMusic->size > tmpFrameCount && tmpFrameCount > 0) 
 		{
 			for (int i = 0; i < frameCount * 2; i++)
 			{
-				((float *)pOutput)[i] = _pMusic->data[(int)(i * _musicSpeed + tmpFrameCount * 2)] * musicVolume;;
+				((float *)pOutput)[i] = _pMusic->data[(int)(i * _musicSpeed + tmpFrameCount * 2)] * _musicVolume;
 			}
 		}
 		else if (_musicLoops && _pMusic->size > 0)
@@ -187,7 +176,7 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 	{
 		for (int i = 0; i < frameCount * 2; i++)
 		{
-			((float *)pOutput)[i] += _menuMusic.data[i + _menuMusicFrameCount * 2] * musicVolume * (1 - _musicPlaying) * _playMenuMusic;
+			((float *)pOutput)[i] += _menuMusic.data[i + _menuMusicFrameCount * 2] * _musicVolume * (1 - _musicPlaying) * _playMenuMusic;
 		}
 	}
 	if (_menuMusic.size != 0)
@@ -197,7 +186,7 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 	// sound effects
 	for (int i = 0; i < frameCount * 2; i++)
 	{
-		((float *)pOutput)[i] += _pEffectsBuffer[(i + _effectOffset) % (48000 * 4)] * audioEffectVolume;
+		((float *)pOutput)[i] += _pEffectsBuffer[(i + _effectOffset) % (48000 * 4)] * _audioEffectVolume;
 		_pEffectsBuffer[(i + _effectOffset) % (48000 * 4)] = 0;
 	}
 	_effectOffset += frameCount * 2;

@@ -28,14 +28,15 @@ typedef struct Audio
 
     extern Audio *_pMusic;
 
+    extern float _musicVolume, _audioEffectVolume;
+    extern int _framesOffset;
+
 #endif
 
 int getSamplePosition(float time);
 float getMusicDuration();
 float getMusicPosition();
 void fixMusicTime();
-int getBarsCount();
-int getBeatsCount();
 void setMusicStart();
 void randomMusicPoint();
 void audioInit();
