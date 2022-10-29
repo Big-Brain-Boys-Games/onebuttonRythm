@@ -118,6 +118,13 @@ int main(int argc, char **argv)
 			else
 			{
 				ToggleFullscreen();
+
+				if(oldSizeX < 200)
+					oldSizeX = 800;
+
+				if(oldSizeY < 200)
+					oldSizeY = 600;
+				
 				SetWindowSize(oldSizeX, oldSizeY);
 				while (!IsWindowResized() && !WindowShouldClose())
 				{

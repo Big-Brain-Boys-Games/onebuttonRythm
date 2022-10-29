@@ -97,6 +97,7 @@ void fMainMenu(bool reset)
 	if (interactableButton("New Map", 0.035, middle - getWidth() * (0.03 - growTimer*0.03), getHeight() * 0.65, getWidth() * 0.2, getHeight() * 0.065))
 	{
 		_pGameplayFunction = &fNewMap;
+		fNewMap(true);
 		_transition = 0.1;
 	}
 
@@ -852,21 +853,27 @@ void fNewMap(bool reset)
 	static void *pImage = 0;
 	static int imageSize = 0;
 
-	if (newMap.name == 0)
+	if (reset)
 	{
-		newMap.name = malloc(100);
+		if(!newMap.name)
+			newMap.name = malloc(100);
 		strcpy(newMap.name, "name");
-		newMap.artist = malloc(100);
-		newMap.artist[0] = '\0';
+		
+		if(!newMap.artist)
+			newMap.artist = malloc(100);
 		strcpy(newMap.artist, "Artist");
-		newMap.mapCreator = malloc(100);
-		newMap.mapCreator[0] = '\0';
+
+		if(!newMap.mapCreator)
+			newMap.mapCreator = malloc(100);
 		strcpy(newMap.mapCreator, "mapCreator");
-		newMap.folder = malloc(100);
+
+		if(!newMap.folder)
+			newMap.folder = malloc(100);
 		newMap.folder[0] = '\0';
 		newMap.bpm = 100;
 		newMap.beats = 4;
 	}
+	
 	ClearBackground(BLACK);
 	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
 					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
@@ -913,7 +920,7 @@ void fNewMap(bool reset)
 		_pGameplayFunction = &fEditor;
 		_transition = 0.1;
 		newMap.folder = malloc(100);
-		strcpy(newMap.folder, newMap.name);
+		snprintf(newMap.folder, 100, "maps/%s/", newMap.name);
 		_map = &newMap;
 		freeNotes();
 		saveMap();
@@ -924,7 +931,7 @@ void fNewMap(bool reset)
 		_musicHead = 0;
 		_transition = 0.1;
 		_disableLoadingScreen = false;
-		startMusic();
+		// startMusic();
 		return;
 	}
 
