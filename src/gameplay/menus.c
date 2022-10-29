@@ -659,7 +659,10 @@ void fMapSelect(bool reset)
 		_transition = 0.1;
 	}
 
+	
 	textBox((Rectangle){.x = getWidth() * 0.35, .y = getHeight() * 0.05, .width = getWidth() * 0.2, .height = getHeight() * 0.05}, search, &searchSelected);
+	if(search[0] == '\0')
+		drawText("Search", getWidth()*0.39, getHeight()*0.055, getWidth()*0.03, GRAY);
 
 	if (hoverMap == -1)
 	{
