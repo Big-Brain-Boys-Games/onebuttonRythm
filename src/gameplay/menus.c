@@ -196,7 +196,7 @@ void fSettings(bool reset)
 			noteSizeBoxSelected = false;
 
 		_settings.noteSize = atoi(noteSize);
-		_settings.noteSize = fmin(fmax(_settings.noteSize, 1), 20);
+		_settings.noteSize = fmin(fmax(_settings.noteSize, 0), 20);
 		tSize = GetScreenWidth() * 0.03;
 		size = MeasureText("noteSize", tSize);
 		drawText("noteSize", noteSizeBox.x + noteSizeBox.width / 2 - size / 2, noteSizeBox.y - GetScreenHeight() * 0.05, tSize, WHITE);
@@ -273,10 +273,14 @@ void fSettings(bool reset)
 		drawVignette();
 	EndScissorMode();
 
-	if (interactableButton("Back", 0.03, GetScreenWidth() * 0.05, GetScreenHeight() * 0.05, GetScreenWidth() * 0.1, GetScreenHeight() * 0.05))
+	if ( IsKeyPressed(KEY_ESCAPE) || interactableButton("Back", 0.03, GetScreenWidth() * 0.05, GetScreenHeight() * 0.05, GetScreenWidth() * 0.1, GetScreenHeight() * 0.05))
 	{
 		_pGameplayFunction = &fMainMenu;
 		_transition = 0.1;
+		
+		if(_settings.noteSize == 0)
+			_settings.noteSize = 10;
+		
 		saveSettings();
 		return;
 	}
