@@ -856,6 +856,9 @@ void fNewMap(bool reset)
 	static void *pImage = 0;
 	static int imageSize = 0;
 
+	static Audio previewAudio;
+	static Texture2D previewTexture;
+
 	if (reset)
 	{
 		if(!newMap.name)
@@ -881,6 +884,8 @@ void fNewMap(bool reset)
 	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
 					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
 
+	drawVignette();
+
 	int middle = getWidth() / 2;
 
 	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("Back", 0.03, getWidth() * 0.05, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
@@ -896,6 +901,12 @@ void fNewMap(bool reset)
 			return;
 		if (pImage == 0)
 			return;
+
+		UnloadTexture(previewTexture);
+
+		if(previewAudio.size)
+			free(previewAudio.data);
+
 		makeMap(&newMap);
 		char str[100];
 		strcpy(str, "maps/");
@@ -975,17 +986,23 @@ void fNewMap(bool reset)
 	int textSize = measureText("Drop in .png, .wav or .mp3", getWidth() * 0.04);
 	drawText("Drop in .png, .wav or .mp3", getWidth() * 0.5 - textSize / 2, getHeight() * 0.2, getWidth() * 0.04, WHITE);
 
+
+
+
 	textSize = measureText("missing music file", getWidth() * 0.03);
 	if (pMusic == 0)
 		drawText("missing music file", getWidth() * 0.2 - textSize / 2, getHeight() * 0.6, getWidth() * 0.03, WHITE);
-	else
-		drawText("got music file", getWidth() * 0.2 - textSize / 2, getHeight() * 0.6, getWidth() * 0.03, WHITE);
+	else{
+		if(interactableButton("preview", 0.03, getWidth() * 0.1, getHeight()*0.6, getWidth()*0.15, getHeight()*0.05))
+			playAudioEffect(previewAudio);
+	}
 
 	textSize = measureText("missing image file", getWidth() * 0.03);
 	if (pImage == 0)
 		drawText("missing image file", getWidth() * 0.2 - textSize / 2, getHeight() * 0.7, getWidth() * 0.03, WHITE);
 	else
-		drawText("got image file", getWidth() * 0.2 - textSize / 2, getHeight() * 0.7, getWidth() * 0.03, WHITE);
+		DrawTextureEx(previewTexture, (Vector2){.x=getWidth()*0.1, .y=getHeight()*0.7}, 0, getWidth()*0.15 / previewTexture.width, WHITE);
+	// drawText("got image file", getWidth() * 0.2 - textSize / 2, getHeight() * 0.7, getWidth() * 0.03, WHITE);
 
 	drawCursor();
 
@@ -1038,12 +1055,13 @@ void fNewMap(bool reset)
 			const char *ext = GetFileExtension(files[i]);
 			if (strcmp(ext, ".png") == 0)
 			{
-				if (newMap.image.id != 0)
-					UnloadTexture(newMap.image);
-				newMap.image = LoadTexture(files[i]);
+				if (previewTexture.id != 0)
+					UnloadTexture(previewTexture);
+				previewTexture = LoadTexture(files[i]);
 
 				if (pImage != 0)
 					free(pImage);
+				
 				FILE *file = fopen(files[i], "rb");
 				fseek(file, 0L, SEEK_END);
 				int size = ftell(file);
@@ -1067,6 +1085,8 @@ void fNewMap(bool reset)
 				fclose(file);
 				strcpy(pMusicExt, ext);
 				pMusicSize = size;
+
+				loadAudio(&previewAudio, files[i]);
 			}
 
 			if (strcmp(ext, ".wav") == 0)

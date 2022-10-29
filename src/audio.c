@@ -19,7 +19,7 @@
 
 
 
-#define EFFECT_BUFFER_SIZE 48000 * 4 * sizeof(float)
+#define EFFECT_BUFFER_SIZE 48000 * 15 * sizeof(float)
 
 ma_device_config _deviceConfig;
 ma_device _device;
@@ -186,8 +186,8 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 	// sound effects
 	for (int i = 0; i < frameCount * 2; i++)
 	{
-		((float *)pOutput)[i] += _pEffectsBuffer[(i + _effectOffset) % (48000 * 4)] * _audioEffectVolume;
-		_pEffectsBuffer[(i + _effectOffset) % (48000 * 4)] = 0;
+		((float *)pOutput)[i] += _pEffectsBuffer[(i + _effectOffset) % (EFFECT_BUFFER_SIZE/sizeof(float))] * _audioEffectVolume;
+		_pEffectsBuffer[(i + _effectOffset) % (EFFECT_BUFFER_SIZE/sizeof(float))] = 0;
 	}
 	_effectOffset += frameCount * 2;
 
@@ -257,7 +257,8 @@ bool endOfMusic()
 
 void playAudioEffect(Audio effect)
 {
-	for (int i = 0; i < effect.size; i++)
+	int size = fmin(effect.size, EFFECT_BUFFER_SIZE/sizeof(float));
+	for (int i = 0; i < size; i++)
 	{
 		_pEffectsBuffer[(i + _effectOffset) % (EFFECT_BUFFER_SIZE/sizeof(float))] += effect.data[i];
 	}
