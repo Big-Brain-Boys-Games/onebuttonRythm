@@ -67,12 +67,16 @@ TimingSegment * getTimingSignaturePointer(float time)
 
 TimingSegment * addTimingSignature(float time, int bpm)
 {
+	if(bpm < 1)
+		bpm = 100;
+	
 	if(!_paTimingSegment)
 	{
 		_paTimingSegment = malloc(sizeof(TimingSegment));
 		_amountTimingSegments = 1;
 		_paTimingSegment[0].time = time;
 		_paTimingSegment[0].bpm = bpm;
+		_paTimingSegment[0].beats = 4;
 		return &(_paTimingSegment[0]);
 	}
 	for(int i = 0; i < _amountTimingSegments; i++)
