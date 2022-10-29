@@ -161,6 +161,23 @@ int _CommandFurtestIndex = 0;
 		free(arr);\
 	arr = 0;
 
+void loadCustomAssets(Note * note)
+{
+	if(note->hitSE_File)
+	{
+		char fullPath [200];
+		snprintf(fullPath, 200, "%s/%s", _map->folder, note->hitSE_File);
+		note->custSound = addCustomSound(fullPath);
+	}
+
+	if(note->texture_File)
+	{
+		char fullPath [200];
+		snprintf(fullPath, 200, "%s/%s", _map->folder, note->texture_File);
+		note->custTex = addCustomTexture(fullPath);
+	}
+}
+
 void undoCommand(Command command)
 {
 	int index = 0;
@@ -173,6 +190,7 @@ void undoCommand(Command command)
 		case ComRemove:
 			index = newNote(command.time);
 			*(_papNotes[index]) = command.data;
+			loadCustomAssets(_papNotes[index]);
 			break;
 
 		case ComChangeNote:
@@ -534,8 +552,6 @@ void fEditorNoteSettings(bool reset)
 	{
 		//Run animation tab
 		_pGameplayFunction = &fEditorAnimation;
-		for(int i = 0; i < _amountSelectedNotes; i++)
-			doAction(ComChangeNote, findClosestNote(_papNotes, _amountNotes, _selectedNotes[i]->time), i == 0);
 		return;
 	}
 
@@ -552,12 +568,16 @@ void fEditorNoteSettings(bool reset)
 		{
 			snprintf(path, 100, "%s/%s", _map->folder, firstNote->texture_File);
 			firstNote->custTex = addCustomTexture(path);
+			if(firstNote->custTex)
+				freeArray(firstNote->texture_File);
 		}
 		
 		if(firstNote->hitSE_File)
 		{
 			snprintf(path, 100, "%s/%s", _map->folder, firstNote->hitSE_File);
 			firstNote->custSound = addCustomSound(firstNote->hitSE_File);
+			if(firstNote->custSound)
+				freeArray(firstNote->hitSE_File);
 		}
 
 		for(int i = 1; i < _amountSelectedNotes; i++)
@@ -1113,6 +1133,8 @@ void fEditor(bool reset)
 		if (interactableButton("Note settings", 0.025, GetScreenWidth() * 0.8, GetScreenHeight() * 0.25, GetScreenWidth() * 0.2, GetScreenHeight() * 0.07))
 		{
 			_pGameplayFunction = &fEditorNoteSettings;
+			for(int i = 0; i < _amountSelectedNotes; i++)
+				doAction(ComChangeNote, findClosestNote(_papNotes, _amountNotes, _selectedNotes[i]->time), i == 0);
 		}
 	}
 
