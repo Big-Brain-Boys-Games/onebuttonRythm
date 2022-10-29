@@ -92,17 +92,16 @@ void checkFileDropped()
 {
 	if (IsFileDropped())
 	{
-		int amount = 0;
-		char **files = GetDroppedFiles(&amount);
-		for (int i = 0; i < amount; i++)
+		FilePathList files = LoadDroppedFiles();
+		for (int i = 0; i < files.count; i++)
 		{
-			if (strcmp(GetFileExtension(files[i]), ".zip") == 0)
+			if (strcmp(GetFileExtension(files.paths[i]), ".zip") == 0)
 			{
-				addZipMap(files[i]);
+				addZipMap(files.paths[i]);
 				strcpy(_notfication, "map imported");
 			}
 		}
-		ClearDroppedFiles();
+		UnloadDroppedFiles(files);
 	}
 }
 

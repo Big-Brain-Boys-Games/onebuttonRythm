@@ -550,13 +550,13 @@ void fEditorNoteSettings(bool reset)
 
 		if(firstNote->texture_File)
 		{
-			snprintf(path, 100, "maps/%s/%s", _map->folder, firstNote->texture_File);
+			snprintf(path, 100, "%s/%s", _map->folder, firstNote->texture_File);
 			firstNote->custTex = addCustomTexture(path);
 		}
 		
 		if(firstNote->hitSE_File)
 		{
-			snprintf(path, 100, "maps/%s/%s", _map->folder, firstNote->hitSE_File);
+			snprintf(path, 100, "%s/%s", _map->folder, firstNote->hitSE_File);
 			firstNote->custSound = addCustomSound(firstNote->hitSE_File);
 		}
 
@@ -1030,7 +1030,7 @@ void fEditor(bool reset)
 						_papNotes[note]->hitSE_File = malloc(100);
 						strcpy(_papNotes[note]->hitSE_File, _selectedNotes[i]->hitSE_File);
 						char tmpStr[100];
-						snprintf(tmpStr, 100, "maps/%s/%s", _map->folder, _selectedNotes[i]->hitSE_File);
+						snprintf(tmpStr, 100, "%s/%s", _map->folder, _selectedNotes[i]->hitSE_File);
 						_papNotes[note]->custSound = addCustomSound(tmpStr);
 					}
 
@@ -1039,7 +1039,7 @@ void fEditor(bool reset)
 						_papNotes[note]->texture_File = malloc(100);
 						strcpy(_papNotes[note]->texture_File, _selectedNotes[i]->texture_File);
 						char tmpStr[100];
-						snprintf(tmpStr, 100, "maps/%s/%s", _map->folder, _selectedNotes[i]->texture_File);
+						snprintf(tmpStr, 100, "%s/%s", _map->folder, _selectedNotes[i]->texture_File);
 						_papNotes[note]->custTex = addCustomTexture(tmpStr);
 					}
 				}

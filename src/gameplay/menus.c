@@ -100,8 +100,7 @@ void fMainMenu(bool reset)
 		_transition = 0.1;
 	}
 
-	// gigantic ass title
-	char *title = "One Button";
+	// gigantic title
 	float tSize = GetScreenWidth() * 0.07;
 	Vector2 titlePos = (Vector2){.x=GetScreenWidth()*0.5, .y=GetScreenHeight()*0.2};
 	// dropshadow
@@ -341,37 +340,33 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 	lockLoadingMutex();
 	_loading++;
 	unlockLoadingMutex();
-	int amount;
 	static int oldAmount = 0;
-	char **files = GetDirectoryFiles("maps/", &amount);
+	FilePathList files = LoadDirectoryFiles("maps/");
 
-	int newAmount = 0;
-	for(int i = 0; i < amount; i++)
+	int amount = 0;
+	for(int i = 0; i < files.count; i++)
 	{
 		char str [100];
-		snprintf(str, 100, "maps/%s/map.data", files[i]);
+		snprintf(str, 100, "%s/map.data", files.paths[i]);
 		if(FileExists(str))
 		{
-			newAmount++;
+			amount++;
 		}
 	}
-	char **newFiles = malloc(sizeof(char *) * newAmount);
-	for(int i = 0, j = 0; i < amount && j < newAmount; i++)
+	
+	char **newFiles = malloc(sizeof(char *) * amount);
+	for(int i = 0, j = 0; i < files.count && j < amount; i++)
 	{
 		char str [100];
-		snprintf(str, 100, "maps/%s/map.data", files[i]);
+		snprintf(str, 100, "%s/map.data", files.paths[i]);
 		if(FileExists(str))
 		{
-			newFiles[j] = malloc(sizeof(char) * (strlen(files[i])+1));
-			strcpy(newFiles[j], files[i]);
+			newFiles[j] = malloc(sizeof(char) * (strlen(files.paths[i])+1));
+			strcpy(newFiles[j], files.paths[i]);
 			j++;
 		}
-		// free(files[i]);
 	}
-	// free(files);
-	ClearDirectoryFiles();
-	files = newFiles;
-	amount = newAmount;
+	UnloadDirectoryFiles(files);
 
 	if (args->highScores != 0)
 	{
@@ -414,7 +409,7 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 	int mapIndex = 0;
 	for (int i = 0; i < amount; i++)
 	{
-		if (files[i][0] == '.')
+		if (newFiles[i][0] == '.')
 			continue;
 		// check for cache
 		bool cacheHit = false;
@@ -422,10 +417,10 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 		{
 			if (!filesCaching[j][0])
 				continue;
-			if (strncmp(filesCaching[j], files[i], 100) == 0)
+			if (strncmp(filesCaching[j], newFiles[i], 100) == 0)
 			{
 				// cache hit
-				printf("cache hit! %s\n", files[i]);
+				printf("cache hit! %s\n", newFiles[i]);
 				cacheHit = true;
 				if (mapIndex == j)
 				{
@@ -446,11 +441,11 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 			mapIndex++;
 			continue;
 		}
-		printf("cache miss %s %i\n", files[i], mapIndex);
+		printf("cache miss %s %i\n", newFiles[i], mapIndex);
 		// cache miss
 
 		freeMap(&_paMaps[mapIndex]);
-		_paMaps[mapIndex] = loadMapInfo(files[i]);
+		_paMaps[mapIndex] = loadMapInfo(newFiles[i]);
 		if(_paMaps[mapIndex].name == 0)
 		{
 			printf("skipping map, failed to load\n");
@@ -465,7 +460,7 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 		}
 
 		// caching
-		strcpy(filesCaching[mapIndex], files[i]);
+		strcpy(filesCaching[mapIndex], newFiles[i]);
 
 		mapIndex++;
 	}
@@ -490,7 +485,7 @@ DWORD WINAPI *loadMapImage(Map * map)
 	// unlockLoadingMutex();
 	Image img ={0};
 	char str [100];
-	snprintf(str, 100, "maps/%s/%s", map->folder, map->imageFile);
+	snprintf(str, 100, "%s/%s", map->folder, map->imageFile);
 	img = LoadImage(str);
 	map->cpuImage = img;
 	if(img.width==0) //failed to load so setting it back to -1
@@ -954,6 +949,7 @@ void fNewMap(bool reset)
 	{
 		int amount = 0;
 		char **files;
+		FilePathList filePaths;
 		bool keyOrDrop = true;
 		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))
 		{
@@ -986,7 +982,12 @@ void fNewMap(bool reset)
 			keyOrDrop = false;
 		}
 		else
-			files = GetDroppedFiles(&amount);
+		{
+			filePaths = LoadDroppedFiles();
+			files = filePaths.paths;
+			amount = filePaths.count;
+		}
+
 		for (int i = 0; i < amount; i++)
 		{
 			const char *ext = GetFileExtension(files[i]);
@@ -1045,7 +1046,7 @@ void fNewMap(bool reset)
 			free(files);
 		}
 		else
-			ClearDroppedFiles();
+			UnloadDroppedFiles(filePaths);
 	}
 }
 

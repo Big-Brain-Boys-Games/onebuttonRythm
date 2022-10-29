@@ -52,8 +52,8 @@ void initFolders()
 Map loadMapInfo(char * file)
 {
 	char * mapStr = malloc(strlen(file) + 12);
-	strcpy(mapStr, "maps/");
-	strcat(mapStr, file);
+	// strcpy(mapStr, "maps/");
+	strcpy(mapStr, file);
 	Map map = {0};
 	map.zoom = 7;
 	map.offset = 0;
@@ -243,8 +243,7 @@ void freeMap(Map * map)
 void saveMap ()
 {
 	char str [100];
-	strcpy(str, "maps/");
-	strcat(str, _map->folder);
+	strcpy(str, _map->folder);
 	strcat(str, "/map.data");
 	FILE * pFile = fopen(str, "w");
 	printf("written map data\n");
@@ -526,8 +525,8 @@ void freeAllCustomSounds ()
 void loadMap ()
 {
 	char * map = malloc(100);
-	strcpy(map, "maps/");
-	strcat(map, _map->folder);
+	// strcpy(map, "maps/");
+	strcpy(map, _map->folder);
 	char * pStr = malloc(100);
 	_background = _map->image;
 	_noBackground = false;
@@ -704,7 +703,7 @@ void loadMap ()
 							printf("found sound %s\n", tmpStr);
 							//found hit sound
 							char fullPath [200];
-							snprintf(fullPath, 200, "maps/%s/%s", _map->folder, tmpStr);
+							snprintf(fullPath, 200, "%s/%s", _map->folder, tmpStr);
 							_papNotes[_noteIndex]->custSound = addCustomSound(fullPath);
 							_papNotes[_noteIndex]->hitSE_File = malloc(200*sizeof(char));
 							strcpy(_papNotes[_noteIndex]->hitSE_File, tmpStr);
@@ -723,7 +722,7 @@ void loadMap ()
 								fileStr[k] = tmpStr[k];
 							}
 							char fullPath [100];
-							snprintf(fullPath, 100, "maps/%s/%s", _map->folder, fileStr);
+							snprintf(fullPath, 100, "%s/%s", _map->folder, fileStr);
 							_papNotes[_noteIndex]->custTex = addCustomTexture(fullPath); 
 							_papNotes[_noteIndex]->texture_File = malloc(100*sizeof(char));
 							strcpy(_papNotes[_noteIndex]->texture_File, tmpStr);
@@ -901,20 +900,17 @@ void makeMapZip(Map * map)
 	strcpy(str, map->name);
 	strcat(str, ".zip");
 	struct zip_t *zip = zip_open(str, 6, 'w');
-	strcpy(str, "maps/");
-	strcat(str, map->folder);
-	int amount = 0;
-	char ** files = GetDirectoryFiles(str, &amount);
-	for(int i = 0; i < amount; i++)
+	strcpy(str, map->folder);
+	FilePathList files = LoadDirectoryFiles(str);
+	for(int i = 0; i < files.count; i++)
 	{
-		if(files[i][0] == '.')
+		if(files.paths[i][0] == '.')
 			continue;
-		zip_entry_open(zip, files[i]);
+		zip_entry_open(zip, files.paths[i]);
 		{
-			strcpy(str, "maps/");
-			strcat(str, map->folder);
+			strcpy(str, map->folder);
 			strcat(str, "/");
-			strcat(str, files[i]);
+			strcat(str, files.paths[i]);
 			printf("compressing file %s\n", str);
 			if(!FileExists(str))
 				printf("wtf??\n");
@@ -931,14 +927,13 @@ void makeMapZip(Map * map)
 		zip_entry_close(zip);
 	}
 	zip_close(zip);
-	ClearDirectoryFiles();
+	UnloadDirectoryFiles(files);
 }
 
 void addZipMap(char * file)
 {
 	int arg = 2;
 	char str [100];
-	strcpy(str, "maps/");
 	strcat(str, GetFileNameWithoutExt(file));
 	zip_extract(file, str, on_extract_entry, &arg);
 	_mapRefresh = true;
