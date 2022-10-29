@@ -1147,6 +1147,12 @@ void textBox(Rectangle rect, char *str, bool *selected)
 				}
 			}
 		}
+
+		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_BACKSPACE))
+		{
+			str[0] = '\0';
+		}
+
 		if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_ENTER))
 		{
 			*selected = false;
