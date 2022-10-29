@@ -2,9 +2,10 @@
 #define GAME_GAMEPLAY
 
 #include <stdbool.h>
-#include "audio.h"
+#include "../audio.h"
+#include "../files.h"
 
-#include "../deps/raylib/src/raylib.h"
+#include "../../deps/raylib/src/raylib.h"
 
 
 #ifdef EXTERN_GAMEPLAY

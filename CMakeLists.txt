@@ -6,6 +6,9 @@ project(
     LANGUAGES C
 )
 
+set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
 include_directories(src)
 add_executable(${PROJECT_NAME} src/audio.c src/drawing.c src/files.c src/main.c src/shared.c src/thread.c
   src/gameplay/gameplay.c src/gameplay/editor.c src/gameplay/menus.c src/gameplay/playing.c src/gameplay/recording.c)

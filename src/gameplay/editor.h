@@ -1,7 +1,7 @@
 #ifndef GAME_EDITOR
 #define GAME_EDITOR
 
-#include "audio.h"
+#include "../files.h"
 
 #ifdef EXTERN_EDITOR
 

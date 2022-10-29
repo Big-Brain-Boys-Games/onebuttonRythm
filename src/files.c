@@ -550,7 +550,11 @@ void loadMap ()
 		_noBackground = 1;
 
 	if(_map->music.data==0 || _map->music.size == 0)
-		loadMusic(_map);
+	{
+		char str[100];
+		snprintf(str, 100, "%s/%s", _map->folder, _map->musicFile);
+		loadMusic(&_map->music, str, _map->musicPreviewOffset);
+	}
 	
 	_pMusic = &_map->music;
 	_map->musicLength = (int)getMusicDuration();

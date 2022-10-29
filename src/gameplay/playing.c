@@ -4,7 +4,7 @@
 #include <math.h>
 #include <string.h>
 
-#include "../deps/raylib/src/raylib.h"
+#include "../../deps/raylib/src/raylib.h"
 
 
 #define EXTERN_AUDIO
@@ -16,6 +16,7 @@
 
 #include "../drawing.h"
 #include "../audio.h"
+#include "../files.h"
 #include "../main.h"
 
 #include "editor.h"

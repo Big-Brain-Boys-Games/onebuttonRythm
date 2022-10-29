@@ -7,7 +7,7 @@
 #include <math.h>
 #include <ctype.h>
 
-#include "../deps/raylib/src/raylib.h"
+#include "../../deps/raylib/src/raylib.h"
 
 
 #define EXTERN_MAIN
@@ -679,7 +679,9 @@ void fMapSelect(bool reset)
 			if (hoverPeriod > 1 && hoverPeriod < 2)
 			{
 				// play music
-				loadMusic(&_paMaps[i]);
+				char str[100];
+				snprintf(str, 100, "%s/%s", _paMaps[i].folder, _paMaps[i].musicFile);
+				loadMusic(&_paMaps[i].music, str, _paMaps[i].musicPreviewOffset);
 				_playMenuMusic = false;
 				_musicFrameCount = _paMaps[i].musicPreviewOffset * 48000 * 2;
 				_musicPlaying = true;

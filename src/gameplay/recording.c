@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "../deps/raylib/src/raylib.h"
+#include "../../deps/raylib/src/raylib.h"
 
 
 #define EXTERN_GAMEPLAY

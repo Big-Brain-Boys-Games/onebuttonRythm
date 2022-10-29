@@ -9,10 +9,6 @@ typedef struct Audio
     int size;
 } Audio;
 
-#include "files.h"
-
-
-
 #ifdef EXTERN_AUDIO
     extern double _musicHead, _musicSpeed;
     extern bool _musicPlaying, _musicLoops, _playMenuMusic;
@@ -43,7 +39,7 @@ int getBeatsCount();
 void setMusicStart();
 void randomMusicPoint();
 void audioInit();
-void loadMusic(Map *map);
+void loadMusic(Audio *music, char * file, float previewOffset);
 void loadAudio(Audio * audio, char *file);
 bool endOfMusic();
 void playAudioEffect(Audio audio);

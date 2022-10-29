@@ -8,7 +8,7 @@
 #include <time.h>
 
 
-#include "../deps/raylib/src/raylib.h"
+#include "../../deps/raylib/src/raylib.h"
 
 
 #define EXTERN_MAIN
@@ -19,6 +19,7 @@
 
 #include "../drawing.h"
 #include "../main.h"
+#include "../files.h"
 #include "../audio.h"
 
 #include "playing.h"

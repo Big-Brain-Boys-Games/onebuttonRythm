@@ -12,7 +12,6 @@
 #define EXTERN_MAIN
 
 #include "audio.h"
-#include "files.h"
 #include "thread.h"
 #include "main.h"
 
@@ -247,18 +246,17 @@ void audioInit()
 	}
 }
 
-void loadMusic(Map *map)
+void loadMusic(Audio *music, char * file, float previewOffset)
 {
 	_musicPlaying = false;
-	char str[100];
-	if (map->folder == NULL || map->musicFile == NULL)
+	if (!file)
 		return;
-	strcpy(str, map->folder);
-	strcat(str, map->musicFile);
-	if (map->music.size == 0)
-		loadAudio(&map->music, str);
-	_musicPreviewOffset = map->musicPreviewOffset;
-	_pMusic = &map->music;
+	
+	if (music->size == 0)
+		loadAudio(music, file);
+	
+	_musicPreviewOffset = previewOffset;
+	_pMusic = music;
 }
 
 bool endOfMusic()
