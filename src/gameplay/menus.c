@@ -66,11 +66,21 @@ void freeCSS(CSS * css)
 	}
 }
 
-void drawCSS()
+void drawCSS(char * file)
 {
 	if(!_pCSS)
-		return;
+	{
+		loadCSS(file);
+	}
 
+	if(strcmp(_pCSS->file, file))
+	{
+		freeCSS(_pCSS);
+		free(_paCSS);
+		_pCSS = 0;
+		loadCSS(file);
+	}
+	
 	if(IsKeyPressed(KEY_F5))
 	{
 		//reload
@@ -115,11 +125,27 @@ void drawCSS()
 
 		Rectangle rect = (Rectangle){.x=object.x*getWidth(), .y=(object.y+scrollValue)*getHeight(), .width=object.width*getWidth(), .height=object.height*getHeight()};
 
+		if(mouseInRect(rect))
+		{
+			_pCSS->objects[i].hoverTime += GetFrameTime();
+		}else
+			_pCSS->objects[i].hoverTime = 0;
+
+		float growAmount = object.growOnHover * fmin(object.hoverTime*15, 1);
+
+		rect.x -= rect.width*growAmount/2;
+		rect.y -= rect.height*growAmount/2;
+
+		rect.width += rect.width*growAmount;
+		rect.height += rect.height*growAmount;
+
+		float fontSize = object.fontSize * (1+growAmount);
+
 		switch(object.type)
 		{
 			case css_text:
 				if(object.text)
-					drawText(object.text, rect.x, rect.y, object.fontSize*getWidth(), object.color);
+					drawText(object.text, rect.x, rect.y, fontSize*getWidth(), object.color);
 				break;
 			
 			case css_image:
@@ -132,15 +158,15 @@ void drawCSS()
 
 			case css_button:
 				if(object.image.id)
-					drawButtonPro(rect, object.text, object.fontSize, object.image);
+					drawButtonPro(rect, object.text, fontSize, object.image);
 				else
-					drawButton(rect, object.text, object.fontSize);
+					drawButton(rect, object.text, fontSize);
 
 				_pCSS->objects[i].selected = mouseInRect(rect) && IsMouseButtonReleased(0);
 				break;
 
 			case css_buttonNoSprite:
-				drawButtonNoSprite(rect, object.text, object.fontSize);
+				drawButtonNoSprite(rect, object.text, fontSize);
 				_pCSS->objects[i].selected = mouseInRect(rect) && IsMouseButtonReleased(0);
 				break;
 
@@ -186,23 +212,36 @@ void drawCSS()
 					fEditor(true);
 				}else if(!strcmp(object.loadFile, "_export_"))
 				{
-					_pNextGameplayFunction = &fPlaying;
-					_pGameplayFunction = &fEditor;
-					fEditor(true);
+					_pNextGameplayFunction = &fMainMenu;
+					_pGameplayFunction = &fExport;
 				}else if(!strcmp(object.loadFile, "_mapselect_"))
 				{
-					_pNextGameplayFunction = &fPlaying;
+					_pNextGameplayFunction = _pGameplayFunction;
 					_pGameplayFunction = &fMapSelect;
+				}else if(!strcmp(object.loadFile, "_settings_"))
+				{
+					_pNextGameplayFunction = _pGameplayFunction;
+					_pGameplayFunction = &fSettings;
+				}else if(!strcmp(object.loadFile, "_newMap_"))
+				{
+					_pNextGameplayFunction = _pGameplayFunction;
+					_pGameplayFunction = &fNewMap;
+					fNewMap(true);
+				}else if(!strcmp(object.loadFile, "_exit_"))
+				{
+					exitGame();
 				}else
 				{
 					char * file = malloc(strlen(object.loadFile)+1);
 					strcpy(file, object.loadFile);
 					freeCSS(_pCSS);
 					free(_pCSS);
+					_pCSS = 0;
+					_transition = 0.1;
 					loadCSS(file);
-
 					_pGameplayFunction = &fCSSPage;
 				}
+				return;
 			}
 		}
 	}
@@ -331,10 +370,14 @@ void loadCSS(char * fileName)
 								{
 									object.text = malloc(strlen(_map->name)+1);
 									strcpy(object.text, _map->name);
-								}else if(!strcmp(value, "_playerName_") && _map)
+								}else if(!strcmp(value, "_playerName_"))
 								{
-									object.text = malloc(strlen(_map->name)+1);
-									strcpy(object.text, _map->name);
+									object.text = malloc(strlen(_playerName)+1);
+									strcpy(object.text, _playerName);
+								}else if(!strcmp(value, "_notification_"))
+								{
+									object.text = malloc(strlen(_notfication)+1);
+									strcpy(object.text, _notfication);
 								}else {
 									object.text = malloc(strlen(value)+1);
 									strcpy(object.text, value);
@@ -415,6 +458,11 @@ void loadCSS(char * fileName)
 						if(!strcmp(var, "opacity"))
 						{
 							object.opacity = atof(value);
+						}
+
+						if(!strcmp(var, "growOnHover"))
+						{
+							object.growOnHover = atof(value);
 						}
 
 						if(!strcmp(var, "font-size"))
@@ -574,16 +622,12 @@ void fCSSPage(bool reset)
 	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
 					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
 	drawVignette();
-	drawCSS();
+	drawCSS(_pCSS->file);
 	drawCursor();
 }
 
 void fMainMenu(bool reset)
 {
-	if(!_pCSS)
-	{
-		loadCSS("theme/main.css");
-	}
 
 	checkFileDropped();
 	_musicLoops = true;
@@ -594,39 +638,38 @@ void fMainMenu(bool reset)
 	int middle = getWidth() / 2;
 	drawVignette();
 
-	float fontScale = 0.075;
-	//play button
-	Rectangle button = (Rectangle){.x = getWidth() * 0.05, .y = getHeight() * 0.25, .width = getWidth() * 0.32, .height = getWidth() * 0.32};
-	static float growTimer = 0;
-	if(mouseInRect(button))
-	{
-		growTimer += GetFrameTime() * 12;
-	}else
-		growTimer -= GetFrameTime() * 12;
+	// float fontScale = 0.075;
+	// //play button
+	// Rectangle button = (Rectangle){.x = getWidth() * 0.05, .y = getHeight() * 0.25, .width = getWidth() * 0.32, .height = getWidth() * 0.32};
+	// static float growTimer = 0;
+	// if(mouseInRect(button))
+	// {
+	// 	growTimer += GetFrameTime() * 12;
+	// }else
+	// 	growTimer -= GetFrameTime() * 12;
 
-	growTimer = fmax(fmin(growTimer, 1), 0);
+	// growTimer = fmax(fmin(growTimer, 1), 0);
 	
-	button.width += getWidth()*0.1*growTimer;
-	button.height += getWidth()*0.1*growTimer;
-	button.x -= getWidth()*0.05*growTimer;
-	button.y -= getWidth()*0.05*growTimer;
+	// button.width += getWidth()*0.1*growTimer;
+	// button.height += getWidth()*0.1*growTimer;
+	// button.x -= getWidth()*0.05*growTimer;
+	// button.y -= getWidth()*0.05*growTimer;
 
-	DrawTexturePro(_noteTex, (Rectangle){.x=0, .y=0, .width=_noteTex.width, .height=_noteTex.height}, (Rectangle){.x=button.x, .y=button.y, .width=button.width, .height=button.width}, (Vector2) {.x=0, .y=0}, 0, WHITE);
+	// DrawTexturePro(_noteTex, (Rectangle){.x=0, .y=0, .width=_noteTex.width, .height=_noteTex.height}, (Rectangle){.x=button.x, .y=button.y, .width=button.width, .height=button.width}, (Vector2) {.x=0, .y=0}, 0, WHITE);
 
 
-	fontScale *= 1.3;
-	int screenSize = getWidth() > getHeight() ? getHeight() : getWidth();
-	int textSize = measureText("Play", screenSize * fontScale);
-	drawText("Play", button.x + button.width / 2 - textSize / 2, button.y + button.height*0.5-getHeight()*0.045, screenSize * fontScale, DARKGRAY);
+	// fontScale *= 1.3;
+	// int screenSize = getWidth() > getHeight() ? getHeight() : getWidth();
+	// int textSize = measureText("Play", screenSize * fontScale);
+	// drawText("Play", button.x + button.width / 2 - textSize / 2, button.y + button.height*0.5-getHeight()*0.045, screenSize * fontScale, DARKGRAY);
 
-	if (IsMouseButtonReleased(0) && mouseInRect(button))
-	{
-		playAudioEffect(_buttonSe);
-		printf("switching to playing map!\n");
-		_pNextGameplayFunction = &fPlaying;
-		_pGameplayFunction = &fMapSelect;
-		_transition = 0.1;
-	}
+	// if (IsMouseButtonReleased(0) && mouseInRect(button))
+	// {
+	// 	printf("switching to playing map!\n");
+	// 	_pNextGameplayFunction = &fPlaying;
+	// 	_pGameplayFunction = &fMapSelect;
+	// 	_transition = 0.1;
+	// }
 
 	if(UIBUttonPressed("settingsButton"))
 	// if (interactableButton("Settings", 0.035, middle - getWidth() * (0.12-growTimer*0.03), getHeight() * 0.55, getWidth() * 0.2, getHeight() * 0.065))
@@ -651,27 +694,27 @@ void fMainMenu(bool reset)
 	}
 
 	// gigantic title
-	float tSize = getWidth() * 0.07;
-	Vector2 titlePos = (Vector2){.x=getWidth()*0.5, .y=getHeight()*0.2};
-	// dropshadow
-	drawText("One Button", titlePos.x + getWidth() * 0.004, titlePos.y + getHeight()* 0.007, tSize, ColorAlpha(BLACK, 0.4));
-	// real title
-	drawText("One Button", titlePos.x, titlePos.y, tSize, WHITE);
+	// float tSize = getWidth() * 0.07;
+	// Vector2 titlePos = (Vector2){.x=getWidth()*0.5, .y=getHeight()*0.2};
+	// // dropshadow
+	// drawText("One Button", titlePos.x + getWidth() * 0.004, titlePos.y + getHeight()* 0.007, tSize, ColorAlpha(BLACK, 0.4));
+	// // real title
+	// drawText("One Button", titlePos.x, titlePos.y, tSize, WHITE);
 
-	titlePos.x += getWidth()*0.07;
-	titlePos.y += getHeight()*0.1;
-	// dropshadow
-	drawText("Rhythm", titlePos.x + getWidth() * 0.004, titlePos.y + getHeight()* 0.007, tSize, ColorAlpha(BLACK, 0.4));
-	// real title
-	drawText("Rhythm", titlePos.x, titlePos.y, tSize, WHITE);
+	// titlePos.x += getWidth()*0.07;
+	// titlePos.y += getHeight()*0.1;
+	// // dropshadow
+	// drawText("Rhythm", titlePos.x + getWidth() * 0.004, titlePos.y + getHeight()* 0.007, tSize, ColorAlpha(BLACK, 0.4));
+	// // real title
+	// drawText("Rhythm", titlePos.x, titlePos.y, tSize, WHITE);
 
-	char str[120];
-	snprintf(str, 120, "name: %s", _playerName);
-	drawText(str, getWidth() * 0.55, getHeight() * 0.92, getWidth() * 0.04, WHITE);
+	// char str[120];
+	// snprintf(str, 120, "name: %s", _playerName);
+	// drawText(str, getWidth() * 0.55, getHeight() * 0.92, getWidth() * 0.04, WHITE);
 
-	drawText(_notfication, getWidth() * 0.6, getHeight() * 0.8, getWidth() * 0.02, WHITE);
+	// drawText(_notfication, getWidth() * 0.6, getHeight() * 0.8, getWidth() * 0.02, WHITE);
 
-	drawCSS();
+	drawCSS("theme/main.css");
 
 	drawCursor();
 }
