@@ -1,0 +1,129 @@
+#settingsButton {
+    type: button;
+    content: "settings";
+    color: black;
+    font-size: 3.5;
+    left: 48;
+    top: 55;
+    width: 20;
+    height: 6.5;
+}
+
+#newmapButton {
+    type: button;
+    content: "New Map";
+    color: black;
+    font-size: 3.5;
+    margin-left: 9;
+    margin-top: 10;
+    width: 20;
+    height: 6.5;
+}
+
+#exitButton {
+    type: button;
+    content: "exit";
+    color: black;
+    font-size: 3.5;
+    margin-left: 9;
+    margin-top: 10;
+    width: 20;
+    height: 6.5;
+}
+
+#ShadowOneButton {
+    type: text;
+    content: "One Button";
+    color: BLACK;
+    opacity: 1;
+    font-size: 7;
+    left: 50.5;
+    top: 20.5;
+    width: 20;
+    height: 6.5;
+}
+
+#TitleOneButton {
+    type: text;
+    content: "One Button";
+    color: WHITE;
+    opacity: 1;
+    font-size: 7;
+    left: 50;
+    top: 20;
+    width: 20;
+    height: 6.5;
+}
+
+#ShadowRhythm {
+    type: text;
+    content: "One Button";
+    color: BLACK;
+    opacity: 1;
+    font-size: 7;
+    left: 50.5;
+    top: 20.5;
+    width: 20;
+    height: 6.5;
+}
+
+#TitleRhythm {
+    type: text;
+    content: "One Button";
+    color: WHITE;
+    opacity: 1;
+    font-size: 7;
+    left: 50;
+    top: 20;
+    width: 20;
+    height: 6.5;
+}
+
+#containerTest {
+    type: container;
+    active: no;
+    color: BLACK;
+    left: 20;
+    top: 20;
+    width: 50;
+    height: 50;
+    scrollable: yes;
+}
+
+#testTestInContainer {
+    parent: containerTest;
+    type: text;
+    content: "One Button";
+    color: black;
+    opacity: 1;
+    font-size: 7;
+    left: 50;
+    top: 20;
+    width: 20;
+    height: 6.5;
+}
+
+
+#testButton {
+    type: button;
+    content: "test";
+    color: black;
+    font-size: 3.5;
+    left: 9;
+    top: 10;
+    width: 20;
+    height: 6.5;
+    makeActive: containerTest;
+}
+
+#test2Button {
+    type: button;
+    content: "test";
+    color: black;
+    font-size: 3.5;
+    left: 9;
+    top: 90;
+    width: 20;
+    height: 6.5;
+    loadFile: theme/testFile.css;
+}

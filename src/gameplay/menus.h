@@ -4,6 +4,7 @@
 #include "../../deps/raylib/src/raylib.h"
 
 #include "gameplay.h"
+#include <stdbool.h>
 
 #ifdef EXTERN_MENUS
 
@@ -14,6 +15,40 @@
     extern bool _mapRefresh;
 
 #endif
+
+
+
+enum CSS_Type {css_text, css_image, css_rectangle, css_button, css_buttonNoSprite, css_textbox, css_slider, css_container};
+
+typedef struct CSS_Object{
+    char * name;
+    char * parent;
+    enum CSS_Type type;
+    char * text;
+    Color color;
+    Texture2D image;
+    float opacity;
+    float fontSize;
+    float x, y, width, height;
+    bool selected;
+    int value;
+    int max, min;
+    bool active, scrollable;
+    float scrollValue;
+    char * loadFile;
+    char * makeActive;
+} CSS_Object;
+
+typedef struct CSS{
+    CSS_Object * objects;
+    int count;
+    char * file;
+} CSS;
+
+void loadCSS(char * fileName);
+CSS_Object getCSS_Object(char * name);
+CSS_Object * getCSS_ObjectPointer(char * name);
+void fCSSPage(bool reset);
 
 
 void fPause(bool reset);

@@ -43,6 +43,7 @@ void drawVignette();
 void drawProgressBar();
 bool drawProgressBarI(bool interactable);
 void drawHint(Rectangle rect, char * text);
+void drawButtonPro(Rectangle rect, char * text, float fontScale, Texture2D tex);
 void drawButton(Rectangle rect, char *text, float fontScale);
 void drawButtonNoSprite(Rectangle rect, char *text, float fontScale);
 void drawMusicGraph(float transparent);

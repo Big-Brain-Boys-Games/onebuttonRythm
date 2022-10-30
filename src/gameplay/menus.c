@@ -28,6 +28,528 @@
 #include "../thread.h"
 #include "../main.h"
 
+CSS * _paCSS = 0;
+CSS * _pCSS = 0;
+
+float _scrollValue = 0;
+
+void freeCSS_Object(CSS_Object * object)
+{
+	if(!object)
+		return;
+
+	if(object->image.id)
+	{
+		if(_map && object->image.id == _map->image.id)
+		{}
+		else
+		{
+			UnloadTexture(object->image);
+		}
+	}
+
+	if(object->name)
+		free(object->name);
+	
+	if(object->text)
+		free(object->text);
+}
+
+void freeCSS(CSS * css)
+{
+	if(!css)
+		return;
+	
+	for(int i = 0; i < css->count; i++)
+	{
+		freeCSS_Object(&css->objects[i]);
+	}
+}
+
+void drawCSS()
+{
+	if(!_pCSS)
+		return;
+
+	if(IsKeyPressed(KEY_F5))
+	{
+		//reload
+		char * file = malloc(strlen(_pCSS->file)+1);
+		strcpy(file, _pCSS->file);
+		freeCSS(_pCSS);
+		free(_pCSS);
+		loadCSS(file);
+		free(file);
+
+		if(!_pCSS)
+			return;
+	}
+
+	//go through every object and draw them in order of the source	
+	for(int i = 0; i < _pCSS->count; i++)
+	{
+		CSS_Object object = _pCSS->objects[i];
+
+		if(!object.active)
+			continue;
+
+		float scrollValue = _scrollValue;
+
+
+		bool scissorMode = false;
+		if(object.parent)
+		{
+			CSS_Object parent = getCSS_Object(object.parent);
+
+			if(!parent.active)
+				continue;
+
+			if(parent.type == css_container)
+			{
+				BeginScissorMode(parent.x*getWidth(), parent.y*getHeight(), parent.width*getWidth(), parent.height*getHeight());
+				scissorMode = true;
+				if(parent.scrollable)
+					scrollValue = parent.scrollValue;
+			}
+		}
+
+		Rectangle rect = (Rectangle){.x=object.x*getWidth(), .y=(object.y+scrollValue)*getHeight(), .width=object.width*getWidth(), .height=object.height*getHeight()};
+
+		switch(object.type)
+		{
+			case css_text:
+				if(object.text)
+					drawText(object.text, rect.x, rect.y, object.fontSize*getWidth(), object.color);
+				break;
+			
+			case css_image:
+				DrawTexturePro(object.image, (Rectangle){.x=0,.y=0,.width=object.image.width, .height=object.image.height}, rect, (Vector2){0}, 0, object.color);
+				break;
+			
+			case css_rectangle:
+				DrawRectangle(rect.x, rect.y, rect.width, rect.height, object.color);
+				break;
+
+			case css_button:
+				if(object.image.id)
+					drawButtonPro(rect, object.text, object.fontSize, object.image);
+				else
+					drawButton(rect, object.text, object.fontSize);
+
+				_pCSS->objects[i].selected = mouseInRect(rect) && IsMouseButtonReleased(0);
+				break;
+
+			case css_buttonNoSprite:
+				drawButtonNoSprite(rect, object.text, object.fontSize);
+				_pCSS->objects[i].selected = mouseInRect(rect) && IsMouseButtonReleased(0);
+				break;
+
+			case css_textbox:
+				textBox(rect, object.text, &_pCSS->objects[i].selected);
+				break;
+
+			case css_slider:
+				slider(rect, &_pCSS->objects[i].selected, &_pCSS->objects[i].value, 0, 100);
+				break;
+			
+			case css_container:
+				_pCSS->objects[i].scrollValue += GetMouseWheelMove() * .04;
+				break;
+		}
+
+		if(scissorMode)
+		{
+			EndScissorMode();
+		}
+
+		if((object.type == css_button || object.type == css_buttonNoSprite) && object.selected)
+		{
+			//button action
+			if(object.makeActive)
+			{
+				CSS_Object * activatedObject = getCSS_ObjectPointer(object.makeActive);
+				activatedObject->active = !activatedObject->active;
+			}
+
+			if(object.loadFile)
+			{
+				if(!strcmp(object.loadFile, "_playing_"))
+				{
+					_pNextGameplayFunction = &fPlaying;
+					_pGameplayFunction = &fCountDown;
+					fCountDown(true);
+					fPlaying(true);
+				}else if(!strcmp(object.loadFile, "_editor_"))
+				{
+					_pNextGameplayFunction = &fPlaying;
+					_pGameplayFunction = &fEditor;
+					fEditor(true);
+				}else if(!strcmp(object.loadFile, "_export_"))
+				{
+					_pNextGameplayFunction = &fPlaying;
+					_pGameplayFunction = &fEditor;
+					fEditor(true);
+				}else if(!strcmp(object.loadFile, "_mapselect_"))
+				{
+					_pNextGameplayFunction = &fPlaying;
+					_pGameplayFunction = &fMapSelect;
+				}else
+				{
+					char * file = malloc(strlen(object.loadFile)+1);
+					strcpy(file, object.loadFile);
+					freeCSS(_pCSS);
+					free(_pCSS);
+					loadCSS(file);
+
+					_pGameplayFunction = &fCSSPage;
+				}
+			}
+		}
+	}
+}
+
+void loadCSS(char * fileName)
+{
+	FILE * file = fopen(fileName, "r");
+
+	fseek(file, 0L, SEEK_END);
+	int size = ftell(file);
+	rewind(file);
+
+	char * text = malloc(size + 1);
+	int textIndex = 0;
+	char ch;
+	bool inText = false;
+	while((ch = getc(file)) != EOF)
+    {
+		if(!inText && (ch == '\n' || ch == '\0' || ch == ' '))
+			continue;
+
+		if(ch == '\r') //not needed either way
+			continue;
+		
+		if(ch == '"')
+		{
+			inText = !inText;
+			continue;
+		}
+		
+		text[textIndex] = ch;
+		textIndex++;
+
+		
+    }
+	fclose(file);
+
+	text[textIndex] = '\0';
+
+	size = textIndex;
+	textIndex = 0;
+
+	_pCSS = malloc(sizeof(CSS));
+	_pCSS->file = malloc(strlen(fileName)+1);
+	strcpy(_pCSS->file, fileName);
+	_pCSS->count = 0;
+	_pCSS->objects = 0;
+
+	for(int i = 0; i < size; i++)
+	{
+		if(text[i] == '#')
+		{
+			i++;
+			CSS_Object object = {0};
+			object.opacity = 1;
+			object.active = true;
+
+			for(int nameIndex = i; nameIndex < size; nameIndex++)
+			{
+				if(text[nameIndex] == '{')
+				{
+					text[nameIndex] = '\0';
+					object.name = malloc(sizeof(text+i)+1);
+					strcpy(object.name, text+i);
+					i = nameIndex+1;
+					break;
+				}
+			}
+
+			while(text[i] != '}')
+			{
+				for(int varIndex = i; varIndex < size; varIndex++)
+				{
+					if(text[varIndex] == ':')
+					{
+						text[varIndex] = '\0';
+
+						//get value for variable
+						char * value = text+varIndex+1;
+						char * var = text+i;
+
+						for(int valueIndex = varIndex+1; valueIndex < size; valueIndex++)
+						{
+							if(text[valueIndex] == ';')
+							{
+								text[valueIndex] = '\0';
+								i = valueIndex;
+								break;
+							}
+						}
+						
+						//handle different variable types (type: text: color: image: ...)
+						if(!strcmp(var, "type"))
+						{
+							if(!strcmp(value, "text"))
+								object.type = css_text;
+							
+							if(!strcmp(value, "image"))
+								object.type = css_image;
+
+							if(!strcmp(value, "rectangle"))
+								object.type = css_rectangle;
+
+							if(!strcmp(value, "button"))
+								object.type = css_button;
+
+							if(!strcmp(value, "buttonNoSprite"))
+								object.type = css_buttonNoSprite;
+
+							if(!strcmp(value, "textbox"))
+								object.type = css_textbox;
+
+							if(!strcmp(value, "slider"))
+								object.type = css_slider;
+
+							if(!strcmp(value, "container"))
+								object.type = css_container;
+						}
+
+						if(!strcmp(var, "content"))
+						{
+							if(strlen(value))
+							{
+								if(!strcmp(value, "_mapname_") && _map)
+								{
+									object.text = malloc(strlen(_map->name)+1);
+									strcpy(object.text, _map->name);
+								}else if(!strcmp(value, "_playerName_") && _map)
+								{
+									object.text = malloc(strlen(_map->name)+1);
+									strcpy(object.text, _map->name);
+								}else {
+									object.text = malloc(strlen(value)+1);
+									strcpy(object.text, value);
+								}
+							}
+						}
+
+						if(!strcmp(var, "parent"))
+						{
+							if(strlen(value))
+							{
+								object.parent = malloc(strlen(value)+1);
+								strcpy(object.parent, value);
+							}
+						}
+
+						if(!strcmp(var, "makeActive"))
+						{
+							if(strlen(value))
+							{
+								object.makeActive = malloc(strlen(value)+1);
+								strcpy(object.makeActive, value);
+							}
+						}
+
+						if(!strcmp(var, "loadFile"))
+						{
+							if(strlen(value))
+							{
+								object.loadFile = malloc(strlen(value)+1);
+								strcpy(object.loadFile, value);
+							}
+						}
+
+						if(!strcmp(var, "active"))
+						{
+							object.active = !strcmp(value, "yes");
+						}
+
+						if(!strcmp(var, "scrollable"))
+						{
+							object.scrollable = !strcmp(value, "yes");
+						}
+
+						if(!strcmp(var, "color"))
+						{
+							Color colors[] = {WHITE, BLACK, MAGENTA, LIGHTGRAY, GRAY, DARKGRAY, YELLOW, GOLD, ORANGE, PINK, RED, MAROON, GREEN, LIME, DARKGREEN, SKYBLUE, BLUE, DARKBLUE, PURPLE, VIOLET, DARKPURPLE, BEIGE, BROWN, DARKBROWN};
+							char * text [] = {"WHITE", "BLACK", "MEGENTA", "LIGHTGRAY", "GRAY", "DARKGRAY", "YELLOW", "GOLD", "ORANGE", "PINK", "RED", "MAROON", "GREEN", "LIME", "DARKGREEN", "SKYBLUE", "BLUE", "DARKBLUE", "PURPLE", "VIOLET", "DARKPURPLE", "BEIGE", "BROWN", "DARKBROWN"};
+
+							int size = sizeof(colors)/sizeof(Color);
+							for(int colorIndex = 0; colorIndex < size; colorIndex++)
+							{
+								if(!strcmp(value, text[colorIndex]))
+								{
+									object.color = colors[colorIndex];
+									break;
+								}
+							}
+						}
+
+						if(!strcmp(var, "image"))
+						{
+							if(!strcmp(value, "_mapimage_"))
+							{
+								if(_map)
+								{
+									object.image = _map->image;
+								}
+							}else if(!strcmp(value, "_background_"))
+							{
+								object.image = _menuBackground;
+							}else
+							{
+								object.image = LoadTexture(value);
+							}
+						}
+
+						if(!strcmp(var, "opacity"))
+						{
+							object.opacity = atof(value);
+						}
+
+						if(!strcmp(var, "font-size"))
+						{
+							object.fontSize = atof(value)/100.0;
+						}
+
+						if(!strcmp(var, "left"))
+						{
+							object.x = atof(value)/100.0;
+						}
+
+						if(!strcmp(var, "top"))
+						{
+							object.y = atof(value)/100.0;
+						}
+
+						if(!strcmp(var, "margin-left"))
+						{
+							if(object.parent)
+							{
+								CSS_Object parent = getCSS_Object(object.parent);
+								object.x = parent.x + atof(value)/100.0;
+							}else
+							{
+								if(_pCSS->count < 1)
+									object.x = atof(value)/100.0;
+								else
+									object.x = _pCSS->objects[_pCSS->count-1].x + atof(value)/100.0;
+							}
+						}
+
+						if(!strcmp(var, "margin-top"))
+						{
+							if(object.parent)
+							{
+								CSS_Object parent = getCSS_Object(object.parent);
+								object.y = parent.y + atof(value)/100.0;
+							}else
+							{
+								if(_pCSS->count < 1)
+									object.y = atof(value)/100.0;
+								else
+									object.y = _pCSS->objects[_pCSS->count-1].y + atof(value)/100.0;
+							}
+						}
+
+						if(!strcmp(var, "width"))
+						{
+							object.width = atof(value)/100.0;
+						}
+
+						if(!strcmp(var, "height"))
+						{
+							object.height = atof(value)/100.0;
+						}
+
+						if(!strcmp(var, "max"))
+						{
+							object.max = atoi(value);
+						}
+
+						if(!strcmp(var, "min"))
+						{
+							object.max = atoi(value);
+						}
+
+						i++;
+						break;
+					}
+				}
+			}
+
+			object.color.a = object.opacity*255;
+
+			_pCSS->count++;
+			if(_pCSS->objects)
+			{
+				_pCSS->objects = realloc(_pCSS->objects, sizeof(CSS_Object)*_pCSS->count);
+			}else {
+				_pCSS->objects = malloc(sizeof(CSS_Object)*_pCSS->count);
+			}
+			_pCSS->objects[_pCSS->count-1] = object;
+		}
+	}
+}
+
+CSS_Object * getCSS_ObjectPointer(char * name)
+{
+	if(!name || !_pCSS)
+		return 0;
+	
+	for(int i = 0; i < _pCSS->count; i++)
+	{
+		if(_pCSS->objects[i].name[0] == name[0])
+		{
+			if(!strcmp(_pCSS->objects[i].name, name))
+			{
+				return &_pCSS->objects[i];
+			}
+		}
+	}
+	return 0;
+}
+
+CSS_Object getCSS_Object(char * name)
+{
+	CSS_Object * pointer = getCSS_ObjectPointer(name);
+	if(pointer)
+	{
+		return *(pointer);
+	}
+	return (CSS_Object){0};
+}
+
+bool UIBUttonPressed(char * name)
+{
+	CSS_Object object = getCSS_Object(name);
+	Rectangle button = (Rectangle){.x = object.x*getWidth(), .y = object.y*getHeight(), .width = object.width*getWidth(), .height = object.height*getHeight()};
+	
+	if (IsMouseButtonReleased(0) && mouseInRect(button))
+	{
+		playAudioEffect(_buttonSe);
+		return true;
+	}
+	return false;
+}
+
+char * UITextBox(char * name)
+{
+	CSS_Object object = getCSS_Object(name);
+	return object.text;
+}
+
+
 
 Modifier *_activeMod[100] = {0}; // we dont even have that many
 
@@ -42,8 +564,27 @@ Modifier _mods[] = {
 bool _mapRefresh = true;
 
 
+void fCSSPage(bool reset)
+{
+	_musicLoops = true;
+	_playMenuMusic = true;
+	_musicPlaying = false;
+
+	ClearBackground(BLACK);
+	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
+					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
+	drawVignette();
+	drawCSS();
+	drawCursor();
+}
+
 void fMainMenu(bool reset)
 {
+	if(!_pCSS)
+	{
+		loadCSS("theme/main.css");
+	}
+
 	checkFileDropped();
 	_musicLoops = true;
 	ClearBackground(BLACK);
@@ -87,21 +628,24 @@ void fMainMenu(bool reset)
 		_transition = 0.1;
 	}
 
-	if (interactableButton("Settings", 0.035, middle - getWidth() * (0.12-growTimer*0.03), getHeight() * 0.55, getWidth() * 0.2, getHeight() * 0.065))
+	if(UIBUttonPressed("settingsButton"))
+	// if (interactableButton("Settings", 0.035, middle - getWidth() * (0.12-growTimer*0.03), getHeight() * 0.55, getWidth() * 0.2, getHeight() * 0.065))
 	{
 		// Switching to settings
 		_pGameplayFunction = &fSettings;
 		_transition = 0.1;
 	}
 
-	if (interactableButton("New Map", 0.035, middle - getWidth() * (0.03 - growTimer*0.03), getHeight() * 0.65, getWidth() * 0.2, getHeight() * 0.065))
+	//if (interactableButton("New Map", 0.035, middle - getWidth() * (0.03 - growTimer*0.03), getHeight() * 0.65, getWidth() * 0.2, getHeight() * 0.065))
+	if(UIBUttonPressed("newmapButton"))
 	{
 		_pGameplayFunction = &fNewMap;
 		fNewMap(true);
 		_transition = 0.1;
 	}
 
-	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("Exit", 0.035, middle - getWidth() * (-0.07 - growTimer*0.03), getHeight() * 0.75, getWidth() * 0.2, getHeight() * 0.065))
+	if (IsKeyPressed(KEY_ESCAPE) || UIBUttonPressed("exitButton"))
+	//interactableButton("Exit", 0.035, middle - getWidth() * (-0.07 - growTimer*0.03), getHeight() * 0.75, getWidth() * 0.2, getHeight() * 0.065))
 	{
 		exitGame(0);
 	}
@@ -126,6 +670,8 @@ void fMainMenu(bool reset)
 	drawText(str, getWidth() * 0.55, getHeight() * 0.92, getWidth() * 0.04, WHITE);
 
 	drawText(_notfication, getWidth() * 0.6, getHeight() * 0.8, getWidth() * 0.02, WHITE);
+
+	drawCSS();
 
 	drawCursor();
 }

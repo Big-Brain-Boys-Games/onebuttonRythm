@@ -1,0 +1,32 @@
+#settingsButton {
+    type: button;
+    content: "settings";
+    color: black;
+    font-size: 3.5;
+    left: 48;
+    top: 55;
+    width: 20;
+    height: 6.5;
+}
+
+#newmapButton {
+    type: button;
+    content: "New Map";
+    color: black;
+    font-size: 3.5;
+    margin-left: 9;
+    margin-top: 10;
+    width: 20;
+    height: 6.5;
+}
+
+#exitButton {
+    type: button;
+    content: "exit";
+    color: black;
+    font-size: 3.5;
+    margin-left: 9;
+    margin-top: 10;
+    width: 20;
+    height: 6.5;
+}

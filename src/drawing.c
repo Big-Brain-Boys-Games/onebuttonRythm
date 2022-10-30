@@ -567,6 +567,26 @@ void drawBox(Rectangle rect, Color color)
 	// 	}
 }
 
+void drawButtonPro(Rectangle rect, char * text, float fontScale, Texture2D tex)
+{
+	Color color = WHITE;
+	if(mouseInRect(rect))
+		color = LIGHTGRAY;
+	if(mouseInRect(rect) && IsMouseButtonDown(0))
+		color = GRAY;
+
+	DrawTexturePro(tex, (Rectangle){.x=0,.y=0,.width=tex.width,.height=tex.height}, rect, (Vector2){0}, 0, color);
+
+	if(!text)
+		return;
+	
+	fontScale *= 1.3;
+	// DrawRectangle(rect.x, rect.y, rect.width, rect.height, ColorAlpha(color, 0.5));
+	int screenSize = getWidth() > getHeight() ? getHeight() : getWidth();
+	int textSize = measureText(text, screenSize * fontScale);
+	drawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + rect.height*0.15, screenSize * fontScale, (color.r == GRAY.r) ? BLACK : DARKGRAY);
+}
+
 void drawButton(Rectangle rect, char * text, float fontScale)
 {
 	Color color = WHITE;
@@ -576,6 +596,10 @@ void drawButton(Rectangle rect, char * text, float fontScale)
 		color = GRAY;
 
 	drawBox(rect, color);
+
+	if(!text)
+		return;
+	
 	fontScale *= 1.3;
 	// DrawRectangle(rect.x, rect.y, rect.width, rect.height, ColorAlpha(color, 0.5));
 	int screenSize = getWidth() > getHeight() ? getHeight() : getWidth();
