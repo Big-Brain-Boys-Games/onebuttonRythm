@@ -1,0 +1,213 @@
+#titleDarkening {
+    type: rectangle;
+    color: BLACK;
+    opacity: 0.5;
+    x: 0;
+    y: 0;
+    width: 100;
+    height: 13;
+}
+
+#backButton {
+    type: button;
+    content: "Back";
+    font-size: 2.5;
+    left: 5;
+    top: 4;
+    width: 10;
+    height: 5;
+    growOnHover: 0.2;
+}
+
+#SettingsDropShadow {
+    type: text;
+    content: "Settings";
+    color: BLACK;
+    font-size: 5;
+    left: 40.5;
+    top: 3.5;
+    width: 10;
+    height: 5;
+}
+
+#Settings {
+    type: text;
+    content: "Settings";
+    color: WHITE;
+    font-size: 5;
+    margin-left: -0.5;
+    margin-top: -0.5;
+    width: 10;
+    height: 5;
+}
+
+#settingsContainer{
+    type: container;
+    scrollable: no;
+    left: 0;
+    top: 13;
+    width: 100;
+    height: 87;
+}
+
+#globalVolume {
+    type: slider;
+    parent: settingsContainer;
+    min: 0;
+    max: 100;
+    margin-left: 5;
+    margin-top: 15;
+    width: 30;
+    height: 3;
+    growOnHover: 0.05;
+}
+
+#globalVolumeText {
+    type: text;
+    parent: settingsContainer;
+    content: "global volume";
+    color: WHITE;
+    font-size: 3;
+    margin-left: 10;
+    margin-top: 10;
+}
+
+#musicVolume {
+    type: slider;
+    parent: settingsContainer;
+    min: 0;
+    max: 100;
+    margin-left: 5;
+    margin-top: 30;
+    width: 30;
+    height: 3;
+    growOnHover: 0.05;
+}
+
+#musicVolumeText {
+    type: text;
+    parent: settingsContainer;
+    content: "music volume";
+    color: WHITE;
+    font-size: 3;
+    margin-left: 10;
+    margin-top: 25;
+}
+
+#effectVolume {
+    type: slider;
+    parent: settingsContainer;
+    min: 0;
+    max: 100;
+    margin-left: 5;
+    margin-top: 45;
+    width: 30;
+    height: 3;
+    growOnHover: 0.05;
+}
+
+#effectVolumeText {
+    type: text;
+    parent: settingsContainer;
+    content: "sound effect volume";
+    color: WHITE;
+    font-size: 3;
+    margin-left: 5;
+    margin-top: 40;
+}
+
+#zoomSlider {
+    type: slider;
+    parent: settingsContainer;
+    min: 1;
+    max: 300;
+    margin-left: 5;
+    margin-top: 60;
+    width: 30;
+    height: 3;
+    growOnHover: 0.05;
+}
+
+#zoomText {
+    type: text;
+    parent: settingsContainer;
+    content: "zoom";
+    color: WHITE;
+    font-size: 3;
+    margin-left: 16;
+    margin-top: 55;
+}
+
+#noteSizeSlider {
+    type: slider;
+    parent: settingsContainer;
+    min: 1;
+    max: 20;
+    margin-left: 5;
+    margin-top: 70;
+    width: 30;
+    height: 3;
+    growOnHover: 0.05;
+}
+
+#noteSizeText {
+    type: text;
+    parent: settingsContainer;
+    content: "note size";
+    color: WHITE;
+    font-size: 3;
+    margin-left: 13;
+    margin-top: 65;
+}
+
+#offsetBox {
+    type: textbox;
+    parent: settingsContainer;
+    margin-left: 60;
+    margin-top: 15;
+    width: 20;
+    height: 5;
+    growOnHover: 0.05;
+}
+
+#offsetSlider {
+    type: slider;
+    parent: settingsContainer;
+    min: 0;
+    max: 100;
+    margin-left: 55;
+    margin-top: 25;
+    width: 30;
+    height: 3;
+    growOnHover: 0.05;
+}
+
+#offsetText {
+    type: text;
+    parent: settingsContainer;
+    content: "offset";
+    color: WHITE;
+    font-size: 3;
+    margin-left: 66;
+    margin-top: 10;
+}
+
+#nameBox {
+    type: textbox;
+    parent: settingsContainer;
+    margin-left: 55;
+    margin-top: 35;
+    width: 30;
+    height: 5;
+    growOnHover: 0.05;
+}
+
+#nameText {
+    type: text;
+    parent: settingsContainer;
+    content: "name";
+    color: WHITE;
+    font-size: 3;
+    margin-left: 66;
+    margin-top: 30;
+}

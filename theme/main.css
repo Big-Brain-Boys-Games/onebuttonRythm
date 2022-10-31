@@ -96,3 +96,21 @@
     width: 20;
     height: 6.5;
 }
+
+#nameis {
+    type: text;
+    content: "name:";
+    left: 57;
+    top: 90;
+    font-size: 3;
+    color: WHITE;
+}
+
+#showName {
+    type: text;
+    content: _playerName_;
+    margin-left: 12;
+    margin-top: 0;
+    font-size: 3;
+    color: WHITE;
+}

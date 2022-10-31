@@ -117,6 +117,7 @@ void drawCSS(char * file)
 			if(parent.type == css_container)
 			{
 				BeginScissorMode(parent.x*getWidth(), parent.y*getHeight(), parent.width*getWidth(), parent.height*getHeight());
+				// BeginScissorMode(0.2*getWidth(), 0.2*getHeight(), 0.5*getWidth(), 0.5*getHeight());
 				scissorMode = true;
 				if(parent.scrollable)
 					scrollValue = parent.scrollValue;
@@ -125,11 +126,12 @@ void drawCSS(char * file)
 
 		Rectangle rect = (Rectangle){.x=object.x*getWidth(), .y=(object.y+scrollValue)*getHeight(), .width=object.width*getWidth(), .height=object.height*getHeight()};
 
-		if(mouseInRect(rect))
+		if(mouseInRect(rect) || object.selected)
 		{
 			_pCSS->objects[i].hoverTime += GetFrameTime();
 		}else
 			_pCSS->objects[i].hoverTime = 0;
+
 
 		float growAmount = object.growOnHover * fmin(object.hoverTime*15, 1);
 
@@ -175,7 +177,7 @@ void drawCSS(char * file)
 				break;
 
 			case css_slider:
-				slider(rect, &_pCSS->objects[i].selected, &_pCSS->objects[i].value, 0, 100);
+				slider(rect, &_pCSS->objects[i].selected, &_pCSS->objects[i].value, object.max, object.min);
 				break;
 			
 			case css_container:
@@ -312,6 +314,8 @@ void loadCSS(char * fileName)
 				}
 			}
 
+			printf("\n#%s {\n", object.name);
+
 			while(text[i] != '}')
 			{
 				for(int varIndex = i; varIndex < size; varIndex++)
@@ -334,6 +338,7 @@ void loadCSS(char * fileName)
 							}
 						}
 						
+						printf("\tvar: %s  value %s\n", var, value);
 						//handle different variable types (type: text: color: image: ...)
 						if(!strcmp(var, "type"))
 						{
@@ -536,6 +541,14 @@ void loadCSS(char * fileName)
 				}
 			}
 
+			printf("}\n");
+
+			if(object.type == css_textbox && !object.text)
+			{
+				object.text = malloc(100);
+				object.text[0] = '\0';
+			}
+
 			object.color.a = object.opacity*255;
 
 			_pCSS->count++;
@@ -735,140 +748,217 @@ void fSettings(bool reset)
 	ClearBackground(BLACK);
 	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
 					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
-	int middle = getWidth() / 2;
-
-	DrawRectangle(0, 0, getWidth(), getHeight()*0.13, ColorAlpha(BLACK ,0.4));
-	// gigantic ass settings title
-	char *title = "Settings";
-	float tSize = getWidth() * 0.05;
-	int size = MeasureText(title, tSize);
-	// dropshadow
-	drawText(title, middle - size / 2 + getWidth() * 0.004, getHeight() * 0.03, tSize, DARKGRAY);
-	// real title
-	drawText(title, middle - size / 2, getHeight() * 0.02, tSize, WHITE);
-
 	
-	menuScroll += GetMouseWheelMove() * .04;
-	menuScrollSmooth += (menuScroll - menuScrollSmooth) * GetFrameTime() * 15;
-	if (IsMouseButtonDown(0))
-	{ // scroll by dragging
-		menuScroll += GetMouseDelta().y / getHeight();
+
+	drawCSS("theme/settings.css");
+
+	CSS_Object * gvolumeObj = getCSS_ObjectPointer("globalVolume");
+	if(gvolumeObj && gvolumeObj->value == 0 && !gvolumeObj->selected)
+	{
+		gvolumeObj->value = _settings.volumeGlobal;
+	}else if(gvolumeObj)
+	{
+		_settings.volumeGlobal = gvolumeObj->value;
 	}
 
-	menuScroll = (int)fmin(fmax(menuScroll, 0), 1);
+	CSS_Object * mvolumeObj = getCSS_ObjectPointer("musicVolume");
+	if(mvolumeObj && mvolumeObj->value == 0 && !mvolumeObj->selected)
+	{
+		mvolumeObj->value = _settings.volumeMusic;
+	}else if(mvolumeObj)
+	{
+		_settings.volumeMusic = mvolumeObj->value;
+	}
 
-	Rectangle settingsRect = (Rectangle){.x=0, .y=getHeight()*0.13, .width=getWidth(), .height=getHeight()};
-	BeginScissorMode(settingsRect.x, settingsRect.y, settingsRect.width, settingsRect.height);
+	CSS_Object * evolumeObj = getCSS_ObjectPointer("effectVolume");
+	if(evolumeObj && evolumeObj->value == 0 && !evolumeObj->selected)
+	{
+		evolumeObj->value = _settings.volumeSoundEffects;
+	}else if(evolumeObj)
+	{
+		_settings.volumeSoundEffects = evolumeObj->value;
+	}
 
-		char zoom[10] = {0};
-		if (_settings.zoom != 0)
-			snprintf(zoom, 10, "%i", _settings.zoom);
-		static bool zoomBoxSelected = false;
+	CSS_Object * zoomObj = getCSS_ObjectPointer("zoomSlider");
+	if(zoomObj && !zoomObj->selected)
+	{
+		zoomObj->value = _settings.zoom;
+	}else if(zoomObj)
+	{
+		_settings.zoom = zoomObj->value;
+	}
 
-		Rectangle zoomBox = (Rectangle){.x = getWidth() * 0.1, .y = getHeight() * (0.7+menuScrollSmooth), .width = getWidth() * 0.2, .height = getHeight() * 0.07};
-		textBox(zoomBox, zoom, &zoomBoxSelected);
+	CSS_Object * noteSizeObj = getCSS_ObjectPointer("noteSizeSlider");
+	if(noteSizeObj && !noteSizeObj->selected)
+	{
+		noteSizeObj->value = _settings.noteSize;
+	}else if(noteSizeObj)
+	{
+		_settings.noteSize = noteSizeObj->value;
+	}
 
-		if(!mouseInRect(settingsRect))
-			zoomBoxSelected = false;
+	CSS_Object * nameObj = getCSS_ObjectPointer("nameBox");
+	if(nameObj && !nameObj->selected)
+	{
+		strcpy(nameObj->text,_playerName);
+	}else if(nameObj)
+	{
+		strcpy(_playerName, nameObj->text);
+	}
 
-		_settings.zoom = atoi(zoom);
-		_settings.zoom = fmin(fmax(_settings.zoom, 0), 300);
-		tSize = getWidth() * 0.03;
-		size = MeasureText("zoom", tSize);
-		drawText("zoom", zoomBox.x + zoomBox.width / 2 - size / 2, zoomBox.y - getHeight() * 0.05, tSize, WHITE);
+
+	CSS_Object * offsetSliderObj = getCSS_ObjectPointer("offsetSlider");
+	if(offsetSliderObj && !offsetSliderObj->selected)
+	{
+		offsetSliderObj->value = _settings.offset;
+	}else if(offsetSliderObj)
+	{
+		_settings.offset = offsetSliderObj->value;
+	}
+
+	
+	CSS_Object * offsetBoxObj = getCSS_ObjectPointer("offsetBox");
+	if(offsetBoxObj && !offsetBoxObj->selected)
+	{
+		sprintf(offsetBoxObj->text, "%0.f", _settings.offset);
+	}else if(offsetBoxObj)
+	{
+		_settings.offset = atoi(offsetBoxObj->text);
+	}
+
+
+
+	// DrawRectangle(0, 0, getWidth(), getHeight()*0.13, ColorAlpha(BLACK ,0.4));
+	// // gigantic ass settings title
+	// char *title = "Settings";
+	// float tSize = getWidth() * 0.05;
+	// int size = MeasureText(title, tSize);
+	// // dropshadow
+	// drawText(title, middle - size / 2 + getWidth() * 0.004, getHeight() * 0.03, tSize, DARKGRAY);
+	// // real title
+	// drawText(title, middle - size / 2, getHeight() * 0.02, tSize, WHITE);
+
+	
+	// menuScroll += GetMouseWheelMove() * .04;
+	// menuScrollSmooth += (menuScroll - menuScrollSmooth) * GetFrameTime() * 15;
+	// if (IsMouseButtonDown(0))
+	// { // scroll by dragging
+	// 	menuScroll += GetMouseDelta().y / getHeight();
+	// }
+
+	// menuScroll = (int)fmin(fmax(menuScroll, 0), 1);
+
+	// Rectangle settingsRect = (Rectangle){.x=0, .y=getHeight()*0.13, .width=getWidth(), .height=getHeight()};
+	// BeginScissorMode(settingsRect.x, settingsRect.y, settingsRect.width, settingsRect.height);
+
+	// 	char zoom[10] = {0};
+	// 	if (_settings.zoom != 0)
+	// 		snprintf(zoom, 10, "%i", _settings.zoom);
+	// 	static bool zoomBoxSelected = false;
+
+	// 	Rectangle zoomBox = (Rectangle){.x = getWidth() * 0.1, .y = getHeight() * (0.7+menuScrollSmooth), .width = getWidth() * 0.2, .height = getHeight() * 0.07};
+	// 	textBox(zoomBox, zoom, &zoomBoxSelected);
+
+	// 	if(!mouseInRect(settingsRect))
+	// 		zoomBoxSelected = false;
+
+		
+	// 	tSize = getWidth() * 0.03;
+	// 	size = MeasureText("zoom", tSize);
+	// 	drawText("zoom", zoomBox.x + zoomBox.width / 2 - size / 2, zoomBox.y - getHeight() * 0.05, tSize, WHITE);
 
 
 		
-		char noteSize[10] = {0};
-		if (_settings.noteSize != 0)
-			snprintf(noteSize, 10, "%i", _settings.noteSize);
-		static bool noteSizeBoxSelected = false;
+	// 	char noteSize[10] = {0};
+	// 	if (_settings.noteSize != 0)
+	// 		snprintf(noteSize, 10, "%i", _settings.noteSize);
+	// 	static bool noteSizeBoxSelected = false;
 
-		Rectangle noteSizeBox = (Rectangle){.x = getWidth() * 0.52, .y = getHeight() * (0.5+menuScrollSmooth), .width = getWidth() * 0.2, .height = getHeight() * 0.07};
-		textBox(noteSizeBox, noteSize, &noteSizeBoxSelected);
+	// 	Rectangle noteSizeBox = (Rectangle){.x = getWidth() * 0.52, .y = getHeight() * (0.5+menuScrollSmooth), .width = getWidth() * 0.2, .height = getHeight() * 0.07};
+	// 	textBox(noteSizeBox, noteSize, &noteSizeBoxSelected);
 
-		if(!mouseInRect(settingsRect))
-			noteSizeBoxSelected = false;
+	// 	if(!mouseInRect(settingsRect))
+	// 		noteSizeBoxSelected = false;
 
-		_settings.noteSize = atoi(noteSize);
-		_settings.noteSize = fmin(fmax(_settings.noteSize, 0), 20);
-		tSize = getWidth() * 0.03;
-		size = MeasureText("noteSize", tSize);
-		drawText("noteSize", noteSizeBox.x + noteSizeBox.width / 2 - size / 2, noteSizeBox.y - getHeight() * 0.05, tSize, WHITE);
-
-
+	// 	_settings.noteSize = atoi(noteSize);
+	// 	_settings.noteSize = fmin(fmax(_settings.noteSize, 0), 20);
+	// 	tSize = getWidth() * 0.03;
+	// 	size = MeasureText("noteSize", tSize);
+	// 	drawText("noteSize", noteSizeBox.x + noteSizeBox.width / 2 - size / 2, noteSizeBox.y - getHeight() * 0.05, tSize, WHITE);
 
 
 
 
-		static bool nameBoxSelected = false;
-		Rectangle nameBox = (Rectangle){.x = getWidth() * 0.52, .y = getHeight() * (0.3+menuScrollSmooth), .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-		textBox(nameBox, _playerName, &nameBoxSelected);
 
-		char offset[10] = {0};
-		if (_settings.offset != 0)
-			snprintf(offset, 10, "%i", (int)(_settings.offset*1000));
-		static bool offsetBoxSelected = false;
-		Rectangle offsetBox = (Rectangle){.x = getWidth() * 0.1, .y = getHeight() * (0.85+menuScrollSmooth), .width = getWidth() * 0.2, .height = getHeight() * 0.07};
-		textBox(offsetBox, offset, &offsetBoxSelected);
-		_settings.offset = (float)atoi(offset);
-		_settings.offset = fmin(fmax(_settings.offset, -300), 300);
-		_settings.offset *= 0.001;
 
-		if(offsetBoxSelected && IsKeyPressed(KEY_MINUS))
-		{
-			_settings.offset *= -1;
-		}
+	// 	static bool nameBoxSelected = false;
+	// 	Rectangle nameBox = (Rectangle){.x = getWidth() * 0.52, .y = getHeight() * (0.3+menuScrollSmooth), .width = getWidth() * 0.3, .height = getHeight() * 0.07};
+	// 	textBox(nameBox, _playerName, &nameBoxSelected);
+
+	// 	char offset[10] = {0};
+	// 	if (_settings.offset != 0)
+	// 		snprintf(offset, 10, "%i", (int)(_settings.offset*1000));
+	// 	static bool offsetBoxSelected = false;
+	// 	Rectangle offsetBox = (Rectangle){.x = getWidth() * 0.1, .y = getHeight() * (0.85+menuScrollSmooth), .width = getWidth() * 0.2, .height = getHeight() * 0.07};
+	// 	textBox(offsetBox, offset, &offsetBoxSelected);
+	// 	_settings.offset = (float)atoi(offset);
+	// 	_settings.offset = fmin(fmax(_settings.offset, -300), 300);
+	// 	_settings.offset *= 0.001;
+
+	// 	if(offsetBoxSelected && IsKeyPressed(KEY_MINUS))
+	// 	{
+	// 		_settings.offset *= -1;
+	// 	}
 		
 
-		static bool offsetSliderSelected = false;
-		Rectangle offsetSlider = (Rectangle){.x = getWidth() * 0.1, .y = getHeight() * (0.9+menuScrollSmooth), .width = getWidth() * 0.2, .height = getHeight() * 0.03};
-		int tempOffset = _settings.offset * 1000;
-		slider(offsetSlider, &offsetSliderSelected, &tempOffset, 300, -300);
-		_settings.offset = tempOffset * 0.001;
+	// 	static bool offsetSliderSelected = false;
+	// 	Rectangle offsetSlider = (Rectangle){.x = getWidth() * 0.1, .y = getHeight() * (0.9+menuScrollSmooth), .width = getWidth() * 0.2, .height = getHeight() * 0.03};
+	// 	int tempOffset = _settings.offset * 1000;
+	// 	slider(offsetSlider, &offsetSliderSelected, &tempOffset, 300, -300);
+	// 	_settings.offset = tempOffset * 0.001;
 
-		tSize = getWidth() * 0.03;
-		size = MeasureText("offset", tSize);
-		drawText("offset", offsetBox.x + offsetBox.width / 2 - size / 2, offsetBox.y - getHeight() * 0.05, tSize, WHITE);
+	// 	tSize = getWidth() * 0.03;
+	// 	size = MeasureText("offset", tSize);
+	// 	drawText("offset", offsetBox.x + offsetBox.width / 2 - size / 2, offsetBox.y - getHeight() * 0.05, tSize, WHITE);
 
-		if(!mouseInRect(settingsRect))
-			offsetBoxSelected = false;
+	// 	if(!mouseInRect(settingsRect))
+	// 		offsetBoxSelected = false;
 
-		static bool gvBoolSelected = false;
-		Rectangle gvSlider = (Rectangle){.x = getWidth() * 0.05, .y = getHeight() * (0.3+menuScrollSmooth), .width = getWidth() * 0.3, .height = getHeight() * 0.03};
-		slider(gvSlider, &gvBoolSelected, &_settings.volumeGlobal, 100, 0);
-		tSize = getWidth() * 0.03;
-		size = MeasureText("global volume", tSize);
-		drawText("global volume", gvSlider.x + gvSlider.width / 2 - size / 2, gvSlider.y - getHeight() * 0.05, tSize, WHITE);
+		// static bool gvBoolSelected = false;
+		// Rectangle gvSlider = (Rectangle){.x = getWidth() * 0.05, .y = getHeight() * (0.3+menuScrollSmooth), .width = getWidth() * 0.3, .height = getHeight() * 0.03};
+		// slider(gvSlider, &gvBoolSelected, &_settings.volumeGlobal, 100, 0);
+		// tSize = getWidth() * 0.03;
+		// size = MeasureText("global volume", tSize);
+		// drawText("global volume", gvSlider.x + gvSlider.width / 2 - size / 2, gvSlider.y - getHeight() * 0.05, tSize, WHITE);
 
-		if(!mouseInRect(settingsRect))
-			gvBoolSelected = false;
+		// if(!mouseInRect(settingsRect))
+		// 	gvBoolSelected = false;
 
-		static bool mvBoolSelected = false;
-		Rectangle mvSlider = (Rectangle){.x = getWidth() * 0.05, .y = getHeight() * (0.45+menuScrollSmooth), .width = getWidth() * 0.3, .height = getHeight() * 0.03};
-		slider(mvSlider, &mvBoolSelected, &_settings.volumeMusic, 100, 0);
-		tSize = getWidth() * 0.03;
-		size = MeasureText("music volume", tSize);
-		drawText("music volume", mvSlider.x + mvSlider.width / 2 - size / 2, mvSlider.y - getHeight() * 0.05, tSize, WHITE);
+		// static bool mvBoolSelected = false;
+		// Rectangle mvSlider = (Rectangle){.x = getWidth() * 0.05, .y = getHeight() * (0.45+menuScrollSmooth), .width = getWidth() * 0.3, .height = getHeight() * 0.03};
+		// slider(mvSlider, &mvBoolSelected, &_settings.volumeMusic, 100, 0);
+		// tSize = getWidth() * 0.03;
+		// size = MeasureText("music volume", tSize);
+		// drawText("music volume", mvSlider.x + mvSlider.width / 2 - size / 2, mvSlider.y - getHeight() * 0.05, tSize, WHITE);
 
-		if(!mouseInRect(settingsRect))
-			mvBoolSelected = false;
+		// if(!mouseInRect(settingsRect))
+		// 	mvBoolSelected = false;
 
 
-		static bool aevBoolSelected = false;
-		Rectangle aevSlider = (Rectangle){.x = getWidth() * 0.05, .y = getHeight() * (0.6+menuScrollSmooth), .width = getWidth() * 0.3, .height = getHeight() * 0.03};
-		slider(aevSlider, &aevBoolSelected, &_settings.volumeSoundEffects, 100, 0);
-		tSize = getWidth() * 0.03;
-		size = MeasureText("sound sffect volume", tSize);
-		drawText("sound Effect volume", aevSlider.x + aevSlider.width / 2 - size / 2, aevSlider.y - getHeight() * 0.05, tSize, WHITE);
+		// static bool aevBoolSelected = false;
+		// Rectangle aevSlider = (Rectangle){.x = getWidth() * 0.05, .y = getHeight() * (0.6+menuScrollSmooth), .width = getWidth() * 0.3, .height = getHeight() * 0.03};
+		// slider(aevSlider, &aevBoolSelected, &_settings.volumeSoundEffects, 100, 0);
+		// tSize = getWidth() * 0.03;
+		// size = MeasureText("sound sffect volume", tSize);
+		// drawText("sound Effect volume", aevSlider.x + aevSlider.width / 2 - size / 2, aevSlider.y - getHeight() * 0.05, tSize, WHITE);
 
-		if(!mouseInRect(settingsRect))
-			aevBoolSelected = false;
+		// if(!mouseInRect(settingsRect))
+		// 	aevBoolSelected = false;
 
-		drawVignette();
-	EndScissorMode();
+	// 	drawVignette();
+	// EndScissorMode();
 
-	if ( IsKeyPressed(KEY_ESCAPE) || interactableButton("Back", 0.03, getWidth() * 0.05, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
+	if ( IsKeyPressed(KEY_ESCAPE) || UIBUttonPressed("backButton"))
 	{
 		_pGameplayFunction = &fMainMenu;
 		_transition = 0.1;
@@ -1830,21 +1920,32 @@ void slider(Rectangle rect, bool *selected, int *value, int max, int min)
 	DrawRectangle(rect.x, rect.y, rect.width, rect.height, WHITE);
 	DrawCircle(rect.x + rect.width * sliderMapped, rect.y + rect.height * 0.5, rect.height, color);
 
+	
 
 	Rectangle extendedRect = (Rectangle){.x=rect.x-rect.height, .y=rect.y-rect.height/2, .width=rect.width+rect.height*2, .height=rect.height+rect.height};
 	if ((mouseInRect(extendedRect) && IsMouseButtonPressed(0)) || (*selected && IsMouseButtonDown(0)))
 	{
 		*selected = true;
 		*value = ((GetMouseX() - rect.x) / rect.width) * (max - min) + min;
+		
+		if (*value > max)
+			*value = max;
+		if (*value < min)
+			*value = min;
+
+		//draw number next to mouse
+		char str[10];
+		snprintf(str, 10, "%i", *value);
+		int length = measureText(str, getWidth()*0.035);
+		DrawRectangle(GetMouseX()+getWidth()*0.035, GetMouseY(), length+ getWidth()*0.01, getWidth()*0.035, ColorAlpha(BLACK, 0.8));
+		drawText(str, GetMouseX()+getWidth()*0.04, GetMouseY(), getWidth()*0.035, WHITE);
+
 	}
 
 	if (!IsMouseButtonDown(0))
 		*selected = false;
 
-	if (*value > max)
-		*value = max;
-	if (*value < min)
-		*value = min;
+
 }
 
 bool interactableButton(char *text, float fontScale, float x, float y, float width, float height)
