@@ -267,6 +267,10 @@ void saveMap ()
 	fprintf(pFile, "[MusicFile]\n");
 	fprintf(pFile, "%s\n", _map->musicFile);
 	fprintf(pFile, "[MusicLength]\n");
+	if(!_map->musicLength && _pMusic)
+	{
+		_map->musicLength = getMusicDuration();
+	}
 	fprintf(pFile, "%i\n", _map->musicLength);
 	fprintf(pFile, "[Zoom]\n");
 	fprintf(pFile, "%i\n", _map->zoom);
@@ -557,7 +561,7 @@ void loadMap ()
 	}
 	
 	_pMusic = &_map->music;
-	_map->musicLength = (int)getMusicDuration();
+	// _map->musicLength = (int)getMusicDuration();
 	
 
 	strcpy(pStr, map);
