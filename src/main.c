@@ -68,12 +68,12 @@ void exitGame()
 
 int main(int argc, char **argv)
 {
+	snprintf(_playerName, 100, "guest%i", rand());
 	loadSettings();
 	LoadingMutexInit();
 	initDrawing();
 	audioInit();
 	srand(time(NULL));
-	snprintf(_playerName, 100, "guest%i", rand());
 
 	initFolders();
 	
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 		unlockLoadingMutex();
 
 		//ugly workaround for audio.c needing both raylib and windows.h
-		_framesOffset = _settings.offset*48000;
+		_framesOffset = _settings.offset*48; //_offset in ms
 		float globalVolume = _settings.volumeGlobal / 100.0;
 		_musicVolume = _settings.volumeMusic / 100.0 * globalVolume;
 		_audioEffectVolume = _settings.volumeSoundEffects / 100.0 * globalVolume;

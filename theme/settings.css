@@ -120,7 +120,7 @@
     type: slider;
     parent: settingsContainer;
     min: 1;
-    max: 300;
+    max: 20;
     margin-left: 5;
     margin-top: 60;
     width: 30;
@@ -173,8 +173,8 @@
 #offsetSlider {
     type: slider;
     parent: settingsContainer;
-    min: 0;
-    max: 100;
+    min: -200;
+    max: 200;
     margin-left: 55;
     margin-top: 25;
     width: 30;

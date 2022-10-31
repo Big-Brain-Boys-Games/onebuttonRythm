@@ -532,7 +532,7 @@ void loadCSS(char * fileName)
 
 						if(!strcmp(var, "min"))
 						{
-							object.max = atoi(value);
+							object.min = atoi(value);
 						}
 
 						i++;
