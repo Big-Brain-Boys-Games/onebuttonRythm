@@ -161,13 +161,15 @@
 }
 
 #offsetBox {
-    type: textbox;
+    type: numberbox;
     parent: settingsContainer;
     margin-left: 60;
     margin-top: 15;
     width: 20;
     height: 5;
     growOnHover: 0.05;
+    min: -200;
+    max: 200;
 }
 
 #offsetSlider {

@@ -28,7 +28,6 @@
 #include "../thread.h"
 #include "../main.h"
 
-CSS * _paCSS = 0;
 CSS * _pCSS = 0;
 
 float _scrollValue = 0;
@@ -76,7 +75,7 @@ void drawCSS(char * file)
 	if(strcmp(_pCSS->file, file))
 	{
 		freeCSS(_pCSS);
-		free(_paCSS);
+		free(_pCSS);
 		_pCSS = 0;
 		loadCSS(file);
 	}
@@ -124,7 +123,11 @@ void drawCSS(char * file)
 			}
 		}
 
-		Rectangle rect = (Rectangle){.x=object.x*getWidth(), .y=(object.y+scrollValue)*getHeight(), .width=object.width*getWidth(), .height=object.height*getHeight()};
+		float height = getHeight();
+		if(object.keepAspectRatio)
+			height = getWidth();
+
+		Rectangle rect = (Rectangle){.x=object.x*getWidth(), .y=(object.y+scrollValue)*height, .width=object.width*getWidth(), .height=object.height*height};
 
 		if(mouseInRect(rect) || object.selected)
 		{
@@ -174,6 +177,18 @@ void drawCSS(char * file)
 
 			case css_textbox:
 				textBox(rect, object.text, &_pCSS->objects[i].selected);
+				break;
+
+			case css_numberbox:
+				numberBox(rect, &object.value, &_pCSS->objects[i].selected);
+
+				if(object.value > object.max)
+					object.value = object.max;
+				
+				if(object.value < object.min)
+					object.value = object.min;
+				
+				_pCSS->objects[i].value = object.value;
 				break;
 
 			case css_slider:
@@ -365,6 +380,9 @@ void loadCSS(char * fileName)
 
 							if(!strcmp(value, "container"))
 								object.type = css_container;
+
+							if(!strcmp(value, "numberbox"))
+								object.type = css_numberbox;
 						}
 
 						if(!strcmp(var, "content"))
@@ -406,6 +424,11 @@ void loadCSS(char * fileName)
 								object.makeActive = malloc(strlen(value)+1);
 								strcpy(object.makeActive, value);
 							}
+						}
+
+						if(!strcmp(var, "keepAspectRatio"))
+						{
+							object.keepAspectRatio = !strcmp(value, "yes");
 						}
 
 						if(!strcmp(var, "loadFile"))
@@ -604,12 +627,44 @@ bool UIBUttonPressed(char * name)
 	return false;
 }
 
-char * UITextBox(char * name)
+void UITextBox(char * variable, char * name)
 {
-	CSS_Object object = getCSS_Object(name);
-	return object.text;
+	if(!variable || !name)
+		return;
+	
+	CSS_Object *object = getCSS_ObjectPointer(name);
+
+	if(!object || !object->text)
+		return;
+	
+	if(object->selected)
+	{
+		strcpy(variable, object->text);
+	}else
+	{
+		strcpy(object->text, variable);
+	}
 }
 
+int UIValueInteractable(int variable, char * name)
+{
+	if(!name)
+		return variable;
+	
+	CSS_Object *object = getCSS_ObjectPointer(name);
+
+	if(!object)
+		return variable;
+	
+	if(object->selected)
+	{
+		return object->value;
+	}else
+	{
+		object->value = variable;
+		return variable;
+	}
+}
 
 
 Modifier *_activeMod[100] = {0}; // we dont even have that many
@@ -651,48 +706,13 @@ void fMainMenu(bool reset)
 	int middle = getWidth() / 2;
 	drawVignette();
 
-	// float fontScale = 0.075;
-	// //play button
-	// Rectangle button = (Rectangle){.x = getWidth() * 0.05, .y = getHeight() * 0.25, .width = getWidth() * 0.32, .height = getWidth() * 0.32};
-	// static float growTimer = 0;
-	// if(mouseInRect(button))
-	// {
-	// 	growTimer += GetFrameTime() * 12;
-	// }else
-	// 	growTimer -= GetFrameTime() * 12;
-
-	// growTimer = fmax(fmin(growTimer, 1), 0);
-	
-	// button.width += getWidth()*0.1*growTimer;
-	// button.height += getWidth()*0.1*growTimer;
-	// button.x -= getWidth()*0.05*growTimer;
-	// button.y -= getWidth()*0.05*growTimer;
-
-	// DrawTexturePro(_noteTex, (Rectangle){.x=0, .y=0, .width=_noteTex.width, .height=_noteTex.height}, (Rectangle){.x=button.x, .y=button.y, .width=button.width, .height=button.width}, (Vector2) {.x=0, .y=0}, 0, WHITE);
-
-
-	// fontScale *= 1.3;
-	// int screenSize = getWidth() > getHeight() ? getHeight() : getWidth();
-	// int textSize = measureText("Play", screenSize * fontScale);
-	// drawText("Play", button.x + button.width / 2 - textSize / 2, button.y + button.height*0.5-getHeight()*0.045, screenSize * fontScale, DARKGRAY);
-
-	// if (IsMouseButtonReleased(0) && mouseInRect(button))
-	// {
-	// 	printf("switching to playing map!\n");
-	// 	_pNextGameplayFunction = &fPlaying;
-	// 	_pGameplayFunction = &fMapSelect;
-	// 	_transition = 0.1;
-	// }
-
 	if(UIBUttonPressed("settingsButton"))
-	// if (interactableButton("Settings", 0.035, middle - getWidth() * (0.12-growTimer*0.03), getHeight() * 0.55, getWidth() * 0.2, getHeight() * 0.065))
 	{
 		// Switching to settings
 		_pGameplayFunction = &fSettings;
 		_transition = 0.1;
 	}
 
-	//if (interactableButton("New Map", 0.035, middle - getWidth() * (0.03 - growTimer*0.03), getHeight() * 0.65, getWidth() * 0.2, getHeight() * 0.065))
 	if(UIBUttonPressed("newmapButton"))
 	{
 		_pGameplayFunction = &fNewMap;
@@ -701,31 +721,9 @@ void fMainMenu(bool reset)
 	}
 
 	if (IsKeyPressed(KEY_ESCAPE) || UIBUttonPressed("exitButton"))
-	//interactableButton("Exit", 0.035, middle - getWidth() * (-0.07 - growTimer*0.03), getHeight() * 0.75, getWidth() * 0.2, getHeight() * 0.065))
 	{
 		exitGame(0);
 	}
-
-	// gigantic title
-	// float tSize = getWidth() * 0.07;
-	// Vector2 titlePos = (Vector2){.x=getWidth()*0.5, .y=getHeight()*0.2};
-	// // dropshadow
-	// drawText("One Button", titlePos.x + getWidth() * 0.004, titlePos.y + getHeight()* 0.007, tSize, ColorAlpha(BLACK, 0.4));
-	// // real title
-	// drawText("One Button", titlePos.x, titlePos.y, tSize, WHITE);
-
-	// titlePos.x += getWidth()*0.07;
-	// titlePos.y += getHeight()*0.1;
-	// // dropshadow
-	// drawText("Rhythm", titlePos.x + getWidth() * 0.004, titlePos.y + getHeight()* 0.007, tSize, ColorAlpha(BLACK, 0.4));
-	// // real title
-	// drawText("Rhythm", titlePos.x, titlePos.y, tSize, WHITE);
-
-	// char str[120];
-	// snprintf(str, 120, "name: %s", _playerName);
-	// drawText(str, getWidth() * 0.55, getHeight() * 0.92, getWidth() * 0.04, WHITE);
-
-	// drawText(_notfication, getWidth() * 0.6, getHeight() * 0.8, getWidth() * 0.02, WHITE);
 
 	drawCSS("theme/main.css");
 
@@ -752,211 +750,16 @@ void fSettings(bool reset)
 
 	drawCSS("theme/settings.css");
 
-	CSS_Object * gvolumeObj = getCSS_ObjectPointer("globalVolume");
-	if(gvolumeObj && gvolumeObj->value == 0 && !gvolumeObj->selected)
-	{
-		gvolumeObj->value = _settings.volumeGlobal;
-	}else if(gvolumeObj)
-	{
-		_settings.volumeGlobal = gvolumeObj->value;
-	}
+	_settings.volumeGlobal = UIValueInteractable(_settings.volumeGlobal, "globalVolume");
+	_settings.volumeMusic = UIValueInteractable(_settings.volumeMusic, "musicVolume");
+	_settings.volumeSoundEffects = UIValueInteractable(_settings.volumeSoundEffects, "effectVolume");
 
-	CSS_Object * mvolumeObj = getCSS_ObjectPointer("musicVolume");
-	if(mvolumeObj && mvolumeObj->value == 0 && !mvolumeObj->selected)
-	{
-		mvolumeObj->value = _settings.volumeMusic;
-	}else if(mvolumeObj)
-	{
-		_settings.volumeMusic = mvolumeObj->value;
-	}
+	_settings.zoom = UIValueInteractable(_settings.zoom, "zoomSlider");
+	_settings.noteSize = UIValueInteractable(_settings.noteSize, "noteSizeSlider");
+	_settings.offset = UIValueInteractable(_settings.offset, "offsetSlider");
+	_settings.offset = UIValueInteractable(_settings.offset, "offsetBox");
 
-	CSS_Object * evolumeObj = getCSS_ObjectPointer("effectVolume");
-	if(evolumeObj && evolumeObj->value == 0 && !evolumeObj->selected)
-	{
-		evolumeObj->value = _settings.volumeSoundEffects;
-	}else if(evolumeObj)
-	{
-		_settings.volumeSoundEffects = evolumeObj->value;
-	}
-
-	CSS_Object * zoomObj = getCSS_ObjectPointer("zoomSlider");
-	if(zoomObj && !zoomObj->selected)
-	{
-		zoomObj->value = _settings.zoom;
-	}else if(zoomObj)
-	{
-		_settings.zoom = zoomObj->value;
-	}
-
-	CSS_Object * noteSizeObj = getCSS_ObjectPointer("noteSizeSlider");
-	if(noteSizeObj && !noteSizeObj->selected)
-	{
-		noteSizeObj->value = _settings.noteSize;
-	}else if(noteSizeObj)
-	{
-		_settings.noteSize = noteSizeObj->value;
-	}
-
-	CSS_Object * nameObj = getCSS_ObjectPointer("nameBox");
-	if(nameObj && !nameObj->selected)
-	{
-		strcpy(nameObj->text,_playerName);
-	}else if(nameObj)
-	{
-		strcpy(_playerName, nameObj->text);
-	}
-
-
-	CSS_Object * offsetSliderObj = getCSS_ObjectPointer("offsetSlider");
-	if(offsetSliderObj && !offsetSliderObj->selected)
-	{
-		offsetSliderObj->value = _settings.offset;
-	}else if(offsetSliderObj)
-	{
-		_settings.offset = offsetSliderObj->value;
-	}
-
-	
-	CSS_Object * offsetBoxObj = getCSS_ObjectPointer("offsetBox");
-	if(offsetBoxObj && !offsetBoxObj->selected)
-	{
-		sprintf(offsetBoxObj->text, "%0.f", _settings.offset);
-	}else if(offsetBoxObj)
-	{
-		_settings.offset = atoi(offsetBoxObj->text);
-	}
-
-
-
-	// DrawRectangle(0, 0, getWidth(), getHeight()*0.13, ColorAlpha(BLACK ,0.4));
-	// // gigantic ass settings title
-	// char *title = "Settings";
-	// float tSize = getWidth() * 0.05;
-	// int size = MeasureText(title, tSize);
-	// // dropshadow
-	// drawText(title, middle - size / 2 + getWidth() * 0.004, getHeight() * 0.03, tSize, DARKGRAY);
-	// // real title
-	// drawText(title, middle - size / 2, getHeight() * 0.02, tSize, WHITE);
-
-	
-	// menuScroll += GetMouseWheelMove() * .04;
-	// menuScrollSmooth += (menuScroll - menuScrollSmooth) * GetFrameTime() * 15;
-	// if (IsMouseButtonDown(0))
-	// { // scroll by dragging
-	// 	menuScroll += GetMouseDelta().y / getHeight();
-	// }
-
-	// menuScroll = (int)fmin(fmax(menuScroll, 0), 1);
-
-	// Rectangle settingsRect = (Rectangle){.x=0, .y=getHeight()*0.13, .width=getWidth(), .height=getHeight()};
-	// BeginScissorMode(settingsRect.x, settingsRect.y, settingsRect.width, settingsRect.height);
-
-	// 	char zoom[10] = {0};
-	// 	if (_settings.zoom != 0)
-	// 		snprintf(zoom, 10, "%i", _settings.zoom);
-	// 	static bool zoomBoxSelected = false;
-
-	// 	Rectangle zoomBox = (Rectangle){.x = getWidth() * 0.1, .y = getHeight() * (0.7+menuScrollSmooth), .width = getWidth() * 0.2, .height = getHeight() * 0.07};
-	// 	textBox(zoomBox, zoom, &zoomBoxSelected);
-
-	// 	if(!mouseInRect(settingsRect))
-	// 		zoomBoxSelected = false;
-
-		
-	// 	tSize = getWidth() * 0.03;
-	// 	size = MeasureText("zoom", tSize);
-	// 	drawText("zoom", zoomBox.x + zoomBox.width / 2 - size / 2, zoomBox.y - getHeight() * 0.05, tSize, WHITE);
-
-
-		
-	// 	char noteSize[10] = {0};
-	// 	if (_settings.noteSize != 0)
-	// 		snprintf(noteSize, 10, "%i", _settings.noteSize);
-	// 	static bool noteSizeBoxSelected = false;
-
-	// 	Rectangle noteSizeBox = (Rectangle){.x = getWidth() * 0.52, .y = getHeight() * (0.5+menuScrollSmooth), .width = getWidth() * 0.2, .height = getHeight() * 0.07};
-	// 	textBox(noteSizeBox, noteSize, &noteSizeBoxSelected);
-
-	// 	if(!mouseInRect(settingsRect))
-	// 		noteSizeBoxSelected = false;
-
-	// 	_settings.noteSize = atoi(noteSize);
-	// 	_settings.noteSize = fmin(fmax(_settings.noteSize, 0), 20);
-	// 	tSize = getWidth() * 0.03;
-	// 	size = MeasureText("noteSize", tSize);
-	// 	drawText("noteSize", noteSizeBox.x + noteSizeBox.width / 2 - size / 2, noteSizeBox.y - getHeight() * 0.05, tSize, WHITE);
-
-
-
-
-
-
-	// 	static bool nameBoxSelected = false;
-	// 	Rectangle nameBox = (Rectangle){.x = getWidth() * 0.52, .y = getHeight() * (0.3+menuScrollSmooth), .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	// 	textBox(nameBox, _playerName, &nameBoxSelected);
-
-	// 	char offset[10] = {0};
-	// 	if (_settings.offset != 0)
-	// 		snprintf(offset, 10, "%i", (int)(_settings.offset*1000));
-	// 	static bool offsetBoxSelected = false;
-	// 	Rectangle offsetBox = (Rectangle){.x = getWidth() * 0.1, .y = getHeight() * (0.85+menuScrollSmooth), .width = getWidth() * 0.2, .height = getHeight() * 0.07};
-	// 	textBox(offsetBox, offset, &offsetBoxSelected);
-	// 	_settings.offset = (float)atoi(offset);
-	// 	_settings.offset = fmin(fmax(_settings.offset, -300), 300);
-	// 	_settings.offset *= 0.001;
-
-	// 	if(offsetBoxSelected && IsKeyPressed(KEY_MINUS))
-	// 	{
-	// 		_settings.offset *= -1;
-	// 	}
-		
-
-	// 	static bool offsetSliderSelected = false;
-	// 	Rectangle offsetSlider = (Rectangle){.x = getWidth() * 0.1, .y = getHeight() * (0.9+menuScrollSmooth), .width = getWidth() * 0.2, .height = getHeight() * 0.03};
-	// 	int tempOffset = _settings.offset * 1000;
-	// 	slider(offsetSlider, &offsetSliderSelected, &tempOffset, 300, -300);
-	// 	_settings.offset = tempOffset * 0.001;
-
-	// 	tSize = getWidth() * 0.03;
-	// 	size = MeasureText("offset", tSize);
-	// 	drawText("offset", offsetBox.x + offsetBox.width / 2 - size / 2, offsetBox.y - getHeight() * 0.05, tSize, WHITE);
-
-	// 	if(!mouseInRect(settingsRect))
-	// 		offsetBoxSelected = false;
-
-		// static bool gvBoolSelected = false;
-		// Rectangle gvSlider = (Rectangle){.x = getWidth() * 0.05, .y = getHeight() * (0.3+menuScrollSmooth), .width = getWidth() * 0.3, .height = getHeight() * 0.03};
-		// slider(gvSlider, &gvBoolSelected, &_settings.volumeGlobal, 100, 0);
-		// tSize = getWidth() * 0.03;
-		// size = MeasureText("global volume", tSize);
-		// drawText("global volume", gvSlider.x + gvSlider.width / 2 - size / 2, gvSlider.y - getHeight() * 0.05, tSize, WHITE);
-
-		// if(!mouseInRect(settingsRect))
-		// 	gvBoolSelected = false;
-
-		// static bool mvBoolSelected = false;
-		// Rectangle mvSlider = (Rectangle){.x = getWidth() * 0.05, .y = getHeight() * (0.45+menuScrollSmooth), .width = getWidth() * 0.3, .height = getHeight() * 0.03};
-		// slider(mvSlider, &mvBoolSelected, &_settings.volumeMusic, 100, 0);
-		// tSize = getWidth() * 0.03;
-		// size = MeasureText("music volume", tSize);
-		// drawText("music volume", mvSlider.x + mvSlider.width / 2 - size / 2, mvSlider.y - getHeight() * 0.05, tSize, WHITE);
-
-		// if(!mouseInRect(settingsRect))
-		// 	mvBoolSelected = false;
-
-
-		// static bool aevBoolSelected = false;
-		// Rectangle aevSlider = (Rectangle){.x = getWidth() * 0.05, .y = getHeight() * (0.6+menuScrollSmooth), .width = getWidth() * 0.3, .height = getHeight() * 0.03};
-		// slider(aevSlider, &aevBoolSelected, &_settings.volumeSoundEffects, 100, 0);
-		// tSize = getWidth() * 0.03;
-		// size = MeasureText("sound sffect volume", tSize);
-		// drawText("sound Effect volume", aevSlider.x + aevSlider.width / 2 - size / 2, aevSlider.y - getHeight() * 0.05, tSize, WHITE);
-
-		// if(!mouseInRect(settingsRect))
-		// 	aevBoolSelected = false;
-
-	// 	drawVignette();
-	// EndScissorMode();
+	UITextBox(_playerName, "nameBox");
 
 	if ( IsKeyPressed(KEY_ESCAPE) || UIBUttonPressed("backButton"))
 	{
@@ -1030,8 +833,6 @@ void fPause(bool reset)
 	}
 	drawCursor();
 }
-
-
 
 
 struct mapInfoLoadingArgs
@@ -1565,16 +1366,18 @@ void fNewMap(bool reset)
 
 	drawVignette();
 
+	drawCSS("theme/newMap.css");
+
 	int middle = getWidth() / 2;
 
-	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("Back", 0.03, getWidth() * 0.05, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
+	if (IsKeyPressed(KEY_ESCAPE) || UIBUttonPressed("backButton"))
 	{
 		_pGameplayFunction = &fMainMenu;
 		_transition = 0.1;
 		return;
 	}
 
-	if (interactableButton("Finish", 0.02, getWidth() * 0.85, getHeight() * 0.85, getWidth() * 0.1, getHeight() * 0.05))
+	if (UIBUttonPressed("finishButton"))
 	{
 		if (pMusic == 0)
 			return;
@@ -1628,47 +1431,14 @@ void fNewMap(bool reset)
 		return;
 	}
 
-	// text boxes
-	static bool nameBoxSelected = false;
-	Rectangle nameBox = (Rectangle){.x = middle, .y = getHeight() * 0.375, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	textBox(nameBox, newMap.name, &nameBoxSelected);
-	drawText("name", middle, getHeight() * 0.325, getHeight() * 0.05, WHITE);
+	UITextBox(newMap.name, "nameBox");
+	UITextBox(newMap.artist, "artistBox");
+	UITextBox(newMap.mapCreator, "mapCreatorBox");
 
-	static bool artistBoxSelected = false;
-	Rectangle artistBox = (Rectangle){.x = middle, .y = getHeight() * 0.5, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	textBox(artistBox, newMap.artist, &artistBoxSelected);
-	drawText("artist", middle, getHeight() * 0.45, getHeight() * 0.05, WHITE);
+	newMap.difficulty = UIValueInteractable(newMap.difficulty, "difficultyBox");
+	newMap.bpm = UIValueInteractable(newMap.bpm, "bpmBox");
 
-	static bool creatorBoxSelected = false;
-	Rectangle creatorBox = (Rectangle){.x = middle, .y = getHeight() * 0.625, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	textBox(creatorBox, newMap.mapCreator, &creatorBoxSelected);
-	drawText("creator", middle, getHeight() * 0.575, getHeight() * 0.05, WHITE);
-
-	char str[100] = {'\0'};
-	if (newMap.bpm != 0)
-		snprintf(str, 100, "%i", newMap.bpm);
-	static bool bpmBoxSelected = false;
-	Rectangle bpmBox = (Rectangle){.x = middle, .y = getHeight() * 0.875, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	textBox(bpmBox, str, &bpmBoxSelected);
-	newMap.bpm = fmin(fmax(atoi(str), 0), 500);
-	drawText("bpm", middle, getHeight() * 0.825, getHeight() * 0.05, WHITE);
-
-	static bool difficultyBoxSelected = false;
-	Rectangle difficultyBox = (Rectangle){.x = middle, .y = getHeight() * 0.75, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	numberBox(difficultyBox, &newMap.difficulty, &difficultyBoxSelected);
-	if (newMap.difficulty < 0)
-		newMap.difficulty = 0;
-	if (newMap.difficulty > 9)
-		newMap.difficulty = 0;
-	drawText("difficulty", middle, getHeight() * 0.70, getHeight() * 0.05, WHITE);
-
-	int textSize = measureText("Drop in .png, .wav or .mp3", getWidth() * 0.04);
-	drawText("Drop in .png, .wav or .mp3", getWidth() * 0.5 - textSize / 2, getHeight() * 0.2, getWidth() * 0.04, WHITE);
-
-
-
-
-	textSize = measureText("missing music file", getWidth() * 0.03);
+	int textSize = measureText("missing music file", getWidth() * 0.03);
 	if (pMusic == 0)
 		drawText("missing music file", getWidth() * 0.2 - textSize / 2, getHeight() * 0.6, getWidth() * 0.03, WHITE);
 	else{
@@ -1892,20 +1662,35 @@ void numberBox(Rectangle rect, int *number, bool *selected)
 	char str[10];
 	snprintf(str, 10, "%i", *number);
 	drawButton(rect, str, 0.03);
-	if ((mouseInRect(rect) && IsMouseButtonDown(0)) || *selected)
+	if ((mouseInRect(rect) && IsMouseButtonPressed(0)) || *selected)
 	{
 		*selected = true;
 		char c = GetCharPressed();
 		while (c != 0)
 		{
-			*number = c - '0';
+			if(c >= '0' && c <= '9')
+			{
+				*number *= 10;
+				*number += c - '0';
+			}
 			c = GetCharPressed();
+		}
+
+		if(IsKeyPressed(KEY_BACKSPACE))
+		{
+			*number -= (*number)%10;
+			*number /= 10;
+		}
+
+		if(IsKeyPressed(KEY_MINUS))
+		{
+			*number *= -1;
 		}
 	}
 	if (*selected)
 		DrawRectangle(rect.x + rect.width * 0.2, rect.y + rect.height * 0.75, rect.width * 0.6, rect.height * 0.1, DARKGRAY);
 
-	if (!mouseInRect(rect) && IsMouseButtonDown(0))
+	if ((!mouseInRect(rect) && IsMouseButtonPressed(0)) || IsKeyPressed(KEY_ENTER))
 		*selected = false;
 }
 

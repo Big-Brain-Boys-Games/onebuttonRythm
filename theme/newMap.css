@@ -1,0 +1,172 @@
+#titleDarkening {
+    type: rectangle;
+    color: BLACK;
+    opacity: 0.5;
+    x: 0;
+    y: 0;
+    width: 100;
+    height: 13;
+}
+
+#backButton {
+    type: button;
+    content: "Back";
+    font-size: 2.5;
+    left: 5;
+    top: 4;
+    width: 10;
+    height: 5;
+    growOnHover: 0.2;
+}
+
+#titleDropShadow {
+    type: text;
+    content: "New Map";
+    color: BLACK;
+    font-size: 5;
+    left: 38;
+    top: 3.5;
+    width: 10;
+    height: 5;
+}
+
+#title {
+    type: text;
+    content: "New Map";
+    color: WHITE;
+    font-size: 5;
+    margin-left: -0.5;
+    margin-top: -0.5;
+    width: 10;
+    height: 5;
+}
+
+#settingsContainer{
+    type: container;
+    scrollable: no;
+    left: 0;
+    top: 13;
+    width: 100;
+    height: 87;
+}
+
+#DropText{
+    type: text;
+    parent: settingsContainer;
+    content: "Drop in .png, .wav or .mp3";
+    margin-left: 20;
+    margin-top: 7;
+    font-size: 4;
+    color: WHITE;
+}
+
+#nameText {
+    type: text;
+    parent: settingsContainer;
+    content: "name";
+    color: WHITE;
+    font-size: 3;
+    margin-left: 61;
+    margin-top: 20;
+}
+
+#nameBox {
+    type: textbox;
+    parent: settingsContainer;
+    margin-left: 50;
+    margin-top: 25;
+    width: 30;
+    height: 6;
+    growOnHover: 0.05;
+}
+
+#artistText {
+    type: text;
+    parent: settingsContainer;
+    content: "artist";
+    color: WHITE;
+    font-size: 3;
+    margin-left: 61;
+    margin-top: 32;
+}
+
+#artistBox {
+    type: textbox;
+    parent: settingsContainer;
+    margin-left: 50;
+    margin-top: 37;
+    width: 30;
+    height: 6;
+    growOnHover: 0.05;
+}
+
+#mapCreatorText {
+    type: text;
+    parent: settingsContainer;
+    content: "map creator";
+    color: WHITE;
+    font-size: 3;
+    margin-left: 56;
+    margin-top: 44;
+}
+
+#mapCreatorBox {
+    type: textbox;
+    parent: settingsContainer;
+    margin-left: 50;
+    margin-top: 49;
+    width: 30;
+    height: 6;
+    growOnHover: 0.05;
+}
+
+#difficultyText {
+    type: text;
+    parent: settingsContainer;
+    content: "difficulty";
+    color: WHITE;
+    font-size: 3;
+    margin-left: 59;
+    margin-top: 56;
+}
+
+#difficultyBox {
+    type: textbox;
+    parent: settingsContainer;
+    margin-left: 50;
+    margin-top: 61;
+    width: 30;
+    height: 6;
+    growOnHover: 0.05;
+}
+
+#bpmText {
+    type: text;
+    parent: settingsContainer;
+    content: "bpm";
+    color: WHITE;
+    font-size: 3;
+    margin-left: 62;
+    margin-top: 68;
+}
+
+#bpmBox {
+    type: textbox;
+    parent: settingsContainer;
+    margin-left: 50;
+    margin-top: 73;
+    width: 30;
+    height: 6;
+    growOnHover: 0.05;
+}
+
+#finishButton {
+    type: button;
+    content: "Finish";
+    left: 85;
+    top: 90;
+    font-size: 3;
+    width: 10;
+    height: 5;
+    growOnHover: 0.1;
+}

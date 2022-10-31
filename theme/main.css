@@ -5,11 +5,12 @@
     image: assets/note.png;
     font-size: 7;
     left: 5;
-    top: 20;
+    top: 10;
     width: 30;
-    height: 52;
+    height: 30;
     growOnHover: 0.2;
     loadFile: _mapselect_;
+    keepAspectRatio: yes;
 }
 
 
