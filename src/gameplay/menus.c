@@ -65,6 +65,179 @@ void freeCSS(CSS * css)
 	}
 }
 
+void drawCSS_Object(CSS_Object * object)
+{
+	if(!object->active)
+		return;
+
+	float scrollValue = _scrollValue;
+
+
+	
+
+	float height = getHeight();
+	if(object->keepAspectRatio)
+		height = getWidth();
+
+	Rectangle rect = (Rectangle){.x=object->x*getWidth(), .y=(object->y+scrollValue)*height, .width=object->width*getWidth(), .height=object->height*height};
+
+	
+
+	
+	bool scissorMode = false;
+	if(object->parent)
+	{
+		CSS_Object parent = getCSS_Object(object->parent);
+
+		if(!parent.active)
+			return;
+
+		rect.x += parent.x*getWidth();
+		rect.y += parent.y*getHeight();
+
+		if(parent.type == css_container)
+		{
+			BeginScissorMode(parent.x*getWidth(), parent.y*getHeight(), parent.width*getWidth(), parent.height*getHeight());
+			scissorMode = true;
+			if(parent.scrollable)
+				scrollValue = parent.scrollValue;
+		}
+	}
+
+	if(mouseInRect(rect) || object->selected)
+	{
+		object->hoverTime = fmin(GetFrameTime()+object->hoverTime, 0.1);
+	}else
+		object->hoverTime = fmax(object->hoverTime-GetFrameTime(), 0);
+
+	float growAmount = object->growOnHover * fmin(object->hoverTime*15, 1);
+
+
+	rect.x -= rect.width*growAmount/2;
+	rect.y -= rect.height*growAmount/2;
+
+	rect.width += rect.width*growAmount;
+	rect.height += rect.height*growAmount;
+
+	float fontSize = object->fontSize * (1+growAmount);
+
+	
+
+	switch(object->type)
+	{
+		case css_text:
+			if(object->text)
+				drawText(object->text, rect.x, rect.y, fontSize*getWidth(), object->color);
+			break;
+		
+		case css_image:
+			DrawTexturePro(object->image, (Rectangle){.x=0,.y=0,.width=object->image.width, .height=object->image.height}, rect, (Vector2){0}, 0, object->color);
+			break;
+		
+		case css_rectangle:
+			DrawRectangle(rect.x, rect.y, rect.width, rect.height, object->color);
+			break;
+
+		case css_button:
+			if(object->image.id)
+				drawButtonPro(rect, object->text, fontSize, object->image);
+			else
+				drawButton(rect, object->text, fontSize);
+
+			object->selected = mouseInRect(rect) && IsMouseButtonReleased(0);
+			break;
+
+		case css_buttonNoSprite:
+			drawButtonNoSprite(rect, object->text, fontSize);
+			object->selected = mouseInRect(rect) && IsMouseButtonReleased(0);
+			break;
+
+		case css_textbox:
+			textBox(rect, object->text, &object->selected);
+			break;
+
+		case css_numberbox:
+			numberBox(rect, &object->value, &object->selected);
+
+			if(object->value > object->max)
+				object->value = object->max;
+			
+			if(object->value < object->min)
+				object->value = object->min;
+			break;
+
+		case css_slider:
+			slider(rect, &object->selected, &object->value, object->max, object->min);
+			break;
+		
+		case css_container:
+			object->scrollValue += GetMouseWheelMove() * .04;
+			break;
+	}
+
+	if(scissorMode)
+	{
+		EndScissorMode();
+	}
+
+	if((object->type == css_button || object->type == css_buttonNoSprite) && object->selected)
+	{
+		//button action
+		if(object->makeActive)
+		{
+			CSS_Object * activatedObject = getCSS_ObjectPointer(object->makeActive);
+			activatedObject->active = !activatedObject->active;
+		}
+
+		if(object->loadFile)
+		{
+			if(!strcmp(object->loadFile, "_playing_"))
+			{
+				_pNextGameplayFunction = &fPlaying;
+				_pGameplayFunction = &fCountDown;
+				fCountDown(true);
+				fPlaying(true);
+			}else if(!strcmp(object->loadFile, "_editor_"))
+			{
+				_pNextGameplayFunction = &fPlaying;
+				_pGameplayFunction = &fEditor;
+				fEditor(true);
+			}else if(!strcmp(object->loadFile, "_export_"))
+			{
+				_pNextGameplayFunction = &fMainMenu;
+				_pGameplayFunction = &fExport;
+			}else if(!strcmp(object->loadFile, "_mapselect_"))
+			{
+				_pNextGameplayFunction = _pGameplayFunction;
+				_pGameplayFunction = &fMapSelect;
+			}else if(!strcmp(object->loadFile, "_settings_"))
+			{
+				_pNextGameplayFunction = _pGameplayFunction;
+				_pGameplayFunction = &fSettings;
+			}else if(!strcmp(object->loadFile, "_newMap_"))
+			{
+				_pNextGameplayFunction = _pGameplayFunction;
+				_pGameplayFunction = &fNewMap;
+				fNewMap(true);
+			}else if(!strcmp(object->loadFile, "_exit_"))
+			{
+				exitGame();
+			}else
+			{
+				char * file = malloc(strlen(object->loadFile)+1);
+				strcpy(file, object->loadFile);
+				freeCSS(_pCSS);
+				free(_pCSS);
+				_pCSS = 0;
+				_transition = 0.1;
+				loadCSS(file);
+				_pGameplayFunction = &fCSSPage;
+			}
+			return;
+		}
+	}
+}
+
 void drawCSS(char * file)
 {
 	if(!_pCSS)
@@ -97,171 +270,35 @@ void drawCSS(char * file)
 	//go through every object and draw them in order of the source	
 	for(int i = 0; i < _pCSS->count; i++)
 	{
-		CSS_Object object = _pCSS->objects[i];
+		drawCSS_Object(&_pCSS->objects[i]);
+	}
+}
 
-		if(!object.active)
+void drawContainer(char * name, int x, int y)
+{
+	CSS_Object * object = getCSS_ObjectPointer(name);
+	CSS_Object original = *object;
+
+	object->x = (float)x/getWidth();
+	object->y = (float)y/getHeight();
+
+	object->active = true;
+
+	drawCSS_Object(object);
+
+	for(int i = 0; i < _pCSS->count; i++)
+	{
+		if(!_pCSS->objects[i].parent)
 			continue;
-
-		float scrollValue = _scrollValue;
-
-
-		bool scissorMode = false;
-		if(object.parent)
+		
+		if(object->name[0] == _pCSS->objects[i].parent[0] && !strcmp(object->name, _pCSS->objects[i].parent))
 		{
-			CSS_Object parent = getCSS_Object(object.parent);
-
-			if(!parent.active)
-				continue;
-
-			if(parent.type == css_container)
-			{
-				BeginScissorMode(parent.x*getWidth(), parent.y*getHeight(), parent.width*getWidth(), parent.height*getHeight());
-				// BeginScissorMode(0.2*getWidth(), 0.2*getHeight(), 0.5*getWidth(), 0.5*getHeight());
-				scissorMode = true;
-				if(parent.scrollable)
-					scrollValue = parent.scrollValue;
-			}
-		}
-
-		float height = getHeight();
-		if(object.keepAspectRatio)
-			height = getWidth();
-
-		Rectangle rect = (Rectangle){.x=object.x*getWidth(), .y=(object.y+scrollValue)*height, .width=object.width*getWidth(), .height=object.height*height};
-
-		if(mouseInRect(rect) || object.selected)
-		{
-			_pCSS->objects[i].hoverTime += GetFrameTime();
-		}else
-			_pCSS->objects[i].hoverTime = 0;
-
-
-		float growAmount = object.growOnHover * fmin(object.hoverTime*15, 1);
-
-		rect.x -= rect.width*growAmount/2;
-		rect.y -= rect.height*growAmount/2;
-
-		rect.width += rect.width*growAmount;
-		rect.height += rect.height*growAmount;
-
-		float fontSize = object.fontSize * (1+growAmount);
-
-		switch(object.type)
-		{
-			case css_text:
-				if(object.text)
-					drawText(object.text, rect.x, rect.y, fontSize*getWidth(), object.color);
-				break;
-			
-			case css_image:
-				DrawTexturePro(object.image, (Rectangle){.x=0,.y=0,.width=object.image.width, .height=object.image.height}, rect, (Vector2){0}, 0, object.color);
-				break;
-			
-			case css_rectangle:
-				DrawRectangle(rect.x, rect.y, rect.width, rect.height, object.color);
-				break;
-
-			case css_button:
-				if(object.image.id)
-					drawButtonPro(rect, object.text, fontSize, object.image);
-				else
-					drawButton(rect, object.text, fontSize);
-
-				_pCSS->objects[i].selected = mouseInRect(rect) && IsMouseButtonReleased(0);
-				break;
-
-			case css_buttonNoSprite:
-				drawButtonNoSprite(rect, object.text, fontSize);
-				_pCSS->objects[i].selected = mouseInRect(rect) && IsMouseButtonReleased(0);
-				break;
-
-			case css_textbox:
-				textBox(rect, object.text, &_pCSS->objects[i].selected);
-				break;
-
-			case css_numberbox:
-				numberBox(rect, &object.value, &_pCSS->objects[i].selected);
-
-				if(object.value > object.max)
-					object.value = object.max;
-				
-				if(object.value < object.min)
-					object.value = object.min;
-				
-				_pCSS->objects[i].value = object.value;
-				break;
-
-			case css_slider:
-				slider(rect, &_pCSS->objects[i].selected, &_pCSS->objects[i].value, object.max, object.min);
-				break;
-			
-			case css_container:
-				_pCSS->objects[i].scrollValue += GetMouseWheelMove() * .04;
-				break;
-		}
-
-		if(scissorMode)
-		{
-			EndScissorMode();
-		}
-
-		if((object.type == css_button || object.type == css_buttonNoSprite) && object.selected)
-		{
-			//button action
-			if(object.makeActive)
-			{
-				CSS_Object * activatedObject = getCSS_ObjectPointer(object.makeActive);
-				activatedObject->active = !activatedObject->active;
-			}
-
-			if(object.loadFile)
-			{
-				if(!strcmp(object.loadFile, "_playing_"))
-				{
-					_pNextGameplayFunction = &fPlaying;
-					_pGameplayFunction = &fCountDown;
-					fCountDown(true);
-					fPlaying(true);
-				}else if(!strcmp(object.loadFile, "_editor_"))
-				{
-					_pNextGameplayFunction = &fPlaying;
-					_pGameplayFunction = &fEditor;
-					fEditor(true);
-				}else if(!strcmp(object.loadFile, "_export_"))
-				{
-					_pNextGameplayFunction = &fMainMenu;
-					_pGameplayFunction = &fExport;
-				}else if(!strcmp(object.loadFile, "_mapselect_"))
-				{
-					_pNextGameplayFunction = _pGameplayFunction;
-					_pGameplayFunction = &fMapSelect;
-				}else if(!strcmp(object.loadFile, "_settings_"))
-				{
-					_pNextGameplayFunction = _pGameplayFunction;
-					_pGameplayFunction = &fSettings;
-				}else if(!strcmp(object.loadFile, "_newMap_"))
-				{
-					_pNextGameplayFunction = _pGameplayFunction;
-					_pGameplayFunction = &fNewMap;
-					fNewMap(true);
-				}else if(!strcmp(object.loadFile, "_exit_"))
-				{
-					exitGame();
-				}else
-				{
-					char * file = malloc(strlen(object.loadFile)+1);
-					strcpy(file, object.loadFile);
-					freeCSS(_pCSS);
-					free(_pCSS);
-					_pCSS = 0;
-					_transition = 0.1;
-					loadCSS(file);
-					_pGameplayFunction = &fCSSPage;
-				}
-				return;
-			}
+			//found child
+			drawCSS_Object(&_pCSS->objects[i]);
 		}
 	}
+
+	*object = original;
 }
 
 void loadCSS(char * fileName)
@@ -513,7 +550,7 @@ void loadCSS(char * fileName)
 							if(object.parent)
 							{
 								CSS_Object parent = getCSS_Object(object.parent);
-								object.x = parent.x + atof(value)/100.0;
+								object.x = atof(value)/100.0;
 							}else
 							{
 								if(_pCSS->count < 1)
@@ -528,7 +565,7 @@ void loadCSS(char * fileName)
 							if(object.parent)
 							{
 								CSS_Object parent = getCSS_Object(object.parent);
-								object.y = parent.y + atof(value)/100.0;
+								object.y = atof(value)/100.0;
 							}else
 							{
 								if(_pCSS->count < 1)
@@ -1045,6 +1082,8 @@ void fMapSelect(bool reset)
 	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
 					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
 
+	drawCSS("theme/mapSelect.css");
+
 	if (selectingMods)
 	{
 		_playMenuMusic = true;
@@ -1108,7 +1147,7 @@ void fMapSelect(bool reset)
 		drawCursor();
 		return;
 	}
-	DrawRectangle(0, 0, getWidth(), getHeight()*0.13, BLACK);
+	// DrawRectangle(0, 0, getWidth(), getHeight()*0.13, BLACK);
 	static float menuScroll = 0;
 	static float menuScrollSmooth = 0;
 	menuScroll += GetMouseWheelMove() * .04;
@@ -1128,19 +1167,20 @@ void fMapSelect(bool reset)
 	}
 	menuScroll = clamp(menuScroll, -.5 * floor(amount / 2), 0);
 
-	if (interactableButton("Mods", 0.03, getWidth() * 0.2, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
+	if(UIBUttonPressed("modsButton"))
+	// if (interactableButton("Mods", 0.03, getWidth() * 0.2, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
 	{
 		selectingMods = true;
 	}
 
-	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("Back", 0.03, getWidth() * 0.05, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
+	if (IsKeyPressed(KEY_ESCAPE) || UIBUttonPressed("backButton"))
+	//interactableButton("Back", 0.03, getWidth() * 0.05, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
 	{
 		_pGameplayFunction = &fMainMenu;
 		_transition = 0.1;
 	}
 
-	
-	textBox((Rectangle){.x = getWidth() * 0.35, .y = getHeight() * 0.05, .width = getWidth() * 0.2, .height = getHeight() * 0.05}, search, &searchSelected);
+	UITextBox(search, "searchBox");
 	if(search[0] == '\0')
 		drawText("Search", getWidth()*0.39, getHeight()*0.055, getWidth()*0.03, GRAY);
 
@@ -1274,6 +1314,8 @@ void fMapSelect(bool reset)
 				_pGameplayFunction = &fExport;
 			}
 			DrawRectangleGradientV(mapButton.x, mapButton.y + mapButton.height, mapButton.width, mapButton.height * 0.05 * selectMapTransition, ColorAlpha(BLACK, 0.3), ColorAlpha(BLACK, 0));
+
+			drawContainer("mapContainer",mapButton.x, mapButton.y);
 		}
 		else
 		{
