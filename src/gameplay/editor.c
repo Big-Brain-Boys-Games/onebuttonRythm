@@ -984,11 +984,17 @@ void fEditor(bool reset)
 			_noteIndex = closestIndex;
 		}
 
-		if (IsKeyPressed(KEY_A))
+		if (IsKeyPressed(KEY_A) && !IsKeyDown(KEY_LEFT_CONTROL))
 		{
 			float pos = roundf((getMusicHead() - timeSeg.time) / secondsPerBeat) * secondsPerBeat + timeSeg.time;
 			doAction(ComAdd, newNote(pos), 1);
 			_noteIndex = closestIndex;
+		}
+
+		if (IsKeyPressed(KEY_A) && IsKeyDown(KEY_LEFT_CONTROL))
+		{
+			for(int i = 0; i < _amountNotes; i++)
+				addSelectNote(i);
 		}
 
 		if (IsKeyPressed(KEY_D) || 

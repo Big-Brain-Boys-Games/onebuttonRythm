@@ -135,7 +135,7 @@ void MakeNoteCopy(Note src, Note * dest)
 
     if(src.animSize)
     {
-        dest->anim = malloc(src.animSize);
+        dest->anim = malloc(src.animSize*sizeof(Frame));
         memcpy(dest->anim, src.anim, sizeof(Frame)*src.animSize);
     }
 }

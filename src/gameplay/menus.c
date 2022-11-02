@@ -359,7 +359,7 @@ void loadCSS(char * fileName)
 				if(text[nameIndex] == '{')
 				{
 					text[nameIndex] = '\0';
-					object.name = malloc(sizeof(text+i)+1);
+					object.name = malloc(strlen(text+i)+1);
 					strcpy(object.name, text+i);
 					i = nameIndex+1;
 					break;
