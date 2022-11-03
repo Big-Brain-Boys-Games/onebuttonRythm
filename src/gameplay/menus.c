@@ -488,10 +488,7 @@ void loadCSS(char * fileName)
 								{
 									object.text = addCSS_Variable(value+1);
 									object.usesVariable = true;
-									continue;
-								}
-
-								if(!strcmp(value, "_mapname_") && _map)
+								}else if(!strcmp(value, "_mapname_") && _map)
 								{
 									object.text = malloc(strlen(_map->name)+1);
 									strcpy(object.text, _map->name);
@@ -1147,8 +1144,6 @@ void fMapSelect(bool reset)
 	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
 					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
 
-	drawCSS("theme/mapSelect.css");
-
 	if (selectingMods)
 	{
 		_playMenuMusic = true;
@@ -1212,6 +1207,9 @@ void fMapSelect(bool reset)
 		drawCursor();
 		return;
 	}
+
+	drawCSS("theme/mapSelect.css");
+
 	// DrawRectangle(0, 0, getWidth(), getHeight()*0.13, BLACK);
 	static float menuScroll = 0;
 	static float menuScrollSmooth = 0;
@@ -1246,8 +1244,12 @@ void fMapSelect(bool reset)
 	}
 
 	UITextBox(search, "searchBox");
-	if(search[0] == '\0')
-		drawText("Search", getWidth()*0.39, getHeight()*0.055, getWidth()*0.03, GRAY);
+
+	CSS_Object * searchText = getCSS_ObjectPointer("searchText");
+	CSS_Object * searchBox = getCSS_ObjectPointer("searchBox");
+
+	if(searchText && searchBox)
+		searchText->active = !searchBox->selected;
 
 	if (hoverMap == -1)
 	{
@@ -1371,7 +1373,7 @@ void fMapSelect(bool reset)
 				// 		_map->image = _background;
 				// }
 			}
-			drawMapThumbnail(mapButton, &_paMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], true);
+			// drawMapThumbnail(mapButton, &_paMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], true);
 			if (interactableButtonNoSprite("play", 0.0225, mapButton.x, mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
 			{
 				_pNextGameplayFunction = &fPlaying;
@@ -1394,7 +1396,7 @@ void fMapSelect(bool reset)
 		}
 		else
 		{
-			drawMapThumbnail(mapButton, &_paMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], false);
+			// drawMapThumbnail(mapButton, &_paMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], false);
 
 			if (IsMouseButtonReleased(0) && mouseInRect(mapButton) && mouseInRect(mapSelectRect))
 			{
@@ -1403,6 +1405,21 @@ void fMapSelect(bool reset)
 				selectMapTransition = 0;
 				hoverPeriod = 0;
 				_musicFrameCount = 1;
+			}
+
+			if(_paMaps[i].image.id == 0)
+			{
+				//load map image onto gpu(cant be loaded in sperate thread because opengl >:( )
+				if(_paMaps[i].cpuImage.width > 0)
+				{
+					_paMaps[i].image = LoadTextureFromImage(_paMaps[i].cpuImage);
+					UnloadImage(_paMaps[i].cpuImage);
+					_paMaps[i].cpuImage.width = -1;
+					if(_paMaps[i].image.id == 0)
+						_paMaps[i].image.id = -1; 
+					else
+						SetTextureFilter(_paMaps[i].image, TEXTURE_FILTER_BILINEAR);
+				}
 			}
 		}
 
@@ -1413,6 +1430,11 @@ void fMapSelect(bool reset)
 		char * artistVar = getCSS_Variable("artist");
 		if(artistVar)
 			strcpy(artistVar, _paMaps[i].artist);
+
+		char * nameAndArtistVar = getCSS_Variable("mapname_artist");
+		if(nameAndArtistVar)
+			snprintf(nameAndArtistVar, 100, "%s - %s", _paMaps[i].name, _paMaps[i].artist);
+
 
 		char * difficulty = getCSS_Variable("difficulty");
 		if(difficulty)
@@ -1430,6 +1452,7 @@ void fMapSelect(bool reset)
 			mapImageObject->image = _paMaps[i].image;
 		}
 
+		drawContainer("mapContainer", mapButton.x, mapButton.y);
 
 		if(highScores[i] != 0)
 		{
@@ -1437,8 +1460,6 @@ void fMapSelect(bool reset)
 
 			if(highScoreObject)
 			{
-				highScoreObject->active = (highScores[i] != 0);
-
 				char * highscore = getCSS_Variable("highscore");
 				if(highscore)
 					snprintf(highscore, 100, "%i", highScores[i]);
@@ -1446,10 +1467,10 @@ void fMapSelect(bool reset)
 				char * combo = getCSS_Variable("combo");
 				if(combo)
 					snprintf(combo, 100, "%i", combos[i]);
+
+				drawContainer("highscoreContainer", mapButton.x, mapButton.y);
 			}
 		}
-
-		drawContainer("mapContainer", mapButton.x, mapButton.y);
 
 	}
 

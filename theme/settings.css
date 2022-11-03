@@ -19,25 +19,14 @@
     growOnHover: 0.2;
 }
 
-#SettingsDropShadow {
-    type: text;
-    content: "Settings";
-    color: BLACK;
-    font-size: 5;
-    left: 40.5;
-    top: 3.5;
-    width: 10;
-    height: 5;
-}
-
 #Settings {
     type: text;
     content: "Settings";
     color: WHITE;
     font-size: 5;
-    margin-left: -0.5;
-    margin-top: -0.5;
-    width: 10;
+    left: 40;
+    top: 3;
+    width: 30;
     height: 5;
 }
 
@@ -70,6 +59,7 @@
     font-size: 3;
     margin-left: 10;
     margin-top: 10;
+    width: 40;
 }
 
 #musicVolume {
@@ -92,6 +82,7 @@
     font-size: 3;
     margin-left: 10;
     margin-top: 25;
+    width: 40;
 }
 
 #effectVolume {
@@ -114,6 +105,7 @@
     font-size: 3;
     margin-left: 5;
     margin-top: 40;
+    width: 40;
 }
 
 #zoomSlider {
@@ -136,6 +128,7 @@
     font-size: 3;
     margin-left: 16;
     margin-top: 55;
+    width: 40;
 }
 
 #noteSizeSlider {
@@ -158,6 +151,7 @@
     font-size: 3;
     margin-left: 13;
     margin-top: 65;
+    width: 40;
 }
 
 #offsetBox {
@@ -192,6 +186,7 @@
     font-size: 3;
     margin-left: 66;
     margin-top: 10;
+    width: 40;
 }
 
 #nameBox {
@@ -212,4 +207,5 @@
     font-size: 3;
     margin-left: 66;
     margin-top: 30;
+    width: 40;
 }

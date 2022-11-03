@@ -51,15 +51,26 @@
     growOnHover: 0.2;
 }
 
-#modsButton {
+#searchBox {
     type: textbox;
     content: "";
     font-size: 2.5;
-    left: 35;
+    left: 38;
     top: 4;
-    width: 10;
+    width: 20;
     height: 5;
     growOnHover: 0.2;
+}
+
+#searchText {
+    type: text;
+    content: "Search";
+    font-size: 2.5;
+    left: 43;
+    top: 4.9;
+    width: 20;
+    height: 2;
+    color: DARKGRAY;
 }
 
 #mapContainer{
@@ -68,20 +79,18 @@
     left: 0;
     top: 0;
     width: 30;
-    height: 30;
+    height: 30.1;
     active: no;
 }
 
-#songLength {
-    type: text;
+#mapBackground{
+    type: rectangle;
     parent: mapContainer;
-    content: $musicLength;
-    margin-left: 0;
-    margin-top: 0;
-    font-size: 3;
-    width: 25;
-    height: 50;
-    color: WHITE;
+    color: BLACK;
+    left: 0;
+    top: 0;
+    width: 100;
+    height: 100;
 }
 
 #mapImage {
@@ -92,4 +101,104 @@
     width: 100;
     height: 80;
     color: WHITE;
+}
+
+#mapStatsDarkening{
+    type: rectangle;
+    parent: mapContainer;
+    color: BLACK;
+    opacity: 0.8;
+    top: 4;
+    left: 4;
+    width: 20;
+    height: 20;
+}
+
+#difficulty {
+    type: text;
+    parent: mapContainer;
+    content: $difficulty;
+    top: 5;
+    left: 5;
+    font-size: 2.7;
+    width: 25;
+    height: 50;
+    color: WHITE;
+}
+
+#songLength {
+    type: text;
+    parent: mapContainer;
+    content: $musicLength;
+    top: 14;
+    left: 5;
+    font-size: 2.1;
+    width: 25;
+    height: 50;
+    color: WHITE;
+}
+
+#mapBar {
+    type: rectangle;
+    parent: mapContainer;
+    left: 0;
+    top: 80;
+    width: 100;
+    height: 20;
+    color: WHITE;
+}
+
+#mapName {
+    type: text;
+    parent: mapContainer;
+    content: $mapname_artist;
+    left: 0;
+    top: 82;
+    width: 100;
+    height: 20;
+    font-size: 3;
+    color: DARKGRAY;
+}
+
+#highscoreContainer{
+    type: container;
+    scrollable: no;
+    left: 0;
+    top: 0;
+    width: 30;
+    height: 20;
+    active: no;
+}
+
+#highscoreBackground{
+    type: rectangle;
+    parent: highscoreContainer;
+    left: 60;
+    top: 5;
+    width: 100;
+    height: 40;
+    color: BLACK;
+    opacity: 0.8;
+}
+
+#highscoreText{
+    type: text;
+    parent: highscoreContainer;
+    content: $highscore;
+    left: 61;
+    top: 6;
+    width: 100;
+    color: WHITE;
+    font-size: 2;
+}
+
+#comboText{
+    type: text;
+    parent: highscoreContainer;
+    content: $combo;
+    left: 61;
+    top: 16;
+    width: 100;
+    color: WHITE;
+    font-size: 2;
 }
