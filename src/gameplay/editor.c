@@ -346,121 +346,28 @@ void fEditorSongSettings(bool reset)
 {
 	ClearBackground(BLACK);
 	drawBackground();
+	dNotes();
 	drawVignette();
+	drawMusicGraph(0.4);
+	drawBars();
+	drawProgressBarI(false);
 
-	// Darken background
-	DrawRectangle(0, 0, getWidth(), getHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
+
+	drawCSS("theme/editor/songSettings.css");
+
 	// BPM setting
-	char bpm[10] = {0};
-	if (_map->bpm != 0)
-		snprintf(bpm, 10, "%i", _map->bpm);
-	static bool bpmBoxSelected = false;
-	Rectangle bpmBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.1, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	textBox(bpmBox, bpm, &bpmBoxSelected);
-	_map->bpm = atoi(bpm);
-	_map->bpm = fmin(fmax(_map->bpm, 0), 300);
+	_map->bpm = UIValueInteractable(_map->bpm, "BPM_Box");
+	_map->offset = UIValueInteractable(_map->offset, "offsetBox");
 
-	// Offset setting
-	char offset[10] = {0};
-	if (_map->offset != 0)
-		snprintf(offset, 10, "%i", _map->offset);
-	static bool offsetBoxSelected = false;
-	Rectangle offsetBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.18, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	textBox(offsetBox, offset, &offsetBoxSelected);
-	_map->offset = atoi(offset);
-	_map->offset = fmin(fmax(_map->offset, 0), 5000);
+	UITextBox(_map->name, "nameBox");
+	UITextBox(_map->artist, "artistBox");
+	UITextBox(_map->mapCreator, "mapCreatorBox");
+	
+	_map->musicPreviewOffset = UIValueInteractable(_map->musicPreviewOffset, "previewOffsetBox");
+	_map->difficulty = UIValueInteractable(_map->difficulty, "difficultyBox");
+	_map->beats = UIValueInteractable(_map->beats, "beatsBox");
 
-	// song name setting
-	char songName[50] = {0};
-	snprintf(songName, 50, "%s", _map->name);
-	static bool songNameBoxSelected = false;
-	Rectangle songNameBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.26, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	textBox(songNameBox, songName, &songNameBoxSelected);
-	strcpy(_map->name, songName);
-
-	// song creator setting
-	char creator[50] = {0};
-	snprintf(creator, 50, "%s", _map->artist);
-	static bool creatorBoxSelected = false;
-	Rectangle creatorBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.34, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	textBox(creatorBox, creator, &creatorBoxSelected);
-	strcpy(_map->artist, creator);
-
-	// preview offset setting
-	char musicPreviewOffset[10] = {0};
-	musicPreviewOffset[0] = '\0';
-	if (_map->musicPreviewOffset != 0)
-		snprintf(musicPreviewOffset, 10, "%i", (int)(_map->musicPreviewOffset * 1000));
-	static bool musicPreviewOffsetBoxSelected = false;
-	Rectangle musicPreviewOffsetBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.42, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	textBox(musicPreviewOffsetBox, musicPreviewOffset, &musicPreviewOffsetBoxSelected);
-	_map->musicPreviewOffset = atoi(musicPreviewOffset) / 1000.0;
-	_map->musicPreviewOffset = fmin(fmax(_map->musicPreviewOffset, 0), _pMusic->size);
-
-	// difficulty setting
-	char difficulty[10] = {0};
-	difficulty[0] = '\0';
-	if (_map->difficulty != 0)
-		snprintf(difficulty, 10, "%i", _map->difficulty);
-	static bool difficultyBoxSelected = false;
-	Rectangle difficultyBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.50, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	textBox(difficultyBox, difficulty, &difficultyBoxSelected);
-	_map->difficulty = atoi(difficulty);
-
-	// beats per bar setting
-	char beats[10] = {0};
-	beats[0] = '\0';
-	if (_map->beats != 0)
-		snprintf(beats, 10, "%i", _map->beats);
-	static bool beatsBoxSelected = false;
-	Rectangle beatsBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.58, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	textBox(beatsBox, beats, &beatsBoxSelected);
-	_map->beats = atoi(beats);
-
-	// Drawing text next to the buttons
-	char *text = "BPM:";
-	float tSize = getWidth() * 0.025;
-	int size = measureText(text, tSize);
-	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.12, tSize, WHITE);
-
-	text = "Song Offset:";
-	tSize = getWidth() * 0.025;
-	size = measureText(text, tSize);
-	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.20, tSize, WHITE);
-
-	text = "Song name:";
-	tSize = getWidth() * 0.025;
-	size = measureText(text, tSize);
-	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.28, tSize, WHITE);
-
-	text = "Artist:";
-	tSize = getWidth() * 0.025;
-	size = measureText(text, tSize);
-	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.36, tSize, WHITE);
-
-	text = "Preview offset:";
-	tSize = getWidth() * 0.025;
-	size = measureText(text, tSize);
-	drawText(text, getWidth() * 0.2 - size / 2, getHeight() *  0.42, tSize, WHITE);
-
-	text = "Difficulty:";
-	tSize = getWidth() * 0.025;
-	size = measureText(text, tSize);
-	drawText(text, getWidth() * 0.2 - size / 2, getHeight() *  0.50, tSize, WHITE);
-
-	text = "Beats:";
-	tSize = getWidth() * 0.025;
-	size = measureText(text, tSize);
-	drawText(text, getWidth() * 0.2 - size / 2, getHeight() *  0.58, tSize, WHITE);
-
-
-	// text = "Playback speed:";
-	// tSize = getWidth() * 0.025;
-	// size = measureText(text, tSize);
-	// drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.50, tSize, WHITE);
-
-	if(IsKeyPressed(KEY_ESCAPE) ||
-		interactableButton("back", 0.025, getWidth() * 0.8, getHeight() * 0.05, getWidth() * 0.2, getHeight() * 0.07))
+	if(IsKeyPressed(KEY_ESCAPE) || UIBUttonPressed("backButton"))
 	{
 		_pGameplayFunction = &fEditor;
 	}
@@ -470,6 +377,13 @@ void fEditorSongSettings(bool reset)
 
 void fEditorTimingSettings (bool reset)
 {
+	static TimingSegment * timSeg = 0;
+	if(reset)
+	{
+		timSeg = getTimingSignaturePointer(_musicHead);
+		return;
+	}
+
 	ClearBackground(BLACK);
 	drawBackground();
 	dNotes();
@@ -483,56 +397,14 @@ void fEditorTimingSettings (bool reset)
 		DrawCircle(musicTimeToScreen(_paTimingSegment[i].time), getHeight()*0.3, getWidth()*0.05, WHITE);
 	}
 
-	// Darken background
-	DrawRectangle(0, 0, getWidth(), getHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
+	drawCSS("theme/editor/timingSettings.css");
 
-	TimingSegment * timSeg = getTimingSignaturePointer(_musicHead);
 	// BPM setting
-	char bpm[10] = {0};
-	if (timSeg->bpm != 0)
-		snprintf(bpm, 10, "%i", timSeg->bpm);
-	static bool bpmBoxSelected = false;
-	Rectangle bpmBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.1, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	textBox(bpmBox, bpm, &bpmBoxSelected);
-	timSeg->bpm = atoi(bpm);
-	timSeg->bpm = fmin(fmax(timSeg->bpm, 0), 300);
+	timSeg->bpm = UIValueInteractable(timSeg->bpm, "BPM_Box");
+	timSeg->time = UIValueInteractable(timSeg->time*1000, "timeBox") / 1000.0;
+	timSeg->beats = UIValueInteractable(timSeg->beats, "beatsBox");
 
-	// time setting
-	char time[10] = {0};
-	if (timSeg->time != 0)
-		snprintf(time, 10, "%i", (int)(timSeg->time*1000));
-	static bool timeBoxSelected = false;
-	Rectangle timeBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.18, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	textBox(timeBox, time, &timeBoxSelected);
-	timSeg->time = atoi(time) / 1000.0;
-
-	// beats setting
-	char beats[10] = {0};
-	if (timSeg->beats != 0)
-		snprintf(beats, 10, "%i", timSeg->beats);
-	static bool beatsBoxSelected = false;
-	Rectangle beatsBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.26, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	textBox(beatsBox, beats, &beatsBoxSelected);
-	timSeg->beats = atoi(beats);
-	timSeg->beats = fmin(fmax(timSeg->beats, 0), 300);
-
-	// Drawing text next to the buttons
-	char *text = "BPM:";
-	float tSize = getWidth() * 0.025;
-	int size = measureText(text, tSize);
-	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.12, tSize, WHITE);
-
-	text = "Time:";
-	tSize = getWidth() * 0.025;
-	size = measureText(text, tSize);
-	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.20, tSize, WHITE);
-
-	text = "Beats:";
-	tSize = getWidth() * 0.025;
-	size = measureText(text, tSize);
-	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.28, tSize, WHITE);
-
-	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("back", 0.025, getWidth() * 0.8, getHeight() * 0.15, getWidth() * 0.2, getHeight() * 0.07))
+	if (IsKeyPressed(KEY_ESCAPE) || UIBUttonPressed("backButton"))
 	{
 		_pGameplayFunction = &fEditor;
 	}
@@ -550,16 +422,17 @@ void fEditorNoteSettings(bool reset)
 	drawBars();
 	drawProgressBarI(false);
 	// Darken background
-	DrawRectangle(0, 0, getWidth(), getHeight(), ColorAlpha(BLACK, 0.5));
 
-	if (interactableButton("Animation", 0.025, getWidth() * 0.8, getHeight() * 0.5, getWidth() * 0.2, getHeight() * 0.07))
+	drawCSS("theme/editor/noteSettings.css");
+
+	if (UIBUttonPressed("animationButton"))
 	{
 		//Run animation tab
 		_pGameplayFunction = &fEditorAnimation;
 		return;
 	}
 
-	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("back", 0.025, getWidth() * 0.8, getHeight() * 0.15, getWidth() * 0.2, getHeight() * 0.07))
+	if (IsKeyPressed(KEY_ESCAPE) || UIBUttonPressed("backButton"))
 	{
 		_pGameplayFunction = &fEditor;
 		//apply changes to first note to all selected notes
@@ -570,18 +443,30 @@ void fEditorNoteSettings(bool reset)
 
 		if(firstNote->texture_File)
 		{
-			snprintf(path, 100, "%s/%s", _map->folder, firstNote->texture_File);
-			firstNote->custTex = addCustomTexture(path);
-			if(firstNote->custTex)
+			if(!strlen(firstNote->texture_File))
+			{
 				freeArray(firstNote->texture_File);
+			}else
+			{
+				snprintf(path, 100, "%s/%s", _map->folder, firstNote->texture_File);
+				firstNote->custTex = addCustomTexture(path);
+				if(firstNote->custTex)
+					freeArray(firstNote->texture_File);
+			}
 		}
 		
 		if(firstNote->hitSE_File)
 		{
-			snprintf(path, 100, "%s/%s", _map->folder, firstNote->hitSE_File);
-			firstNote->custSound = addCustomSound(firstNote->hitSE_File);
-			if(firstNote->custSound)
-				freeArray(firstNote->hitSE_File);
+			if(!strlen(firstNote->texture_File))
+			{
+				freeArray(firstNote->texture_File);
+			}else
+			{
+				snprintf(path, 100, "%s/%s", _map->folder, firstNote->hitSE_File);
+				firstNote->custSound = addCustomSound(firstNote->hitSE_File);
+				if(firstNote->custSound)
+					freeArray(firstNote->hitSE_File);
+			}
 		}
 
 		for(int i = 1; i < _amountSelectedNotes; i++)
@@ -630,14 +515,16 @@ void fEditorNoteSettings(bool reset)
 		return;
 	}
 
+
+	_selectedNotes[0]->health = UIValueInteractable(_selectedNotes[0]->health, "healthBox");
+
 	char sprite[100] = {0};
 	sprite[0] = '\0';
 	if (_selectedNotes[0]->texture_File != 0)
 		snprintf(sprite, 100, "%s", _selectedNotes[0]->texture_File);
 	
-	static bool spriteBoxSelected = false;
-	Rectangle spriteBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.1, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	textBox(spriteBox, sprite, &spriteBoxSelected);
+	UITextBox(sprite, "textureFileBox");
+
 	if (strlen(sprite) != 0)
 	{
 		if (_selectedNotes[0]->texture_File == 0)
@@ -649,55 +536,13 @@ void fEditorNoteSettings(bool reset)
 		_selectedNotes[0]->texture_File = 0;
 	}
 
-	char *text = "sprite file:";
-	float tSize = getWidth() * 0.025;
-	int size = measureText(text, tSize);
-	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.1, tSize, WHITE);
-
-	
-
-	// health setting
-	char health[10] = {0};
-	bool theSame = false;
-	for (int i = 0; i < _amountSelectedNotes; i++)
-	{
-		if (_selectedNotes[0]->health != _selectedNotes[i]->health) {
-			theSame = false;
-			break;
-		}
-		else
-			theSame = true;
-	}
-	if (theSame)
-	{
-		snprintf(health, 10, "%i", (int)(_selectedNotes[0]->health));
-	}
-	
-	static bool healthBoxSelected = false;
-	Rectangle healthBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.2, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	textBox(healthBox, health, &healthBoxSelected);
-	if (healthBoxSelected)
-	{
-		for (int i = 0; i < _amountSelectedNotes; i++)
-		{
-			_selectedNotes[i]->health = atoi(health);
-			_selectedNotes[i]->health = (int)(fmin(fmax(_selectedNotes[i]->health, 0), 9));
-		}
-	}
-
-	text = "health:";
-	tSize = getWidth() * 0.025;
-	size = measureText(text, tSize);
-	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.2, tSize, WHITE);
-
 
 	char hitSound[100] = {0};
 	hitSound[0] = '\0';
 	if (_selectedNotes[0]->hitSE_File != 0)
 		snprintf(hitSound, 100, "%s", _selectedNotes[0]->hitSE_File);
-	static bool hitSoundBoxSelected = false;
-	Rectangle hitSoundBox = (Rectangle){.x = getWidth() * 0.3, .y = getHeight() * 0.3, .width = getWidth() * 0.3, .height = getHeight() * 0.07};
-	textBox(hitSoundBox, hitSound, &hitSoundBoxSelected);
+	
+	UITextBox(hitSound, "hitsoundBox");
 	if (strlen(hitSound) != 0)
 	{
 		if (_selectedNotes[0]->hitSE_File == 0)
@@ -709,12 +554,7 @@ void fEditorNoteSettings(bool reset)
 		_selectedNotes[0]->hitSE_File = 0;
 	}
 
-	text = "hitSound file:";
-	tSize = getWidth() * 0.025;
-	size = measureText(text, tSize);
-	drawText(text, getWidth() * 0.2 - size / 2, getHeight() * 0.3, tSize, WHITE);
-
-	if (interactableButton("remove Animation", 0.025, getWidth() * 0.2, getHeight() * 0.7, getWidth() * 0.3, getHeight() * 0.07))
+	if (UIBUttonPressed("removeAnimationButton"))
 	{
 		for(int i = 0; i < _amountSelectedNotes; i++)
 		{
@@ -1194,6 +1034,7 @@ void fEditor(bool reset)
 		{
 			_musicPlaying = false;
 			_pGameplayFunction = &fEditorTimingSettings;
+			fEditorTimingSettings(true);
 		}
 	}
 

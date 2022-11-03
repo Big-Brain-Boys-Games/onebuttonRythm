@@ -65,7 +65,8 @@ void setCSS_Variable(char * name, char * value);
 void setCSS_VariableInt(char * name, int value);
 bool UIBUttonPressed(char * name);
 void fCSSPage(bool reset);
-
+void UITextBox(char * variable, char * name);
+int UIValueInteractable(int variable, char * name);
 
 void fPause(bool reset);
 bool mouseInRect(Rectangle rect);

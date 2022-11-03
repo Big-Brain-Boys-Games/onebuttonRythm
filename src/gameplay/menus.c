@@ -183,12 +183,6 @@ void drawCSS_Object(CSS_Object * object)
 
 		case css_numberbox:
 			numberBox(rect, &object->value, &object->selected);
-
-			if(object->value > object->max)
-				object->value = object->max;
-			
-			if(object->value < object->min)
-				object->value = object->min;
 			break;
 
 		case css_slider:
@@ -204,6 +198,16 @@ void drawCSS_Object(CSS_Object * object)
 	{
 		endScissor();
 	}
+
+	if(!object->selected)
+	{
+		if(object->value > object->max)
+			object->value = object->max;
+		
+		if(object->value < object->min)
+			object->value = object->min;
+	}
+		
 
 	if((object->type == css_button || object->type == css_buttonNoSprite) && object->selected)
 	{
@@ -1866,6 +1870,9 @@ void textBox(Rectangle rect, char *str, bool *selected)
 
 void numberBox(Rectangle rect, int *number, bool *selected)
 {
+	if(!number && !selected)
+		return;
+	
 	char str[10];
 	snprintf(str, 10, "%i", *number);
 	drawButton(rect, str, 0.03);
