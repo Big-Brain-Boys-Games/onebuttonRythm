@@ -445,7 +445,7 @@ void loadCSS(char * fileName)
 				}
 			}
 
-			printf("\n#%s {\n", object.name);
+			// printf("\n#%s {\n", object.name);
 
 			while(text[i] != '}')
 			{
@@ -469,7 +469,7 @@ void loadCSS(char * fileName)
 							}
 						}
 						
-						printf("\tvar: %s  value %s\n", var, value);
+						// printf("\tvar: %s  value %s\n", var, value);
 						//handle different variable types (type: text: color: image: ...)
 						if(!strcmp(var, "type"))
 						{
@@ -685,7 +685,7 @@ void loadCSS(char * fileName)
 				}
 			}
 
-			printf("}\n");
+			// printf("}\n");
 
 			if(object.type == css_textbox && !object.text)
 			{
