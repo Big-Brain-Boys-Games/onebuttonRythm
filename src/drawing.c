@@ -22,6 +22,7 @@
 #include "gameplay/editor.h"
 #include "gameplay/gameplay.h"
 #include "gameplay/menus.h"
+#include "gameplay/playing.h"
 
 
 Texture2D _cursorTex;
@@ -132,14 +133,24 @@ float musicTimeToScreen(float musicTime)
 {
 	float middle = getWidth() / 2;
 	float position = getWidth() * 0.4;
-	return position + middle * (musicTime - getMusicHead()) * (1 / _scrollSpeed);
+
+	float musicSpeed = _musicSpeed;
+	if(_pGameplayFunction != &fPlaying)
+		musicSpeed = 1;
+	
+	return position + middle * (musicTime - getMusicHead()) * (1 / (_scrollSpeed*musicSpeed));
 }
 
 float screenToMusicTime(float x)
 {
 	float middle = getWidth() / 2;
 	float position = getWidth() * 0.4;
-	return (x - position) / (middle * (1 / _scrollSpeed)) + getMusicHead();
+
+	float musicSpeed = _musicSpeed;
+	if(_pGameplayFunction != &fPlaying)
+		musicSpeed = 1;
+	
+	return (x - position) / (middle * (1 / (_scrollSpeed*musicSpeed))) + getMusicHead();
 }
 
 float noteFadeOut(float note)
@@ -312,6 +323,7 @@ void drawRank(int x, int y, int width, int height, float accuracy)
 		text = "S";
 	}
 	DrawTexturePro(_noteTex, (Rectangle){.x=0, .y=0, .width=_noteTex.width, .height=_noteTex.height}, (Rectangle){.x=x, .y=y, .width=width, .height=height}, (Vector2) {.x=0, .y=0}, 0, colRank);
+	drawText(text, x+width*0.205, y+height*0.035, width, BLACK);
 	drawText(text, x+width*0.2, y+height*0.03, width, WHITE);
 }
 

@@ -90,7 +90,7 @@
     left: 0;
     top: 0;
     width: 100;
-    height: 100;
+    height: 90;
 }
 
 #mapImage {
@@ -173,10 +173,10 @@
 #highscoreBackground{
     type: rectangle;
     parent: highscoreContainer;
-    left: 60;
+    left: 75;
     top: 5;
     width: 100;
-    height: 40;
+    height: 30;
     color: BLACK;
     opacity: 0.8;
 }
@@ -185,7 +185,7 @@
     type: text;
     parent: highscoreContainer;
     content: $highscore;
-    left: 61;
+    left: 76;
     top: 6;
     width: 100;
     color: WHITE;
@@ -196,8 +196,8 @@
     type: text;
     parent: highscoreContainer;
     content: $combo;
-    left: 61;
-    top: 16;
+    left: 76;
+    top: 20;
     width: 100;
     color: WHITE;
     font-size: 2;

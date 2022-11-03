@@ -31,6 +31,7 @@
 CSS * _pCSS = 0;
 
 float _scrollValue = 0;
+bool _mapRefresh = true;
 
 #define freeArray(arr) \
 	if(arr) { \
@@ -234,6 +235,7 @@ void drawCSS_Object(CSS_Object * object)
 			{
 				_pNextGameplayFunction = _pGameplayFunction;
 				_pGameplayFunction = &fMapSelect;
+				_mapRefresh = true;
 			}else if(!strcmp(object->loadFile, "_settings_"))
 			{
 				_pNextGameplayFunction = _pGameplayFunction;
@@ -343,7 +345,7 @@ char * addCSS_Variable(char * name)
 	return _pCSS->variables[_pCSS->variableCount-1].value;
 }
 
-char * getCSS_Variable(char * name)
+CSS_Variable * getCSS_Variable(char * name)
 {
 	for(int i = 0; i < _pCSS->variableCount; i++)
 	{
@@ -351,9 +353,29 @@ char * getCSS_Variable(char * name)
 			continue;
 
 		if(!strcmp(name, _pCSS->variables[i].name))
-			return _pCSS->variables[i].value;
+			return &_pCSS->variables[i];
 	}
 	return 0;
+}
+
+void setCSS_Variable(char * name, char * value)
+{
+	if(!name || !value)
+		return;
+	
+	CSS_Variable * var = getCSS_Variable(name);
+	if(var)
+		strcpy(var->value, value);
+}
+
+void setCSS_VariableInt(char * name, int value)
+{
+	if(!name)
+		return;
+	
+	CSS_Variable * var = getCSS_Variable(name);
+	if(var)
+		snprintf(var->value, 100, "%i", value);
 }
 
 void loadCSS(char * fileName)
@@ -776,7 +798,6 @@ Modifier _mods[] = {
 	(Modifier){.id = 4, .name = "2x", .icon = 0, .healthMod = 1, .scoreMod = 1.5, .speedMod = 1.5 /* :P */, .marginMod = 1},
 };
 
-bool _mapRefresh = true;
 
 
 void fCSSPage(bool reset)
@@ -1228,7 +1249,7 @@ void fMapSelect(bool reset)
 	{
 		menuScroll -= scrollSpeed;
 	}
-	menuScroll = clamp(menuScroll, -.5 * floor(amount / 2), 0);
+	menuScroll = clamp(menuScroll, -.2 * floor(amount / 2), 0);
 
 	if(UIBUttonPressed("modsButton"))
 	// if (interactableButton("Mods", 0.03, getWidth() * 0.2, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
@@ -1249,7 +1270,8 @@ void fMapSelect(bool reset)
 	CSS_Object * searchBox = getCSS_ObjectPointer("searchBox");
 
 	if(searchText && searchBox)
-		searchText->active = !searchBox->selected;
+		searchText->active = search[0] == '\0' && !searchBox->selected &&
+			!mouseInRect((Rectangle){.x=searchBox->x*getWidth(), .y=searchBox->y*getHeight(), .width=searchBox->width*getWidth(), .height=searchBox->height*getHeight()});
 
 	if (hoverMap == -1)
 	{
@@ -1292,7 +1314,11 @@ void fMapSelect(bool reset)
 				}
 			}
 			if (missingLetter)
+			{
+				if(hoverMap == i)
+					hoverMap = -1;
 				continue;
+			}
 		}
 
 		mapCount++;
@@ -1423,26 +1449,18 @@ void fMapSelect(bool reset)
 			}
 		}
 
-		char * mapnameVar = getCSS_Variable("mapname");
-		if(mapnameVar)
-			strcpy(mapnameVar, _paMaps[i].name);
+		setCSS_Variable("mapname", _paMaps[i].name);
+		setCSS_Variable("artist", _paMaps[i].artist);
+		setCSS_VariableInt("difficulty", _paMaps[i].difficulty);
 
-		char * artistVar = getCSS_Variable("artist");
-		if(artistVar)
-			strcpy(artistVar, _paMaps[i].artist);
-
-		char * nameAndArtistVar = getCSS_Variable("mapname_artist");
+		CSS_Variable * nameAndArtistVar = getCSS_Variable("mapname_artist");
 		if(nameAndArtistVar)
-			snprintf(nameAndArtistVar, 100, "%s - %s", _paMaps[i].name, _paMaps[i].artist);
+			snprintf(nameAndArtistVar->value, 100, "%s - %s", _paMaps[i].name, _paMaps[i].artist);
 
 
-		char * difficulty = getCSS_Variable("difficulty");
-		if(difficulty)
-			snprintf(difficulty, 100, "%i", _paMaps[i].difficulty);
-
-		char * musicLength = getCSS_Variable("musicLength");
+		CSS_Variable * musicLength = getCSS_Variable("musicLength");
 		if(musicLength)
-			snprintf(musicLength, 100, "%i:%i", _paMaps[i].musicLength/60, _paMaps[i].musicLength%60);
+			snprintf(musicLength->value, 100, "%i:%i", _paMaps[i].musicLength/60, _paMaps[i].musicLength%60);
 
 		
 		//todo: lord forgive me for what i've done
@@ -1460,13 +1478,9 @@ void fMapSelect(bool reset)
 
 			if(highScoreObject)
 			{
-				char * highscore = getCSS_Variable("highscore");
-				if(highscore)
-					snprintf(highscore, 100, "%i", highScores[i]);
-
-				char * combo = getCSS_Variable("combo");
-				if(combo)
-					snprintf(combo, 100, "%i", combos[i]);
+				setCSS_VariableInt("highscore", highScores[i]);
+				setCSS_VariableInt("combo", combos[i]);
+				setCSS_VariableInt("accuracy", accuracy[i]);
 
 				drawContainer("highscoreContainer", mapButton.x, mapButton.y);
 			}
@@ -1483,6 +1497,9 @@ void fMapSelect(bool reset)
 	drawVignette();
 
 	endScissor();
+
+	DrawRectangleGradientV(0, getHeight()*0.8, getWidth(), getHeight()*0.21, ColorAlpha(BLACK, 0), ColorAlpha(BLACK, 0.8));
+
 
 	if (hoverMap != -1 || selectedMap != -1)
 	{

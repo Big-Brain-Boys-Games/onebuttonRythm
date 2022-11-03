@@ -56,9 +56,14 @@ typedef struct CSS{
     char * file;
 } CSS;
 
+void drawCSS(char * file);
 void loadCSS(char * fileName);
 CSS_Object getCSS_Object(char * name);
 CSS_Object * getCSS_ObjectPointer(char * name);
+CSS_Variable * getCSS_Variable(char * name);
+void setCSS_Variable(char * name, char * value);
+void setCSS_VariableInt(char * name, int value);
+bool UIBUttonPressed(char * name);
 void fCSSPage(bool reset);
 
 

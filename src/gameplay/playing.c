@@ -11,6 +11,7 @@
 #define EXTERN_DRAWING
 #define EXTERN_GAMEPLAY
 #define EXTERN_MAIN
+#define EXTERN_MENUS
 
 #include "playing.h"
 
@@ -412,7 +413,29 @@ void fEndScreen(bool reset)
 	DrawRectangle(0, 0, getWidth(), getHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
 	drawVignette();
 
+	drawCSS("theme/endScreen.css");
 
+	setCSS_VariableInt("highscore", _highScore);
+	setCSS_VariableInt("highcombo", _highestCombo);
+
+	setCSS_VariableInt("score", _score);
+	setCSS_VariableInt("combo", _combo);
+	setCSS_VariableInt("accuracy", 100 * (1 - _averageAccuracy));
+	setCSS_VariableInt("misses", _notesMissed);
+
+	CSS_Object * oldHighscoreObj = getCSS_ObjectPointer("oldHighscore");
+
+	if(oldHighscoreObj)
+		oldHighscoreObj->active = _highScore!=0;
+
+	
+	CSS_Object * newHighscoreObj = getCSS_ObjectPointer("newHighscore");
+
+	if(newHighscoreObj)
+		newHighscoreObj->active = (_highScore < _score);
+
+
+	/*
 	DrawRectangle(getWidth()*0.04, getHeight()*0.27, getWidth()*0.5, getHeight()*0.7, (Color){.r = 0, .g = 0, .b = 0, .a = 128});
 
 	// draw menu
@@ -464,11 +487,13 @@ void fEndScreen(bool reset)
 
 
 	free(tmpString);
+	*/
 
 	drawText("Rank", getWidth() * 0.55, getHeight() * 0.75, getWidth() * 0.05, LIGHTGRAY);
 	drawRank(getWidth()*0.7, getHeight()*0.65, getWidth()*0.2, getWidth()*0.2, _averageAccuracy);
 
-	if (interactableButton("Retry", 0.05, getWidth() * 0.15, getHeight() * 0.72, getWidth() * 0.3, getHeight() * 0.1))
+	// if (interactableButton("Retry", 0.05, getWidth() * 0.15, getHeight() * 0.72, getWidth() * 0.3, getHeight() * 0.1))
+	if(UIBUttonPressed("retryButton"))
 	{
 		// retrying map
 		printf("retrying map! \n");
@@ -478,11 +503,14 @@ void fEndScreen(bool reset)
 		_musicHead = 0;
 		_transition = 0.1;
 	}
-	if (interactableButton("Main Menu", 0.05, getWidth() * 0.15, getHeight() * 0.85, getWidth() * 0.3, getHeight() * 0.1))
+	// if (interactableButton("Main Menu", 0.05, getWidth() * 0.15, getHeight() * 0.85, getWidth() * 0.3, getHeight() * 0.1))
+
+	if(UIBUttonPressed("mapSelectButton"))
 	{
 		unloadMap();
 		gotoMainMenu(false);
-		_pNextGameplayFunction = &fPlaying;
+		_pNextGameplayFunction = &fMapSelect;
+		_mapRefresh = true;
 	}
 	drawCursor();
 }
