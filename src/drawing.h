@@ -25,7 +25,8 @@
 
 #endif
 
-
+void startScissor(int x, int y, int width, int height);
+void endScissor();
 int measureText(char *text, int fontSize);
 void drawText(char *str, int x, int y, int fontSize, Color color);
 float musicTimeToScreen(float musicTime);
@@ -35,6 +36,8 @@ void drawCursor();
 void drawNote(float musicTime, Note * note, Color color, float customSize);
 void dNotes();
 void drawRank(int x, int y, int width, int height, float accuracy);
+void drawTextureCorrectAspectRatio(Texture2D tex, Color color, Rectangle rect);
+void drawTextInRect(Rectangle rect, char * text, float fontSize, Color color, bool scroll);
 void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float accuracy, bool selected);
 void drawBars();
 void drawBackground();

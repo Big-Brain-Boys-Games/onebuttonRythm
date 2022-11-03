@@ -32,6 +32,12 @@ CSS * _pCSS = 0;
 
 float _scrollValue = 0;
 
+#define freeArray(arr) \
+	if(arr) { \
+		free(arr); \
+		arr = 0; \
+	}
+
 void freeCSS_Object(CSS_Object * object)
 {
 	if(!object)
@@ -50,7 +56,7 @@ void freeCSS_Object(CSS_Object * object)
 	if(object->name)
 		free(object->name);
 	
-	if(object->text)
+	if(object->text && !object->usesVariable)
 		free(object->text);
 }
 
@@ -59,10 +65,21 @@ void freeCSS(CSS * css)
 	if(!css)
 		return;
 	
-	for(int i = 0; i < css->count; i++)
+	for(int i = 0; i < css->objectCount; i++)
 	{
 		freeCSS_Object(&css->objects[i]);
 	}
+
+	free(css->objects);
+
+	for(int i = 0; i < css->variableCount; i++)
+	{
+		freeArray(css->variables[i].name);
+		freeArray(css->variables[i].value);
+	}
+	free(css->variables);
+	css->variableCount = 0;
+	css->objectCount = 0;
 }
 
 void drawCSS_Object(CSS_Object * object)
@@ -92,12 +109,19 @@ void drawCSS_Object(CSS_Object * object)
 		if(!parent.active)
 			return;
 
+
+		rect.x *= parent.width;
+		rect.y *= parent.height;
+
 		rect.x += parent.x*getWidth();
 		rect.y += parent.y*getHeight();
 
+		rect.width *= parent.width;
+		rect.height *= parent.height;
+
 		if(parent.type == css_container)
 		{
-			BeginScissorMode(parent.x*getWidth(), parent.y*getHeight(), parent.width*getWidth(), parent.height*getHeight());
+			startScissor(parent.x*getWidth(), parent.y*getHeight(), parent.width*getWidth(), parent.height*getHeight());
 			scissorMode = true;
 			if(parent.scrollable)
 				scrollValue = parent.scrollValue;
@@ -127,11 +151,11 @@ void drawCSS_Object(CSS_Object * object)
 	{
 		case css_text:
 			if(object->text)
-				drawText(object->text, rect.x, rect.y, fontSize*getWidth(), object->color);
+				drawTextInRect(rect, object->text, fontSize*getWidth(), object->color, mouseInRect(rect));
 			break;
 		
 		case css_image:
-			DrawTexturePro(object->image, (Rectangle){.x=0,.y=0,.width=object->image.width, .height=object->image.height}, rect, (Vector2){0}, 0, object->color);
+			drawTextureCorrectAspectRatio(object->image, object->color, rect);
 			break;
 		
 		case css_rectangle:
@@ -177,7 +201,7 @@ void drawCSS_Object(CSS_Object * object)
 
 	if(scissorMode)
 	{
-		EndScissorMode();
+		endScissor();
 	}
 
 	if((object->type == css_button || object->type == css_buttonNoSprite) && object->selected)
@@ -268,7 +292,7 @@ void drawCSS(char * file)
 	}
 
 	//go through every object and draw them in order of the source	
-	for(int i = 0; i < _pCSS->count; i++)
+	for(int i = 0; i < _pCSS->objectCount; i++)
 	{
 		drawCSS_Object(&_pCSS->objects[i]);
 	}
@@ -286,7 +310,7 @@ void drawContainer(char * name, int x, int y)
 
 	drawCSS_Object(object);
 
-	for(int i = 0; i < _pCSS->count; i++)
+	for(int i = 0; i < _pCSS->objectCount; i++)
 	{
 		if(!_pCSS->objects[i].parent)
 			continue;
@@ -299,6 +323,37 @@ void drawContainer(char * name, int x, int y)
 	}
 
 	*object = original;
+}
+
+char * addCSS_Variable(char * name)
+{
+	_pCSS->variableCount++;
+	if(!_pCSS->variables)
+	{
+		_pCSS->variables = malloc(sizeof(CSS_Variable)*_pCSS->variableCount);
+	}else
+	{
+		_pCSS->variables = realloc(_pCSS->variables, sizeof(CSS_Variable)*_pCSS->variableCount);
+	}
+
+	_pCSS->variables[_pCSS->variableCount-1].name = malloc(100);
+	strcpy(_pCSS->variables[_pCSS->variableCount-1].name, name);
+	_pCSS->variables[_pCSS->variableCount-1].value = malloc(100);
+	_pCSS->variables[_pCSS->variableCount-1].value[0] = '\0';
+	return _pCSS->variables[_pCSS->variableCount-1].value;
+}
+
+char * getCSS_Variable(char * name)
+{
+	for(int i = 0; i < _pCSS->variableCount; i++)
+	{
+		if(name[0] != _pCSS->variables[i].name[0])
+			continue;
+
+		if(!strcmp(name, _pCSS->variables[i].name))
+			return _pCSS->variables[i].value;
+	}
+	return 0;
 }
 
 void loadCSS(char * fileName)
@@ -342,8 +397,10 @@ void loadCSS(char * fileName)
 	_pCSS = malloc(sizeof(CSS));
 	_pCSS->file = malloc(strlen(fileName)+1);
 	strcpy(_pCSS->file, fileName);
-	_pCSS->count = 0;
+	_pCSS->objectCount = 0;
 	_pCSS->objects = 0;
+	_pCSS->variables = 0;
+	_pCSS->variableCount = 0;
 
 	for(int i = 0; i < size; i++)
 	{
@@ -426,6 +483,14 @@ void loadCSS(char * fileName)
 						{
 							if(strlen(value))
 							{
+
+								if(value[0] == '$')
+								{
+									object.text = addCSS_Variable(value+1);
+									object.usesVariable = true;
+									continue;
+								}
+
 								if(!strcmp(value, "_mapname_") && _map)
 								{
 									object.text = malloc(strlen(_map->name)+1);
@@ -553,10 +618,10 @@ void loadCSS(char * fileName)
 								object.x = atof(value)/100.0;
 							}else
 							{
-								if(_pCSS->count < 1)
+								if(_pCSS->objectCount < 1)
 									object.x = atof(value)/100.0;
 								else
-									object.x = _pCSS->objects[_pCSS->count-1].x + atof(value)/100.0;
+									object.x = _pCSS->objects[_pCSS->objectCount-1].x + atof(value)/100.0;
 							}
 						}
 
@@ -568,10 +633,10 @@ void loadCSS(char * fileName)
 								object.y = atof(value)/100.0;
 							}else
 							{
-								if(_pCSS->count < 1)
+								if(_pCSS->objectCount < 1)
 									object.y = atof(value)/100.0;
 								else
-									object.y = _pCSS->objects[_pCSS->count-1].y + atof(value)/100.0;
+									object.y = _pCSS->objects[_pCSS->objectCount-1].y + atof(value)/100.0;
 							}
 						}
 
@@ -611,14 +676,14 @@ void loadCSS(char * fileName)
 
 			object.color.a = object.opacity*255;
 
-			_pCSS->count++;
+			_pCSS->objectCount++;
 			if(_pCSS->objects)
 			{
-				_pCSS->objects = realloc(_pCSS->objects, sizeof(CSS_Object)*_pCSS->count);
+				_pCSS->objects = realloc(_pCSS->objects, sizeof(CSS_Object)*_pCSS->objectCount);
 			}else {
-				_pCSS->objects = malloc(sizeof(CSS_Object)*_pCSS->count);
+				_pCSS->objects = malloc(sizeof(CSS_Object)*_pCSS->objectCount);
 			}
-			_pCSS->objects[_pCSS->count-1] = object;
+			_pCSS->objects[_pCSS->objectCount-1] = object;
 		}
 	}
 }
@@ -628,7 +693,7 @@ CSS_Object * getCSS_ObjectPointer(char * name)
 	if(!name || !_pCSS)
 		return 0;
 	
-	for(int i = 0; i < _pCSS->count; i++)
+	for(int i = 0; i < _pCSS->objectCount; i++)
 	{
 		if(_pCSS->objects[i].name[0] == name[0])
 		{
@@ -1199,7 +1264,7 @@ void fMapSelect(bool reset)
 	}
 	// draw map button
 	Rectangle mapSelectRect = (Rectangle){.x = 0, .y = getHeight() * 0.13, .width = getWidth(), .height = getHeight()};
-	BeginScissorMode(mapSelectRect.x, mapSelectRect.y, mapSelectRect.width, mapSelectRect.height);
+	startScissor(mapSelectRect.x, mapSelectRect.y, mapSelectRect.width, mapSelectRect.height);
 	int mapCount = -1;
 	for (int i = 0; i < amount; i++)
 	{
@@ -1231,6 +1296,10 @@ void fMapSelect(bool reset)
 		mapCount++;
 		int x = getWidth() * 0.02 + getWidth() * 0.32 * (mapCount % 3);
 		Rectangle mapButton = (Rectangle){.x = x, .y = menuScrollSmooth * getHeight() + getHeight() * ((floor(i / 3) > floor(selectedMap / 3) && selectedMap != -1 ? 0.3 : 0.225) + 0.3375 * floor(mapCount / 3)), .width = getWidth() * 0.3, .height = getHeight() * 0.3};
+		
+		if(mapButton.y + mapButton.height < 0 || mapButton.y > getHeight())
+			continue;
+		
 		if ((mouseInRect(mapButton) || selectedMap == i) && mouseInRect(mapSelectRect))
 		{
 			if (hoverPeriod > 1 && hoverPeriod < 2)
@@ -1262,6 +1331,7 @@ void fMapSelect(bool reset)
 			createThread((void *(*)(void *))loadMapImage, &_paMaps[i]);
 			_paMaps[i].cpuImage.width = -1;
 		}
+
 		if (selectedMap == i)
 		{
 			if (IsMouseButtonReleased(0) && mouseInRect(mapButton) && mouseInRect(mapSelectRect))
@@ -1277,6 +1347,13 @@ void fMapSelect(bool reset)
 				_transition = 0.1;
 				_disableLoadingScreen = false;
 				_musicPlaying = false;
+
+				CSS_Object * mapImageObject = getCSS_ObjectPointer("mapImage");
+				if(mapImageObject)
+				{
+					mapImageObject->image = (Texture2D){0};
+				}
+
 				//wait until map image is loaded
 				// if(_pGameplayFunction != &fMapSelect)
 				// {
@@ -1314,8 +1391,6 @@ void fMapSelect(bool reset)
 				_pGameplayFunction = &fExport;
 			}
 			DrawRectangleGradientV(mapButton.x, mapButton.y + mapButton.height, mapButton.width, mapButton.height * 0.05 * selectMapTransition, ColorAlpha(BLACK, 0.3), ColorAlpha(BLACK, 0));
-
-			drawContainer("mapContainer",mapButton.x, mapButton.y);
 		}
 		else
 		{
@@ -1330,11 +1405,63 @@ void fMapSelect(bool reset)
 				_musicFrameCount = 1;
 			}
 		}
+
+		char * mapnameVar = getCSS_Variable("mapname");
+		if(mapnameVar)
+			strcpy(mapnameVar, _paMaps[i].name);
+
+		char * artistVar = getCSS_Variable("artist");
+		if(artistVar)
+			strcpy(artistVar, _paMaps[i].artist);
+
+		char * difficulty = getCSS_Variable("difficulty");
+		if(difficulty)
+			snprintf(difficulty, 100, "%i", _paMaps[i].difficulty);
+
+		char * musicLength = getCSS_Variable("musicLength");
+		if(musicLength)
+			snprintf(musicLength, 100, "%i:%i", _paMaps[i].musicLength/60, _paMaps[i].musicLength%60);
+
+		
+		//todo: lord forgive me for what i've done
+		CSS_Object * mapImageObject = getCSS_ObjectPointer("mapImage");
+		if(mapImageObject)
+		{
+			mapImageObject->image = _paMaps[i].image;
+		}
+
+
+		if(highScores[i] != 0)
+		{
+			CSS_Object * highScoreObject = getCSS_ObjectPointer("highscoreContainer");
+
+			if(highScoreObject)
+			{
+				highScoreObject->active = (highScores[i] != 0);
+
+				char * highscore = getCSS_Variable("highscore");
+				if(highscore)
+					snprintf(highscore, 100, "%i", highScores[i]);
+
+				char * combo = getCSS_Variable("combo");
+				if(combo)
+					snprintf(combo, 100, "%i", combos[i]);
+			}
+		}
+
+		drawContainer("mapContainer", mapButton.x, mapButton.y);
+
+	}
+
+	CSS_Object * mapImageObject = getCSS_ObjectPointer("mapImage");
+	if(mapImageObject)
+	{
+		mapImageObject->image = (Texture2D){0};
 	}
 	
 	drawVignette();
 
-	EndScissorMode();
+	endScissor();
 
 	if (hoverMap != -1 || selectedMap != -1)
 	{

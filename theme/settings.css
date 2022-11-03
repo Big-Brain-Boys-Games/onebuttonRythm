@@ -43,7 +43,7 @@
 
 #settingsContainer{
     type: container;
-    scrollable: no;
+    scrollable: yes;
     left: 0;
     top: 13;
     width: 100;

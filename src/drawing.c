@@ -37,6 +37,78 @@ Color _UIColor = WHITE;
 
 Color _fade = WHITE;
 
+#define MAXSCISSORS 50
+
+Rectangle _scissors[MAXSCISSORS] = {0};
+int _scissorIndex = -1;
+bool _scissorMode = false;
+
+void startScissor(int x, int y, int width, int height)
+{	
+	Rectangle new = (Rectangle){.x=x,.y=y,.width=width,.height=height};
+
+	if(_scissorIndex >= 0)
+	{
+		Rectangle prev = _scissors[_scissorIndex];
+		if(prev.x > x)
+		{
+			new.x = prev.x;
+			width -= x-prev.x;
+		}
+		
+		if(prev.y > y)
+		{
+			new.y = prev.y;
+			height -= y-prev.y;
+		}
+
+		if(prev.x + prev.width < x)
+			x = prev.x + prev.width;
+		
+		if(prev.y + prev.height < y)
+			y = prev.y + prev.height;
+		
+		if(prev.x + prev.width < x + width)
+			new.width = (prev.x + prev.width) - x;
+
+		if(prev.y + prev.height < y + height)
+			new.height = (prev.y + prev.height) - y;
+
+		if(prev.x > x + width)
+			new.width = 0;
+
+		if(prev.y > y + height)
+			new.height = 0;
+
+	}
+
+	
+	_scissorIndex++;
+	_scissors[_scissorIndex] = new; 
+
+	if(_scissorMode)
+		EndScissorMode();
+
+	_scissorMode = true;
+	BeginScissorMode(new.x, new.y, new.width, new.height);
+}
+
+void endScissor()
+{
+	if(_scissorMode)
+		EndScissorMode();
+	
+	_scissorMode = false;
+	_scissorIndex--;
+
+	if(_scissorIndex < 0)
+		return;
+	
+	Rectangle rect = _scissors[_scissorIndex];
+	BeginScissorMode(rect.x, rect.y, rect.width, rect.height);
+	_scissorMode = true;
+}
+
 
 int measureText (char * text, int fontSize)
 {
@@ -243,6 +315,54 @@ void drawRank(int x, int y, int width, int height, float accuracy)
 	drawText(text, x+width*0.2, y+height*0.03, width, WHITE);
 }
 
+void drawTextureCorrectAspectRatio(Texture2D tex, Color color, Rectangle rect)
+{
+	float ogImageRatio = tex.width / (float)tex.height;
+	float newImageRatio = rect.width / rect.height;
+	Vector2 imageScaling = {.x=rect.width,.y=rect.height}, imageOffset = {.x=0,.y=0};
+	if(ogImageRatio>newImageRatio)
+	{
+		imageScaling.y = ((float)tex.height/ tex.width)*imageScaling.x;
+		imageOffset.y = (rect.height)/2-imageScaling.y/2;
+	}else {
+		imageScaling.x = ogImageRatio*imageScaling.y;
+		imageOffset.x = rect.width/2-imageScaling.x/2;
+	}
+
+	DrawTexturePro(tex, (Rectangle){.x=0, .y=0, .width=tex.width, .height=tex.height}, (Rectangle){.x=rect.x+imageOffset.x, .y=rect.y+imageOffset.y, .width=imageScaling.x, .height=imageScaling.y},
+			(Vector2){.x=0,.y=0}, 0, color);
+}
+
+void drawTextInRect(Rectangle rect, char * text, float fontSize, Color color, bool scroll)
+{
+	
+	int length = strlen(text);
+	int lengthPx = measureText(text, fontSize);
+	char* textPointer = text;
+	if(lengthPx > rect.width)
+	{
+		int cutoff = length * (rect.width/lengthPx)+1;
+		if(cutoff > length)
+			cutoff = length;
+		
+		if(scroll) { //scroll the text when hovering
+			int offset = (int)floor(GetTime()*1.5)%(length-(cutoff-1));
+			textPointer += offset;
+			text[offset+cutoff] = '\0';
+		} else {
+			if(cutoff-2 >= 0)
+				text[cutoff-2] = '.';
+			if(cutoff-1 >= 0)
+				text[cutoff-1] = '.';
+			text[cutoff] = '.';
+			text[cutoff+1] = '\0';
+		}
+	}
+	int textSize = measureText(textPointer, getWidth() * 0.03);
+	drawText(textPointer, rect.x, rect.y, fontSize, color);
+	// drawText(textPointer, rect.x + rect.width/2 - textSize / 2, rect.y + getHeight() * 0.01+rect.height, getWidth() * 0.03, color);
+}
+
 void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float accuracy, bool selected)
 {
 	if(map->image.id == 0)
@@ -266,46 +386,19 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float 
 	if(mouseInRect(rect) && IsMouseButtonReleased(0))
 		color = GRAY;
 
+	char text [100];
+	snprintf(text, 100, "%s - %s", map->name, map->artist);
+
+
 	DrawRectangle(rect.x, rect.y, rect.width, rect.height, color);
 
 	DrawRectangle(rect.x, rect.y, rect.width, rect.height*imageRatio, BLACK);
 
-	float ogImageRatio = map->image.width / (float)map->image.height;
-	float newImageRatio = rect.width / (rect.height*imageRatio);
-	Vector2 imageScaling = {.x=rect.width,.y=rect.height*imageRatio}, imageOffset = {.x=0,.y=0};
-	if(ogImageRatio>newImageRatio)
-	{
-		imageScaling.y = ((float)map->image.height/ map->image.width)*imageScaling.x;
-		imageOffset.y = (rect.height*imageRatio)/2-imageScaling.y/2;
-	}else {
-		imageScaling.x = ogImageRatio*imageScaling.y;
-		imageOffset.x = rect.width/2-imageScaling.x/2;
-	}
-
-	DrawTexturePro(map->image, (Rectangle){.x=0, .y=0, .width=map->image.width, .height=map->image.height}, (Rectangle){.x=rect.x+imageOffset.x, .y=rect.y+imageOffset.y, .width=imageScaling.x, .height=imageScaling.y},
-			(Vector2){.x=0,.y=0}, 0, color);
+	drawTextureCorrectAspectRatio(map->image, color, (Rectangle){.x=rect.x, .y=rect.y, .width=rect.width, .height=rect.height*imageRatio});
 
 	DrawRectangleGradientV(rect.x, rect.y+rect.height*0.4, rect.width, rect.height*imageRatio-rect.height*0.4, ColorAlpha(BLACK, 0), ColorAlpha(BLACK, 0.5));
 	
-	char text [100];
-	snprintf(text, 100, "%s - %s", map->name, map->artist);
-	int length = strlen(text);
-	char* textPointer = text;
-	if(length > 18)
-	{
-		if(mouseInRect(rect)) { //scroll the text when hovering
-			int offset = (int)floor(GetTime()*1.5)%(length-17);
-			textPointer += offset;
-			text[offset+17] = '\0';
-		} else {
-			text[16] = '.';
-			text[17] = '.';
-			text[18] = '.';
-			text[19] = '\0';
-		}
-	}
-	int textSize = measureText(textPointer, getWidth() * 0.03);
-	drawText(textPointer, rect.x + rect.width/2 - textSize / 2, rect.y + getHeight() * 0.01+rect.height*imageRatio, getWidth() * 0.03, DARKGRAY);
+	drawTextInRect((Rectangle){.x=rect.x, .y=rect.y+rect.height*imageRatio, .width=rect.width, rect.height=rect.height}, text, getWidth() * 0.03, DARKGRAY, mouseInRect(rect));
 	
 	snprintf(text, 100, "%i", map->difficulty);
 	DrawRectangle(rect.x + rect.width*0.13, rect.y + 0.60*rect.height, rect.width*0.2, rect.height*0.20, ColorAlpha(BLACK, 0.4));
@@ -313,9 +406,9 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float 
 	snprintf(text, 100, "%i:%i", (int)floorf(map->musicLength/60), (int)floorf(map->musicLength-floorf(map->musicLength/60)*60));
 	drawText(text, rect.x + rect.width*0.06, rect.y + 0.68*rect.height, getWidth() * 0.02625, WHITE);
 
-	snprintf(text, 100, "%i", highScore);
 	if(highScore !=0)
 	{
+		snprintf(text, 100, "%i", highScore);
 		DrawRectangle(rect.x + rect.width*0.78, rect.y + 0.02*rect.height, rect.width*0.2, rect.height*0.20, ColorAlpha(BLACK, 0.4));
 		drawText(text, rect.x + rect.width*0.80, rect.y + 0.02*rect.height, getWidth() * 0.015, WHITE);
 		snprintf(text, 100, "%i", combo);
@@ -331,8 +424,7 @@ void drawBackground()
 {
 	if(!_noBackground)
 	{
-		float scale = (float)getWidth() / (float)_background.width;
-		DrawTextureEx(_background, (Vector2){.x=0, .y=(getHeight() - _background.height * scale)/2}, 0, scale,WHITE);
+		drawTextureCorrectAspectRatio(_background, WHITE, (Rectangle){.x=0,.y=0,.width=getWidth(),.height=getHeight()});
 	}else{
 		DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
 		(Rectangle){.x=0, .y=0, .height = getHeight(), .width= getWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
@@ -396,18 +488,18 @@ void drawBars()
 	if(firstSeg < 0)
 		firstSeg = 0;
 
-	BeginScissorMode(0, 0, fmax(musicTimeToScreen(_paTimingSegment[firstSeg].time), 0), getHeight());
+	startScissor(0, 0, fmax(musicTimeToScreen(_paTimingSegment[firstSeg].time), 0), getHeight());
 		drawActualBars((TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0, .beats=_map->beats});
-	EndScissorMode(); 
+	endScissor(); 
 	
 
 	for(int part = firstSeg; part < lastSeg; part++)
 	{
-		BeginScissorMode(fmax(musicTimeToScreen(_paTimingSegment[part].time),0 ), 0,
+		startScissor(fmax(musicTimeToScreen(_paTimingSegment[part].time),0 ), 0,
 				fmax( 0, fmax(musicTimeToScreen(_paTimingSegment[part+1].time),0)-fmax( 0, musicTimeToScreen(_paTimingSegment[part].time))),
 				getHeight());
 			drawActualBars(_paTimingSegment[part]);
-		EndScissorMode();
+		endScissor();
 	}
 
 	if(musicTimeToScreen(_paTimingSegment[lastSeg].time) < 0)
@@ -417,9 +509,9 @@ void drawBars()
 				lastSeg = i;
 	}
 
-	BeginScissorMode(fmax( 0, musicTimeToScreen(_paTimingSegment[lastSeg].time)), 0, getWidth(), getHeight());
+	startScissor(fmax( 0, musicTimeToScreen(_paTimingSegment[lastSeg].time)), 0, getWidth(), getHeight());
 		drawActualBars(_paTimingSegment[lastSeg]);
-	EndScissorMode();
+	endScissor();
 }
 
 void drawMusicGraph(float transparent)

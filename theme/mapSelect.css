@@ -67,19 +67,29 @@
     scrollable: no;
     left: 0;
     top: 0;
-    width: 20;
-    height: 20;
+    width: 30;
+    height: 30;
     active: no;
 }
 
-#finishButton {
-    type: button;
+#songLength {
+    type: text;
     parent: mapContainer;
-    content: "Finish";
+    content: $musicLength;
     margin-left: 0;
     margin-top: 0;
     font-size: 3;
     width: 25;
-    height: 5;
-    growOnHover: 0.1;
+    height: 50;
+    color: WHITE;
+}
+
+#mapImage {
+    type: image;
+    parent: mapContainer;
+    left: 0;
+    top: 0;
+    width: 100;
+    height: 80;
+    color: WHITE;
 }

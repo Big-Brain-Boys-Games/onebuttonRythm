@@ -20,6 +20,11 @@
 
 enum CSS_Type {css_text, css_image, css_rectangle, css_button, css_buttonNoSprite, css_textbox, css_numberbox, css_slider, css_container};
 
+typedef struct CSS_Variable{
+    char * name;
+    char * value;
+} CSS_Variable;
+
 typedef struct CSS_Object{
     char * name;
     char * parent;
@@ -40,11 +45,14 @@ typedef struct CSS_Object{
     float hoverTime;
     float growOnHover;
     bool keepAspectRatio;
+    bool usesVariable;
 } CSS_Object;
 
 typedef struct CSS{
     CSS_Object * objects;
-    int count;
+    int objectCount;
+    CSS_Variable * variables;
+    int variableCount;
     char * file;
 } CSS;
 
