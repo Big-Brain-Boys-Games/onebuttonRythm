@@ -8,6 +8,16 @@
     opacity: 0.8;
 }
 
+#pageTitle{
+    type:text;
+    content: "Timing Settings";
+    color: WHITE;
+    font-size: 3.3;
+    left: 36;
+    top: 3;
+    width: 100;
+}
+
 #backButton{
     type: button;
     left: 83;
