@@ -742,7 +742,7 @@ CSS_Object getCSS_Object(char * name)
 bool UIBUttonPressed(char * name)
 {
 	CSS_Object object = getCSS_Object(name);
-	
+
 	if (object.selected)
 	{
 		playAudioEffect(_buttonSe);
@@ -1486,6 +1486,10 @@ void fMapSelect(bool reset)
 				setCSS_VariableInt("accuracy", accuracy[i]);
 
 				drawContainer("highscoreContainer", mapButton.x, mapButton.y);
+
+				CSS_Object * rankObj = getCSS_ObjectPointer("rank");
+				if(rankObj)
+					drawRank(rankObj->x*getWidth()+mapButton.x, rankObj->y*getHeight()+mapButton.y, rankObj->width*getWidth(), rankObj->height * getWidth(), accuracy[i]);
 			}
 		}
 
