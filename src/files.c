@@ -194,14 +194,13 @@ Map loadMapInfo(char * file)
 	}
 	if(FileExists(pStr))
 	{
-		printf("image: %s \n", pStr);
-		map.cpuImage = LoadImage(pStr);
-		
+		map.cpuImage.width = 0;
 	}
 	else{
 		map.image = _menuBackground;
-		map.cpuImage.width = 0;
+		map.cpuImage.width = -1;
 	}
+
 	// SetTextureFilter(map.image, TEXTURE_FILTER_BILINEAR);
 	free(pStr);
 	printf("successfully loaded %s\n", file);
