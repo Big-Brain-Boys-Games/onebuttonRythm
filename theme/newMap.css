@@ -55,7 +55,7 @@
 #nameText {
     type: text;
     parent: settingsContainer;
-    content: "name";
+    content: "Name";
     color: WHITE;
     font-size: 3;
     margin-left: 61;
@@ -76,7 +76,7 @@
 #artistText {
     type: text;
     parent: settingsContainer;
-    content: "artist";
+    content: "Artist";
     color: WHITE;
     font-size: 3;
     margin-left: 61;
@@ -97,7 +97,7 @@
 #mapCreatorText {
     type: text;
     parent: settingsContainer;
-    content: "map creator";
+    content: "Map Creator";
     color: WHITE;
     font-size: 3;
     margin-left: 56;
@@ -118,7 +118,7 @@
 #difficultyText {
     type: text;
     parent: settingsContainer;
-    content: "difficulty";
+    content: "Difficulty";
     color: WHITE;
     font-size: 3;
     margin-left: 59;
@@ -139,7 +139,7 @@
 #bpmText {
     type: text;
     parent: settingsContainer;
-    content: "bpm";
+    content: "BPM";
     color: WHITE;
     font-size: 3;
     margin-left: 62;
@@ -160,7 +160,7 @@
 #finishButton {
     type: button;
     image: assets/icons/forwardArrow.png;
-    left: 90;
+    left: 87;
     top: 80;
     width: 8;
     height: 8;

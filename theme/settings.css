@@ -55,7 +55,7 @@
 #globalVolumeText {
     type: text;
     parent: settingsContainer;
-    content: "global volume";
+    content: "Global Volume";
     color: WHITE;
     font-size: 3;
     margin-left: 10;
@@ -78,7 +78,7 @@
 #musicVolumeText {
     type: text;
     parent: settingsContainer;
-    content: "music volume";
+    content: "Music Volume";
     color: WHITE;
     font-size: 3;
     margin-left: 10;
@@ -101,10 +101,10 @@
 #effectVolumeText {
     type: text;
     parent: settingsContainer;
-    content: "sound effect volume";
+    content: "Sound Effect Volume";
     color: WHITE;
     font-size: 3;
-    margin-left: 5;
+    margin-left: 3.5;
     margin-top: 40;
     width: 40;
 }
@@ -124,7 +124,7 @@
 #zoomText {
     type: text;
     parent: settingsContainer;
-    content: "zoom";
+    content: "Zoom";
     color: WHITE;
     font-size: 3;
     margin-left: 16;
@@ -147,7 +147,7 @@
 #noteSizeText {
     type: text;
     parent: settingsContainer;
-    content: "note size";
+    content: "Note Size";
     color: WHITE;
     font-size: 3;
     margin-left: 13;
@@ -182,7 +182,7 @@
 #offsetText {
     type: text;
     parent: settingsContainer;
-    content: "offset";
+    content: "Offset";
     color: WHITE;
     font-size: 3;
     margin-left: 66;
@@ -203,7 +203,7 @@
 #nameText {
     type: text;
     parent: settingsContainer;
-    content: "name";
+    content: "Name";
     color: WHITE;
     font-size: 3;
     margin-left: 66;
