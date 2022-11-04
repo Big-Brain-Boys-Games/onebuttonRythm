@@ -431,7 +431,7 @@ CustomSound * addCustomSound(char * file)
 {
 	if(file == 0 || !strlen(file) || !FileExists(file))
 	{
-		printf("addCustomSound got empty file\n");
+		printf("addCustomSound got non existant file\n");
 		return 0; // >:(
 	}
 	

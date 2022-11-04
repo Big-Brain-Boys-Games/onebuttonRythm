@@ -120,7 +120,7 @@ void MakeNoteCopy(Note src, Note * dest)
     if(src.hitSE_File != 0)
     {
         dest->hitSE_File = malloc(strlen(src.hitSE_File));
-        strcpy(src.hitSE_File, dest->hitSE_File);
+        strcpy(dest->hitSE_File, src.hitSE_File);
 
         dest->custSound = addCustomSound(src.custSound->file);
     }
@@ -128,7 +128,7 @@ void MakeNoteCopy(Note src, Note * dest)
     if(src.texture_File != 0)
     {
         dest->texture_File = malloc(strlen(src.texture_File));
-        strcpy(src.texture_File, dest->texture_File);
+        strcpy(dest->texture_File, src.texture_File);
 
         dest->custTex = addCustomTexture(src.custTex->file);
     }

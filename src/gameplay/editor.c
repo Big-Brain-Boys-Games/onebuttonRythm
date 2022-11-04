@@ -450,22 +450,26 @@ void fEditorNoteSettings(bool reset)
 			{
 				snprintf(path, 100, "%s/%s", _map->folder, firstNote->texture_File);
 				firstNote->custTex = addCustomTexture(path);
-				if(firstNote->custTex)
+				if(!firstNote->custTex)
+				{
 					freeArray(firstNote->texture_File);
+				}
 			}
 		}
 		
 		if(firstNote->hitSE_File)
 		{
-			if(!strlen(firstNote->texture_File))
+			if(!strlen(firstNote->hitSE_File))
 			{
-				freeArray(firstNote->texture_File);
+				freeArray(firstNote->hitSE_File);
 			}else
 			{
 				snprintf(path, 100, "%s/%s", _map->folder, firstNote->hitSE_File);
 				firstNote->custSound = addCustomSound(firstNote->hitSE_File);
-				if(firstNote->custSound)
+				if(!firstNote->custSound)
+				{
 					freeArray(firstNote->hitSE_File);
+				}
 			}
 		}
 
@@ -541,6 +545,7 @@ void fEditorNoteSettings(bool reset)
 	hitSound[0] = '\0';
 	if (_selectedNotes[0]->hitSE_File != 0)
 		snprintf(hitSound, 100, "%s", _selectedNotes[0]->hitSE_File);
+
 	
 	UITextBox(hitSound, "hitsoundBox");
 	if (strlen(hitSound) != 0)
