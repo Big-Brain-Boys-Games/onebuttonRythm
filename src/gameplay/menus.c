@@ -742,9 +742,8 @@ CSS_Object getCSS_Object(char * name)
 bool UIBUttonPressed(char * name)
 {
 	CSS_Object object = getCSS_Object(name);
-	Rectangle button = (Rectangle){.x = object.x*getWidth(), .y = object.y*getHeight(), .width = object.width*getWidth(), .height = object.height*getHeight()};
 	
-	if (IsMouseButtonReleased(0) && mouseInRect(button))
+	if (object.selected)
 	{
 		playAudioEffect(_buttonSe);
 		return true;

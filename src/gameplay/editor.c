@@ -669,12 +669,9 @@ void fEditorAnimation (bool reset)
 
 void fEditor(bool reset)
 {
-	static bool showTools = false;
 
 	if(reset)
 	{
-		showTools = false;
-		
 		loadMap();
 		for(int i = 0; i < COMMANDBUFFER; i++)
 		{
@@ -701,10 +698,7 @@ void fEditor(bool reset)
 		DrawCircle(musicTimeToScreen(_paTimingSegment[i].time), getHeight()*0.3, getWidth()*0.05, WHITE);
 	}
 
-	if (interactableButton("Tools", 0.02, getWidth() * 0.45, getHeight() * 0.05, getWidth() * 0.05, getHeight() * 0.03))
-	{
-		showTools = !showTools;
-	}
+	drawCSS("theme/editor/editor.css");
 
 
 
@@ -822,8 +816,7 @@ void fEditor(bool reset)
 			undo();
 		}
 		
-		if (closestTime > 0.003f && ((IsKeyPressed(KEY_Z) && !IsKeyDown(KEY_LEFT_CONTROL)) || 
-			(showTools && interactableButton("O", 0.02, getWidth() * 0.57, getHeight() * 0.02, getWidth() * 0.02, getHeight() * 0.03))))
+		if (closestTime > 0.003f && ((IsKeyPressed(KEY_Z) && !IsKeyDown(KEY_LEFT_CONTROL)) || UIBUttonPressed("addNoteButton")))
 		{
 			doAction(ComAdd, newNote(getMusicHead()), 1);
 			_noteIndex = closestIndex;
@@ -842,22 +835,18 @@ void fEditor(bool reset)
 				addSelectNote(i);
 		}
 
-		if (IsKeyPressed(KEY_D) || 
-			(showTools && interactableButton("T+", 0.02, getWidth() * 0.60, getHeight() * 0.02, getWidth() * 0.02, getHeight() * 0.03)))
+		if (IsKeyPressed(KEY_D) || UIBUttonPressed("addTimeSigButton"))
 		{
 			addTimingSignature(_musicHead, _map->bpm);
 		}
 
-		if (IsKeyPressed(KEY_F) || 
-			(showTools && interactableButton("T-", 0.02, getWidth() * 0.60, getHeight() * 0.05, getWidth() * 0.02, getHeight() * 0.03)))
+		if (IsKeyPressed(KEY_F) || UIBUttonPressed("rmTimeSigButton"))
 		{
 			removeTimingSignature(_musicHead);
 		}
 
 
-		bool delKey = IsKeyPressed(KEY_X) || IsKeyPressed(KEY_DELETE);
-		if(showTools && interactableButton("X", 0.02, getWidth() * 0.57, getHeight() * 0.05, getWidth() * 0.02, getHeight() * 0.03))
-			delKey = true;
+		bool delKey = IsKeyPressed(KEY_X) || IsKeyPressed(KEY_DELETE) || UIBUttonPressed("rmNoteButton");
 		
 		if (delKey && closestTime < _maxMargin && !_amountSelectedNotes)
 		{
@@ -937,32 +926,29 @@ void fEditor(bool reset)
 			}
 		}
 
-		if (_barMeasureCount <= 32 && (IsKeyPressed(KEY_E) || 
-			(showTools && interactableButton("B+", 0.02, getWidth() * 0.54, getHeight() * 0.02, getWidth() * 0.02, getHeight() * 0.03))))
+		if (_barMeasureCount <= 32 && (IsKeyPressed(KEY_E) || UIBUttonPressed("barPlusButton")))
 		{
-			_barMeasureCount += 1;
+			_barMeasureCount *= 2;
 		}
 
-		if (_barMeasureCount >= 2 && (IsKeyPressed(KEY_E) || 
-			(showTools && interactableButton("B-", 0.02, getWidth() * 0.54, getHeight() * 0.05, getWidth() * 0.02, getHeight() * 0.03))))
+		if (_barMeasureCount >= 2 && (IsKeyPressed(KEY_E) || UIBUttonPressed("barMinusButton")))
 		{
-			_barMeasureCount -= 1;
+			_barMeasureCount /= 2;
 		}
 	}
 
+	_scrollSpeed = UIValueInteractable(_scrollSpeed*10, "zoomSlider") / 10.0;
+
+	if(UIBUttonPressed("zoomResetButton"))
+		_scrollSpeed = 4.2 / _settings.zoom;
+
 	//Change scrollspeed
-	if (IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL)) || 
-		(showTools && interactableButton("+", 0.02, getWidth() * 0.51, getHeight() * 0.05, getWidth() * 0.02, getHeight() * 0.03)))
+	if (IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL)))
 		_scrollSpeed /= 1.2;
 
-	drawHint((Rectangle){.x=getWidth() * 0.51, .y=getHeight() * 0.02, .width=getWidth()*0.02, .height=getWidth() * 0.03}, "down arrow");
-	
-	if (IsKeyPressed(KEY_UP) || (GetMouseWheelMove() > 0 && IsKeyDown(KEY_LEFT_CONTROL)) || 
-		(showTools && interactableButton("-", 0.03, getWidth() * 0.51, getHeight() * 0.02, getWidth() * 0.02, getHeight() * 0.03)))
+	if (IsKeyPressed(KEY_UP) || (GetMouseWheelMove() > 0 && IsKeyDown(KEY_LEFT_CONTROL)))
 		_scrollSpeed *= 1.2;
-	
-	drawHint((Rectangle){.x=getWidth() * 0.51, .y=getHeight() * 0.06, .width=getWidth()*0.02, .height=getWidth() * 0.03}, "up arrow");
-	
+
 	
 	if (_scrollSpeed == 0)
 		_scrollSpeed = 0.01;
@@ -1009,19 +995,19 @@ void fEditor(bool reset)
 	if(_musicHead > getMusicDuration())
 		_musicHead = getMusicDuration();
 
-
-	if (_amountSelectedNotes > 0)
+	CSS_Object * noteSettingsObj = getCSS_ObjectPointer("noteSettingsButton");
+	if(noteSettingsObj)
+		noteSettingsObj->active = (_amountSelectedNotes > 0);
+	
+	if (UIBUttonPressed("noteSettingsButton"))
 	{
-		if (interactableButton("Note settings", 0.025, getWidth() * 0.8, getHeight() * 0.25, getWidth() * 0.2, getHeight() * 0.07))
-		{
-			_musicPlaying = false;
-			_pGameplayFunction = &fEditorNoteSettings;
-			for(int i = 0; i < _amountSelectedNotes; i++)
-				doAction(ComChangeNote, findClosestNote(_papNotes, _amountNotes, _selectedNotes[i]->time), i == 0);
-		}
+		_musicPlaying = false;
+		_pGameplayFunction = &fEditorNoteSettings;
+		for(int i = 0; i < _amountSelectedNotes; i++)
+			doAction(ComChangeNote, findClosestNote(_papNotes, _amountNotes, _selectedNotes[i]->time), i == 0);
 	}
 
-	if (interactableButton("Song settings", 0.025, getWidth() * 0.8, getHeight() * 0.05, getWidth() * 0.2, getHeight() * 0.07))
+	if (UIBUttonPressed("songSettingsButton"))
 	{
 		_musicPlaying = false;
 		_pGameplayFunction = &fEditorSongSettings;
@@ -1033,22 +1019,21 @@ void fEditor(bool reset)
 		DrawCircle(musicTimeToScreen(_selectedNotes[i]->time), getHeight()*0.55, getWidth()*0.01, WHITE);
 	}
 	
-	if(getTimingSignaturePointer(_musicHead))
+	CSS_Object * timingSettingsObj = getCSS_ObjectPointer("timingSettingsButton");
+	if(timingSettingsObj)
+		timingSettingsObj->active = (getTimingSignaturePointer(_musicHead) != 0);
+	
+	if (UIBUttonPressed("timingSettingsButton"))
 	{
-		if (interactableButton("Timing settings", 0.025, getWidth() * 0.8, getHeight() * 0.15, getWidth() * 0.2, getHeight() * 0.07))
-		{
-			_musicPlaying = false;
-			_pGameplayFunction = &fEditorTimingSettings;
-			fEditorTimingSettings(true);
-		}
+		_musicPlaying = false;
+		_pGameplayFunction = &fEditorTimingSettings;
+		fEditorTimingSettings(true);
 	}
 
 	// Speed slider
-	static bool speedSlider = false;
-	int speed = _musicSpeed * 4;
-	slider((Rectangle){.x = getWidth() * 0.1, .y = getHeight() * 0.05, .width = getWidth() * 0.2, .height = getHeight() * 0.03}, &speedSlider, &speed, 8, 1);
-	_musicSpeed = speed / 4.0;
-	if (interactableButton("reset", 0.03, getWidth() * 0.32, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
+	_musicSpeed = (UIValueInteractable(_musicSpeed * 4 - 4, "speedSlider") + 4) / 4.0;
+
+	if (UIBUttonPressed("speedResetButton"))
 		_musicSpeed = 1;
 
 	drawCursor();
