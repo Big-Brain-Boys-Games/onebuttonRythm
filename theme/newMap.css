@@ -10,14 +10,16 @@
 
 #backButton {
     type: button;
-    content: "Back";
-    font-size: 2.5;
+    image: assets/icons/back.png;
     left: 5;
-    top: 4;
-    width: 10;
+    top: 3;
+    width: 5;
     height: 5;
     growOnHover: 0.2;
+    keepAspectRatio: yes;
+    rotateOnHover: -10;
 }
+
 
 #title {
     type: text;
@@ -157,11 +159,11 @@
 
 #finishButton {
     type: button;
-    content: "Finish";
-    left: 85;
-    top: 90;
-    font-size: 3;
-    width: 10;
-    height: 5;
-    growOnHover: 0.1;
+    image: assets/icons/forwardArrow.png;
+    left: 90;
+    top: 80;
+    width: 8;
+    height: 8;
+    growOnHover: 0.2;
+    keepAspectRatio: yes;
 }

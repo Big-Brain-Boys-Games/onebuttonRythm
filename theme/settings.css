@@ -10,13 +10,14 @@
 
 #backButton {
     type: button;
-    content: "Back";
-    font-size: 2.5;
+    image: assets/icons/back.png;
     left: 5;
-    top: 4;
-    width: 10;
+    top: 3;
+    width: 5;
     height: 5;
     growOnHover: 0.2;
+    keepAspectRatio: yes;
+    rotateOnHover: -10;
 }
 
 #Settings {
@@ -36,7 +37,7 @@
     left: 0;
     top: 13;
     width: 100;
-    height: 87;
+    height: 100;
 }
 
 #globalVolume {

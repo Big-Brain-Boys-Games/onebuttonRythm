@@ -150,7 +150,8 @@ void fPlaying(bool reset)
 
 	if(reset)
 	{
-		loadMap();
+		for(int i = 0; i < _amountNotes; i++)
+			_papNotes[i]->hit = false;
 
 		//reset variables
 		for(int i = 0; i < 5; i++)

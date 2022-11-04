@@ -44,6 +44,7 @@ typedef struct CSS_Object{
     char * makeActive;
     float hoverTime;
     float growOnHover;
+    float rotateOnHover;
     bool keepAspectRatio;
     bool usesVariable;
 } CSS_Object;

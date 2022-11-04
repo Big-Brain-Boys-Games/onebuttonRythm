@@ -1,9 +1,6 @@
 #playButton {
     type: button;
-    content: "Play";
-    color: WHITE;
     image: assets/note.png;
-    font-size: 7;
     left: 5;
     top: 10;
     width: 30;
@@ -13,41 +10,70 @@
     keepAspectRatio: yes;
 }
 
+#playIconShadow {
+    type: image;
+    image: assets/icons/play.png;
+    parent: playButton;
+    color: DARKGRAY;
+    left: 36;
+    top: 48;
+    width: 42;
+    height: 42;
+    keepAspectRatio: yes;
+}
+
+#playIcon {
+    type: image;
+    image: assets/icons/play.png;
+    parent: playButton;
+    color: WHITE;
+    left: 32;
+    top: 44;
+    width: 45;
+    height: 45;
+    keepAspectRatio: yes;
+}
+
 
 #settingsButton {
     type: button;
-    content: "settings";
-    color: black;
+    image: assets/icons/settings.png;
+    color: WHITE;
     font-size: 3.5;
-    left: 48;
+    left: 35;
     top: 55;
-    width: 20;
-    height: 6.5;
+    width: 7;
+    height: 7;
+    keepAspectRatio: yes;
     growOnHover: 0.2;
+    rotateOnHover: 90;
 }
 
 #newmapButton {
     type: button;
-    content: "New Map";
-    color: black;
+    image: assets/icons/plus.png;
+    color: WHITE;
     font-size: 3.5;
-    margin-left: 9;
-    margin-top: 10;
-    width: 20;
-    height: 6.5;
+    margin-left: 7;
+    margin-top: 8;
+    width: 7;
+    height: 7;
+    keepAspectRatio: yes;
     growOnHover: 0.2;
 }
 
 #exitButton {
     type: button;
-    content: "exit";
+    image: assets/icons/exit.png;
     color: black;
     font-size: 3.5;
-    margin-left: 9;
-    margin-top: 10;
-    width: 20;
-    height: 6.5;
+    margin-left: 7;
+    margin-top: 8;
+    width: 8;
+    height: 8;
+    keepAspectRatio: yes;
     growOnHover: 0.2;
+    rotateOnHover: 10;
 }
 
 #ShadowOneButton {

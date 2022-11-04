@@ -672,7 +672,6 @@ void fEditor(bool reset)
 
 	if(reset)
 	{
-		loadMap();
 		for(int i = 0; i < COMMANDBUFFER; i++)
 		{
 			freeCommand(i);

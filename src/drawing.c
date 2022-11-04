@@ -327,7 +327,7 @@ void drawRank(int x, int y, int width, int height, float accuracy)
 	drawText(text, x+width*0.2, y+height*0.03, width, WHITE);
 }
 
-void drawTextureCorrectAspectRatio(Texture2D tex, Color color, Rectangle rect)
+void drawTextureCorrectAspectRatio(Texture2D tex, Color color, Rectangle rect, float rotation)
 {
 	float ogImageRatio = tex.width / (float)tex.height;
 	float newImageRatio = rect.width / rect.height;
@@ -341,8 +341,12 @@ void drawTextureCorrectAspectRatio(Texture2D tex, Color color, Rectangle rect)
 		imageOffset.x = rect.width/2-imageScaling.x/2;
 	}
 
-	DrawTexturePro(tex, (Rectangle){.x=0, .y=0, .width=tex.width, .height=tex.height}, (Rectangle){.x=rect.x+imageOffset.x, .y=rect.y+imageOffset.y, .width=imageScaling.x, .height=imageScaling.y},
-			(Vector2){.x=0,.y=0}, 0, color);
+	int x = rect.x+imageOffset.x;
+	int y = rect.y+imageOffset.y;
+
+	DrawTexturePro(tex, (Rectangle){.x=0, .y=0, .width=tex.width, .height=tex.height},
+		(Rectangle){.x=x+imageScaling.x/2, .y=y+imageScaling.y/2, .width=imageScaling.x, .height=imageScaling.y},
+			(Vector2){.x=imageScaling.x/2,.y=imageScaling.y/2}, rotation, color);
 }
 
 void drawTextInRect(Rectangle rect, char * text, float fontSize, Color color, bool scroll)
@@ -406,7 +410,7 @@ void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float 
 
 	DrawRectangle(rect.x, rect.y, rect.width, rect.height*imageRatio, BLACK);
 
-	drawTextureCorrectAspectRatio(map->image, color, (Rectangle){.x=rect.x, .y=rect.y, .width=rect.width, .height=rect.height*imageRatio});
+	drawTextureCorrectAspectRatio(map->image, color, (Rectangle){.x=rect.x, .y=rect.y, .width=rect.width, .height=rect.height*imageRatio}, 0);
 
 	DrawRectangleGradientV(rect.x, rect.y+rect.height*0.4, rect.width, rect.height*imageRatio-rect.height*0.4, ColorAlpha(BLACK, 0), ColorAlpha(BLACK, 0.5));
 	
@@ -436,7 +440,7 @@ void drawBackground()
 {
 	if(!_noBackground)
 	{
-		drawTextureCorrectAspectRatio(_background, WHITE, (Rectangle){.x=0,.y=0,.width=getWidth(),.height=getHeight()});
+		drawTextureCorrectAspectRatio(_background, WHITE, (Rectangle){.x=0,.y=0,.width=getWidth(),.height=getHeight()}, 0);
 	}else{
 		DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
 		(Rectangle){.x=0, .y=0, .height = getHeight(), .width= getWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
@@ -671,7 +675,7 @@ void drawBox(Rectangle rect, Color color)
 	// 	}
 }
 
-void drawButtonPro(Rectangle rect, char * text, float fontScale, Texture2D tex)
+void drawButtonPro(Rectangle rect, char * text, float fontScale, Texture2D tex, float rotation)
 {
 	Color color = WHITE;
 	if(mouseInRect(rect))
@@ -679,7 +683,8 @@ void drawButtonPro(Rectangle rect, char * text, float fontScale, Texture2D tex)
 	if(mouseInRect(rect) && IsMouseButtonDown(0))
 		color = GRAY;
 
-	DrawTexturePro(tex, (Rectangle){.x=0,.y=0,.width=tex.width,.height=tex.height}, rect, (Vector2){0}, 0, color);
+	drawTextureCorrectAspectRatio(tex, color, rect, rotation);
+	// DrawTexturePro(tex, (Rectangle){.x=0,.y=0,.width=tex.width,.height=tex.height}, rect, (Vector2){0}, 0, color);
 
 	if(!text)
 		return;

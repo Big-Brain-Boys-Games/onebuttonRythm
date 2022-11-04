@@ -97,7 +97,7 @@ void drawCSS_Object(CSS_Object * object)
 	if(object->keepAspectRatio)
 		height = getWidth();
 
-	Rectangle rect = (Rectangle){.x=object->x*getWidth(), .y=(object->y+scrollValue)*height, .width=object->width*getWidth(), .height=object->height*height};
+	Rectangle rect = (Rectangle){.x=object->x*getWidth(), .y=(object->y+scrollValue)*getHeight(), .width=object->width*getWidth(), .height=object->height*height};
 
 	
 
@@ -110,6 +110,8 @@ void drawCSS_Object(CSS_Object * object)
 		if(!parent.active)
 			return;
 
+		float growAmount = parent.growOnHover * fmin(parent.hoverTime*15, 1);
+		
 
 		rect.x *= parent.width;
 		rect.y *= parent.height;
@@ -119,6 +121,12 @@ void drawCSS_Object(CSS_Object * object)
 
 		rect.width *= parent.width;
 		rect.height *= parent.height;
+
+		rect.x -= rect.width*growAmount/2;
+		rect.y -= rect.height*growAmount/2;
+
+		rect.width += rect.width*growAmount;
+		rect.height += rect.height*growAmount;
 
 		if(parent.type == css_container)
 		{
@@ -146,7 +154,7 @@ void drawCSS_Object(CSS_Object * object)
 
 	float fontSize = object->fontSize * (1+growAmount);
 
-	
+	float rotation = fmin(object->hoverTime*15, 1) * object->rotateOnHover;
 
 	switch(object->type)
 	{
@@ -156,7 +164,7 @@ void drawCSS_Object(CSS_Object * object)
 			break;
 		
 		case css_image:
-			drawTextureCorrectAspectRatio(object->image, object->color, rect);
+			drawTextureCorrectAspectRatio(object->image, object->color, rect, rotation);
 			break;
 		
 		case css_rectangle:
@@ -165,7 +173,7 @@ void drawCSS_Object(CSS_Object * object)
 
 		case css_button:
 			if(object->image.id)
-				drawButtonPro(rect, object->text, fontSize, object->image);
+				drawButtonPro(rect, object->text, fontSize, object->image, rotation);
 			else
 				drawButton(rect, object->text, fontSize);
 
@@ -231,29 +239,35 @@ void drawCSS_Object(CSS_Object * object)
 				_pGameplayFunction = &fCountDown;
 				fCountDown(true);
 				fPlaying(true);
+				_transition = 0.1;
 			}else if(!strcmp(object->loadFile, "_editor_"))
 			{
 				_pNextGameplayFunction = &fPlaying;
 				_pGameplayFunction = &fEditor;
 				fEditor(true);
+				_transition = 0.1;
 			}else if(!strcmp(object->loadFile, "_export_"))
 			{
 				_pNextGameplayFunction = &fMainMenu;
 				_pGameplayFunction = &fExport;
+				_transition = 0.1;
 			}else if(!strcmp(object->loadFile, "_mapselect_"))
 			{
 				_pNextGameplayFunction = _pGameplayFunction;
 				_pGameplayFunction = &fMapSelect;
 				_mapRefresh = true;
+				_transition = 0.1;
 			}else if(!strcmp(object->loadFile, "_settings_"))
 			{
 				_pNextGameplayFunction = _pGameplayFunction;
 				_pGameplayFunction = &fSettings;
+				_transition = 0.1;
 			}else if(!strcmp(object->loadFile, "_newMap_"))
 			{
 				_pNextGameplayFunction = _pGameplayFunction;
 				_pGameplayFunction = &fNewMap;
 				fNewMap(true);
+				_transition = 0.1;
 			}else if(!strcmp(object->loadFile, "_exit_"))
 			{
 				exitGame();
@@ -621,6 +635,11 @@ void loadCSS(char * fileName)
 						if(!strcmp(var, "growOnHover"))
 						{
 							object.growOnHover = atof(value);
+						}
+
+						if(!strcmp(var, "rotateOnHover"))
+						{
+							object.rotateOnHover = atof(value);
 						}
 
 						if(!strcmp(var, "font-size"))
@@ -1335,129 +1354,8 @@ void fMapSelect(bool reset)
 		
 		if(mapButton.y + mapButton.height < 0 || mapButton.y > getHeight())
 			continue;
-		
-		if ((mouseInRect(mapButton) || selectedMap == i) && mouseInRect(mapSelectRect))
-		{
-			if (hoverPeriod > 1 && hoverPeriod < 2)
-			{
-				// play music
-				char str[100];
-				snprintf(str, 100, "%s/%s", _paMaps[i].folder, _paMaps[i].musicFile);
-				loadMusic(&_paMaps[i].music, str, _paMaps[i].musicPreviewOffset);
-				_playMenuMusic = false;
-				_musicFrameCount = _paMaps[i].musicPreviewOffset * 48000 * 2;
-				_musicPlaying = true;
-				hoverPeriod++;
-			}
-			hoverMap = i;
-			_disableLoadingScreen = true;
-		}
-		else if ((!mouseInRect(mapButton) || !mouseInRect(mapSelectRect)) && hoverMap == i)
-		{
-			hoverMap = -1;
-			_playMenuMusic = true;
-			_musicPlaying = false;
-			hoverPeriod = 0;
-			_musicFrameCount = 1;
-		}
 
-		if(_paMaps[i].cpuImage.width == 0)
-		{
-			_paMaps[i].cpuImage.width = -1;
-			createThread((void *(*)(void *))loadMapImage, &_paMaps[i]);
-			_paMaps[i].cpuImage.width = -1;
-		}
-
-		if (selectedMap == i)
-		{
-			if (IsMouseButtonReleased(0) && mouseInRect(mapButton) && mouseInRect(mapSelectRect))
-				selectedMap = -1;
-
-			Rectangle buttons = (Rectangle){.x = mapButton.x, .y = mapButton.y + mapButton.height, .width = mapButton.width, .height = mapButton.height * 0.15 * selectMapTransition};
-			if (mouseInRect(buttons) && IsMouseButtonReleased(0) && mouseInRect(mapSelectRect))
-			{
-				_map = &_paMaps[i];
-				setMusicStart();
-				_musicHead = 0;
-				printf("selected map!\n");
-				_transition = 0.1;
-				_disableLoadingScreen = false;
-				_musicPlaying = false;
-
-				CSS_Object * mapImageObject = getCSS_ObjectPointer("mapImage");
-				if(mapImageObject)
-				{
-					mapImageObject->image = (Texture2D){0};
-				}
-
-				//wait until map image is loaded
-				// if(_pGameplayFunction != &fMapSelect)
-				// {
-				// 	float startTime = (float)clock()/CLOCKS_PER_SEC;
-				// 	for(int i = 0; i < 20 && _map->cpuImage.width < 1; i++)
-				// 	{
-				// 		// #ifdef _WIN32
-				// 		// 	Sleep(100);
-				// 		// #else
-				// 		// 	usleep(100);
-				// 		// #endif
-				// 	}
-
-				// 	if(_map->cpuImage.width < 1)
-				// 		_map->image = _background;
-				// }
-			}
-			// drawMapThumbnail(mapButton, &_paMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], true);
-			if (interactableButtonNoSprite("play", 0.0225, mapButton.x, mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
-			{
-				_pNextGameplayFunction = &fPlaying;
-				_pGameplayFunction = &fCountDown;
-				fCountDown(true);
-				fPlaying(true);
-			}
-			if (interactableButtonNoSprite("editor", 0.0225, mapButton.x + mapButton.width * (1 / 3.0), mapButton.y + mapButton.height, mapButton.width * (1 / 3.0) * 1.01, mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
-			{
-				_pNextGameplayFunction = &fEditor;
-				_pGameplayFunction = &fEditor;
-				fEditor(true);
-			}
-			if (interactableButtonNoSprite("export", 0.0225, mapButton.x + mapButton.width * (1 / 3.0 * 2), mapButton.y + mapButton.height, mapButton.width * (1 / 3.0), mapButton.height * 0.15 * selectMapTransition) && mouseInRect(mapSelectRect))
-			{
-				loadMap();
-				_pGameplayFunction = &fExport;
-			}
-			DrawRectangleGradientV(mapButton.x, mapButton.y + mapButton.height, mapButton.width, mapButton.height * 0.05 * selectMapTransition, ColorAlpha(BLACK, 0.3), ColorAlpha(BLACK, 0));
-		}
-		else
-		{
-			// drawMapThumbnail(mapButton, &_paMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], false);
-
-			if (IsMouseButtonReleased(0) && mouseInRect(mapButton) && mouseInRect(mapSelectRect))
-			{
-				playAudioEffect(_buttonSe);
-				selectedMap = i;
-				selectMapTransition = 0;
-				hoverPeriod = 0;
-				_musicFrameCount = 1;
-			}
-
-			if(_paMaps[i].image.id == 0)
-			{
-				//load map image onto gpu(cant be loaded in sperate thread because opengl >:( )
-				if(_paMaps[i].cpuImage.width > 0)
-				{
-					_paMaps[i].image = LoadTextureFromImage(_paMaps[i].cpuImage);
-					UnloadImage(_paMaps[i].cpuImage);
-					_paMaps[i].cpuImage.width = -1;
-					if(_paMaps[i].image.id == 0)
-						_paMaps[i].image.id = -1; 
-					else
-						SetTextureFilter(_paMaps[i].image, TEXTURE_FILTER_BILINEAR);
-				}
-			}
-		}
-
-		setCSS_Variable("mapname", _paMaps[i].name);
+				setCSS_Variable("mapname", _paMaps[i].name);
 		setCSS_Variable("artist", _paMaps[i].artist);
 		setCSS_VariableInt("difficulty", _paMaps[i].difficulty);
 
@@ -1497,7 +1395,143 @@ void fMapSelect(bool reset)
 					drawRank(rankObj->x*getWidth()+mapButton.x, rankObj->y*getHeight()+mapButton.y, rankObj->width*getWidth(), rankObj->height * getWidth(), accuracy[i]);
 			}
 		}
+		
 
+		if ((mouseInRect(mapButton) || selectedMap == i) && mouseInRect(mapSelectRect))
+		{
+			if (hoverPeriod > 1 && hoverPeriod < 2)
+			{
+				// play music
+				char str[100];
+				snprintf(str, 100, "%s/%s", _paMaps[i].folder, _paMaps[i].musicFile);
+				loadMusic(&_paMaps[i].music, str, _paMaps[i].musicPreviewOffset);
+				_playMenuMusic = false;
+				_musicFrameCount = _paMaps[i].musicPreviewOffset * 48000 * 2;
+				_musicPlaying = true;
+				hoverPeriod++;
+			}
+			hoverMap = i;
+			_disableLoadingScreen = true;
+		}
+		else if ((!mouseInRect(mapButton) || !mouseInRect(mapSelectRect)) && hoverMap == i)
+		{
+			hoverMap = -1;
+			_playMenuMusic = true;
+			_musicPlaying = false;
+			hoverPeriod = 0;
+			_musicFrameCount = 1;
+		}
+
+		if(_paMaps[i].cpuImage.width == 0)
+		{
+			_paMaps[i].cpuImage.width = -1;
+			createThread((void *(*)(void *))loadMapImage, &_paMaps[i]);
+			_paMaps[i].cpuImage.width = -1;
+		}
+
+		if (selectedMap == i)
+		{
+			if (IsMouseButtonReleased(0) && mouseInRect(mapButton) && mouseInRect(mapSelectRect))
+				selectedMap = -1;
+
+			Rectangle buttons = (Rectangle){.x = mapButton.x, .y = mapButton.y + mapButton.height, .width = mapButton.width, .height = mapButton.height * 0.15 * selectMapTransition};
+			
+			drawContainer("mapButtonsContainer", mapButton.x, mapButton.y);
+
+			bool playButton = UIBUttonPressed("playButton");
+			bool editorButton = UIBUttonPressed("editorButton");
+			bool exportButton = UIBUttonPressed("exportButton");
+
+			if(!mouseInRect(mapSelectRect))
+			{
+				playButton = false;
+				editorButton = false;
+				exportButton = false;
+			}
+			
+			if (playButton || editorButton || exportButton)
+			{
+				_map = &_paMaps[i];
+				setMusicStart();
+				_musicHead = 0;
+				printf("selected map!\n");
+				_transition = 0.1;
+				_disableLoadingScreen = false;
+				_musicPlaying = false;
+
+				CSS_Object * mapImageObject = getCSS_ObjectPointer("mapImage");
+				if(mapImageObject)
+				{
+					mapImageObject->image = (Texture2D){0};
+				}
+
+				loadMap();
+
+				//wait until map image is loaded
+				// if(_pGameplayFunction != &fMapSelect)
+				// {
+				// 	float startTime = (float)clock()/CLOCKS_PER_SEC;
+				// 	for(int i = 0; i < 20 && _map->cpuImage.width < 1; i++)
+				// 	{
+				// 		// #ifdef _WIN32
+				// 		// 	Sleep(100);
+				// 		// #else
+				// 		// 	usleep(100);
+				// 		// #endif
+				// 	}
+
+				// 	if(_map->cpuImage.width < 1)
+				// 		_map->image = _background;
+				// }
+			}
+			
+			if (playButton)
+			{
+				_pNextGameplayFunction = &fPlaying;
+				_pGameplayFunction = &fCountDown;
+				fCountDown(true);
+				fPlaying(true);
+			}
+			if (editorButton)
+			{
+				_pNextGameplayFunction = &fEditor;
+				_pGameplayFunction = &fEditor;
+				fEditor(true);
+			}
+			if (exportButton)
+			{
+				_pGameplayFunction = &fExport;
+			}
+			DrawRectangleGradientV(mapButton.x, mapButton.y + mapButton.height, mapButton.width, mapButton.height * 0.05 * selectMapTransition, ColorAlpha(BLACK, 0.3), ColorAlpha(BLACK, 0));
+		}
+		else
+		{
+			// drawMapThumbnail(mapButton, &_paMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], false);
+
+			if (IsMouseButtonReleased(0) && mouseInRect(mapButton) && mouseInRect(mapSelectRect))
+			{
+				playAudioEffect(_buttonSe);
+				selectedMap = i;
+				selectMapTransition = 0;
+				hoverPeriod = 0;
+				_musicFrameCount = 1;
+			}
+
+			if(_paMaps[i].image.id == 0)
+			{
+				//load map image onto gpu(cant be loaded in sperate thread because opengl >:( )
+				if(_paMaps[i].cpuImage.width > 0)
+				{
+					_paMaps[i].image = LoadTextureFromImage(_paMaps[i].cpuImage);
+					UnloadImage(_paMaps[i].cpuImage);
+					_paMaps[i].cpuImage.width = -1;
+					if(_paMaps[i].image.id == 0)
+						_paMaps[i].image.id = -1; 
+					else
+						SetTextureFilter(_paMaps[i].image, TEXTURE_FILTER_BILINEAR);
+				}
+			}
+		}
 	}
 
 	CSS_Object * mapImageObject = getCSS_ObjectPointer("mapImage");
