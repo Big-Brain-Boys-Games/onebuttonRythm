@@ -182,7 +182,12 @@ void drawCSS_Object(CSS_Object * object)
 			break;
 
 		case css_numberbox:
-			numberBox(rect, &object->value, &object->selected);
+			if(!object->selected)
+				snprintf(object->text, 100, "%i", object->value);
+			
+			textBox(rect, object->text, &object->selected);
+			
+			object->value = atoi(object->text);
 			break;
 
 		case css_slider:
@@ -691,7 +696,7 @@ void loadCSS(char * fileName)
 
 			// printf("}\n");
 
-			if(object.type == css_textbox && !object.text)
+			if(!object.text)
 			{
 				object.text = malloc(100);
 				object.text[0] = '\0';
@@ -1804,39 +1809,126 @@ bool mouseInRect(Rectangle rect)
 
 void textBox(Rectangle rect, char *str, bool *selected)
 {
-	drawButton(rect, str, 0.03);
-	if ((mouseInRect(rect) && IsMouseButtonDown(0)) || *selected)
+	static int cursor = 0;
+	static double blinkingTimeout = 0;
+
+	if(!str)
+		return;
+	
+	float fontSize = 0.03;
+	int screenSize = getWidth() > getHeight() ? getHeight() : getWidth();
+
+	drawButton(rect, str, fontSize);
+	fontSize *= 1.3;
+
+	if(mouseInRect(rect) && IsMouseButtonReleased(0))
+	{
+		blinkingTimeout = GetTime();
+		*selected = true;
+		//calculate cursor pos
+		int fullLength = measureText(str, fontSize*screenSize);
+		int x = rect.x + rect.width / 2 - fullLength / 2;
+		float textPos = ((GetMouseX()-x) / (float)fullLength);
+		cursor = textPos * strlen(str) + 1;
+
+		if(cursor < 0)
+			cursor = 0;
+
+		if(cursor > strlen(str))
+			cursor = strlen(str);
+
+	}
+
+	if (*selected)
 	{
 		*selected = true;
 		char c = GetCharPressed();
 		while (c != 0)
 		{
-			for (int i = 0; i < 99; i++)
-			{
-				if (str[i] == '\0')
-				{
-					str[i] = c;
-					str[i + 1] = '\0';
-					break;
-				}
-			}
+			char strPart1[100];
+			strcpy(strPart1, str);
+			strPart1[cursor] = '\0';
+
+			char strPart2[100];
+			strcpy(strPart2, str+cursor);
+
+			snprintf(str, 100, "%s%c%s\0",strPart1, c, strPart2);
+			str[strlen(str)+2] = '\0';
+
+			cursor++;
 			c = GetCharPressed();
+			blinkingTimeout = GetTime();
 		}
-		if (IsKeyPressed(KEY_BACKSPACE))
+
+		if(IsKeyPressed(KEY_LEFT))
 		{
-			for (int i = 1; i < 99; i++)
-			{
-				if (str[i] == '\0')
-				{
-					str[i - 1] = '\0';
-					break;
-				}
-			}
+			cursor--;
+			if(cursor < 0)
+				cursor = 0;
+			blinkingTimeout = GetTime();
+		}
+
+		if(IsKeyPressed(KEY_RIGHT))
+		{
+			cursor++;
+			if(cursor > strlen(str))
+				cursor = strlen(str);
+			blinkingTimeout = GetTime();
+		}
+
+		if(IsKeyPressed(KEY_LEFT) && IsKeyDown(KEY_LEFT_CONTROL))
+		{
+			cursor = 0;
+			blinkingTimeout = GetTime();
+		}
+
+		if(IsKeyPressed(KEY_RIGHT) && IsKeyDown(KEY_LEFT_CONTROL))
+		{
+			cursor = strlen(str);
+			blinkingTimeout = GetTime();
+		}
+
+		if (IsKeyPressed(KEY_BACKSPACE) && cursor != 0)
+		{
+			int prev = cursor;
+			cursor--;
+			if(cursor < 0)
+				cursor = 0;
+			
+			char strCopy[100];
+			strcpy(strCopy, str);
+			strCopy[cursor] = '\0';
+
+			snprintf(str, 100, "%s%s",strCopy, strCopy+prev);
+			blinkingTimeout = GetTime();
+		}
+
+		if (IsKeyPressed(KEY_DELETE) && cursor != strlen(str))
+		{
+			char strCopy[100];
+			strcpy(strCopy, str);
+			strCopy[cursor] = '\0';
+
+			char strCopy2[100];
+			strcpy(strCopy2, str+cursor+1);
+
+			snprintf(str, 100, "%s%s",strCopy, strCopy2);
+			blinkingTimeout = GetTime();
 		}
 
 		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_BACKSPACE))
 		{
-			str[0] = '\0';
+			char strCopy[100];
+			strcpy(strCopy, str+cursor);
+			strcpy(str, strCopy);
+			cursor = 0;
+			blinkingTimeout = GetTime();
+		}
+
+		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_DELETE))
+		{
+			str[cursor] = '\0';
+			blinkingTimeout = GetTime();
 		}
 
 		if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_ENTER))
@@ -1847,28 +1939,43 @@ void textBox(Rectangle rect, char *str, bool *selected)
 		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))
 		{
 			char * clipboard = (char*) GetClipboardText();
-			int stringLength = strlen(str);
-			int cbIndex = 0;
-			for (int i = stringLength; i < 98; i++)
-			{
-				if (clipboard[cbIndex] != '\0')
-				{
-					str[i] = c;
-				}else{
-					str[i + 1] = '\0';
-					break;
-				}
-			}
-			str[99] = '\0';
 
-			free(clipboard);
+			if(!clipboard)
+				return;
+			
+			char tmpStr[100];
+			strcpy(tmpStr, str);
+			tmpStr[cursor] = '\0';
+
+			char ogString[100];
+			strcpy(ogString, str+cursor);
+
+			snprintf(str, 100, "%s%s%s", tmpStr, clipboard, ogString);
+
+			// free(clipboard);
 		}
 	}
-	if (*selected)
-		DrawRectangle(rect.x + rect.width * 0.2, rect.y + rect.height * 0.75, rect.width * 0.6, rect.height * 0.1, DARKGRAY);
 
-	if (!mouseInRect(rect) && IsMouseButtonDown(0))
+	if (*selected)
+	{
+		//draw cursor
+		char tmpStr[100];
+		strcpy(tmpStr, str);
+		tmpStr[cursor] = '\0';
+		int cursorLength = measureText(tmpStr, fontSize*screenSize);
+
+		int fullLength = measureText(str, fontSize*screenSize);
+		int x = rect.x + rect.width / 2 - fullLength / 2;
+		if((int)(GetTime()*2) % 2 == 0 || GetTime() - blinkingTimeout < 0.5)
+			DrawRectangle(x+cursorLength, rect.y, getWidth()*0.003, rect.height, DARKGRAY);
+		// DrawRectangle(rect.x + rect.width * 0.2, rect.y + rect.height * 0.75, rect.width * 0.6, rect.height * 0.1, DARKGRAY);
+	}
+
+	if (*selected && !mouseInRect(rect) && IsMouseButtonReleased(0))
+	{
 		*selected = false;
+		cursor = 0;
+	}
 }
 
 void numberBox(Rectangle rect, int *number, bool *selected)
