@@ -1,12 +1,16 @@
 # One Button Rythm
 One button rythm is a rythm game with only one button.
-It's meant to be a simple game, simple to play, simple to make maps.
+It's meant to be a simple game, simple to play, simple to make maps (Edit: it's no longer simple).
 
-Supports exporting / importing zipped maps.
+Supports exporting / importing zipped maps
+Supports theming via botchered css
 
-<img src="https://i.imgur.com/HlqnrCD.png" width="400"/><img src="https://i.imgur.com/iYezI1u.png" width="400"/>
-<img src="https://i.imgur.com/96cPavU.png" width="400"/><img src="https://i.imgur.com/aqDuCNY.png" width="400"/>
-<img src="https://i.imgur.com/QqbcUfz.png" width="400"/><img src="https://i.imgur.com/FH24BjC.png" width="400"/>
+![screenshot1](https://user-images.githubusercontent.com/50572621/200126707-b87e1d8c-2509-46ae-95e3-245c71b0a8ca.png)
+
+![screenshot2](https://user-images.githubusercontent.com/50572621/200126708-af544e02-0b16-495c-9963-34a20919d183.png)
+
+![screenshot3](https://user-images.githubusercontent.com/50572621/200126714-df3384a3-d4d5-4f12-8fbd-95c8a72fcbd3.png)
+
 
 ### to compile
 
