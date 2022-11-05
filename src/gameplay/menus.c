@@ -1034,6 +1034,16 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 			amount++;
 		}
 	}
+
+	if(amount < oldAmount)
+	{
+		for(int i = 0; i < oldAmount; i++)
+		{
+			freeArray(filesCaching[i]);
+		}
+
+		oldAmount = 0;
+	}
 	
 	char **newFiles = malloc(sizeof(char *) * amount);
 	for(int i = 0, j = 0; i < files.count && j < amount; i++)
