@@ -1,9 +1,14 @@
 # One Button Rythm
-One button rythm is a rythm game with only one button.
+One button rythm is a rythm game with only one button.  
 It's meant to be a simple game, simple to play, simple to make maps (Edit: it's no longer simple).
 
-Supports exporting / importing zipped maps
-Supports theming via botchered css
+Supports exporting / importing zipped maps  
+Supports theming via botchered css  
+  
+Editing features:  
+    custom textures or sound effects  
+    animation support  
+    multiple BPM per map
 
 ![screenshot1](https://user-images.githubusercontent.com/50572621/200126707-b87e1d8c-2509-46ae-95e3-245c71b0a8ca.png)
 
