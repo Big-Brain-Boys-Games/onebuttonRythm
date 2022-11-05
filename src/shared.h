@@ -47,5 +47,6 @@ double clamp(double d, double min, double max);
 int findClosestNote(Note ** arr, int n, float target);
 
 void MakeNoteCopy(Note src, Note * dest);
+int rankCalculation(int score, int combo, int misses, float accuracy);
 
 #endif

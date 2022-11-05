@@ -180,7 +180,7 @@
     left: 65;
     top: 5;
     width: 100;
-    height: 30;
+    height: 38;
     color: BLACK;
     opacity: 0.8;
 }
@@ -201,22 +201,77 @@
     type: text;
     parent: highscoreContainer;
     content: $highscore;
-    left: 76;
+    left: 74;
     top: 6;
     width: 100;
     color: WHITE;
-    font-size: 2;
+    font-size: 1.5;
 }
 
 #comboText{
     type: text;
     parent: highscoreContainer;
-    content: $combo;
-    left: 76;
-    top: 20;
+    content: "combo";
+    left: 74;
+    top: 17;
     width: 100;
     color: WHITE;
-    font-size: 2;
+    font-size: 1.1;
+}
+
+#comboValue{
+    type: text;
+    parent: highscoreContainer;
+    content: $combo;
+    left: 88;
+    top: 17.5;
+    width: 100;
+    color: WHITE;
+    font-size: 1;
+}
+
+#missesText{
+    type: text;
+    parent: highscoreContainer;
+    content: "Miss";
+    left: 74;
+    top: 24;
+    width: 100;
+    color: WHITE;
+    font-size: 1.1;
+}
+
+#missesValue{
+    type: text;
+    parent: highscoreContainer;
+    content: $misses;
+    left: 85;
+    top: 24;
+    width: 100;
+    color: WHITE;
+    font-size: 1.3;
+}
+
+#accuracyText{
+    type: text;
+    parent: highscoreContainer;
+    content: $accuracy;
+    left: 74;
+    top: 31;
+    width: 100;
+    color: WHITE;
+    font-size: 1.5;
+}
+
+#accuracyProcent{
+    type: text;
+    parent: highscoreContainer;
+    content: "%";
+    left: 81;
+    top: 31;
+    width: 100;
+    color: WHITE;
+    font-size: 1.5;
 }
 
 #rank{

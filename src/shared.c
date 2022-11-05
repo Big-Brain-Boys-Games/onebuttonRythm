@@ -139,3 +139,19 @@ void MakeNoteCopy(Note src, Note * dest)
         memcpy(dest->anim, src.anim, sizeof(Frame)*src.animSize);
     }
 }
+
+int rankCalculation(int score, int combo, int misses, float accuracy)
+{
+    if(!_amountNotes)
+        return 0;
+    
+    float rank = 100*(1-accuracy);
+
+    rank *= 1 - ((float)misses / _amountNotes);
+    rank *= 1 + ((float)combo / _amountNotes) * 0.5;
+
+    if(rank > 6)
+        rank = 6;
+    
+    return (6.0/100)*rank; //map output from 100 to 6 ranks
+}

@@ -1005,6 +1005,8 @@ struct mapInfoLoadingArgs
 	int *amount;
 	int **highScores;
 	int **combos;
+	int **misses;
+	int **ranks;
 	float **accuracy;
 };
 
@@ -1052,6 +1054,9 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 		*args->highScores = realloc(*args->highScores, amount * sizeof(int));
 		*args->combos = realloc(*args->combos, amount * sizeof(int));
 		*args->accuracy = realloc(*args->accuracy, amount * sizeof(float));
+		*args->misses = realloc(*args->misses, amount * sizeof(int));
+		*args->ranks = realloc(*args->ranks, amount * sizeof(int));
+		
 		char **tmp = calloc(amount, sizeof(char *));
 		for (int i = 0; i < amount && i < oldAmount; i++)
 		{
@@ -1078,6 +1083,8 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 	{
 		*args->highScores = malloc(amount * sizeof(int));
 		*args->combos = malloc(amount * sizeof(int));
+		*args->misses = malloc(amount * sizeof(int));
+		*args->ranks = malloc(amount * sizeof(int));
 		*args->accuracy = malloc(amount * sizeof(float));
 		filesCaching = calloc(amount, sizeof(char *));
 		for (int i = 0; i < amount; i++)
@@ -1111,7 +1118,9 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 				readScore(&_paMaps[mapIndex],
 						  &((*args->highScores)[mapIndex]),
 						  &((*args->combos)[mapIndex]),
-						  &((*args->accuracy)[mapIndex]));
+						  &((*args->misses)[mapIndex]),
+						  &((*args->accuracy)[mapIndex]),
+						  &((*args->ranks)[mapIndex]));
 				break;
 			}
 		}
@@ -1135,7 +1144,9 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 			readScore(&_paMaps[mapIndex],
 					  &((*args->highScores)[mapIndex]),
 					  &((*args->combos)[mapIndex]),
-					  &((*args->accuracy)[mapIndex]));
+					  &((*args->misses)[mapIndex]),
+					  &((*args->accuracy)[mapIndex]),
+					  &((*args->ranks)[mapIndex]));
 		}
 
 		// caching
@@ -1181,7 +1192,9 @@ void fMapSelect(bool reset)
 	static int amount = 0;
 	static int *highScores;
 	static int *combos;
+	static int *ranks;
 	static float *accuracy;
+	static int *misses;
 	static int selectedMap = -1;
 	static float selectMapTransition = 1;
 	static int hoverMap = -1;
@@ -1203,6 +1216,8 @@ void fMapSelect(bool reset)
 		args->combos = &combos;
 		args->highScores = &highScores;
 		args->accuracy = &accuracy;
+		args->misses = &misses;
+		args->ranks = &ranks;
 		createThread((void *(*)(void *))mapInfoLoading, args);
 		_mapRefresh = false;
 	}
@@ -1404,13 +1419,14 @@ void fMapSelect(bool reset)
 			{
 				setCSS_VariableInt("highscore", highScores[i]);
 				setCSS_VariableInt("combo", combos[i]);
-				setCSS_VariableInt("accuracy", accuracy[i]);
+				setCSS_VariableInt("accuracy", 100*(1-accuracy[i]));
+				setCSS_VariableInt("misses", misses[i]);
 
 				drawContainer("highscoreContainer", mapButton.x, mapButton.y);
 
 				CSS_Object * rankObj = getCSS_ObjectPointer("rank");
 				if(rankObj)
-					drawRank(rankObj->x*getWidth()+mapButton.x, rankObj->y*getHeight()+mapButton.y, rankObj->width*getWidth(), rankObj->height * getWidth(), accuracy[i]);
+					drawRank(rankObj->x*getWidth()+mapButton.x, rankObj->y*getHeight()+mapButton.y, rankObj->width*getWidth(), rankObj->height * getWidth(), ranks[i]);
 			}
 		}
 		

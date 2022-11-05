@@ -200,7 +200,7 @@ Map loadMapInfo(char * file)
 		map.image = _menuBackground;
 		map.cpuImage.width = -1;
 	}
-
+	
 	// SetTextureFilter(map.image, TEXTURE_FILTER_BILINEAR);
 	free(pStr);
 	printf("successfully loaded %s\n", file);
@@ -844,14 +844,19 @@ void saveScore()
 	
 	snprintf(str, 200, "scores/%s/%s", _map->name, _playerName);
 	file = fopen(str, "w");
-	fprintf(file, "%i %i %f", _score, _highestCombo, _averageAccuracy);
+	fprintf(file, "%i %i %f %i %i", _score, _highestCombo, _averageAccuracy, _notesMissed,
+		rankCalculation(_score, _highestCombo, _notesMissed, _averageAccuracy));
 	fclose(file);
 }
 
-bool readScore(Map * map, int *score, int * combo, float * accuracy)
+bool readScore(Map * map, int *score, int * combo, int * misses, float * accuracy, int * rank)
 {
 	*score = 0;
 	*combo = 0;
+	*accuracy = 0;
+	*misses = 0;
+	*rank = 0;
+
 	FILE * file;
 	char str [200];
 	snprintf(str, 200, "scores/%s/%s", map->name, _playerName);
@@ -870,24 +875,52 @@ bool readScore(Map * map, int *score, int * combo, float * accuracy)
 		char * part = &line[0];
 		for(int i = 0; i < 1000; i++)
 		{
-			if(*part == 32)
+			if(*part == ' ')
 			{
 				part++;
 				break;
 			}
+			if(*part == '\0')
+				return;
 			part++;
 		}
 		*combo = atoi(part);
 		for(int i = 0; i < 1000; i++)
 		{
-			if(*part == 32)
+			if(*part == ' ')
 			{
 				part++;
 				break;
 			}
+			if(*part == '\0')
+				return;
 			part++;
 		}
 		*accuracy = atof(part);
+		for(int i = 0; i < 1000; i++)
+		{
+			if(*part == ' ')
+			{
+				part++;
+				break;
+			}
+			if(*part == '\0')
+				return;
+			part++;
+		}
+		*misses = atoi(part);
+		for(int i = 0; i < 1000; i++)
+		{
+			if(*part == ' ')
+			{
+				part++;
+				break;
+			}
+			if(*part == '\0')
+				return;
+			part++;
+		}
+		*rank = atoi(part);
 	}
 	fclose(file);
 	return true;

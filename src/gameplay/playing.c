@@ -194,8 +194,8 @@ void fPlaying(bool reset)
 	if (endOfMusic())
 	{
 		stopMusic();
-		float tmp = 0;
-		readScore(_map, &_highScore, &_highScoreCombo, &tmp);
+		int tmp;
+		readScore(_map, &_highScore, &_highScoreCombo, &_highScoreMisses, &_highScoreAccuracy, &tmp);
 		if (_highScore < _score)
 		{
 			saveScore();
@@ -421,7 +421,7 @@ void fPlaying(bool reset)
 	// draw acc
 	snprintf(tmpString, 20, "%.1f%%", 100 * (1 - _averageAccuracy));
 	drawText(tmpString, getWidth() * 0.85, getHeight() * 0.05, getWidth() * 0.04, WHITE);
-	drawRank(getWidth()*0.75, getHeight()*0.03, getWidth()*0.1, getWidth()*0.1, _averageAccuracy);
+	drawRank(getWidth()*0.75, getHeight()*0.03, getWidth()*0.1, getWidth()*0.1, rankCalculation(_score, _highestCombo, _notesMissed, _averageAccuracy));
 	free(tmpString);
 	// drawProgressBar();
 }
@@ -442,10 +442,12 @@ void fEndScreen(bool reset)
 	drawCSS("theme/endScreen.css");
 
 	setCSS_VariableInt("highscore", _highScore);
-	setCSS_VariableInt("highcombo", _highestCombo);
+	setCSS_VariableInt("highcombo", _highScoreCombo);
+	setCSS_VariableInt("highaccuracy", 100*(1-_highScoreAccuracy));
+	setCSS_VariableInt("highmisses", _highScoreMisses);
 
 	setCSS_VariableInt("score", _score);
-	setCSS_VariableInt("combo", _combo);
+	setCSS_VariableInt("combo", _highestCombo);
 	setCSS_VariableInt("accuracy", 100 * (1 - _averageAccuracy));
 	setCSS_VariableInt("misses", _notesMissed);
 
@@ -461,7 +463,7 @@ void fEndScreen(bool reset)
 		newHighscoreObj->active = (_highScore < _score);
 
 	drawText("Rank", getWidth() * 0.55, getHeight() * 0.75, getWidth() * 0.05, LIGHTGRAY);
-	drawRank(getWidth()*0.7, getHeight()*0.65, getWidth()*0.2, getWidth()*0.2, _averageAccuracy);
+	drawRank(getWidth()*0.7, getHeight()*0.65, getWidth()*0.2, getWidth()*0.2, rankCalculation(_score, _highestCombo, _notesMissed, _averageAccuracy));
 
 	// if (interactableButton("Retry", 0.05, getWidth() * 0.15, getHeight() * 0.72, getWidth() * 0.3, getHeight() * 0.1))
 	if(UIBUttonPressed("retryButton"))

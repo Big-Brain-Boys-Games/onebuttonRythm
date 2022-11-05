@@ -35,7 +35,7 @@ float noteFadeOut(float note);
 void drawCursor();
 void drawNote(float musicTime, Note * note, Color color, float customSize);
 void dNotes();
-void drawRank(int x, int y, int width, int height, float accuracy);
+void drawRank(int x, int y, int width, int height, int rank);
 void drawTextureCorrectAspectRatio(Texture2D tex, Color color, Rectangle rect, float rotation);
 void drawTextInRect(Rectangle rect, char * text, float fontSize, Color color, bool scroll);
 void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float accuracy, bool selected);

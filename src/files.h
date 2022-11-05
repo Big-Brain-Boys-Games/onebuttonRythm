@@ -60,7 +60,7 @@ void freeMap(Map * map);
 void freeNote(Note * note);
 void freeNotes();
 void saveScore();
-bool readScore(Map * map, int *score, int * combo, float * accuracy);
+bool readScore(Map * map, int *score, int * combo, int * misses, float * accuracy, int * rank);
 void makeMap(Map * map);
 void addZipMap(char * file);
 void makeMapZip(Map * map);

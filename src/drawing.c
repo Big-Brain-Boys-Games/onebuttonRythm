@@ -291,36 +291,50 @@ void dNotes ()
 	fade -= GetFrameTime()*10;
 }
 
-void drawRank(int x, int y, int width, int height, float accuracy)
+void drawRank(int x, int y, int width, int height, int rank)
 {
 	//rank
 	Color colRank = LIGHTGRAY;
 	char * text = "F";
-	if(accuracy < 0.7)
+
+	switch(rank)
 	{
-		colRank = WHITE;
-		text = "D";
+		case 0:
+			text = "F";
+			break;
+		
+		case 1:
+			colRank = WHITE;
+			text = "D";
+			break;
+		
+		case 2:
+			colRank = GREEN;
+			text = "C";
+			break;
+		
+		case 3:
+			colRank = YELLOW;
+			text = "B";
+			break;
+		
+		case 4:
+			colRank = ORANGE;
+			text = "A";
+			break;
+		
+		case 5:
+			colRank = RED;
+			text = "S";
+			break;
+		
+		case 6:
+			colRank = VIOLET;
+			text = "S+";
+			break;
 	}
-	if(accuracy < 0.4)
-	{
-		colRank = GREEN;
-		text = "C";
-	}
-	if(accuracy < 0.3)
-	{
-		colRank = YELLOW;
-		text = "B";
-	}
-	if(accuracy < 0.2)
-	{
-		colRank = ORANGE;
-		text = "A";
-	}
-	if(accuracy < 0.1)
-	{
-		colRank = RED;
-		text = "S";
-	}
+
+	
 	DrawTexturePro(_noteTex, (Rectangle){.x=0, .y=0, .width=_noteTex.width, .height=_noteTex.height}, (Rectangle){.x=x, .y=y, .width=width, .height=height}, (Vector2) {.x=0, .y=0}, 0, colRank);
 	drawText(text, x+width*0.205, y+height*0.035, width, BLACK);
 	drawText(text, x+width*0.2, y+height*0.03, width, WHITE);
@@ -378,62 +392,64 @@ void drawTextInRect(Rectangle rect, char * text, float fontSize, Color color, bo
 	// drawText(textPointer, rect.x + rect.width/2 - textSize / 2, rect.y + getHeight() * 0.01+rect.height, getWidth() * 0.03, color);
 }
 
-void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float accuracy, bool selected)
-{
-	if(map->image.id == 0)
-	{
-		//load map image onto gpu(cant be loaded in sperate thread because opengl >:( )
-		if(map->cpuImage.width > 0)
-		{
-			map->image = LoadTextureFromImage(map->cpuImage);
-			UnloadImage(map->cpuImage);
-			map->cpuImage.width = -1;
-			if(map->image.id == 0)
-				map->image.id = -1; 
-			else
-				SetTextureFilter(map->image, TEXTURE_FILTER_BILINEAR);
-		}
-	}
-	float imageRatio = 0.8;
-	Color color = WHITE;
-	if(mouseInRect(rect))
-		color = LIGHTGRAY;
-	if(mouseInRect(rect) && IsMouseButtonReleased(0))
-		color = GRAY;
+// void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float accuracy, bool selected)
+// {
+// 	if(map->image.id == 0)
+// 	{
+// 		//load map image onto gpu(cant be loaded in sperate thread because opengl >:( )
+// 		if(map->cpuImage.width > 0)
+// 		{
+// 			map->image = LoadTextureFromImage(map->cpuImage);
+// 			UnloadImage(map->cpuImage);
+// 			map->cpuImage.width = -1;
+// 			if(map->image.id == 0)
+// 				map->image.id = -1; 
+// 			else
+// 				SetTextureFilter(map->image, TEXTURE_FILTER_BILINEAR);
+// 		}
+// 	}
+// 	float imageRatio = 0.8;
+// 	Color color = WHITE;
+// 	if(mouseInRect(rect))
+// 		color = LIGHTGRAY;
+// 	if(mouseInRect(rect) && IsMouseButtonReleased(0))
+// 		color = GRAY;
 
-	char text [100];
-	snprintf(text, 100, "%s - %s", map->name, map->artist);
+// 	char text [100];
+// 	snprintf(text, 100, "%s - %s", map->name, map->artist);
 
 
-	DrawRectangle(rect.x, rect.y, rect.width, rect.height, color);
+// 	DrawRectangle(rect.x, rect.y, rect.width, rect.height, color);
 
-	DrawRectangle(rect.x, rect.y, rect.width, rect.height*imageRatio, BLACK);
+// 	DrawRectangle(rect.x, rect.y, rect.width, rect.height*imageRatio, BLACK);
 
-	drawTextureCorrectAspectRatio(map->image, color, (Rectangle){.x=rect.x, .y=rect.y, .width=rect.width, .height=rect.height*imageRatio}, 0);
+// 	drawTextureCorrectAspectRatio(map->image, color, (Rectangle){.x=rect.x, .y=rect.y, .width=rect.width, .height=rect.height*imageRatio}, 0);
 
-	DrawRectangleGradientV(rect.x, rect.y+rect.height*0.4, rect.width, rect.height*imageRatio-rect.height*0.4, ColorAlpha(BLACK, 0), ColorAlpha(BLACK, 0.5));
+// 	DrawRectangleGradientV(rect.x, rect.y+rect.height*0.4, rect.width, rect.height*imageRatio-rect.height*0.4, ColorAlpha(BLACK, 0), ColorAlpha(BLACK, 0.5));
 	
-	drawTextInRect((Rectangle){.x=rect.x, .y=rect.y+rect.height*imageRatio, .width=rect.width, rect.height=rect.height}, text, getWidth() * 0.03, DARKGRAY, mouseInRect(rect));
+// 	drawTextInRect((Rectangle){.x=rect.x, .y=rect.y+rect.height*imageRatio, .width=rect.width, rect.height=rect.height}, text, getWidth() * 0.03, DARKGRAY, mouseInRect(rect));
 	
-	snprintf(text, 100, "%i", map->difficulty);
-	DrawRectangle(rect.x + rect.width*0.13, rect.y + 0.60*rect.height, rect.width*0.2, rect.height*0.20, ColorAlpha(BLACK, 0.4));
-	drawText(text, rect.x + rect.width*0.08, rect.y + 0.60*rect.height, getWidth() * 0.02625, WHITE);
-	snprintf(text, 100, "%i:%i", (int)floorf(map->musicLength/60), (int)floorf(map->musicLength-floorf(map->musicLength/60)*60));
-	drawText(text, rect.x + rect.width*0.06, rect.y + 0.68*rect.height, getWidth() * 0.02625, WHITE);
+// 	snprintf(text, 100, "%i", map->difficulty);
+// 	DrawRectangle(rect.x + rect.width*0.13, rect.y + 0.60*rect.height, rect.width*0.2, rect.height*0.20, ColorAlpha(BLACK, 0.4));
+// 	drawText(text, rect.x + rect.width*0.08, rect.y + 0.60*rect.height, getWidth() * 0.02625, WHITE);
+// 	snprintf(text, 100, "%i:%i", (int)floorf(map->musicLength/60), (int)floorf(map->musicLength-floorf(map->musicLength/60)*60));
+// 	drawText(text, rect.x + rect.width*0.06, rect.y + 0.68*rect.height, getWidth() * 0.02625, WHITE);
 
-	if(highScore !=0)
-	{
-		snprintf(text, 100, "%i", highScore);
-		DrawRectangle(rect.x + rect.width*0.78, rect.y + 0.02*rect.height, rect.width*0.2, rect.height*0.20, ColorAlpha(BLACK, 0.4));
-		drawText(text, rect.x + rect.width*0.80, rect.y + 0.02*rect.height, getWidth() * 0.015, WHITE);
-		snprintf(text, 100, "%i", combo);
-		drawText(text, rect.x + rect.width*0.82, rect.y + 0.08*rect.height, getWidth() * 0.015, WHITE);
-		snprintf(text, 100, "%.2f", 100*(1-accuracy));
-		drawText(text, rect.x + rect.width*0.84, rect.y + 0.14*rect.height, getWidth() * 0.015, WHITE);
-		drawRank(rect.x+rect.width*0.03, rect.y+rect.width*0.03, rect.width*0.08, rect.width*0.08, accuracy);
+// 	if(highScore !=0)
+// 	{
+// 		snprintf(text, 100, "%i", highScore);
+// 		DrawRectangle(rect.x + rect.width*0.78, rect.y + 0.02*rect.height, rect.width*0.2, rect.height*0.20, ColorAlpha(BLACK, 0.4));
+// 		drawText(text, rect.x + rect.width*0.80, rect.y + 0.02*rect.height, getWidth() * 0.015, WHITE);
+// 		snprintf(text, 100, "%i", combo);
+// 		drawText(text, rect.x + rect.width*0.82, rect.y + 0.08*rect.height, getWidth() * 0.015, WHITE);
+// 		snprintf(text, 100, "%.2f", 100*(1-accuracy));
+// 		drawText(text, rect.x + rect.width*0.84, rect.y + 0.14*rect.height, getWidth() * 0.015, WHITE);
+// 		snprintf(text, 100, "%i", misses);
+// 		drawText(text, rect.x + rect.width*0.82, rect.y + 0.08*rect.height, getWidth() * 0.015, WHITE);
+// 		drawRank(rect.x+rect.width*0.03, rect.y+rect.width*0.03, rect.width*0.08, rect.width*0.08, _map->rank);
 
-	}
-}
+// 	}
+// }
 
 void drawBackground()
 {
