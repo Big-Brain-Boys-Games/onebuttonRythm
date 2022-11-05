@@ -110,25 +110,22 @@
 
 #retryButton{
     type: button;
-    content: "Retry";
-    color: BLACK;
-    left: 12;
-    top: 70;
-    width: 30;
-    height: 8;
-    font-size: 3.2;
+    image: assets/icons/retry.png;
+    left: 10;
+    top: 80;
+    width: 12;
+    height: 12;
     growOnHover: 0.1;
+    rotateOnHover: -90;
 }
 
 #mapSelectButton{
     type: button;
-    content: "Map Select";
-    color: BLACK;
-    left: 12;
-    top: 82;
-    width: 30;
-    height: 8;
-    font-size: 3.2;
+    image: assets/icons/exit.png;
+    left: 20;
+    top: 79;
+    width: 15;
+    height: 15;
     growOnHover: 0.1;
 }
 
@@ -172,6 +169,19 @@
     left: 30;
     width: 100;
     height: 100;
+    font-size: 2.8;
+}
+
+#oldIcon{
+    type: image;
+    color: WHITE;
+    parent: oldHighscore;
+    image: assets/icons/trophy.png;
+    top: 0;
+    left: 14;
+    width: 17;
+    height: 17;
+    keepAspectRatio: yes;
     font-size: 2.8;
 }
 

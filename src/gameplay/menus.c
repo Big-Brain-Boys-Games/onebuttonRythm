@@ -212,14 +212,11 @@ void drawCSS_Object(CSS_Object * object)
 		endScissor();
 	}
 
-	if(!object->selected)
-	{
-		if(object->value > object->max)
-			object->value = object->max;
-		
-		if(object->value < object->min)
-			object->value = object->min;
-	}
+	if(object->value > object->max)
+		object->value = object->max;
+	
+	if(object->value < object->min)
+		object->value = object->min;
 		
 
 	if((object->type == css_button || object->type == css_buttonNoSprite) && object->selected)
@@ -814,6 +811,19 @@ int UIValueInteractable(int variable, char * name)
 	}
 }
 
+void UISetActive(char * name, bool active)
+{
+	if(!name)
+		return;
+	
+	CSS_Object *object = getCSS_ObjectPointer(name);
+
+	if(!object)
+		return;
+	
+	object->active = active;
+}
+
 
 Modifier *_activeMod[100] = {0}; // we dont even have that many
 
@@ -932,13 +942,17 @@ void fPause(bool reset)
 
 	dNotes();
 	drawVignette();
-	drawProgressBar();
+	
 	DrawRectangle(0, 0, getWidth(), getHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
+
+	drawCSS("theme/pause.css");
+
+	drawProgressBar();
 
 	// TODO dynamically change seperation depending on the amount of buttons?
 	float middle = getWidth() / 2;
 
-	if (IsKeyPressed(KEY_ESCAPE) || interactableButton("Continue", 0.05, middle - getWidth() * 0.15, getHeight() * 0.3, getWidth() * 0.3, getHeight() * 0.1))
+	if (IsKeyPressed(KEY_ESCAPE) || UIBUttonPressed("continueButton"))
 	{
 		if (_pNextGameplayFunction == &fPlaying)
 		{
@@ -948,14 +962,18 @@ void fPause(bool reset)
 		else
 			_pGameplayFunction = _pNextGameplayFunction;
 	}
-	if (_pNextGameplayFunction == &fEditor && interactableButton("Save", 0.05, middle - getWidth() * 0.15, getHeight() * 0.5, getWidth() * 0.3, getHeight() * 0.1))
+
+	UISetActive("retryButton", (_pNextGameplayFunction == &fPlaying || _pNextGameplayFunction == &fRecording));
+	UISetActive("saveButton", (_pNextGameplayFunction == &fEditor));
+
+	if (UIBUttonPressed("saveButton"))
 	{
 		saveMap();
 		_pGameplayFunction = _pNextGameplayFunction;
 		// gotoMainMenu(false);
 	}
 
-	if (_pNextGameplayFunction == &fPlaying && interactableButton("retry", 0.05, middle - getWidth() * 0.15, getHeight() * 0.5, getWidth() * 0.3, getHeight() * 0.1))
+	if (_pNextGameplayFunction == &fPlaying && UIBUttonPressed("retryButton"))
 	{
 		_pGameplayFunction = fCountDown;
 		_noteIndex = 0;
@@ -964,7 +982,7 @@ void fPause(bool reset)
 		fPlaying(true);
 	}
 
-	if (_pNextGameplayFunction == &fRecording && interactableButton("retry", 0.05, middle - getWidth() * 0.15, getHeight() * 0.5, getWidth() * 0.3, getHeight() * 0.1))
+	if (_pNextGameplayFunction == &fRecording && UIBUttonPressed("retryButton"))
 	{
 		_pGameplayFunction = _pNextGameplayFunction;
 		_noteIndex = 0;
@@ -973,7 +991,7 @@ void fPause(bool reset)
 		fRecording(true);
 	}
 
-	if (interactableButton("Exit", 0.05, middle - getWidth() * 0.15, getHeight() * 0.7, getWidth() * 0.3, getHeight() * 0.1))
+	if (UIBUttonPressed("exitButton"))
 	{
 		unloadMap();
 		gotoMainMenu(false);
@@ -1604,7 +1622,7 @@ void fNewMap(bool reset)
 
 		if(!newMap.mapCreator)
 			newMap.mapCreator = malloc(100);
-		strcpy(newMap.mapCreator, "mapCreator");
+		strcpy(newMap.mapCreator, _playerName);
 
 		if(!newMap.folder)
 			newMap.folder = malloc(100);

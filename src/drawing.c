@@ -187,7 +187,7 @@ void drawCursor ()
 
 void drawNote(float musicTime, Note * note, Color color, float customScaling)
 {
-	float scaleNotes = (float)(getWidth() / _noteTex.width) / 9;
+	float scaleNotes = (float)(256.0 / _noteTex.width) * 0.65;
 
 	if(note->hit)
 		return;
@@ -202,12 +202,11 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 
 	scaleNotes *= (_settings.noteSize / 10.0);
 	
-	if(!note->anim)
+	if(!note->anim || _pGameplayFunction == &fEditor)
 		DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=getHeight() / 2 -tex.height * scaleNotes/2}, 0,  scaleNotes, color);
-	else if(note->animSize)
+	
+	if(note->animSize)
 	{
-		if(_pGameplayFunction == &fEditor)
-			DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=getHeight() / 2 -tex.height * scaleNotes/2}, 0,  scaleNotes, ColorAlpha(GRAY, 0.5));
 		//draw animated note
 		float time = (musicTime - note->time) / (_scrollSpeed);
 		// if(time < note->anim[0].time || time < time < note->anim[note->animSize].time)

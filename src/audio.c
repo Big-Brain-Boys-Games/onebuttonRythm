@@ -69,8 +69,7 @@ float getMusicPosition()
 
 void fixMusicTime()
 {
-	if (fabs(getMusicHead() - getMusicPosition()) > 0.1)
-		_musicHead = getMusicPosition();
+	_musicHead = getMusicPosition();
 }
 
 void setMusicStart()

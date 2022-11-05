@@ -689,8 +689,7 @@ void fEditor(bool reset)
 	drawVignette();
 	drawMusicGraph(0.4);
 	drawBars();
-	if(drawProgressBarI(true))
-		_musicPlaying = false;
+	
 
 	for(int i = 0; i < _amountTimingSegments && _paTimingSegment; i++)
 	{
@@ -698,6 +697,27 @@ void fEditor(bool reset)
 	}
 
 	drawCSS("theme/editor/editor.css");
+
+	if(drawProgressBarI(true))
+		_musicPlaying = false;
+
+	CSS_Object * playButton = getCSS_ObjectPointer("playButton");
+	if(playButton)
+	{
+		if(playButton->selected && playButton->active)
+			_musicPlaying = true;
+		
+		playButton->active = !_musicPlaying;
+	}
+
+	CSS_Object * pauseButton = getCSS_ObjectPointer("pauseButton");
+	if(pauseButton)
+	{
+		if(pauseButton->selected && pauseButton->active)
+			_musicPlaying = false;
+		
+		pauseButton->active = _musicPlaying;
+	}
 
 
 

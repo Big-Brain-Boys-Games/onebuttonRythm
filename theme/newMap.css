@@ -108,6 +108,7 @@
 #mapCreatorBox {
     type: textbox;
     parent: settingsContainer;
+    content: _playerName_;
     margin-left: 50;
     margin-top: 49;
     width: 30;
@@ -126,13 +127,27 @@
     width: 40;
 }
 
+#difficultyIcon {
+    type: image;
+    parent: settingsContainer;
+    image: assets/icons/star.png;
+    color: WHITE;
+    margin-left: 82;
+    margin-top: 58;
+    width: 5;
+    height: 5;
+    keepAspectRatio: yes;
+}
+
 #difficultyBox {
-    type: textbox;
+    type: numberbox;
     parent: settingsContainer;
     margin-left: 50;
     margin-top: 61;
     width: 30;
     height: 6;
+    max: 12;
+    min: 0;
     growOnHover: 0.05;
 }
 
@@ -148,12 +163,14 @@
 }
 
 #bpmBox {
-    type: textbox;
+    type: numberbox;
     parent: settingsContainer;
     margin-left: 50;
     margin-top: 73;
     width: 30;
     height: 6;
+    min: 1;
+    max: 500;
     growOnHover: 0.05;
 }
 

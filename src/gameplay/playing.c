@@ -41,7 +41,9 @@ void fCountDown(bool reset)
 	{
 		if(_musicHead <= 0)
 		{
-			contin = false;	
+			contin = false;
+			_score = 0;
+			_combo = 0;
 		}else
 		{
 			contin = true;
@@ -435,61 +437,6 @@ void fEndScreen(bool reset)
 	if(newHighscoreObj)
 		newHighscoreObj->active = (_highScore < _score);
 
-
-	/*
-	DrawRectangle(getWidth()*0.04, getHeight()*0.27, getWidth()*0.5, getHeight()*0.7, (Color){.r = 0, .g = 0, .b = 0, .a = 128});
-
-	// draw menu
-
-	float textSize = measureText("Finished", getWidth() * 0.15);
-	drawText("Finished", getWidth() * 0.5 - textSize / 2, getHeight() * 0.05, getWidth() * 0.15, WHITE);
-
-	char *tmpString = malloc(70);
-	snprintf(tmpString, 70, "%s", _highScore < _score ? "New highscore!" : "");
-	textSize = measureText(tmpString, getWidth() * 0.045);
-	drawText(tmpString, getWidth() * 0.55, getHeight() * 0.3, getWidth() * 0.05, WHITE);
-
-	// draw highscore
-	snprintf(tmpString, 70,"Highscore\nCombo");
-	textSize = measureText(tmpString, getWidth() * 0.045);
-	drawText(tmpString, getWidth() * 0.55, getHeight() * 0.4, getWidth() * 0.05, LIGHTGRAY);
-
-	// draw highscore values
-	snprintf(tmpString, 70,"%i\n%i", _highScore, _highScoreCombo);
-	textSize = measureText(tmpString, getWidth() * 0.045);
-	drawText(tmpString, getWidth() * 0.83, getHeight() * 0.4, getWidth() * 0.05, LIGHTGRAY);
-
-
-
-	// draw score
-	snprintf(tmpString, 70,"Score\nCombo");
-	textSize = measureText(tmpString, getWidth() * 0.045);
-	drawText(tmpString, getWidth() * 0.06, getHeight() * 0.3, getWidth() * 0.05, LIGHTGRAY);
-
-	// draw score Values
-	snprintf(tmpString, 70,"%i\n%i", _score, _highestCombo);
-	textSize = measureText(tmpString, getWidth() * 0.045);
-	drawText(tmpString, getWidth() * 0.4, getHeight() * 0.3, getWidth() * 0.05, LIGHTGRAY);
-
-
-
-	// draw extra info
-	snprintf(tmpString, 70,"Accuracy\nMisses");
-	textSize = measureText(tmpString, getWidth() * 0.045);
-	drawText(tmpString, getWidth() * 0.06, getHeight() * 0.5, getWidth() * 0.05, LIGHTGRAY);
-
-	snprintf(tmpString, 70,"Acc: %.2fms", _averageAccuracy);
-	drawHint((Rectangle){.x=getWidth() * 0.06, .y=getHeight() * 0.5, .width=textSize, .height=getWidth() * 0.2}, tmpString);
-
-	// draw extra info Values
-	snprintf(tmpString, 70,"%.1f\n%i", 100 * (1 - _averageAccuracy), _notesMissed);
-	textSize = measureText(tmpString, getWidth() * 0.045);
-	drawText(tmpString, getWidth() * 0.4, getHeight() * 0.5, getWidth() * 0.05, LIGHTGRAY);
-
-
-	free(tmpString);
-	*/
-
 	drawText("Rank", getWidth() * 0.55, getHeight() * 0.75, getWidth() * 0.05, LIGHTGRAY);
 	drawRank(getWidth()*0.7, getHeight()*0.65, getWidth()*0.2, getWidth()*0.2, _averageAccuracy);
 
@@ -512,6 +459,7 @@ void fEndScreen(bool reset)
 		gotoMainMenu(false);
 		_pNextGameplayFunction = &fMapSelect;
 		_mapRefresh = true;
+		_transition = 0.1;
 	}
 	drawCursor();
 }
@@ -523,32 +471,17 @@ void fFail(bool reset)
 {
 	_musicPlaying = false;
 	ClearBackground(BLACK);
-	if (!_noBackground)
-	{
-		float scale = (float)getWidth() / (float)_background.width;
-		DrawTextureEx(_background, (Vector2){.x = 0, .y = (getHeight() - _background.height * scale) / 2}, 0, scale, WHITE);
-	}
-	else
-	{
-		DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
-						 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
-	}
-	DrawRectangle(0, 0, getWidth(), getHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
+	drawBackground();
+	drawVignette();
 
-	int middle = getWidth() / 2;
-	// draw menu
+	drawCSS("theme/fail.css");
 
-	float textSize = measureText("You Failed", getWidth() * 0.15);
-	drawText("You Failed", getWidth() * 0.5 - textSize / 2, getHeight() * 0.2, getWidth() * 0.15, WHITE);
+	setCSS_VariableInt("score", _score);
+	setCSS_VariableInt("missed", _notesMissed);
+	setCSS_VariableInt("combo", _combo);
+	setCSS_VariableInt("accuracy", 100*(1-_averageAccuracy));
 
-	// draw score
-	char *tmpString = malloc(9);
-	snprintf(tmpString, 9, "%i", _score);
-	textSize = measureText(tmpString, getWidth() * 0.1);
-	drawText(tmpString, getWidth() * 0.5 - textSize / 2, getHeight() * 0.5, getWidth() * 0.1, LIGHTGRAY);
-	free(tmpString);
-
-	if (interactableButton("Retry", 0.05, middle - getWidth() * 0.15, getHeight() * 0.7, getWidth() * 0.3, getHeight() * 0.1))
+	if (UIBUttonPressed("retryButton"))
 	{
 		// retrying map
 		printf("retrying map! \n");
@@ -557,7 +490,7 @@ void fFail(bool reset)
 		_musicHead = 0;
 		_transition = 0.7;
 	}
-	if (interactableButton("Exit", 0.05, middle - getWidth() * 0.15, getHeight() * 0.85, getWidth() * 0.3, getHeight() * 0.1))
+	if (UIBUttonPressed("exitButton"))
 	{
 		// exiting map
 		printf("going to main Menu! \n");
@@ -565,6 +498,5 @@ void fFail(bool reset)
 		gotoMainMenu(false);
 		_pNextGameplayFunction = &fPlaying;
 	}
-	drawVignette();
 	drawCursor();
 }

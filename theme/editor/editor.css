@@ -1,3 +1,36 @@
+#timeBackground{
+    type: image;
+    image: assets/note.png;
+    color: BLACK;
+    top: 65;
+    left: 71;
+    width: 45;
+    height: 45;
+    opacity: 0.7;
+}
+
+#playButton{
+    type: button;
+    image: assets/icons/play.png;
+    top: 70;
+    left: 89;
+    width: 7;
+    height: 7;
+    keepAspectRatio: yes;
+    growOnHover: 0.1;
+}
+
+#pauseButton{
+    type: button;
+    image: assets/icons/pause.png;
+    top: 70;
+    left: 89;
+    width: 7;
+    height: 7;
+    keepAspectRatio: yes;
+    growOnHover: 0.1;
+}
+
 #songSettingsButton{
     type: button;
     content: "Song Settings";
@@ -46,13 +79,14 @@
 
 #speedResetButton{
     type: button;
-    content: "Reset";
-    top: 5;
-    left: 35;
-    width: 5;
-    height: 3;
+    image: assets/icons/retry.png;
+    top: 3.3;
+    left: 31;
+    width: 2.5;
+    height: 2.5;
     growOnHover: 0.1;
-    font-size: 2;
+    keepAspectRatio: yes;
+    rotateOnHover: -180;
 }
 
 #zoomSlider{
@@ -68,13 +102,14 @@
 
 #zoomResetButton{
     type: button;
-    content: "Reset";
-    top: 10;
-    left: 35;
-    width: 5;
-    height: 3;
+    image: assets/icons/retry.png;
+    top: 8.5;
+    left: 31;
+    width: 2.5;
+    height: 2.5;
     growOnHover: 0.1;
-    font-size: 2;
+    keepAspectRatio: yes;
+    rotateOnHover: -180;
 }
 
 #toolsContainer{
@@ -91,7 +126,7 @@
     parent: toolsContainer;
     top: 10;
     left: 5;
-    content: "O";
+    image: assets/icons/plus.png;
     font-size: 2;
     width: 10;
     height: 40;
@@ -102,7 +137,7 @@
     parent: toolsContainer;
     top: 55;
     left: 5;
-    content: "X";
+    image: assets/icons/X.png;
     font-size: 2;
     width: 10;
     height: 40;
@@ -154,12 +189,13 @@
 
 #toolsButton{
     type: button;
-    content: "Tools";
+    image: assets/icons/tools.png;
     top: 5;
     left: 45;
-    width: 5;
+    width: 3;
     height: 3;
     font-size: 2;
+    keepAspectRatio: yes;
     growOnHover: 0.1;
     makeActive: toolsContainer;
 }
