@@ -5,10 +5,21 @@ It's meant to be a simple game, simple to play, simple to make maps (Edit: it's 
 Supports exporting / importing zipped maps  
 Supports theming via botchered css  
   
-Editing features:  
+### Editing features:  
     custom textures or sound effects  
     animation support  
     multiple BPM per map
+    
+### Editor Controls:
+    z: place note
+    x: remove note
+    c: snap
+    a: place note on snap
+    e: add bars
+    q: remove bars
+    d: add timing segment
+    f: add timing segment
+    
 
 ![screenshot1](https://user-images.githubusercontent.com/50572621/200126707-b87e1d8c-2509-46ae-95e3-245c71b0a8ca.png)
 
