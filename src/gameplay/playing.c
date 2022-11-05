@@ -106,10 +106,11 @@ void fCountDown(bool reset)
 
 	drawCursor();
 
-	float heartScale = (getWidth() * 0.08) / _heartTex.width;
-	float healthBarScale = (getHeight() * 0.4) / _healthBarTex.height;
-	DrawTextureEx(_healthBarTex, (Vector2){.x = getWidth() * 0.85 + (_heartTex.width / 2) * heartScale - (_healthBarTex.width / 2) * healthBarScale, .y = getHeight() * 0.85 - _healthBarTex.height * healthBarScale + (_heartTex.height / 2) * heartScale}, 0, healthBarScale, WHITE);
-	DrawTextureEx(_heartTex, (Vector2){.x = getWidth() * 0.85, .y = getHeight() * (0.85 - _health / 250)}, 0, heartScale, WHITE);
+	// float heartScale = (getWidth() * 0.08) / _heartTex.width;
+	// float healthBarScale = (getHeight() * 0.4) / _healthBarTex.height;
+	// DrawTextureEx(_healthBarTex, (Vector2){.x = getWidth() * 0.85 + (_heartTex.width / 2) * heartScale - (_healthBarTex.width / 2) * healthBarScale, .y = getHeight() * 0.85 - _healthBarTex.height * healthBarScale + (_heartTex.height / 2) * heartScale}, 0, healthBarScale, WHITE);
+	// DrawTextureEx(_heartTex, (Vector2){.x = getWidth() * 0.85, .y = getHeight() * (0.85 - _health / 250)}, 0, heartScale, WHITE);
+	
 	DrawRectangle(0, 0, getWidth(), getHeight(), (Color){.r = 0, .g = 0, .b = 0, .a = 128});
 
 	snprintf(tmpString, 9, "%i", (int)(countDown - GetTime() + 1));
@@ -215,6 +216,8 @@ void fPlaying(bool reset)
 
 	drawBackground();
 
+	DrawRectangle(0, 0, getWidth(), getHeight(), _fade);
+
 	// draw ripples
 	for (int i = 0; i < RippleAmount; i++)
 	{
@@ -255,11 +258,31 @@ void fPlaying(bool reset)
 		_highestCombo = _combo;
 
 	// draw feedback (300! 200! miss!)
-	for (int i = 0, j = feedbackIndex - 1; i < 5; i++, j--)
+	// for (int i = 0, j = feedbackIndex - 1; i < 5; i++, j--)
+	// {
+	// 	if (j < 0)
+	// 		j = 4;
+	// 	drawText(feedbackSayings[j], getWidth() * 0.35, getHeight() * (0.6 + i * 0.1), getWidth() * 0.05 * feedbackSize[j], (Color){.r = 255, .g = 255, .b = 255, .a = noLessThanZero(150 - i * 40)});
+	// }
+
+	static double lastHit = 0;
+	float hitEffect = fmax(1-(GetTime()-lastHit)*5, 0);
+	hitEffect *= hitEffect;
+
+	if(_combo > 0)
 	{
-		if (j < 0)
-			j = 4;
-		drawText(feedbackSayings[j], getWidth() * 0.35, getHeight() * (0.6 + i * 0.1), getWidth() * 0.05 * feedbackSize[j], (Color){.r = 255, .g = 255, .b = 255, .a = noLessThanZero(150 - i * 40)});
+		char str[100];
+		snprintf(str, 100, "%i", _combo);
+
+		int x = musicTimeToScreen(_musicHead) - getWidth()*0.05;
+		int y = getHeight() * 0.35;
+
+		float size = getWidth()*(1+hitEffect*0.5+fmin(_combo, 200)/50.0)*0.02;
+
+		x -= measureText(str, size);
+		y -= size;
+
+		drawText(str, x, y, size, WHITE);
 	}
 
     if (_noteIndex < _amountNotes-1 && getMusicHead() - margin > _papNotes[_noteIndex]->time)
@@ -319,6 +342,7 @@ void fPlaying(bool reset)
 			_papNotes[_noteIndex]->hit = 1;
 			_noteIndex++;
 			_combo++;
+			lastHit = GetTime();
 
 			float noteDist = 99;
 
@@ -371,8 +395,8 @@ void fPlaying(bool reset)
 
 	float heartScale = (getWidth() * 0.08) / _heartTex.width;
 	float healthBarScale = (getHeight() * 0.4) / _healthBarTex.height;
-	DrawTextureEx(_healthBarTex, (Vector2){.x = getWidth() * 0.85 + (_heartTex.width / 2) * heartScale - (_healthBarTex.width / 2) * healthBarScale, .y = getHeight() * 0.85 - _healthBarTex.height * healthBarScale + (_heartTex.height / 2) * heartScale}, 0, healthBarScale, WHITE);
-	DrawTextureEx(_heartTex, (Vector2){.x = getWidth() * 0.85, .y = getHeight() * (0.85 - smoothHealth / 250)}, 0, heartScale, WHITE);
+	DrawTextureEx(_healthBarTex, (Vector2){.x = getWidth() * 0.05 + (_heartTex.width / 2) * heartScale - (_healthBarTex.width / 2) * healthBarScale, .y = getHeight() * 0.85 - _healthBarTex.height * healthBarScale + (_heartTex.height / 2) * heartScale}, 0, healthBarScale, WHITE);
+	DrawTextureEx(_heartTex, (Vector2){.x = getWidth() * 0.05, .y = getHeight() * (0.85 - smoothHealth / 250)}, 0, heartScale, WHITE);
 
 	if (_health <= 0)
 	{
@@ -387,20 +411,19 @@ void fPlaying(bool reset)
 
 	// draw score
 	char *tmpString = malloc(20);
-	snprintf(tmpString, 20, "score: %i", _score);
+	snprintf(tmpString, 20, "%i", _score);
 	drawText(tmpString, getWidth() * 0.05, getHeight() * 0.05, getWidth() * 0.05, WHITE);
 
-	// draw combo
-	snprintf(tmpString, 20, "combo: %i", _combo);
-	drawText(tmpString, getWidth() * 0.70, getHeight() * 0.05, getWidth() * 0.05, WHITE);
+	// // draw combo
+	// snprintf(tmpString, 20, "combo: %i", _combo);
+	// drawText(tmpString, getWidth() * 0.70, getHeight() * 0.05, getWidth() * 0.05, WHITE);
 
 	// draw acc
-	snprintf(tmpString, 20, "acc: %.2f", 100 * (1 - _averageAccuracy));
-	drawText(tmpString, getWidth() * 0.70, getHeight() * 0.1, getWidth() * 0.04, WHITE);
-	drawRank(getWidth()*0.57, getHeight()*0.03, getWidth()*0.1, getWidth()*0.1, _averageAccuracy);
+	snprintf(tmpString, 20, "%.1f%%", 100 * (1 - _averageAccuracy));
+	drawText(tmpString, getWidth() * 0.85, getHeight() * 0.05, getWidth() * 0.04, WHITE);
+	drawRank(getWidth()*0.75, getHeight()*0.03, getWidth()*0.1, getWidth()*0.1, _averageAccuracy);
 	free(tmpString);
-	drawProgressBar();
-	DrawRectangle(0, 0, getWidth(), getHeight(), _fade);
+	// drawProgressBar();
 }
 
 
