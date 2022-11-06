@@ -23,6 +23,8 @@
 
     extern Color _fade;
 
+    extern float _hitPart;
+
 #endif
 
 void startScissor(int x, int y, int width, int height);

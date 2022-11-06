@@ -497,8 +497,8 @@ void fEditorNoteSettings(bool reset)
 					removeCustomSound(_selectedNotes[i]->hitSE_File);
 					freeArray(_selectedNotes[i]->hitSE_File);
 				}
-				_selectedNotes[i]->hitSE_File = malloc(strlen(firstNote->hitSE_File)+1);
-				strcpy(_selectedNotes[i]->hitSE_File, firstNote->hitSE_File);
+				_selectedNotes[i]->hitSE_File = malloc(100);
+				strncpy(_selectedNotes[i]->hitSE_File, firstNote->hitSE_File, 100);
 				_selectedNotes[i]->custSound = addCustomSound(firstNote->custSound->file);
 			}
 
@@ -509,8 +509,8 @@ void fEditorNoteSettings(bool reset)
 					removeCustomTexture(_selectedNotes[i]->texture_File);
 					freeArray(_selectedNotes[i]->texture_File);
 				}
-				_selectedNotes[i]->texture_File = malloc(strlen(firstNote->texture_File)+1);
-				strcpy(_selectedNotes[i]->texture_File, firstNote->texture_File);
+				_selectedNotes[i]->texture_File = malloc(100);
+				strncpy(_selectedNotes[i]->texture_File, firstNote->texture_File, 100);
 				_selectedNotes[i]->custTex = addCustomTexture(firstNote->custTex->file);
 			}
 
@@ -533,7 +533,7 @@ void fEditorNoteSettings(bool reset)
 	{
 		if (_selectedNotes[0]->texture_File == 0)
 			_selectedNotes[0]->texture_File = malloc(sizeof(char) * 100);
-		strcpy(_selectedNotes[0]->texture_File, sprite);
+		strncpy(_selectedNotes[0]->texture_File, sprite, 100);
 	}else if(_selectedNotes[0]->texture_File != 0)
 	{
 		free(_selectedNotes[0]->texture_File);
@@ -552,7 +552,7 @@ void fEditorNoteSettings(bool reset)
 	{
 		if (_selectedNotes[0]->hitSE_File == 0)
 			_selectedNotes[0]->hitSE_File = malloc(sizeof(char) * 100);
-		strcpy(_selectedNotes[0]->hitSE_File, hitSound);
+		strncpy(_selectedNotes[0]->hitSE_File, hitSound, 100);
 	}else if(_selectedNotes[0]->hitSE_File != 0)
 	{
 		free(_selectedNotes[0]->hitSE_File);
@@ -601,6 +601,7 @@ void fEditorAnimation (bool reset)
 		_selectedNotes[0]->animSize = 2;
 	}
 
+	// value *= -1;
 	slider((Rectangle){.x=0, .y=getHeight()*0.9, .width=getWidth(), .height=getHeight()*0.03}, &timeLineSelected, &value, 100, -100);
 	timeLine = value / 100.0;
 	drawNote(timeLine*_scrollSpeed+_selectedNotes[0]->time, _selectedNotes[0], WHITE, 0);
@@ -928,7 +929,7 @@ void fEditor(bool reset)
 				if(_selectedNotes[i]->hitSE_File)
 				{
 					_papNotes[note]->hitSE_File = malloc(100);
-					strcpy(_papNotes[note]->hitSE_File, _selectedNotes[i]->hitSE_File);
+					strncpy(_papNotes[note]->hitSE_File, _selectedNotes[i]->hitSE_File, 100);
 					char tmpStr[100];
 					snprintf(tmpStr, 100, "%s/%s", _map->folder, _selectedNotes[i]->hitSE_File);
 					_papNotes[note]->custSound = addCustomSound(tmpStr);
@@ -937,7 +938,7 @@ void fEditor(bool reset)
 				if(_selectedNotes[i]->texture_File)
 				{
 					_papNotes[note]->texture_File = malloc(100);
-					strcpy(_papNotes[note]->texture_File, _selectedNotes[i]->texture_File);
+					strncpy(_papNotes[note]->texture_File, _selectedNotes[i]->texture_File, 100);
 					char tmpStr[100];
 					snprintf(tmpStr, 100, "%s/%s", _map->folder, _selectedNotes[i]->texture_File);
 					_papNotes[note]->custTex = addCustomTexture(tmpStr);
@@ -950,7 +951,7 @@ void fEditor(bool reset)
 			_barMeasureCount *= 2;
 		}
 
-		if (_barMeasureCount >= 2 && (IsKeyPressed(KEY_E) || UIBUttonPressed("barMinusButton")))
+		if (_barMeasureCount >= 2 && (IsKeyPressed(KEY_Q) || UIBUttonPressed("barMinusButton")))
 		{
 			_barMeasureCount /= 2;
 		}

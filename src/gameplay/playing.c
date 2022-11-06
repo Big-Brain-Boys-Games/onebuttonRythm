@@ -126,21 +126,12 @@ void fCountDown(bool reset)
 #define HITPOINTAMOUNT 10
 
 #define RippleAmount 10
-#define feedback(newFeedback, size)               \
-	strcpy(feedbackSayings[feedbackIndex],newFeedback); \
-	feedbackSize[feedbackIndex] = size;           \
-	feedbackIndex++;                              \
-	if (feedbackIndex > 4)                        \
-		feedbackIndex = 0;
 #define addRipple(newRipple)                             \
 	rippleEffect[rippleEffectIndex] = 0;                 \
 	rippleEffectStrength[rippleEffectIndex] = newRipple; \
 	rippleEffectIndex = (rippleEffectIndex + 1) % RippleAmount;
 void fPlaying(bool reset)
 {
-	static char feedbackSayings[5][50] = {0};
-	static float feedbackSize[5] = {0};
-	static int feedbackIndex = 0;
 	static float rippleEffect[RippleAmount] = {0};
 	static float rippleEffectStrength[RippleAmount] = {0};
 	static int rippleEffectIndex = 0;
@@ -157,14 +148,7 @@ void fPlaying(bool reset)
 			_papNotes[i]->hit = false;
 
 		//reset variables
-		for(int i = 0; i < 5; i++)
-		{
-			feedbackSayings[i][0] = '\0';
-			feedbackSize[i] = 0;
-		}
-
 		smoothHealth = 50;
-		feedbackIndex = 0;
 		rippleEffectIndex = 0;
 
 		for(int i = 0; i < RippleAmount; i++)
@@ -257,14 +241,6 @@ void fPlaying(bool reset)
 	if (_combo > _highestCombo)
 		_highestCombo = _combo;
 
-	// draw feedback (300! 200! miss!)
-	// for (int i = 0, j = feedbackIndex - 1; i < 5; i++, j--)
-	// {
-	// 	if (j < 0)
-	// 		j = 4;
-	// 	drawText(feedbackSayings[j], getWidth() * 0.35, getHeight() * (0.6 + i * 0.1), getWidth() * 0.05 * feedbackSize[j], (Color){.r = 255, .g = 255, .b = 255, .a = noLessThanZero(150 - i * 40)});
-	// }
-
 	static double lastHit = 0;
 	float hitEffect = fmax(1-(GetTime()-lastHit)*5, 0);
 	hitEffect *= hitEffect;
@@ -289,7 +265,6 @@ void fPlaying(bool reset)
 	{
 		// passed note
 		_noteIndex++;
-		feedback("miss!", 1.3 - _health / 100);
 		_health -= _missPenalty * getHealthMod() * _papNotes[_noteIndex]->health;
 		_combo = 0;
 		playAudioEffect(_missSe);
@@ -314,7 +289,6 @@ void fPlaying(bool reset)
 			while (_noteIndex < closestIndex)
 			{
 				_noteIndex++;
-				feedback("miss!", 1.3 - _health / 100);
 				_combo = 0;
 				_health -= _missPenalty * getHealthMod() * _papNotes[_noteIndex]->health;
 				_notesMissed++;
@@ -325,17 +299,14 @@ void fPlaying(bool reset)
 			int scoreAdded = noLessThanZero(300 - closestTime * (300 / margin));
 			if (scoreAdded > 200)
 			{
-				feedback("300!", 1.2);
 				addRipple(1.5);
 			}
 			else if (scoreAdded > 100)
 			{
-				feedback("200!", 1);
 				addRipple(1);
 			}
 			else
 			{
-				feedback("100!", 0.8);
 				addRipple(0.6);
 			}
 			_score += scoreAdded * (1 + _combo / 100) * getScoreMod();
@@ -369,7 +340,6 @@ void fPlaying(bool reset)
 		else
 		{
 			printf("missed note\n");
-			feedback("miss!", 1.3 - _health / 100);
 			_combo = 0;
 			_health -= _missPenalty * getHealthMod() * _papNotes[_noteIndex]->health;
 			playAudioEffect(_missHitSe);
@@ -389,9 +359,6 @@ void fPlaying(bool reset)
 		_fade = ColorAlpha(RED, 0);
 
 	smoothHealth += (_health - smoothHealth) * GetFrameTime() * 3;
-
-	if (feedbackIndex >= 5)
-		feedbackIndex = 0;
 
 	float heartScale = (getWidth() * 0.08) / _heartTex.width;
 	float healthBarScale = (getHeight() * 0.4) / _healthBarTex.height;
@@ -522,6 +489,7 @@ void fFail(bool reset)
 		unloadMap();
 		gotoMainMenu(false);
 		_pNextGameplayFunction = &fPlaying;
+		_transition = 0.1;
 	}
 	drawCursor();
 }

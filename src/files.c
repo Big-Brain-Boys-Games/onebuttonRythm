@@ -51,9 +51,9 @@ void initFolders()
 
 Map loadMapInfo(char * file)
 {
-	char * mapStr = malloc(strlen(file) + 12);
-	// strcpy(mapStr, "maps/");
-	strcpy(mapStr, file);
+	char * mapStr = malloc(100);
+	// strncpy(mapStr, "maps/");
+	strncpy(mapStr, file, 100);
 	Map map = {0};
 	map.zoom = 7;
 	map.offset = 0;
@@ -63,11 +63,11 @@ Map loadMapInfo(char * file)
 	map.music.size = 0;
 	map.music.data = 0;
 	map.beats = 4;
-	strcpy(map.folder, file);
-	char * pStr = malloc(strlen(mapStr) + 30);
+	strncpy(map.folder, file, 100);
+	char * pStr = malloc(100);
 	map.imageFile = malloc(100);
 
-	strcpy(pStr, mapStr);
+	strncpy(pStr, mapStr, 100);
 	strcat(pStr, "/map.data");
 	printf("%s\n", pStr);
 	if(!FileExists(pStr))
@@ -139,13 +139,13 @@ Map loadMapInfo(char * file)
 			case fpID:
 				map.id = atoi(line);
 			case fpName:
-				strcpy(map.name, line);
+				strncpy(map.name, line, 100);
 				break;
 			case fpArtist:
-				strcpy(map.artist, line);
+				strncpy(map.artist, line, 100);
 				break;
 			case fpMapCreator:
-				strcpy(map.mapCreator, line);
+				strncpy(map.mapCreator, line, 100);
 				break;
 			case fpDifficulty:
 				map.difficulty = atoi(line);
@@ -154,10 +154,10 @@ Map loadMapInfo(char * file)
 				map.bpm = atoi(line);
 				break;
 			case fpImage:
-				strcpy(map.imageFile, line);
+				strncpy(map.imageFile, line, 100);
 				break;
 			case fpMusicFile:
-				strcpy(map.musicFile, line);
+				strncpy(map.musicFile, line, 100);
 				break;
 			case fpZoom:
 				map.zoom = atoi(line);
@@ -184,14 +184,15 @@ Map loadMapInfo(char * file)
 		}
 	}
 	fclose(f);
-	strcpy(pStr, mapStr);
+	strncpy(pStr, mapStr, 100);
 	if(map.imageFile[0] != '\0')
 		strcat(pStr, map.imageFile);
 	else
 	{
 		strcat(pStr, "/image.png");
-		strcpy(map.imageFile, "/image.png");
+		strncpy(map.imageFile, "/image.png", 100);
 	}
+
 	if(FileExists(pStr))
 	{
 		map.cpuImage.width = 0;
@@ -200,7 +201,7 @@ Map loadMapInfo(char * file)
 		map.image = _menuBackground;
 		map.cpuImage.width = -1;
 	}
-	
+
 	// SetTextureFilter(map.image, TEXTURE_FILTER_BILINEAR);
 	free(pStr);
 	printf("successfully loaded %s\n", file);
@@ -242,7 +243,7 @@ void freeMap(Map * map)
 void saveMap ()
 {
 	char str [100];
-	strcpy(str, _map->folder);
+	strncpy(str, _map->folder, 100);
 	strcat(str, "/map.data");
 	FILE * pFile = fopen(str, "w");
 	printf("written map data\n");
@@ -341,8 +342,8 @@ CustomTexture * addCustomTexture(char * file)
 		_customTexturesSize++;
 		_paCustomTextures = malloc(_customTexturesSize*sizeof(CustomTexture));
 		_paCustomTextures[0] = malloc(sizeof(CustomTexture));
-		_paCustomTextures[0]->file = malloc(strlen(file)+1);
-		strcpy(_paCustomTextures[0]->file, file);
+		_paCustomTextures[0]->file = malloc(100);
+		strncpy(_paCustomTextures[0]->file, file, 100);
 		_paCustomTextures[0]->texture = LoadTexture(file);
 		_paCustomTextures[0]->uses = 1;
 		return _paCustomTextures[0];
@@ -439,8 +440,8 @@ CustomSound * addCustomSound(char * file)
 		_customSoundsSize++;
 		_paCustomSounds = malloc(_customSoundsSize*sizeof(CustomSound));
 		_paCustomSounds[0] = malloc(sizeof(CustomSound));
-		_paCustomSounds[0]->file = malloc(strlen(file)+1);
-		strcpy(_paCustomSounds[0]->file, file);
+		_paCustomSounds[0]->file = malloc(100);
+		strncpy(_paCustomSounds[0]->file, file, 100);
 		loadAudio(&_paCustomSounds[0]->sound, file);
 		_paCustomSounds[0]->uses = 1;
 
@@ -528,29 +529,40 @@ void freeAllCustomSounds ()
 void loadMap ()
 {
 	char * map = malloc(100);
-	// strcpy(map, "maps/");
-	strcpy(map, _map->folder);
+	// strncpy(map, "maps/");
+	strncpy(map, _map->folder, 100);
 	char * pStr = malloc(100);
-	_background = _map->image;
-	_noBackground = false;
 
-	strcpy(pStr, map);
+	char str[100];
+
+	strncpy(pStr, map, 100);
 	if(_map->musicFile == 0)
 	{
 		_map->musicFile = malloc(100);
-		strcpy(_map->musicFile, "/song.mp3");
+		strncpy(_map->musicFile, "/song.mp3", 100);
 	}
-	strcat(pStr, _map->musicFile);
 
 	if(_map->imageFile == 0)
 	{
 		_map->imageFile = malloc(100);
-		strcpy(_map->imageFile, "/image.png");
+		strncpy(_map->imageFile, "/image.png", 100);
+	}
+
+	snprintf(str, 100, "%s/%s", _map->folder, _map->imageFile);
+	if(!_map->image.id)
+		_map->image = LoadTexture(str);
+	
+	if(_map->image.id)
+	{
+		_background = _map->image;
+		_noBackground = false;
+	}else{
+		_map->image = _menuBackground;
 	}
 
 
 	if(_map->image.id == _menuBackground.id)
-		_noBackground = 1;
+		_noBackground = true;
 
 	if(_map->music.data==0 || _map->music.size == 0)
 	{
@@ -563,7 +575,7 @@ void loadMap ()
 	// _map->musicLength = (int)getMusicDuration();
 	
 
-	strcpy(pStr, map);
+	strncpy(pStr, map, 100);
 	strcat(pStr, "/map.data");
 	FILE * pFile = fopen(pStr, "r");
 
@@ -709,17 +721,17 @@ void loadMap ()
 						{
 							printf("found sound %s\n", tmpStr);
 							//found hit sound
-							char fullPath [200];
-							snprintf(fullPath, 200, "%s/%s", _map->folder, tmpStr);
+							char fullPath [100];
+							snprintf(fullPath, 100, "%s/%s", _map->folder, tmpStr);
 							_papNotes[_noteIndex]->custSound = addCustomSound(fullPath);
-							_papNotes[_noteIndex]->hitSE_File = malloc(200*sizeof(char));
-							strcpy(_papNotes[_noteIndex]->hitSE_File, tmpStr);
+							_papNotes[_noteIndex]->hitSE_File = malloc(100*sizeof(char));
+							strncpy(_papNotes[_noteIndex]->hitSE_File, tmpStr, 100);
 						}else if(strcmp(ext, ".jpg") == 0 || strcmp(ext, ".png")  == 0 || strcmp(ext, ".jpeg") == 0)
 						{
 							printf("found texture %s\n", tmpStr);
 							//found texture
-							char fileStr [50];
-							for(int k = 0; k < 50; k++)
+							char fileStr [100];
+							for(int k = 0; k < 100; k++)
 							{
 								if(tmpStr[k] == '"')
 								{
@@ -732,7 +744,7 @@ void loadMap ()
 							snprintf(fullPath, 100, "%s/%s", _map->folder, fileStr);
 							_papNotes[_noteIndex]->custTex = addCustomTexture(fullPath); 
 							_papNotes[_noteIndex]->texture_File = malloc(100*sizeof(char));
-							strcpy(_papNotes[_noteIndex]->texture_File, tmpStr);
+							strncpy(_papNotes[_noteIndex]->texture_File, tmpStr, 100);
 						}
 					}
 					//Loading animation
@@ -747,8 +759,6 @@ void loadMap ()
 								index++;
 
 						index++; //skip space
-
-						printf("found animation %i\n", _papNotes[_noteIndex]->animSize);
 
 						for(int i = 0; i < _papNotes[_noteIndex]->animSize; i++)
 						{
@@ -798,9 +808,8 @@ void loadMap ()
 	_noteIndex = 0;
 	fclose(pFile);
 	free(pStr);
-	char str [100];
 	snprintf(str, 100, "%s - %s", _map->name, _map->artist);
-	SetWindowTitle(str);
+	SetWindowTitle(str);	
 }
 
 void freeNote(Note * note)
@@ -849,7 +858,7 @@ void saveScore()
 	fclose(file);
 }
 
-bool readScore(Map * map, int *score, int * combo, int * misses, float * accuracy, int * rank)
+void readScore(Map * map, int *score, int * combo, int * misses, float * accuracy, int * rank)
 {
 	*score = 0;
 	*combo = 0;
@@ -862,10 +871,10 @@ bool readScore(Map * map, int *score, int * combo, int * misses, float * accurac
 	snprintf(str, 200, "scores/%s/%s", map->name, _playerName);
 
 	if(!DirectoryExists("scores/"))
-		return false;
+		return;
 	
 	if(!FileExists(str))
-		return false;
+		return;
 	
 	file = fopen(str, "r");
 	char line [1000];
@@ -923,7 +932,7 @@ bool readScore(Map * map, int *score, int * combo, int * misses, float * accurac
 		*rank = atoi(part);
 	}
 	fclose(file);
-	return true;
+	return;
 }
 
 int on_extract_entry(const char *filename, void *arg) {
@@ -937,10 +946,10 @@ int on_extract_entry(const char *filename, void *arg) {
 void makeMapZip(Map * map)
 {
 	char str[200];
-	strcpy(str, map->name);
+	strncpy(str, map->name, 100);
 	strcat(str, ".zip");
 	struct zip_t *zip = zip_open(str, 6, 'w');
-	strcpy(str, map->folder);
+	strncpy(str, map->folder, 100);
 	FilePathList files = LoadDirectoryFiles(str);
 	for(int i = 0; i < files.count; i++)
 	{
@@ -948,7 +957,7 @@ void makeMapZip(Map * map)
 			continue;
 		zip_entry_open(zip, files.paths[i]);
 		{
-			strcpy(str, map->folder);
+			strncpy(str, map->folder, 100);
 			strcat(str, "/");
 			strcat(str, files.paths[i]);
 			printf("compressing file %s\n", str);
@@ -982,7 +991,7 @@ void addZipMap(char * file)
 void makeMap(Map * map)
 {
 	char * str = malloc(100);
-	strcpy(str, "maps/");
+	strncpy(str, "maps/", 100);
 	strcat(str, map->name);
 	mkdir(str);
 }
@@ -1037,7 +1046,7 @@ void loadSettings()
 			case spNone:
 				break;
 			case spName:
-				strcpy(_playerName, line);
+				strncpy(_playerName, line, 100);
 			case spVolGlobal:
 				_settings.volumeGlobal = atoi(line);
 				break;

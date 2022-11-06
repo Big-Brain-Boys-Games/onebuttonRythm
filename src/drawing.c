@@ -44,6 +44,8 @@ Rectangle _scissors[MAXSCISSORS] = {0};
 int _scissorIndex = -1;
 bool _scissorMode = false;
 
+float _hitPart = 0.3;
+
 void startScissor(int x, int y, int width, int height)
 {	
 	Rectangle new = (Rectangle){.x=x,.y=y,.width=width,.height=height};
@@ -132,7 +134,7 @@ void drawTransition()
 float musicTimeToScreen(float musicTime)
 {
 	float middle = getWidth() / 2;
-	float position = getWidth() * 0.4;
+	float position = getWidth() * _hitPart;
 
 	float musicSpeed = _musicSpeed;
 	if(_pGameplayFunction != &fPlaying)
@@ -144,7 +146,7 @@ float musicTimeToScreen(float musicTime)
 float screenToMusicTime(float x)
 {
 	float middle = getWidth() / 2;
-	float position = getWidth() * 0.4;
+	float position = getWidth() * _hitPart;
 
 	float musicSpeed = _musicSpeed;
 	if(_pGameplayFunction != &fPlaying)
@@ -156,7 +158,7 @@ float screenToMusicTime(float x)
 float noteFadeOut(float note)
 {
 	if(_musicHead < note)
-		return fmin(1, fmax(0, 1 - (musicTimeToScreen(note) - musicTimeToScreen(_musicHead)) / (getWidth()*1)));
+		return fmin(1, fmax(0, 1.2 - (musicTimeToScreen(note) - musicTimeToScreen(_musicHead)) / (getWidth()*1)));
 	return fmin(1, fmax(0, 1 - (musicTimeToScreen(_musicHead) - musicTimeToScreen(note) ) / (getWidth()*0.4)));
 	
 }
@@ -222,8 +224,8 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 		}
 		Frame frame1 = note->anim[anim];
 		Frame frame2 = note->anim[anim+1];
-		float time1 = frame1.time*2-1;
-		float time2 = frame2.time*2-1;
+		float time1 = frame1.time;
+		float time2 = frame2.time;
 		float betweenFrames = (time - time1) / (time2 - time1);
 		Vector2 pos;
 		pos.x = frame1.vec.x + (frame2.vec.x-frame1.vec.x)*betweenFrames;
@@ -387,69 +389,8 @@ void drawTextInRect(Rectangle rect, char * text, float fontSize, Color color, bo
 			text[cutoff+1] = '\0';
 		}
 	}
-	int textSize = measureText(textPointer, getWidth() * 0.03);
 	drawText(textPointer, rect.x, rect.y, fontSize, color);
-	// drawText(textPointer, rect.x + rect.width/2 - textSize / 2, rect.y + getHeight() * 0.01+rect.height, getWidth() * 0.03, color);
 }
-
-// void drawMapThumbnail(Rectangle rect, Map *map, int highScore, int combo, float accuracy, bool selected)
-// {
-// 	if(map->image.id == 0)
-// 	{
-// 		//load map image onto gpu(cant be loaded in sperate thread because opengl >:( )
-// 		if(map->cpuImage.width > 0)
-// 		{
-// 			map->image = LoadTextureFromImage(map->cpuImage);
-// 			UnloadImage(map->cpuImage);
-// 			map->cpuImage.width = -1;
-// 			if(map->image.id == 0)
-// 				map->image.id = -1; 
-// 			else
-// 				SetTextureFilter(map->image, TEXTURE_FILTER_BILINEAR);
-// 		}
-// 	}
-// 	float imageRatio = 0.8;
-// 	Color color = WHITE;
-// 	if(mouseInRect(rect))
-// 		color = LIGHTGRAY;
-// 	if(mouseInRect(rect) && IsMouseButtonReleased(0))
-// 		color = GRAY;
-
-// 	char text [100];
-// 	snprintf(text, 100, "%s - %s", map->name, map->artist);
-
-
-// 	DrawRectangle(rect.x, rect.y, rect.width, rect.height, color);
-
-// 	DrawRectangle(rect.x, rect.y, rect.width, rect.height*imageRatio, BLACK);
-
-// 	drawTextureCorrectAspectRatio(map->image, color, (Rectangle){.x=rect.x, .y=rect.y, .width=rect.width, .height=rect.height*imageRatio}, 0);
-
-// 	DrawRectangleGradientV(rect.x, rect.y+rect.height*0.4, rect.width, rect.height*imageRatio-rect.height*0.4, ColorAlpha(BLACK, 0), ColorAlpha(BLACK, 0.5));
-	
-// 	drawTextInRect((Rectangle){.x=rect.x, .y=rect.y+rect.height*imageRatio, .width=rect.width, rect.height=rect.height}, text, getWidth() * 0.03, DARKGRAY, mouseInRect(rect));
-	
-// 	snprintf(text, 100, "%i", map->difficulty);
-// 	DrawRectangle(rect.x + rect.width*0.13, rect.y + 0.60*rect.height, rect.width*0.2, rect.height*0.20, ColorAlpha(BLACK, 0.4));
-// 	drawText(text, rect.x + rect.width*0.08, rect.y + 0.60*rect.height, getWidth() * 0.02625, WHITE);
-// 	snprintf(text, 100, "%i:%i", (int)floorf(map->musicLength/60), (int)floorf(map->musicLength-floorf(map->musicLength/60)*60));
-// 	drawText(text, rect.x + rect.width*0.06, rect.y + 0.68*rect.height, getWidth() * 0.02625, WHITE);
-
-// 	if(highScore !=0)
-// 	{
-// 		snprintf(text, 100, "%i", highScore);
-// 		DrawRectangle(rect.x + rect.width*0.78, rect.y + 0.02*rect.height, rect.width*0.2, rect.height*0.20, ColorAlpha(BLACK, 0.4));
-// 		drawText(text, rect.x + rect.width*0.80, rect.y + 0.02*rect.height, getWidth() * 0.015, WHITE);
-// 		snprintf(text, 100, "%i", combo);
-// 		drawText(text, rect.x + rect.width*0.82, rect.y + 0.08*rect.height, getWidth() * 0.015, WHITE);
-// 		snprintf(text, 100, "%.2f", 100*(1-accuracy));
-// 		drawText(text, rect.x + rect.width*0.84, rect.y + 0.14*rect.height, getWidth() * 0.015, WHITE);
-// 		snprintf(text, 100, "%i", misses);
-// 		drawText(text, rect.x + rect.width*0.82, rect.y + 0.08*rect.height, getWidth() * 0.015, WHITE);
-// 		drawRank(rect.x+rect.width*0.03, rect.y+rect.width*0.03, rect.width*0.08, rect.width*0.08, _map->rank);
-
-// 	}
-// }
 
 void drawBackground()
 {
@@ -837,7 +778,7 @@ void initDrawing()
 		for(int x = 0; x < 3; x++)
 		{
 			char str[40];
-			strcpy(str, "assets/buttonTile_x.png");
+			strncpy(str, "assets/buttonTile_x.png", 40);
 			str[18] = '1' + x+y*3;
 			_buttonTile[x][y] = LoadTexture(str);
 		}

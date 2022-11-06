@@ -145,6 +145,9 @@ void drawCSS_Object(CSS_Object * object)
 
 	float growAmount = object->growOnHover * fmin(object->hoverTime*15, 1);
 
+	if(mouseInRect(rect) && IsMouseButtonDown(0))
+		growAmount *= -1;
+
 
 	rect.x -= rect.width*growAmount/2;
 	rect.y -= rect.height*growAmount/2;
@@ -270,8 +273,8 @@ void drawCSS_Object(CSS_Object * object)
 				exitGame();
 			}else
 			{
-				char * file = malloc(strlen(object->loadFile)+1);
-				strcpy(file, object->loadFile);
+				char * file = malloc(100);
+				strncpy(file, object->loadFile, 100);
 				freeCSS(_pCSS);
 				free(_pCSS);
 				_pCSS = 0;
@@ -302,8 +305,8 @@ void drawCSS(char * file)
 	if(IsKeyPressed(KEY_F5))
 	{
 		//reload
-		char * file = malloc(strlen(_pCSS->file)+1);
-		strcpy(file, _pCSS->file);
+		char * file = malloc(100);
+		strncpy(file, _pCSS->file, 100);
 		freeCSS(_pCSS);
 		free(_pCSS);
 		loadCSS(file);
@@ -359,7 +362,7 @@ char * addCSS_Variable(char * name)
 	}
 
 	_pCSS->variables[_pCSS->variableCount-1].name = malloc(100);
-	strcpy(_pCSS->variables[_pCSS->variableCount-1].name, name);
+	strncpy(_pCSS->variables[_pCSS->variableCount-1].name, name, 100);
 	_pCSS->variables[_pCSS->variableCount-1].value = malloc(100);
 	_pCSS->variables[_pCSS->variableCount-1].value[0] = '\0';
 	return _pCSS->variables[_pCSS->variableCount-1].value;
@@ -385,7 +388,7 @@ void setCSS_Variable(char * name, char * value)
 	
 	CSS_Variable * var = getCSS_Variable(name);
 	if(var)
-		strcpy(var->value, value);
+		strncpy(var->value, value, 100);
 }
 
 void setCSS_VariableInt(char * name, int value)
@@ -437,8 +440,8 @@ void loadCSS(char * fileName)
 	textIndex = 0;
 
 	_pCSS = malloc(sizeof(CSS));
-	_pCSS->file = malloc(strlen(fileName)+1);
-	strcpy(_pCSS->file, fileName);
+	_pCSS->file = malloc(100);
+	strncpy(_pCSS->file, fileName, 100);
 	_pCSS->objectCount = 0;
 	_pCSS->objects = 0;
 	_pCSS->variables = 0;
@@ -458,8 +461,8 @@ void loadCSS(char * fileName)
 				if(text[nameIndex] == '{')
 				{
 					text[nameIndex] = '\0';
-					object.name = malloc(strlen(text+i)+1);
-					strcpy(object.name, text+i);
+					object.name = malloc(100);
+					strncpy(object.name, text+i, 100);
 					i = nameIndex+1;
 					break;
 				}
@@ -532,19 +535,19 @@ void loadCSS(char * fileName)
 									object.usesVariable = true;
 								}else if(!strcmp(value, "_mapname_") && _map)
 								{
-									object.text = malloc(strlen(_map->name)+1);
-									strcpy(object.text, _map->name);
+									object.text = malloc(100);
+									strncpy(object.text, _map->name, 100);
 								}else if(!strcmp(value, "_playerName_"))
 								{
-									object.text = malloc(strlen(_playerName)+1);
-									strcpy(object.text, _playerName);
+									object.text = malloc(100);
+									strncpy(object.text, _playerName, 100);
 								}else if(!strcmp(value, "_notification_"))
 								{
-									object.text = malloc(strlen(_notfication)+1);
-									strcpy(object.text, _notfication);
+									object.text = malloc(100);
+									strncpy(object.text, _notfication, 100);
 								}else {
-									object.text = malloc(strlen(value)+1);
-									strcpy(object.text, value);
+									object.text = malloc(100);
+									strncpy(object.text, value, 100);
 								}
 							}
 						}
@@ -553,8 +556,8 @@ void loadCSS(char * fileName)
 						{
 							if(strlen(value))
 							{
-								object.parent = malloc(strlen(value)+1);
-								strcpy(object.parent, value);
+								object.parent = malloc(100);
+								strncpy(object.parent, value, 100);
 							}
 						}
 
@@ -562,8 +565,8 @@ void loadCSS(char * fileName)
 						{
 							if(strlen(value))
 							{
-								object.makeActive = malloc(strlen(value)+1);
-								strcpy(object.makeActive, value);
+								object.makeActive = malloc(100);
+								strncpy(object.makeActive, value, 100);
 							}
 						}
 
@@ -576,8 +579,8 @@ void loadCSS(char * fileName)
 						{
 							if(strlen(value))
 							{
-								object.loadFile = malloc(strlen(value)+1);
-								strcpy(object.loadFile, value);
+								object.loadFile = malloc(100);
+								strncpy(object.loadFile, value, 100);
 							}
 						}
 
@@ -658,7 +661,6 @@ void loadCSS(char * fileName)
 						{
 							if(object.parent)
 							{
-								CSS_Object parent = getCSS_Object(object.parent);
 								object.x = atof(value)/100.0;
 							}else
 							{
@@ -673,7 +675,6 @@ void loadCSS(char * fileName)
 						{
 							if(object.parent)
 							{
-								CSS_Object parent = getCSS_Object(object.parent);
 								object.y = atof(value)/100.0;
 							}else
 							{
@@ -784,10 +785,10 @@ void UITextBox(char * variable, char * name)
 	
 	if(object->selected)
 	{
-		strcpy(variable, object->text);
+		strncpy(variable, object->text, 100);
 	}else
 	{
-		strcpy(object->text, variable);
+		strncpy(object->text, variable, 100);
 	}
 }
 
@@ -860,7 +861,6 @@ void fMainMenu(bool reset)
 	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
 					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
 
-	int middle = getWidth() / 2;
 	drawVignette();
 
 	if(UIBUttonPressed("settingsButton"))
@@ -889,13 +889,8 @@ void fMainMenu(bool reset)
 
 void fSettings(bool reset)
 {
-
-	static float menuScroll = 0;
-	static float menuScrollSmooth = 0;
 	if(reset)
 	{
-		menuScroll = 0;
-		menuScrollSmooth = 0;
 		return;
 	}
 	
@@ -949,15 +944,13 @@ void fPause(bool reset)
 
 	drawProgressBar();
 
-	// TODO dynamically change seperation depending on the amount of buttons?
-	float middle = getWidth() / 2;
-
 	if (IsKeyPressed(KEY_ESCAPE) || UIBUttonPressed("continueButton"))
 	{
 		if (_pNextGameplayFunction == &fPlaying)
 		{
 			_pGameplayFunction = &fCountDown;
 			fCountDown(true);
+			_transition = 0.1;
 		}
 		else
 			_pGameplayFunction = _pNextGameplayFunction;
@@ -980,6 +973,7 @@ void fPause(bool reset)
 		_musicHead = 0;
 		fCountDown(true);
 		fPlaying(true);
+		_transition = 0.1;
 	}
 
 	if (_pNextGameplayFunction == &fRecording && UIBUttonPressed("retryButton"))
@@ -989,12 +983,14 @@ void fPause(bool reset)
 		_amountNotes = 0;
 		_musicHead = 0;
 		fRecording(true);
+		_transition = 0.1;
 	}
 
 	if (UIBUttonPressed("exitButton"))
 	{
 		unloadMap();
 		gotoMainMenu(false);
+		_transition = 0.1;
 	}
 	drawCursor();
 }
@@ -1035,7 +1031,7 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 		}
 	}
 
-	if(amount < oldAmount)
+	if(amount < oldAmount) //fixes crash when deleting map then refreshing
 	{
 		for(int i = 0; i < oldAmount; i++)
 		{
@@ -1052,8 +1048,8 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 		snprintf(str, 100, "%s/map.data", files.paths[i]);
 		if(FileExists(str))
 		{
-			newFiles[j] = malloc(sizeof(char) * (strlen(files.paths[i])+1));
-			strcpy(newFiles[j], files.paths[i]);
+			newFiles[j] = malloc(100);
+			strncpy(newFiles[j], files.paths[i], 100);
 			j++;
 		}
 	}
@@ -1122,7 +1118,7 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 				{
 					break;
 				}
-				strcpy(filesCaching[mapIndex], filesCaching[j]);
+				strncpy(filesCaching[mapIndex], filesCaching[j], 100);
 				_paMaps[mapIndex] = _paMaps[j];
 				_paMaps[j] = (Map){0};
 				readScore(&_paMaps[mapIndex],
@@ -1160,7 +1156,7 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 		}
 
 		// caching
-		strcpy(filesCaching[mapIndex], newFiles[i]);
+		strncpy(filesCaching[mapIndex], newFiles[i], 100);
 
 		mapIndex++;
 	}
@@ -1212,7 +1208,6 @@ void fMapSelect(bool reset)
 	static bool selectingMods = false;
 	_musicSpeed = 1;
 	static char search[100];
-	static bool searchSelected;
 
 	if (selectMapTransition < 1)
 		selectMapTransition += GetFrameTime() * 10;
@@ -1477,10 +1472,10 @@ void fMapSelect(bool reset)
 		{
 			if (IsMouseButtonReleased(0) && mouseInRect(mapButton) && mouseInRect(mapSelectRect))
 				selectedMap = -1;
-
-			Rectangle buttons = (Rectangle){.x = mapButton.x, .y = mapButton.y + mapButton.height, .width = mapButton.width, .height = mapButton.height * 0.15 * selectMapTransition};
 			
+			startScissor(mapButton.x, mapButton.y, mapButton.width, mapButton.height*0.8+mapButton.height*0.5*selectMapTransition);
 			drawContainer("mapButtonsContainer", mapButton.x, mapButton.y);
+			endScissor();
 
 			bool playButton = UIBUttonPressed("playButton");
 			bool editorButton = UIBUttonPressed("editorButton");
@@ -1510,23 +1505,6 @@ void fMapSelect(bool reset)
 				}
 
 				loadMap();
-
-				//wait until map image is loaded
-				// if(_pGameplayFunction != &fMapSelect)
-				// {
-				// 	float startTime = (float)clock()/CLOCKS_PER_SEC;
-				// 	for(int i = 0; i < 20 && _map->cpuImage.width < 1; i++)
-				// 	{
-				// 		// #ifdef _WIN32
-				// 		// 	Sleep(100);
-				// 		// #else
-				// 		// 	usleep(100);
-				// 		// #endif
-				// 	}
-
-				// 	if(_map->cpuImage.width < 1)
-				// 		_map->image = _background;
-				// }
 			}
 			
 			if (playButton)
@@ -1597,7 +1575,7 @@ void fMapSelect(bool reset)
 		if(_paMaps[selMap].name != 0)
 		{
 			char str[100];
-			strcpy(str, _paMaps[selMap].name);
+			strncpy(str, _paMaps[selMap].name, 100);
 			strcat(str, " - ");
 			strcat(str, _paMaps[selMap].artist);
 			int textSize = measureText(str, getWidth() * 0.05);
@@ -1615,13 +1593,13 @@ void fExport(bool reset)
 	_pGameplayFunction = &fMainMenu;
 	makeMapZip(_map);
 	char str[300];
-	strcpy(str, GetWorkingDirectory());
+	strncpy(str, GetWorkingDirectory(), 100);
 	strcat(str, "/");
 	strcat(str, _map->name);
 	strcat(str, ".zip");
 	SetClipboardText(str);
 	resetBackGround();
-	strcpy(_notfication, "exported map");
+	strncpy(_notfication, "exported map", 100);
 }
 
 void fNewMap(bool reset)
@@ -1640,15 +1618,15 @@ void fNewMap(bool reset)
 	{
 		if(!newMap.name)
 			newMap.name = malloc(100);
-		strcpy(newMap.name, "name");
+		strncpy(newMap.name, "name", 100);
 		
 		if(!newMap.artist)
 			newMap.artist = malloc(100);
-		strcpy(newMap.artist, "Artist");
+		strncpy(newMap.artist, "Artist", 100);
 
 		if(!newMap.mapCreator)
 			newMap.mapCreator = malloc(100);
-		strcpy(newMap.mapCreator, _playerName);
+		strncpy(newMap.mapCreator, _playerName, 100);
 
 		if(!newMap.folder)
 			newMap.folder = malloc(100);
@@ -1665,7 +1643,6 @@ void fNewMap(bool reset)
 
 	drawCSS("theme/newMap.css");
 
-	int middle = getWidth() / 2;
 
 	if (IsKeyPressed(KEY_ESCAPE) || UIBUttonPressed("backButton"))
 	{
@@ -1688,7 +1665,7 @@ void fNewMap(bool reset)
 
 		makeMap(&newMap);
 		char str[100];
-		strcpy(str, "maps/");
+		strncpy(str, "maps/", 100);
 		strcat(str, newMap.name);
 		strcat(str, "/song");
 		strcat(str, pMusicExt);
@@ -1699,7 +1676,7 @@ void fNewMap(bool reset)
 		newMap.musicFile = malloc(100);
 		snprintf(newMap.musicFile, 100, "/song%s", pMusicExt);
 
-		strcpy(str, "maps/");
+		strncpy(str, "maps/", 100);
 		strcat(str, newMap.name);
 		strcat(str, "/image.png");
 		file = fopen(str, "wb");
@@ -1766,8 +1743,8 @@ void fNewMap(bool reset)
 
 			int file = 0;
 			int partIndex = 0;
-			files = malloc(strlen(str));
-			char * part = calloc( strlen(str), sizeof(char));
+			files = malloc(100);
+			char * part = calloc( 100, sizeof(char));
 			for (int i = 0; str[i] != '\0'; i++)
 			{
 				part[partIndex++] = str[i];
@@ -1780,7 +1757,7 @@ void fNewMap(bool reset)
 					{
 						printf("\tfile exists\n");
 						files[file] = malloc(partIndex);
-						strcpy(files[file], part);
+						strncpy(files[file], part, 100);
 						file++;
 					}
 					partIndex = 0;
@@ -1829,7 +1806,7 @@ void fNewMap(bool reset)
 				pMusic = malloc(size);
 				fread(pMusic, size, 1, file);
 				fclose(file);
-				strcpy(pMusicExt, ext);
+				strncpy(pMusicExt, ext, 50);
 				pMusicSize = size;
 
 				loadAudio(&previewAudio, files[i]);
@@ -1845,7 +1822,7 @@ void fNewMap(bool reset)
 				rewind(file);
 				pMusic = malloc(size);
 				fread(pMusic, size, 1, file);
-				strcpy(pMusicExt, ext);
+				strncpy(pMusicExt, ext, 50);
 				fclose(file);
 				pMusicSize = size;
 			}
@@ -1924,13 +1901,13 @@ void textBox(Rectangle rect, char *str, bool *selected)
 		while (c != 0)
 		{
 			char strPart1[100];
-			strcpy(strPart1, str);
+			strncpy(strPart1, str, 100);
 			strPart1[cursor] = '\0';
 
 			char strPart2[100];
-			strcpy(strPart2, str+cursor);
+			strncpy(strPart2, str+cursor, 100);
 
-			snprintf(str, 100, "%s%c%s\0",strPart1, c, strPart2);
+			snprintf(str, 100, "%s%c%s",strPart1, c, strPart2);
 			str[strlen(str)+2] = '\0';
 
 			cursor++;
@@ -1974,7 +1951,7 @@ void textBox(Rectangle rect, char *str, bool *selected)
 				cursor = 0;
 			
 			char strCopy[100];
-			strcpy(strCopy, str);
+			strncpy(strCopy, str, 100);
 			strCopy[cursor] = '\0';
 
 			snprintf(str, 100, "%s%s",strCopy, strCopy+prev);
@@ -1984,11 +1961,11 @@ void textBox(Rectangle rect, char *str, bool *selected)
 		if (IsKeyPressed(KEY_DELETE) && cursor != strlen(str))
 		{
 			char strCopy[100];
-			strcpy(strCopy, str);
+			strncpy(strCopy, str, 100);
 			strCopy[cursor] = '\0';
 
 			char strCopy2[100];
-			strcpy(strCopy2, str+cursor+1);
+			strncpy(strCopy2, str+cursor+1, 100);
 
 			snprintf(str, 100, "%s%s",strCopy, strCopy2);
 			blinkingTimeout = GetTime();
@@ -1997,8 +1974,8 @@ void textBox(Rectangle rect, char *str, bool *selected)
 		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_BACKSPACE))
 		{
 			char strCopy[100];
-			strcpy(strCopy, str+cursor);
-			strcpy(str, strCopy);
+			strncpy(strCopy, str+cursor, 100);
+			strncpy(str, strCopy, 100);
 			cursor = 0;
 			blinkingTimeout = GetTime();
 		}
@@ -2022,11 +1999,11 @@ void textBox(Rectangle rect, char *str, bool *selected)
 				return;
 			
 			char tmpStr[100];
-			strcpy(tmpStr, str);
+			strncpy(tmpStr, str, 100);
 			tmpStr[cursor] = '\0';
 
 			char ogString[100];
-			strcpy(ogString, str+cursor);
+			strncpy(ogString, str+cursor, 100);
 
 			snprintf(str, 100, "%s%s%s", tmpStr, clipboard, ogString);
 
@@ -2038,7 +2015,7 @@ void textBox(Rectangle rect, char *str, bool *selected)
 	{
 		//draw cursor
 		char tmpStr[100];
-		strcpy(tmpStr, str);
+		strncpy(tmpStr, str, 100);
 		tmpStr[cursor] = '\0';
 		int cursorLength = measureText(tmpStr, fontSize*screenSize);
 

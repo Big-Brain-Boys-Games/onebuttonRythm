@@ -6,11 +6,14 @@
 
 
 #define EXTERN_GAMEPLAY
+#define EXTERN_DRAWING
 
 // #include "shared.h"
 
 #include "audio.h"
 #include "files.h"
+#include "drawing.h"
+#include "main.h"
 #include "gameplay/gameplay.h"
 
 
@@ -119,16 +122,16 @@ void MakeNoteCopy(Note src, Note * dest)
 
     if(src.hitSE_File != 0)
     {
-        dest->hitSE_File = malloc(strlen(src.hitSE_File));
-        strcpy(dest->hitSE_File, src.hitSE_File);
+        dest->hitSE_File = malloc(100);
+        strncpy(dest->hitSE_File, src.hitSE_File, 100);
 
         dest->custSound = addCustomSound(src.custSound->file);
     }
 
     if(src.texture_File != 0)
     {
-        dest->texture_File = malloc(strlen(src.texture_File));
-        strcpy(dest->texture_File, src.texture_File);
+        dest->texture_File = malloc(100);
+        strncpy(dest->texture_File, src.texture_File, 100);
 
         dest->custTex = addCustomTexture(src.custTex->file);
     }
@@ -154,4 +157,31 @@ int rankCalculation(int score, int combo, int misses, float accuracy)
         rank = 6;
     
     return (6.0/100)*rank; //map output from 100 to 6 ranks
+}
+
+float musicTimeToAnimationTime(double time)
+{
+    // time += _hitPart*_scrollSpeed/2;
+
+    double begin = screenToMusicTime(0);
+    double end = screenToMusicTime(getWidth());
+
+    time -= begin;
+    time /= end-begin;
+
+    return 1-time;
+}
+
+double animationTimeToMusicTime(float time)
+{
+
+    double begin = screenToMusicTime(0);
+    double end = screenToMusicTime(getWidth());
+
+    time += begin;
+    time *= end-begin;
+
+    time -= _hitPart*_scrollSpeed;
+
+    return time;
 }

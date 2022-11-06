@@ -144,7 +144,7 @@
 }
 
 #addTimeSigButton{
-    type: button;
+    type: buttonNoSprite;
     parent: toolsContainer;
     top: 10;
     left: 17;
@@ -155,7 +155,7 @@
 }
 
 #rmTimeSigButton{
-    type: button;
+    type: buttonNoSprite;
     parent: toolsContainer;
     top: 55;
     left: 17;
@@ -166,7 +166,7 @@
 }
 
 #barPlusButton{
-    type: button;
+    type: buttonNoSprite;
     parent: toolsContainer;
     top: 10;
     left: 29;
@@ -177,7 +177,7 @@
 }
 
 #barMinusButton{
-    type: button;
+    type: buttonNoSprite;
     parent: toolsContainer;
     top: 55;
     left: 29;

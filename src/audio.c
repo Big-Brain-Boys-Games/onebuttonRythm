@@ -151,8 +151,8 @@ void loadAudio(Audio * audio, char *file)
 	struct decodeAudioArgs *args = malloc(sizeof(struct decodeAudioArgs));
 	args->audioLength = &audio->size;
 	args->buffer = (void*)&audio->data;
-	args->file = malloc(strlen(file) + 5);
-	strcpy(args->file, file);
+	args->file = malloc(100);
+	strncpy(args->file, file, 100);
 	createThread((void *(*)(void *))decodeAudio, args);
 }
 

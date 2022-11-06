@@ -98,7 +98,7 @@ void checkFileDropped()
 			if (strcmp(GetFileExtension(files.paths[i]), ".zip") == 0)
 			{
 				addZipMap(files.paths[i]);
-				strcpy(_notfication, "map imported");
+				strncpy(_notfication, "map imported", 100);
 			}
 		}
 		UnloadDroppedFiles(files);
