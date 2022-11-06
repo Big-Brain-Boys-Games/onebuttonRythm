@@ -747,7 +747,6 @@ void fEditor(bool reset)
 		if (endOfMusic())
 		{
 			_musicPlaying = false;
-			_musicPlaying = false;
 		}
 	}else
 	{

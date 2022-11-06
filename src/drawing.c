@@ -210,7 +210,8 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 	if(note->animSize)
 	{
 		//draw animated note
-		float time = (musicTime - note->time) / (_scrollSpeed);
+		float time = musicTimeToAnimationTime(note->time);
+		//(musicTime - note->time) / (_scrollSpeed);
 		// if(time < note->anim[0].time || time < time < note->anim[note->animSize].time)
 		// 	return;
 		int anim = 0;
