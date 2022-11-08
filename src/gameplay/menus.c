@@ -104,14 +104,13 @@ void drawCSS_Object(CSS_Object * object)
 
 
 	
-
+	float width = getWidth();
 	float height = getHeight();
 	if(object->keepAspectRatio)
-		height = getWidth();
+		width = height;
 
-	Rectangle rect = (Rectangle){.x=object->x*getWidth(), .y=(object->y+scrollValue)*getHeight(), .width=object->width*getWidth(), .height=object->height*height};
+	Rectangle rect = (Rectangle){.x=object->x*getWidth(), .y=(object->y+scrollValue)*getHeight(), .width=object->width*width, .height=object->height*height};
 
-	
 
 	
 	bool scissorMode = false;
@@ -181,6 +180,24 @@ void drawCSS_Object(CSS_Object * object)
 		case css_image:
 			drawTextureCorrectAspectRatio(object->image, object->color, rect, rotation);
 			break;
+
+		case css_toggle:
+			object->selected = false;
+
+			if(mouseInRect(rect) && IsMouseButtonReleased(0))
+			{
+				object->value = !object->value;
+				object->selected = true;
+			}
+			
+			if(object->value)
+			{
+				drawButton(rect, "X", object->fontSize);
+			}else
+				drawButton(rect, "", 1);
+
+			
+			break;
 		
 		case css_rectangle:
 			DrawRectangle(rect.x, rect.y, rect.width, rect.height, object->color);
@@ -232,11 +249,14 @@ void drawCSS_Object(CSS_Object * object)
 		endScissor();
 	}
 
-	if(object->value > object->max)
-		object->value = object->max;
-	
-	if(object->value < object->min)
-		object->value = object->min;
+	if(object->type != css_toggle)
+	{
+		if(object->value > object->max)
+			object->value = object->max;
+		
+		if(object->value < object->min)
+			object->value = object->min;
+	}
 		
 
 	if((object->type == css_button || object->type == css_buttonNoSprite) && object->selected)
@@ -521,6 +541,9 @@ void loadCSS(char * fileName)
 
 							if(!strcmp(value, "rectangle"))
 								object.type = css_rectangle;
+
+							if(!strcmp(value, "toggle"))
+								object.type = css_toggle;
 
 							if(!strcmp(value, "button"))
 								object.type = css_button;
@@ -955,6 +978,9 @@ void fSettings(bool reset)
 	_settings.noteSize = UIValueInteractable(_settings.noteSize, "noteSizeSlider");
 	_settings.offset = UIValueInteractable(_settings.offset, "offsetSlider");
 	_settings.offset = UIValueInteractable(_settings.offset, "offsetBox");
+
+	_settings.animations = UIValueInteractable(_settings.animations, "animationsToggle");
+	_settings.customAssets = UIValueInteractable(_settings.customAssets, "customAssetsToggle");
 
 	UITextBox(_playerName, "nameBox");
 

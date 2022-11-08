@@ -270,3 +270,27 @@
     margin-top: 30;
     width: 40;
 }
+
+#animationsToggle {
+    type: toggle;
+    parent: settingsContainer;
+    color: WHITE;
+    font-size: 3;
+    margin-left: 68;
+    margin-top: 45;
+    width: 5;
+    height: 5;
+    keepAspectRatio: yes;
+}
+
+#customAssetsToggle {
+    type: toggle;
+    parent: settingsContainer;
+    color: WHITE;
+    font-size: 3;
+    margin-left: 68;
+    margin-top: 55;
+    width: 5;
+    height: 5;
+    keepAspectRatio: yes;
+}

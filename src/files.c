@@ -1029,6 +1029,8 @@ void loadSettings()
 		if(strcmp(line, "[ResolutionX]\n") == 0)			{mode = spResX;			continue;}
 		if(strcmp(line, "[ResolutionY]\n") == 0)			{mode = spResY;			continue;}
 		if(strcmp(line, "[Fullscreen]\n") == 0)				{mode = spFS;			continue;}
+		if(strcmp(line, "[Animations]\n") == 0)				{mode = spAnimations;	continue;}
+		if(strcmp(line, "[CustomAssets]\n") == 0)			{mode = spCustomAssets;	continue;}
 		
 		for(int i = 0; i < stringLength; i++)
 					if(line[i] == '\n') line[i]= '\0';
@@ -1066,6 +1068,12 @@ void loadSettings()
 			case spFS:
 				_settings.fullscreen = atoi(line);
 				break;
+			case spAnimations:
+				_settings.animations = atoi(line);
+				break;
+			case spCustomAssets:
+				_settings.customAssets = atoi(line);
+				break;
 		}
 	}
 	fclose(f);
@@ -1096,5 +1104,9 @@ void saveSettings ()
 	fprintf(file, "%i\n", _settings.resolutionY);
 	fprintf(file, "[Fullscreen]\n");
 	fprintf(file, "%i\n", _settings.fullscreen);
+	fprintf(file, "[Animations]\n");
+	fprintf(file, "%i\n", _settings.animations);
+	fprintf(file, "[CustomAssets]\n");
+	fprintf(file, "%i\n", _settings.customAssets);
 	fclose(file);
 }

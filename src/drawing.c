@@ -194,7 +194,7 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 	if(note->hit)
 		return;
 	Texture tex = _noteTex;
-	if(note->custTex)
+	if(note->custTex && (_settings.customAssets || _pGameplayFunction == &fEditor))
 	{
 		tex = note->custTex->texture;
 	}
@@ -207,10 +207,10 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 	double temp = _musicHead;
 	_musicHead = musicTime;
 	
-	if(!note->anim || _pGameplayFunction == &fEditor || _pGameplayFunction == &fEditorAnimation)
+	if(!note->anim || !_settings.animations || _pGameplayFunction == &fEditor)
 	{
 		Color colorNoAni = color;
-		if((_pGameplayFunction == &fEditor || _pGameplayFunction == &fEditorAnimation) && note->anim)
+		if(_pGameplayFunction == &fEditor && note->anim)
 		{
 			colorNoAni.a = 100;
 		}
@@ -218,7 +218,7 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 		DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=getHeight() / 2 -tex.height * scaleNotes/2}, 0,  scaleNotes, colorNoAni);
 	}
 
-	if(note->animSize)
+	if(note->animSize && _settings.animations)
 	{
 		//draw animated note
 		

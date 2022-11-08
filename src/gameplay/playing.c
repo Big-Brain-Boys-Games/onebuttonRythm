@@ -332,7 +332,7 @@ void fPlaying(bool reset)
 			hitPointScores[hitPointsIndex] = scoreAdded;
 			hitPointsIndex = (hitPointsIndex+1)%HITPOINTAMOUNT;
 
-			if(_papNotes[closestIndex]->custSound)
+			if(_papNotes[closestIndex]->custSound && _settings.customAssets)
 				playAudioEffect(_papNotes[closestIndex]->custSound->sound);
 			else	
 				playAudioEffect(_hitSe);

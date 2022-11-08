@@ -756,7 +756,7 @@ void fEditor(bool reset)
 		_musicHead += GetFrameTime() * _musicSpeed;
 		if (_amountNotes > 0 && _noteIndex < _amountNotes && getMusicHead() > _papNotes[_noteIndex]->time)
 		{
-			if(_papNotes[_noteIndex]->custSound)
+			if(_papNotes[_noteIndex]->custSound && _settings.customAssets)
 				playAudioEffect(_papNotes[_noteIndex]->custSound->sound);
 			else
 				playAudioEffect(_hitSe);

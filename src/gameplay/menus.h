@@ -18,7 +18,7 @@
 
 
 
-enum CSS_Type {css_text, css_image, css_rectangle, css_button, css_buttonNoSprite, css_textbox, css_numberbox, css_slider, css_container};
+enum CSS_Type {css_text, css_image, css_rectangle, css_toggle ,css_button, css_buttonNoSprite, css_textbox, css_numberbox, css_slider, css_container};
 
 typedef struct CSS_Variable{
     char * name;
