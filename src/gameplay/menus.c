@@ -1973,6 +1973,11 @@ void textBox(Rectangle rect, char *str, bool *selected)
 		char c = GetCharPressed();
 		while (c != 0)
 		{
+			if(strlen(str) > 9)
+			{
+				break;
+			}
+
 			char strPart1[100];
 			strncpy(strPart1, str, 100);
 			strPart1[cursor] = '\0';
