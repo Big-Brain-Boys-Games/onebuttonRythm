@@ -28,6 +28,8 @@ Supports theming via botchered css
 ![screenshot3](https://user-images.githubusercontent.com/50572621/200126714-df3384a3-d4d5-4f12-8fbd-95c8a72fcbd3.png)
 
 
+Current doesn't build with MSVC, does work with gcc and mingw 
+
 ### to compile
 
     git clone https://github.com/Big-Brain-Boys-Games/onebuttonRythm.git --recursive
