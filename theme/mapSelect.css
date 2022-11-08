@@ -10,11 +10,11 @@
 
 #backButton {
     type: button;
-    image: assets/icons/back.png;
+    image: "assets/icons/back.png";
     left: 5;
     top: 3;
-    width: 5;
-    height: 5;
+    width: 8;
+    height: 8;
     growOnHover: 0.2;
     keepAspectRatio: yes;
     rotateOnHover: -10;
@@ -44,11 +44,11 @@
 
 #searchText {
     type: image;
-    image: assets/icons/zoom.png;
+    image: "assets/icons/zoom.png";
     left: 38;
     top: 4;
-    width: 3;
-    height: 3;
+    width: 5;
+    height: 5;
     color: DARKGRAY;
     keepAspectRatio: yes;
 }
@@ -97,11 +97,11 @@
 #difficultyIcon {
     type: image;
     parent: mapContainer;
-    image: assets/icons/star.png;
+    image: "assets/icons/star.png";
     top: 5;
     left: 5;
-    width: 7;
-    height: 7;
+    width: 11;
+    height: 11;
     keepAspectRatio: yes;
     color: WHITE;
 }
@@ -121,11 +121,11 @@
 #timeIcon {
     type: image;
     parent: mapContainer;
-    image: assets/icons/clock.png;
+    image: "assets/icons/clock.png";
     top: 19.5;
     left: 5;
-    width: 5;
-    height: 5;
+    width: 8;
+    height: 8;
     keepAspectRatio: yes;
     color: WHITE;
 }
@@ -188,11 +188,12 @@
 #difficultyIcon {
     type: image;
     parent: highscoreContainer;
-    image: assets/icons/trophy.png;
-    top: 8;
-    left: 65;
-    width: 10;
-    height: 10;
+    image: "assets/icons/trophy.png";
+    top: 17;
+    left: 69;
+    width: 20;
+    height: 20;
+    centered: yes;
     keepAspectRatio: yes;
     color: WHITE;
 }

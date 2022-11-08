@@ -170,6 +170,12 @@ void drawCSS_Object(CSS_Object * object)
 
 	float rotation = fmin(object->hoverTime*15, 1) * object->rotateOnHover;
 
+	if(object->centered)
+	{
+		rect.x -= rect.width/2;
+		rect.y -= rect.height/2;
+	}
+
 	switch(object->type)
 	{
 		case css_text:
@@ -652,9 +658,15 @@ void loadCSS(char * fileName)
 							}
 						}
 
+
 						if(!strcmp(var, "active"))
 						{
 							object.active = !strcmp(value, "yes");
+						}
+
+						if(!strcmp(var, "centered"))
+						{
+							object.centered = !strcmp(value, "yes");
 						}
 
 						if(!strcmp(var, "scrollable"))

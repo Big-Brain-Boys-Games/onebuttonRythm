@@ -49,6 +49,7 @@ typedef struct CSS_Object{
     bool keepAspectRatio;
     bool usesVariable;
     bool usesVariableHint;
+    bool centered;
 } CSS_Object;
 
 typedef struct CSS{

@@ -1,10 +1,10 @@
 #playButton {
     type: button;
-    image: assets/note.png;
-    left: 5;
-    top: 10;
-    width: 30;
-    height: 30;
+    image: "assets/note.png";
+    left: 10;
+    top: 20;
+    width: 40;
+    height: 40;
     growOnHover: 0.2;
     loadFile: _mapselect_;
     keepAspectRatio: yes;
@@ -12,26 +12,28 @@
 
 #playIconShadow {
     type: image;
-    image: assets/icons/play.png;
+    image: "assets/icons/play.png";
     parent: playButton;
     color: DARKGRAY;
-    left: 36;
-    top: 48;
+    left: 34;
+    top: 52;
     width: 42;
     height: 42;
     keepAspectRatio: yes;
+    centered: yes;
 }
 
 #playIcon {
     type: image;
-    image: assets/icons/play.png;
+    image: "assets/icons/play.png";
     parent: playButton;
     color: WHITE;
     left: 32;
-    top: 44;
+    top: 50;
     width: 45;
     height: 45;
     keepAspectRatio: yes;
+    centered: yes;
 }
 
 
@@ -42,8 +44,8 @@
     font-size: 3.5;
     left: 35;
     top: 55;
-    width: 7;
-    height: 7;
+    width: 10;
+    height: 10;
     keepAspectRatio: yes;
     growOnHover: 0.2;
     rotateOnHover: 90;
@@ -56,8 +58,8 @@
     font-size: 3.5;
     margin-left: 7;
     margin-top: 8;
-    width: 7;
-    height: 7;
+    width: 10;
+    height: 10;
     keepAspectRatio: yes;
     growOnHover: 0.2;
 }
@@ -69,8 +71,8 @@
     font-size: 3.5;
     margin-left: 7;
     margin-top: 8;
-    width: 8;
-    height: 8;
+    width: 11;
+    height: 11;
     keepAspectRatio: yes;
     growOnHover: 0.2;
     rotateOnHover: 10;
