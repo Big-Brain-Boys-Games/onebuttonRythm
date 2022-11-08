@@ -7,6 +7,7 @@
 
 #define EXTERN_GAMEPLAY
 #define EXTERN_DRAWING
+#define EXTERN_AUDIO
 
 // #include "shared.h"
 
@@ -163,25 +164,55 @@ float musicTimeToAnimationTime(double time)
 {
     // time += _hitPart*_scrollSpeed/2;
 
-    double begin = screenToMusicTime(0);
-    double end = screenToMusicTime(getWidth());
+    float size = 5;
 
-    time -= begin;
-    time /= end-begin;
+    time -= _musicHead;
+    time /= size;
 
-    return 1-time;
+    return time+0.5;
 }
 
 double animationTimeToMusicTime(float time)
 {
+    float size = 5;
 
-    double begin = screenToMusicTime(0);
-    double end = screenToMusicTime(getWidth());
-
-    time += begin;
-    time *= end-begin;
-
-    time -= _hitPart*_scrollSpeed;
+    time -= 0.5;
+    time *= size;
+    time += _musicHead;
 
     return time;
+}
+
+Vector2 animationKey(Frame * anim, int size, float time)
+{
+    int index = size-1;
+    
+    for(int key = 0; key < size; key++)
+    {
+        if(anim[key].time > time)
+        {
+            index = key;
+            break;
+        }
+    }
+
+    int frame1 = index-1;
+    int frame2 = index;
+    if(frame1 < 0)
+        frame1 = 0;
+
+    float blendFactor = 1;
+    
+    if(frame1 != frame2)
+    {
+        float timeDifference = anim[frame2].time - anim[frame1].time;
+        blendFactor = (time - anim[frame1].time) / timeDifference;
+    }
+
+    Vector2 vec;
+
+    vec.x = anim[frame1].vec.x + (anim[frame2].vec.x - anim[frame1].vec.x)*blendFactor;
+    vec.y = anim[frame1].vec.y + (anim[frame2].vec.y - anim[frame1].vec.y)*blendFactor;
+
+    return vec;
 }

@@ -580,36 +580,53 @@ void fEditorAnimation (bool reset)
 	drawVignette();
 
 	float position = musicTimeToScreen(_musicHead);
-	DrawRectangle(0, 0, position, getHeight(), ColorAlpha(WHITE, 0.15));
+	// DrawRectangle(0, 0, position, getHeight(), ColorAlpha(WHITE, 0.15));
 
-	float middle = getWidth()*0.5;
-	float timingHelper = getWidth()*0.005;
-	DrawRectangle(middle-timingHelper, getHeight()*0.85, timingHelper*2, getHeight(), ColorAlpha(WHITE, 0.3));
 
 	//animation :)
 	static bool timeLineSelected = false;
 	static float timeLine = 0;
-	int value = timeLine * 100;
 	
 	if(_selectedNotes[0]->anim == 0)
 	{
-		_selectedNotes[0]->anim = malloc(sizeof(Frame) * 2);
+		_selectedNotes[0]->anim = malloc(sizeof(Frame) * 3);
 		_selectedNotes[0]->anim[0].time = 0;
-		_selectedNotes[0]->anim[0].vec = (Vector2){.x=1, .y=0.5};
-		_selectedNotes[0]->anim[1].time = 1;
-		_selectedNotes[0]->anim[1].vec = (Vector2){.x=0, .y=0.5};
-		_selectedNotes[0]->animSize = 2;
+		_selectedNotes[0]->anim[0].vec = (Vector2){.x=0.5, .y=0.5};
+		_selectedNotes[0]->anim[1].time = 0.5;
+		_selectedNotes[0]->anim[1].vec = (Vector2){.x=0.5, .y=0.5};
+		_selectedNotes[0]->anim[2].time = 1;
+		_selectedNotes[0]->anim[2].vec = (Vector2){.x=0.5, .y=0.5};
+		_selectedNotes[0]->animSize = 3;
 	}
 
-	// value *= -1;
-	slider((Rectangle){.x=0, .y=getHeight()*0.9, .width=getWidth(), .height=getHeight()*0.03}, &timeLineSelected, &value, 100, -100);
+	Rectangle animationPortrait = (Rectangle){.x=0, .y=0, .width=getWidth()*0.7, .height=getHeight()*0.7};
+
+	drawTextureCorrectAspectRatio(_background, WHITE, animationPortrait, 0);
+
+	timeLine = 1-timeLine;
+	int value = timeLine * 100;
+	slider((Rectangle){.x=animationPortrait.x, .y=animationPortrait.y+animationPortrait.height,
+		.width=animationPortrait.width, .height=getHeight()*0.03}, &timeLineSelected, &value, 100, 0);
+	
+	DrawRectangle(animationPortrait.x, animationPortrait.y, timeLine*animationPortrait.width, animationPortrait.height, ColorAlpha(WHITE, 0.2));
+
 	timeLine = value / 100.0;
-	drawNote(timeLine*_scrollSpeed+_selectedNotes[0]->time, _selectedNotes[0], WHITE, 0);
+	timeLine = 1-timeLine;
+
+	{
+		Vector2 vec = animationKey(_selectedNotes[0]->anim, _selectedNotes[0]->animSize, timeLine);
+		int x = animationPortrait.x + vec.x * animationPortrait.width;
+		int y = animationPortrait.y + vec.y * animationPortrait.height;
+
+		DrawCircle(x, y, getWidth()*0.05, RED);
+
+	}
+
 	Frame * anim = _selectedNotes[0]->anim;
 	for(int key = 0; key < _selectedNotes[0]->animSize; key++)
 	{
 		//draw keys
-		if(interactableButton("k", 0.01, (anim[key].time)*getWidth()-getWidth()*0.01, getHeight()*0.85, getWidth()*0.02, getHeight()*0.05))
+		if(interactableButton("k", 0.01, animationPortrait.x+(1-anim[key].time)*animationPortrait.width-getWidth()*0.01, animationPortrait.y+animationPortrait.height*1.2, getWidth()*0.02, getHeight()*0.05))
 		{
 			//delete key
 			if(_selectedNotes[0]->animSize <= 2)
@@ -631,21 +648,30 @@ void fEditorAnimation (bool reset)
 		return;
 	}
 
-	if(IsMouseButtonReleased(0) && GetMouseY() < getHeight()*0.85)
+	if(IsMouseButtonReleased(0) && mouseInRect(animationPortrait))
 	{
 		int index = -1;
 		for(int key = 0; key < _selectedNotes[0]->animSize; key++)
 		{
-			if((timeLine+1)/2 == _selectedNotes[0]->anim[key].time)
+			if(fabs(timeLine - _selectedNotes[0]->anim[key].time) < 0.05)
 			{
 				index = key;
 				break;
 			}
 		}
+
+
+		Vector2 vec = (Vector2){.x=GetMouseX(),.y=GetMouseY()};
+		vec.x -= animationPortrait.x;
+		vec.y -= animationPortrait.y;
+
+		vec.x /= animationPortrait.width;
+		vec.y /= animationPortrait.height;
+
 		if(index != -1)
 		{
 			//modify existing frame
-			anim[index].vec = (Vector2){.x=GetMouseX()/(float)getWidth(),.y=GetMouseY()/(float)getHeight()+0.05};
+			anim[index].vec = vec;
 		}else
 		{
 			//create new frame
@@ -654,14 +680,15 @@ void fEditorAnimation (bool reset)
 			int newIndex = 0;
 			for(int key = _selectedNotes[0]->animSize-2; key > 0; key--)
 			{
-				if(_selectedNotes[0]->anim[key].time > (timeLine+1)/2)
+				if(_selectedNotes[0]->anim[key].time > timeLine)
 				{
 					_selectedNotes[0]->anim[key+1] = _selectedNotes[0]->anim[key];
 					newIndex = key;
 				}
 			}
-			_selectedNotes[0]->anim[newIndex].time = (timeLine+1)/2;
-			_selectedNotes[0]->anim[newIndex].vec = (Vector2){.x=GetMouseX()/(float)getWidth(),.y=GetMouseY()/(float)getHeight()+0.05};
+			_selectedNotes[0]->anim[newIndex].time = timeLine;
+
+			_selectedNotes[0]->anim[newIndex].vec = vec;
 		}
 	}
 

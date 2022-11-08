@@ -203,36 +203,37 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 		scaleNotes = customScaling;
 
 	scaleNotes *= (_settings.noteSize / 10.0);
+
+	double temp = _musicHead;
+	_musicHead = musicTime;
 	
-	if(!note->anim || _pGameplayFunction == &fEditor)
-		DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=getHeight() / 2 -tex.height * scaleNotes/2}, 0,  scaleNotes, color);
-	
+	if(!note->anim || _pGameplayFunction == &fEditor || _pGameplayFunction == &fEditorAnimation)
+	{
+		Color colorNoAni = color;
+		if((_pGameplayFunction == &fEditor || _pGameplayFunction == &fEditorAnimation) && note->anim)
+		{
+			colorNoAni.a = 100;
+		}
+		
+		DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=getHeight() / 2 -tex.height * scaleNotes/2}, 0,  scaleNotes, colorNoAni);
+	}
+
 	if(note->animSize)
 	{
 		//draw animated note
+		
 		float time = musicTimeToAnimationTime(note->time);
-		//(musicTime - note->time) / (_scrollSpeed);
-		// if(time < note->anim[0].time || time < time < note->anim[note->animSize].time)
-		// 	return;
-		int anim = 0;
-		for(int i = 0; i < note->animSize-1; i++)
-		{
-			if(note->anim[i].time*2-1 < time && note->anim[i+1].time * 2 - 1 > time)
-			{
-				anim = i;
-				break;
-			}
-		}
-		Frame frame1 = note->anim[anim];
-		Frame frame2 = note->anim[anim+1];
-		float time1 = frame1.time;
-		float time2 = frame2.time;
-		float betweenFrames = (time - time1) / (time2 - time1);
-		Vector2 pos;
-		pos.x = frame1.vec.x + (frame2.vec.x-frame1.vec.x)*betweenFrames;
-		pos.y = frame1.vec.y + (frame2.vec.y-frame1.vec.y)*betweenFrames;
-		DrawTextureEx(tex, (Vector2){.x=pos.x*getWidth() - tex.width * scaleNotes / 2, .y=pos.y*getHeight() - tex.height * scaleNotes/2}, 0,  scaleNotes, color);
+		Vector2 pos = animationKey(note->anim, note->animSize, time);
+		float x = musicTimeToScreen(note->time);
+		pos.x = x + (pos.x-0.5)*2*getWidth();
+		pos.y *= getHeight();
+
+
+		DrawTextureEx(tex, (Vector2){.x=pos.x - tex.width * scaleNotes / 2, .y=pos.y - tex.height * scaleNotes/2}, 0,  scaleNotes, color);
 	}
+
+	_musicHead = temp;
+
 }
 
 void dNotes () 

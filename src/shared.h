@@ -50,5 +50,6 @@ void MakeNoteCopy(Note src, Note * dest);
 int rankCalculation(int score, int combo, int misses, float accuracy);
 float musicTimeToAnimationTime(double time);
 double animationTimeToMusicTime(float time);
+Vector2 animationKey(Frame * anim, int size, float time);
 
 #endif

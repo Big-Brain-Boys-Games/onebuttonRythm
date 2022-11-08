@@ -36,8 +36,15 @@ float _transition = 0;
 
 char _playerName[100];
 
+Vector2 fakeResolution = {0};
+
 int getWidth()
 {
+	if(fakeResolution.x)
+	{
+		return fakeResolution.x;
+	}
+
 	if(IsWindowFullscreen())
 	{
 		return GetMonitorWidth(GetCurrentMonitor());
@@ -47,11 +54,22 @@ int getWidth()
 
 int getHeight()
 {
+	if(fakeResolution.y)
+	{
+		return fakeResolution.y;
+	}
+
 	if(IsWindowFullscreen())
 	{
 		return GetMonitorHeight(GetCurrentMonitor());
 	}
 	return GetScreenHeight();
+}
+
+void setFakeResolution(int x, int y)
+{
+	fakeResolution.x = x;
+	fakeResolution.y = y;
 }
 
 void exitGame()
