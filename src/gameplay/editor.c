@@ -193,8 +193,7 @@ void undoCommand(Command command)
 		
 		case ComRemove:
 			index = newNote(command.time);
-			*(_papNotes[index]) = command.data;
-			loadCustomAssets(_papNotes[index]);
+			MakeNoteCopy(command.data, _papNotes[index]);
 			break;
 
 		case ComChangeNote:
