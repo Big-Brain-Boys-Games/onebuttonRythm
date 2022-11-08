@@ -1575,9 +1575,7 @@ void fMapSelect(bool reset)
 		if(_paMaps[selMap].name != 0)
 		{
 			char str[100];
-			strncpy(str, _paMaps[selMap].name, 100);
-			strcat(str, " - ");
-			strcat(str, _paMaps[selMap].artist);
+			snprintf(str, 100, "%s - %s", _paMaps[selMap].name, _paMaps[selMap].artist);
 			int textSize = measureText(str, getWidth() * 0.05);
 			drawText(str, getWidth() * 0.9 - textSize, getHeight() * 0.92, getWidth() * 0.05, WHITE);
 		}
@@ -1593,10 +1591,7 @@ void fExport(bool reset)
 	_pGameplayFunction = &fMainMenu;
 	makeMapZip(_map);
 	char str[300];
-	strncpy(str, GetWorkingDirectory(), 100);
-	strcat(str, "/");
-	strcat(str, _map->name);
-	strcat(str, ".zip");
+	snprintf(str, 300, "%s/%s.zip", GetWorkingDirectory(), _map->name);
 	SetClipboardText(str);
 	resetBackGround();
 	strncpy(_notfication, "exported map", 100);
@@ -1665,10 +1660,7 @@ void fNewMap(bool reset)
 
 		makeMap(&newMap);
 		char str[100];
-		strncpy(str, "maps/", 100);
-		strcat(str, newMap.name);
-		strcat(str, "/song");
-		strcat(str, pMusicExt);
+		snprintf(str, 100, "maps/%s/song%s", newMap.name, pMusicExt);
 		FILE *file = fopen(str, "wb");
 		fwrite(pMusic, pMusicSize, 1, file);
 		fclose(file);
@@ -1676,9 +1668,7 @@ void fNewMap(bool reset)
 		newMap.musicFile = malloc(100);
 		snprintf(newMap.musicFile, 100, "/song%s", pMusicExt);
 
-		strncpy(str, "maps/", 100);
-		strcat(str, newMap.name);
-		strcat(str, "/image.png");
+		snprintf(str, 100, "maps/%s/image.png", newMap.name);
 		file = fopen(str, "wb");
 		fwrite(pImage, imageSize, 1, file);
 		fclose(file);

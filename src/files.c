@@ -67,9 +67,7 @@ Map loadMapInfo(char * file)
 	char * pStr = malloc(100);
 	map.imageFile = malloc(100);
 
-	strncpy(pStr, mapStr, 100);
-	strcat(pStr, "/map.data");
-	printf("%s\n", pStr);
+	snprintf(pStr, 100, "%s/map.data", mapStr);
 	if(!FileExists(pStr))
 	{
 		free(pStr);
@@ -184,14 +182,13 @@ Map loadMapInfo(char * file)
 		}
 	}
 	fclose(f);
-	strncpy(pStr, mapStr, 100);
-	if(map.imageFile[0] != '\0')
-		strcat(pStr, map.imageFile);
-	else
+	
+	if(map.imageFile[0] == '\0')
 	{
-		strcat(pStr, "/image.png");
 		strncpy(map.imageFile, "/image.png", 100);
 	}
+
+	snprintf(pStr, 100, "%s%s", mapStr, map.imageFile);
 
 	if(FileExists(pStr))
 	{
@@ -243,8 +240,7 @@ void freeMap(Map * map)
 void saveMap ()
 {
 	char str [100];
-	strncpy(str, _map->folder, 100);
-	strcat(str, "/map.data");
+	snprintf(str, 100, "%s/map.data", _map->folder);
 	FILE * pFile = fopen(str, "w");
 	printf("written map data\n");
 	fprintf(pFile, "[ID]\n");
@@ -573,10 +569,8 @@ void loadMap ()
 	
 	_pMusic = &_map->music;
 	// _map->musicLength = (int)getMusicDuration();
-	
 
-	strncpy(pStr, map, 100);
-	strcat(pStr, "/map.data");
+	snprintf(pStr, 100, "%s/map.data", map);
 	FILE * pFile = fopen(pStr, "r");
 
 	freeNotes();
@@ -946,8 +940,8 @@ int on_extract_entry(const char *filename, void *arg) {
 void makeMapZip(Map * map)
 {
 	char str[200];
-	strncpy(str, map->name, 100);
-	strcat(str, ".zip");
+
+	snprintf(str, 100, "%s.zip", map->name);
 	struct zip_t *zip = zip_open(str, 6, 'w');
 	strncpy(str, map->folder, 100);
 	FilePathList files = LoadDirectoryFiles(str);
@@ -957,9 +951,8 @@ void makeMapZip(Map * map)
 			continue;
 		zip_entry_open(zip, files.paths[i]);
 		{
-			strncpy(str, map->folder, 100);
-			strcat(str, "/");
-			strcat(str, files.paths[i]);
+			snprintf(str, 100, "%s/%s", map->folder, files.paths[i]);
+
 			printf("compressing file %s\n", str);
 			if(!FileExists(str))
 				printf("wtf??\n");
@@ -983,16 +976,15 @@ void addZipMap(char * file)
 {
 	int arg = 2;
 	char str [100];
-	strcat(str, GetFileNameWithoutExt(file));
+	strncpy(str, GetFileNameWithoutExt(file), 100);
 	zip_extract(file, str, on_extract_entry, &arg);
 	_mapRefresh = true;
 }
 
 void makeMap(Map * map)
 {
-	char * str = malloc(100);
-	strncpy(str, "maps/", 100);
-	strcat(str, map->name);
+	char str [100];
+	snprintf(str, 100, "maps/%s", _map->name);
 	mkdir(str);
 }
 
