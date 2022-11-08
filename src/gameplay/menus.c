@@ -56,9 +56,21 @@ void freeCSS_Object(CSS_Object * object)
 
 	if(object->name)
 		free(object->name);
+
+	if(object->parent)
+		free(object->parent);
 	
 	if(object->text && !object->usesVariable)
 		free(object->text);
+
+	if(object->hintText && !object->usesVariableHint)
+		free(object->hintText);
+
+	if(object->loadFile)
+		free(object->loadFile);
+
+	if(object->makeActive)
+		free(object->makeActive);
 }
 
 void freeCSS(CSS * css)
@@ -208,6 +220,11 @@ void drawCSS_Object(CSS_Object * object)
 		case css_container:
 			object->scrollValue += GetMouseWheelMove() * .04;
 			break;
+	}
+
+	if(object->hoverTime > 0.05 && object->hintText)
+	{
+		drawHint(rect, object->hintText);
 	}
 
 	if(scissorMode)
@@ -548,6 +565,34 @@ void loadCSS(char * fileName)
 								}else {
 									object.text = malloc(100);
 									strncpy(object.text, value, 100);
+								}
+							}
+						}
+
+						if(!strcmp(var, "hintText"))
+						{
+							if(strlen(value))
+							{
+
+								if(value[0] == '$')
+								{
+									object.hintText = addCSS_Variable(value+1);
+									object.usesVariable = true;
+								}else if(!strcmp(value, "_mapname_") && _map)
+								{
+									object.hintText = malloc(100);
+									strncpy(object.hintText, _map->name, 100);
+								}else if(!strcmp(value, "_playerName_"))
+								{
+									object.hintText = malloc(100);
+									strncpy(object.hintText, _playerName, 100);
+								}else if(!strcmp(value, "_notification_"))
+								{
+									object.hintText = malloc(100);
+									strncpy(object.hintText, _notfication, 100);
+								}else {
+									object.hintText = malloc(100);
+									strncpy(object.hintText, value, 100);
 								}
 							}
 						}

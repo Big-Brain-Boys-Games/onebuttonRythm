@@ -30,6 +30,7 @@ typedef struct CSS_Object{
     char * parent;
     enum CSS_Type type;
     char * text;
+    char * hintText;
     Color color;
     Texture2D image;
     float opacity;
@@ -47,6 +48,7 @@ typedef struct CSS_Object{
     float rotateOnHover;
     bool keepAspectRatio;
     bool usesVariable;
+    bool usesVariableHint;
 } CSS_Object;
 
 typedef struct CSS{
