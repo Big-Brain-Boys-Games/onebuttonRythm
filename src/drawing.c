@@ -190,7 +190,7 @@ void drawCursor ()
 
 void drawNote(float musicTime, Note * note, Color color, float customScaling)
 {
-	float scaleNotes = (float)(256.0 / _noteTex.width) * 0.65;
+	float scaleNotes = (float)(getWidth()/(256.0/_noteTex.width)) * 0.05;
 
 	if(note->hit)
 		return;
@@ -200,8 +200,10 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 		tex = note->custTex->texture;
 	}
 
+	scaleNotes = getHeight()*0.25;
+
 	if(customScaling != 0)
-		scaleNotes = customScaling;
+		scaleNotes *= customScaling;
 
 	scaleNotes *= (_settings.noteSize / 10.0);
 
@@ -215,8 +217,16 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 		{
 			colorNoAni.a = 100;
 		}
+
+		int x = musicTimeToScreen(note->time)- scaleNotes / 2;
+		int y = getHeight() / 2 - scaleNotes/2;
+
+		int width = scaleNotes;
 		
-		DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=getHeight() / 2 -tex.height * scaleNotes/2}, 0,  scaleNotes, colorNoAni);
+		drawTextureCorrectAspectRatio(tex, colorNoAni,
+			(Rectangle){.x=x, .y=y, .width=width, .height=width}, 0);
+
+		// DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=getHeight() / 2 -tex.height * scaleNotes/2}, 0,  scaleNotes, colorNoAni);
 	}
 
 	if(note->animSize && _settings.animations)
@@ -228,9 +238,12 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 		float x = musicTimeToScreen(note->time);
 		pos.x = x + (pos.x-0.5)*2*getWidth();
 		pos.y *= getHeight();
+		
+		pos.x -= scaleNotes/2;
+		pos.y -= scaleNotes/2;
 
-
-		DrawTextureEx(tex, (Vector2){.x=pos.x - tex.width * scaleNotes / 2, .y=pos.y - tex.height * scaleNotes/2}, 0,  scaleNotes, color);
+		drawTextureCorrectAspectRatio(tex, color,
+			(Rectangle){.x=pos.x, .y=pos.y, .width=scaleNotes, .height=scaleNotes}, 0);
 	}
 
 	_musicHead = temp;
@@ -261,7 +274,7 @@ void dNotes ()
 
 		if(closestNote < maxDistance)
 		{
-			customScale = (closestNote/maxDistance) * (getWidth() / _noteTex.width) / 9;
+			customScale = closestNote/maxDistance;
 		}
 
 		drawNote(_musicHead, _papNotes[i], ColorAlpha(GRAY, noteFadeOut(_papNotes[i]->time)), customScale);
@@ -283,7 +296,7 @@ void dNotes ()
 
 		if(closestNote < maxDistance)
 		{
-			customScale = (closestNote/maxDistance) * (getWidth() / _noteTex.width) / 9;
+			customScale = closestNote/maxDistance;
 		}
 
 		drawNote(_musicHead, _papNotes[i], ColorAlpha(WHITE, noteFadeOut(_papNotes[i]->time)), customScale);
