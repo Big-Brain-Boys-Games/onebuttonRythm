@@ -1787,6 +1787,7 @@ void fNewMap(bool reset)
 		_musicHead = 0;
 		_transition = 0.1;
 		_disableLoadingScreen = false;
+		_playMenuMusic = false;
 		// startMusic();
 		return;
 	}
@@ -1993,13 +1994,12 @@ void textBox(Rectangle rect, char *str, bool *selected)
 		tmpStr[selectionEnd] = '\0';
 		int selectionLength = measureText(tmpStr, fontSize*screenSize);
 
-		int lowest = cursor > selectionEnd ? selectionEnd : cursor;
-		int highest = cursor > selectionEnd ? selectionEnd : cursor;
+		int lowest = cursorLength > selectionLength ? selectionLength : cursorLength;
+		int highest = cursorLength < selectionLength ? selectionLength : cursorLength;
 
 		int fullLength = measureText(str, fontSize*screenSize);
 		int x = rect.x + rect.width / 2 - fullLength / 2;
-		if((int)(GetTime()*2) % 2 == 0 || GetTime() - blinkingTimeout < 0.5)
-			DrawRectangle(x+cursorLength, rect.y, getWidth()*0.003, rect.height, DARKGRAY);
+		DrawRectangle(x+lowest, rect.y, highest-lowest, rect.height, ColorAlpha(BLACK, 0.3));
 	}
 
 	if (*selected)
@@ -2034,33 +2034,29 @@ void textBox(Rectangle rect, char *str, bool *selected)
 			{
 				if(selectionEnd == -1)
 					selectionEnd = cursor;
-				selectionEnd--;
-				if(selectionEnd < 0)
-					selectionEnd = 0;
 			}else
-			{
-				cursor--;
-				if(cursor < 0)
-					cursor = 0;
-			}
+				selectionEnd = -1;
+			
+			cursor--;
+			if(cursor < 0)
+				cursor = 0;
+			
 			blinkingTimeout = GetTime();
 		}
 
 		if(IsKeyPressed(KEY_RIGHT))
 		{
 			if(IsKeyDown(KEY_LEFT_SHIFT))
-			{
+			{	
 				if(selectionEnd == -1)
 					selectionEnd = cursor;
-				selectionEnd++;
-				if(selectionEnd > strlen(str))
-					selectionEnd = strlen(str);
 			}else
-			{
-				cursor++;
-				if(cursor > strlen(str))
-					cursor = strlen(str);
-			}
+				selectionEnd = -1;
+			
+			cursor++;
+			if(cursor > strlen(str))
+				cursor = strlen(str);
+
 			blinkingTimeout = GetTime();
 		}
 

@@ -198,17 +198,17 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 void audioInit()
 {
 	_pEffectsBuffer = calloc(sizeof(char), EFFECT_BUFFER_SIZE); // 4 second long buffer
-	loadAudio(&_hitSe, "assets/hit.mp3");
-	loadAudio(&_missHitSe, "assets/missHit.mp3");
+	loadAudio(&_hitSe, "assets/hit.wav");
+	loadAudio(&_missHitSe, "assets/missHit.wav");
 
-	loadAudio(&_missSe, "assets/missHit.mp3");
+	loadAudio(&_missSe, "assets/missHit.wav");
 	loadAudio(&_buttonSe, "assets/button.mp3");
 
 	loadAudio(&_clickPressSe, "assets/clickPress.mp3");
 	loadAudio(&_clickReleaseSe, "assets/clickRelease.mp3");
 
 	loadAudio(&_finishSe, "assets/finish.mp3");
-	loadAudio(&_failSe, "assets/missHit.mp3");
+	loadAudio(&_failSe, "assets/missHit.wav");
 
 	_musicFrameCount = 0;
 	_musicLoops = false;
