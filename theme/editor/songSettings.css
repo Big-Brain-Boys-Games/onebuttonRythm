@@ -3,9 +3,18 @@
     left: 0;
     top: 0;
     width: 100;
+    height: 100;
+    color: BLACK;
+    opacity: 0.7;
+}
+
+#panel{
+    type: rectangle;
+    left: 0;
+    top: 0;
+    width: 100;
     height: 70;
     color: BLACK;
-    opacity: 0.8;
 }
 
 #pageTitle{
