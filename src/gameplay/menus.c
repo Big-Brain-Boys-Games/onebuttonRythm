@@ -32,6 +32,7 @@ CSS * _pCSS = 0;
 
 float _scrollValue = 0;
 bool _mapRefresh = true;
+bool _anyUIButtonPressed = false;
 
 #define freeArray(arr) \
 	if(arr) { \
@@ -98,7 +99,10 @@ void freeCSS(CSS * css)
 void drawCSS_Object(CSS_Object * object)
 {
 	if(!object->active)
+	{
+		object->selected = false;
 		return;
+	}
 
 	float scrollValue = _scrollValue;
 
@@ -202,6 +206,9 @@ void drawCSS_Object(CSS_Object * object)
 			}else
 				drawButton(rect, "", 1);
 
+			if(object->selected)
+				_anyUIButtonPressed = true;
+
 			
 			break;
 		
@@ -216,11 +223,15 @@ void drawCSS_Object(CSS_Object * object)
 				drawButton(rect, object->text, fontSize);
 
 			object->selected = mouseInRect(rect) && IsMouseButtonReleased(0);
+			if(object->selected)
+				_anyUIButtonPressed = true;
 			break;
 
 		case css_buttonNoSprite:
 			drawButtonNoSprite(rect, object->text, fontSize);
 			object->selected = mouseInRect(rect) && IsMouseButtonReleased(0);
+			if(object->selected)
+				_anyUIButtonPressed = true;
 			break;
 
 		case css_textbox:
@@ -358,6 +369,8 @@ void drawCSS(char * file)
 		if(!_pCSS)
 			return;
 	}
+
+	_anyUIButtonPressed = false;
 
 	//go through every object and draw them in order of the source	
 	for(int i = 0; i < _pCSS->objectCount; i++)

@@ -13,6 +13,7 @@
     extern Modifier _mods[];
 
     extern bool _mapRefresh;
+    extern bool _anyUIButtonPressed;
 
 #endif
 

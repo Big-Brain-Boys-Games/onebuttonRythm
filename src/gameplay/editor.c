@@ -8,6 +8,7 @@
 #define EXTERN_GAMEPLAY
 #define EXTERN_MAIN
 #define EXTERN_DRAWING
+#define EXTERN_MENUS
 
 
 #include "editor.h"
@@ -413,6 +414,12 @@ void fEditorTimingSettings (bool reset)
 
 void fEditorNoteSettings(bool reset)
 {
+	if(!_amountSelectedNotes)
+	{
+		_pGameplayFunction = &fEditor;
+		return;
+	}
+
 	ClearBackground(BLACK);
 	drawBackground();
 	dNotes();
@@ -758,6 +765,49 @@ void fEditor(bool reset)
 		pauseButton->active = _musicPlaying;
 	}
 
+	static Vector2 mouseBegin = {0};
+
+	if(IsMouseButtonPressed(0))
+		mouseBegin = GetMousePosition();
+
+	if(IsMouseButtonDown(0) || IsMouseButtonReleased(0))
+	{
+		Vector2 currentMouse = GetMousePosition();
+		
+		int x = currentMouse.x < mouseBegin.x ? currentMouse.x : mouseBegin.x;
+		int width = currentMouse.x > mouseBegin.x ? currentMouse.x-mouseBegin.x : mouseBegin.x-currentMouse.x;
+
+		int y = currentMouse.y < mouseBegin.y ? currentMouse.y : mouseBegin.y;
+		int height = currentMouse.y > mouseBegin.y ? currentMouse.y-mouseBegin.y : mouseBegin.y-currentMouse.y;
+
+		DrawRectangle(x, y, width, height, ColorAlpha(BLUE, 0.3));
+
+		float distance = width + height;
+		//select all notes within select area
+		if(distance > getWidth()*0.05 && y < getHeight()*0.6 && y+height > getHeight()*0.35 && IsMouseButtonReleased(0))
+		{
+			double beginTime = screenToMusicTime(x);
+			double endTime = screenToMusicTime(width+x);
+
+			if(!IsKeyDown(KEY_LEFT_SHIFT))
+			{
+				while(_amountSelectedNotes > 0)
+				{
+					removeSelectedNote(0);
+				}
+			}
+
+			for(int i = 0; i < _amountNotes; i++)
+			{
+				double time = _papNotes[i]->time;
+				if(beginTime < time && time < endTime)
+				{
+					addSelectNote(i);
+				}
+			}
+		}
+	}
+
 
 
 	TimingSegment timeSeg = getTimingSignature(_musicHead);
@@ -1011,7 +1061,8 @@ void fEditor(bool reset)
 		_scrollSpeed = 0.01;
 	
 	//Selecting notes
-	if (IsMouseButtonPressed(0) && GetMouseY() > getHeight() * 0.3 && GetMouseY() < getHeight() * 0.6)
+	float distance = fabs(GetMousePosition().x - mouseBegin.x) + fabs(GetMousePosition().y - mouseBegin.y);
+	if (IsMouseButtonReleased(0) && distance < getWidth()*0.05 && GetMouseY() > getHeight() * 0.35 && GetMouseY() < getHeight() * 0.6 && !_anyUIButtonPressed)
 	{
 		if(!IsKeyDown(KEY_LEFT_SHIFT))
 		{
@@ -1027,6 +1078,10 @@ void fEditor(bool reset)
 		}
 		else
 			addSelectNote(findClosestNote(_papNotes, _amountNotes, screenToMusicTime(GetMouseX())));
+	}else if(distance < getWidth()*0.05 && IsMouseButtonReleased(0) && !_anyUIButtonPressed)
+	{
+		while(_amountSelectedNotes > 0)
+			removeSelectedNote(0);
 	}
 	//prevent bugs by setting musicHead to 0 when it gets below 0
 	if (getMusicHead() < 0)
