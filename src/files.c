@@ -983,8 +983,11 @@ void addZipMap(char * file)
 
 void makeMap(Map * map)
 {
+	if(!map || !map->name)
+		return;
+	
 	char str [100];
-	snprintf(str, 100, "maps/%s", _map->name);
+	snprintf(str, 100, "maps/%s", map->name);
 	mkdir(str);
 }
 

@@ -1953,6 +1953,8 @@ void textBox(Rectangle rect, char *str, bool *selected)
 	static int cursor = 0;
 	static double blinkingTimeout = 0;
 
+	static int selectionEnd = -1;
+
 	if(!str)
 		return;
 	
@@ -1977,7 +1979,27 @@ void textBox(Rectangle rect, char *str, bool *selected)
 
 		if(cursor > strlen(str))
 			cursor = strlen(str);
+	}
 
+	if (*selected && selectionEnd != -1)
+	{
+		//draw selection
+		char tmpStr[100];
+		strncpy(tmpStr, str, 100);
+		tmpStr[cursor] = '\0';
+		int cursorLength = measureText(tmpStr, fontSize*screenSize);
+
+		strncpy(tmpStr, str, 100);
+		tmpStr[selectionEnd] = '\0';
+		int selectionLength = measureText(tmpStr, fontSize*screenSize);
+
+		int lowest = cursor > selectionEnd ? selectionEnd : cursor;
+		int highest = cursor > selectionEnd ? selectionEnd : cursor;
+
+		int fullLength = measureText(str, fontSize*screenSize);
+		int x = rect.x + rect.width / 2 - fullLength / 2;
+		if((int)(GetTime()*2) % 2 == 0 || GetTime() - blinkingTimeout < 0.5)
+			DrawRectangle(x+cursorLength, rect.y, getWidth()*0.003, rect.height, DARKGRAY);
 	}
 
 	if (*selected)
@@ -2008,17 +2030,37 @@ void textBox(Rectangle rect, char *str, bool *selected)
 
 		if(IsKeyPressed(KEY_LEFT))
 		{
-			cursor--;
-			if(cursor < 0)
-				cursor = 0;
+			if(IsKeyDown(KEY_LEFT_SHIFT))
+			{
+				if(selectionEnd == -1)
+					selectionEnd = cursor;
+				selectionEnd--;
+				if(selectionEnd < 0)
+					selectionEnd = 0;
+			}else
+			{
+				cursor--;
+				if(cursor < 0)
+					cursor = 0;
+			}
 			blinkingTimeout = GetTime();
 		}
 
 		if(IsKeyPressed(KEY_RIGHT))
 		{
-			cursor++;
-			if(cursor > strlen(str))
-				cursor = strlen(str);
+			if(IsKeyDown(KEY_LEFT_SHIFT))
+			{
+				if(selectionEnd == -1)
+					selectionEnd = cursor;
+				selectionEnd++;
+				if(selectionEnd > strlen(str))
+					selectionEnd = strlen(str);
+			}else
+			{
+				cursor++;
+				if(cursor > strlen(str))
+					cursor = strlen(str);
+			}
 			blinkingTimeout = GetTime();
 		}
 
@@ -2077,11 +2119,6 @@ void textBox(Rectangle rect, char *str, bool *selected)
 			blinkingTimeout = GetTime();
 		}
 
-		if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_ENTER))
-		{
-			*selected = false;
-		}
-
 		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))
 		{
 			char * clipboard = (char*) GetClipboardText();
@@ -2114,13 +2151,13 @@ void textBox(Rectangle rect, char *str, bool *selected)
 		int x = rect.x + rect.width / 2 - fullLength / 2;
 		if((int)(GetTime()*2) % 2 == 0 || GetTime() - blinkingTimeout < 0.5)
 			DrawRectangle(x+cursorLength, rect.y, getWidth()*0.003, rect.height, DARKGRAY);
-		// DrawRectangle(rect.x + rect.width * 0.2, rect.y + rect.height * 0.75, rect.width * 0.6, rect.height * 0.1, DARKGRAY);
 	}
 
-	if (*selected && !mouseInRect(rect) && IsMouseButtonReleased(0))
+	if (*selected && ((!mouseInRect(rect) && IsMouseButtonReleased(0)) || IsKeyPressed(KEY_ENTER)))
 	{
 		*selected = false;
 		cursor = 0;
+		selectionEnd = -1;
 	}
 }
 
