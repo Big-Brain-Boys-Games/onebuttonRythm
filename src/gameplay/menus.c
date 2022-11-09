@@ -1982,6 +1982,21 @@ void textBox(Rectangle rect, char *str, bool *selected)
 			cursor = strlen(str);
 	}
 
+	if(mouseInRect(rect) && IsMouseButtonPressed(0))
+	{
+		//calculate selectionEnd pos
+		int fullLength = measureText(str, fontSize*screenSize);
+		int x = rect.x + rect.width / 2 - fullLength / 2;
+		float textPos = ((GetMouseX()-x) / (float)fullLength);
+		selectionEnd = textPos * strlen(str) + 1;
+
+		if(selectionEnd < 0)
+			selectionEnd = 0;
+
+		if(selectionEnd > strlen(str))
+			selectionEnd = strlen(str);
+	}
+
 	if (*selected && selectionEnd != -1)
 	{
 		//draw selection
@@ -2008,9 +2023,23 @@ void textBox(Rectangle rect, char *str, bool *selected)
 		char c = GetCharPressed();
 		while (c != 0)
 		{
-			if(strlen(str) > 9)
+			if(strlen(str) > 99)
 			{
 				break;
+			}
+
+			if(selectionEnd != -1)
+			{
+				int lowest = cursor > selectionEnd ? selectionEnd : cursor;
+				int highest = cursor < selectionEnd ? selectionEnd : cursor;
+
+				char strCopy[100];
+				strncpy(strCopy, str, 100);
+				strCopy[lowest] = '\0';
+				strCopy[highest-1] = '\0';
+
+				snprintf(str, 100, "%s%s", strCopy, strCopy+highest);
+				selectionEnd = -1;
 			}
 
 			char strPart1[100];
@@ -2072,7 +2101,7 @@ void textBox(Rectangle rect, char *str, bool *selected)
 			blinkingTimeout = GetTime();
 		}
 
-		if (IsKeyPressed(KEY_BACKSPACE) && cursor != 0)
+		if (IsKeyPressed(KEY_BACKSPACE) && cursor != 0 && selectionEnd == -1)
 		{
 			int prev = cursor;
 			cursor--;
@@ -2087,7 +2116,7 @@ void textBox(Rectangle rect, char *str, bool *selected)
 			blinkingTimeout = GetTime();
 		}
 
-		if (IsKeyPressed(KEY_DELETE) && cursor != strlen(str))
+		if (IsKeyPressed(KEY_DELETE) && cursor != strlen(str) && selectionEnd == -1)
 		{
 			char strCopy[100];
 			strncpy(strCopy, str, 100);
@@ -2098,6 +2127,33 @@ void textBox(Rectangle rect, char *str, bool *selected)
 
 			snprintf(str, 100, "%s%s",strCopy, strCopy2);
 			blinkingTimeout = GetTime();
+		}
+
+		if (selectionEnd != -1 && IsKeyDown(KEY_LEFT_CONTROL) && (IsKeyPressed(KEY_C) || IsKeyPressed(KEY_X)))
+		{
+			char strCopy[100];
+			int lowest = cursor > selectionEnd ? selectionEnd : cursor;
+			int highest = cursor < selectionEnd ? selectionEnd : cursor;
+
+			strncpy(strCopy, str, 100);
+			strCopy[highest] = '\0';
+
+			SetClipboardText(strCopy+lowest);
+		}
+
+		if((IsKeyPressed(KEY_BACKSPACE) || IsKeyPressed(KEY_DELETE) || (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_X)))
+			&& selectionEnd != -1)
+		{
+			int lowest = cursor > selectionEnd ? selectionEnd : cursor;
+			int highest = cursor < selectionEnd ? selectionEnd : cursor;
+
+			char strCopy[100];
+			strncpy(strCopy, str, 100);
+			strCopy[lowest] = '\0';
+			strCopy[highest-1] = '\0';
+
+			snprintf(str, 100, "%s%s", strCopy, strCopy+highest);
+			selectionEnd = -1;
 		}
 
 		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_BACKSPACE))
