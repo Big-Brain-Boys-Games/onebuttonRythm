@@ -716,6 +716,12 @@ void fEditor(bool reset)
 		return;
 	}
 
+	if(IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S))
+	{
+		saveMap();
+		_transition = 0.1;
+	}
+
 
 	ClearBackground(BLACK);
 	drawBackground();
