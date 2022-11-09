@@ -358,18 +358,27 @@ char * addCSS_Variable(char * name)
 		_pCSS->variables = realloc(_pCSS->variables, sizeof(CSS_Variable)*_pCSS->variableCount);
 	}
 
-	_pCSS->variables[_pCSS->variableCount-1].name = malloc(100);
-	strcpy(_pCSS->variables[_pCSS->variableCount-1].name, name);
-	_pCSS->variables[_pCSS->variableCount-1].value = malloc(100);
-	_pCSS->variables[_pCSS->variableCount-1].value[0] = '\0';
-	return _pCSS->variables[_pCSS->variableCount-1].value;
+	int index = _pCSS->variableCount-1;
+
+	_pCSS->variables[index].name = malloc(100);
+	strcpy(_pCSS->variables[index].name, name);
+	_pCSS->variables[index].value = malloc(100);
+	_pCSS->variables[index].value[0] = '\0';
+
+	_pCSS->variables[index].nameCharBits = stringToBits(name);
+	return _pCSS->variables[index].value;
 }
 
 CSS_Variable * getCSS_Variable(char * name)
 {
+	if(!name)
+		return;
+	
+	int charBits = stringToBits(name);
+
 	for(int i = 0; i < _pCSS->variableCount; i++)
 	{
-		if(name[0] != _pCSS->variables[i].name[0])
+		if(charBits != _pCSS->variables[i].nameCharBits)
 			continue;
 
 		if(!strcmp(name, _pCSS->variables[i].name))
@@ -464,6 +473,8 @@ void loadCSS(char * fileName)
 					break;
 				}
 			}
+
+			object.nameCharBits = stringToBits(object.name);
 
 			// printf("\n#%s {\n", object.name);
 
@@ -737,9 +748,11 @@ CSS_Object * getCSS_ObjectPointer(char * name)
 	if(!name || !_pCSS)
 		return 0;
 	
+	int charBits = stringToBits(name);
+
 	for(int i = 0; i < _pCSS->objectCount; i++)
 	{
-		if(_pCSS->objects[i].name[0] == name[0])
+		if(_pCSS->objects[i].nameCharBits == charBits)
 		{
 			if(!strcmp(_pCSS->objects[i].name, name))
 			{

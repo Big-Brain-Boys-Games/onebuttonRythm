@@ -706,7 +706,6 @@ void fEditor(bool reset)
 
 		drawTextureCorrectAspectRatio(_iconTime, WHITE,
 			(Rectangle){.x=x,.y=y, .width=width, .height=width}, 0);
-		// DrawCircle(musicTimeToScreen(_paTimingSegment[i].time), getHeight()*0.3, getWidth()*0.05, WHITE);
 	}
 
 	drawCSS("theme/editor/editor.css");

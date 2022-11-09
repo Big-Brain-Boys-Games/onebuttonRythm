@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <math.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -111,6 +112,23 @@ int findClosestNote(Note ** arr, int n, float target)
 
     // Only single element left after search
     return mid;
+}
+
+int stringToBits(char * str)
+{
+    int length = strlen(str);
+
+    int value = 0;
+
+    for(int i = 0; i < length; i++)
+    {
+        char c = str[i];
+        c = tolower(c);
+        c -= 'a';
+        value = value | (1 << c);
+    }
+
+    return value;
 }
 
 void MakeNoteCopy(Note src, Note * dest)

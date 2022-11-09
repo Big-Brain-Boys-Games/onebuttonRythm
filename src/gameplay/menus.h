@@ -22,11 +22,13 @@ enum CSS_Type {css_text, css_image, css_rectangle, css_button, css_buttonNoSprit
 
 typedef struct CSS_Variable{
     char * name;
+    int nameCharBits;
     char * value;
 } CSS_Variable;
 
 typedef struct CSS_Object{
     char * name;
+    int nameCharBits;
     char * parent;
     enum CSS_Type type;
     char * text;
