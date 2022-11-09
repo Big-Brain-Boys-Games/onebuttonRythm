@@ -720,7 +720,19 @@ void fEditor(bool reset)
 
 	for(int i = 0; i < _amountTimingSegments && _paTimingSegment; i++)
 	{
-		DrawCircle(musicTimeToScreen(_paTimingSegment[i].time), getHeight()*0.3, getWidth()*0.05, WHITE);
+		int x = musicTimeToScreen(_paTimingSegment[i].time);
+		int y = getHeight()*0.3;
+		int width = getHeight()*0.05;
+
+		DrawCircle(x, y, width, ColorAlpha(BLACK, 0.6));
+
+		width *= 1.3;
+
+		x -= width / 2;
+		y -= width / 2;
+
+		drawTextureCorrectAspectRatio(_iconTime, WHITE,
+			(Rectangle){.x=x,.y=y, .width=width, .height=width}, 0);
 	}
 
 	drawCSS("theme/editor/editor.css");

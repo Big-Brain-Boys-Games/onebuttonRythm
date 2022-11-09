@@ -16,7 +16,8 @@
     extern Texture2D _heartTex;
     extern Texture2D _background, _menuBackground;
     extern Texture2D _buttonTile[3][3];
-
+    extern Texture2D _iconTime;
+    
     extern Font _font;
 
     extern Color _UIColor;

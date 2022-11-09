@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <math.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -117,6 +118,23 @@ int findClosestNote(Note ** arr, int n, float target)
     return mid;
 }
 
+int stringToBits(char * str)
+{
+    int length = strlen(str);
+
+    int value = 0;
+
+    for(int i = 0; i < length; i++)
+    {
+        char c = str[i];
+        c = tolower(c);
+        c -= 'a';
+        value = value | (1 << c);
+    }
+
+    return value;
+}
+
 void MakeNoteCopy(Note src, Note * dest)
 {
     *dest = src;
@@ -213,6 +231,56 @@ Vector2 animationKey(Frame * anim, int size, float time)
 
     vec.x = anim[frame1].vec.x + (anim[frame2].vec.x - anim[frame1].vec.x)*blendFactor;
     vec.y = anim[frame1].vec.y + (anim[frame2].vec.y - anim[frame1].vec.y)*blendFactor;
+
+    int frame3 = -1;
+    Vector2 vec2;
+
+    if(blendFactor > 0.5 && frame2 != size-1)
+    {
+        frame3 = frame2 + 1;
+
+        if(frame3 >= size)
+            frame3 = size-1;
+
+        float timeDifference = anim[frame3].time - anim[frame2].time;
+        blendFactor = (time - anim[frame2].time) / timeDifference;
+
+        vec2.x = anim[frame2].vec.x + (anim[frame3].vec.x - anim[frame2].vec.x)*blendFactor;
+        vec2.y = anim[frame2].vec.y + (anim[frame3].vec.y - anim[frame2].vec.y)*blendFactor;
+
+        blendFactor = 0.5+blendFactor;
+        if(blendFactor < 0)
+            frame3 = -1;
+        
+        // printf("blendFactor %.1f frame3 %i\n", blendFactor, frame3);
+    }
+    // else if(blendFactor < 0.5 && frame1 != 0)
+    // {
+    //     frame3 = frame1 - 1;
+
+    //     if(frame3 < 0)
+    //         frame3 = 0;
+
+    //     float timeDifference = anim[frame1].time - anim[frame3].time;
+    //     blendFactor = (time - anim[frame3].time) / timeDifference;
+
+    //     vec2.x = anim[frame3].vec.x + (anim[frame1].vec.x - anim[frame3].vec.x)*blendFactor;
+    //     vec2.y = anim[frame3].vec.y + (anim[frame1].vec.y - anim[frame3].vec.y)*blendFactor;
+
+    //     blendFactor = 1.5-blendFactor;
+
+    //     if(blendFactor < 0)
+    //         frame3 = -1;
+        
+    //     printf("blendFactor %.1f frame3 %i\n", blendFactor, frame3);
+    // }
+
+    if(frame3 != frame1 && frame3 != frame2 && frame3 != -1)
+    {
+        // blendFactor *= 0.5;
+        vec.x = vec.x + (vec2.x - vec.x) * blendFactor;
+        vec.y = vec.y + (vec2.y - vec.y) * blendFactor;
+    }
 
     return vec;
 }

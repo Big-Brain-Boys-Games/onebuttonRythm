@@ -31,6 +31,7 @@ Texture2D _healthBarTex;
 Texture2D _heartTex;
 Texture2D _background, _menuBackground;
 Texture2D _buttonTile[3][3];
+Texture2D _iconTime;
 
 Font _font;
 
@@ -770,6 +771,8 @@ void initDrawing()
 	_font = LoadFontEx("assets/nasalization.otf", 512, 0, 250);
 	SetTextureFilter(_font.texture, TEXTURE_FILTER_ANISOTROPIC_8X);
 	_background = _menuBackground;
+
+	_iconTime = LoadTexture("assets/icons/clock.png");
 
 
 
