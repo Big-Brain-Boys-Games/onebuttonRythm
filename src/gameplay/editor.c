@@ -795,6 +795,7 @@ void fEditor(bool reset)
 		if(scrollNeedsReset)
 		{
 			_scrollSpeed = scrollSpeedEditor;
+			scrollNeedsReset = false;
 		}
 		
 		scrollSpeedEditor = _scrollSpeed;
