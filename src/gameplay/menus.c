@@ -1710,13 +1710,14 @@ void fMapSelect(bool reset)
 
 void fExport(bool reset)
 {
-	_pGameplayFunction = &fMainMenu;
+	_pGameplayFunction = &fMapSelect;
 	makeMapZip(_map);
 	char str[300];
 	snprintf(str, 300, "%s/%s.zip", GetWorkingDirectory(), _map->name);
 	SetClipboardText(str);
 	resetBackGround();
 	strncpy(_notfication, "exported map", 100);
+	_transition = 0.5;
 }
 
 void fNewMap(bool reset)
