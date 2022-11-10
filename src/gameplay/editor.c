@@ -69,6 +69,7 @@ TimingSegment * getTimingSignaturePointer(float time)
 	return &(_paTimingSegment[_amountTimingSegments-1]);
 }
 
+
 TimingSegment * addTimingSignature(float time, int bpm)
 {
 	if(bpm < 1)
@@ -82,15 +83,25 @@ TimingSegment * addTimingSignature(float time, int bpm)
 		_paTimingSegment[0].bpm = bpm;
 		_paTimingSegment[0].beats = 4;
 		_paTimingSegment[0].zoom = _map->zoom;
+
 		return &(_paTimingSegment[0]);
 	}
 	for(int i = 0; i < _amountTimingSegments; i++)
 	{
 		if(time < _paTimingSegment[i].time)
 		{
-			i--;
-			if(i < 0)
-				i = 0;
+			if(fabs(time - _paTimingSegment[i].time) < 0.1)
+			{
+				printf("too close together\n");
+				return 0;
+			}
+
+			if(i != _amountTimingSegments-1 && fabs(_paTimingSegment[i+1].time-time) < 0.1)
+			{
+				printf("too close together\n");
+				return 0;
+			}
+
 
 
 			_amountTimingSegments++;
@@ -102,6 +113,7 @@ TimingSegment * addTimingSignature(float time, int bpm)
 			_paTimingSegment[i].time = time;
 			_paTimingSegment[i].bpm = bpm;
 			_paTimingSegment[i].beats = 4;
+
 			return &(_paTimingSegment[i]);
 		}
 	}
@@ -111,13 +123,10 @@ TimingSegment * addTimingSignature(float time, int bpm)
 
 	_amountTimingSegments++;
 	_paTimingSegment = realloc(_paTimingSegment, _amountTimingSegments*sizeof(TimingSegment) );
-	for(int j = _amountTimingSegments-2; j >= i; j--)
-	{
-		_paTimingSegment[j+1] = _paTimingSegment[j];
-	}
 	_paTimingSegment[i].time = time;
 	_paTimingSegment[i].bpm = bpm;
 	_paTimingSegment[i].beats = 4;
+
 	return &(_paTimingSegment[i]);
 }
 
@@ -133,6 +142,7 @@ void removeTimingSignature(float time)
 		_amountTimingSegments = 0;
 		return;
 	}
+
 	for(int i = 0; i < _amountTimingSegments; i++)
 	{
 		if(time < _paTimingSegment[i].time)
@@ -141,12 +151,12 @@ void removeTimingSignature(float time)
 			if(i < 0)
 				i = 0;
 
-			_amountTimingSegments--;
-			_paTimingSegment = realloc(_paTimingSegment, _amountTimingSegments*sizeof(TimingSegment) );
-			for(int j = i; j < _amountTimingSegments; j++)
+			for(int j = i; j < _amountTimingSegments-1; j++)
 			{
 				_paTimingSegment[j] = _paTimingSegment[j+1];
 			}
+			_amountTimingSegments--;
+			_paTimingSegment = realloc(_paTimingSegment, _amountTimingSegments*sizeof(TimingSegment) );
 			return;
 		}
 	}
