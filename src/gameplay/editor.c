@@ -31,6 +31,9 @@ Note **_selectedNotes = 0;
 int _amountSelectedNotes = 0;
 int _barMeasureCount = 2;
 
+Note * _noteCopyBuffer = 0;
+int _amountCopyBuffer = 0;
+
 
 TimingSegment getTimingSignature(float time)
 {
@@ -747,11 +750,23 @@ void fEditor(bool reset)
 
 	if(reset)
 	{
-		for(int i = 0; i < _CommandIndex; i++)
+		if(_paCommandBuffer)
 		{
-			freeCommand(i);
+			for(int i = 0; i < _CommandIndex; i++)
+			{
+				freeCommand(i);
+			}
+			freeArray(_paCommandBuffer);
 		}
-		freeArray(_paCommandBuffer);
+
+		if(_noteCopyBuffer)
+		{
+			for(int i = 0; i < _amountCopyBuffer; i++)
+			{
+				freeNote(&_noteCopyBuffer[i]);
+			}
+			freeArray(_noteCopyBuffer);
+		}
 
 		startMusic();
 		_musicPlaying = false;
@@ -1042,6 +1057,28 @@ void fEditor(bool reset)
 			removeTimingSignature(_musicHead);
 		}
 
+		if ((IsKeyPressed(KEY_C) || IsKeyPressed(KEY_X)) && IsKeyDown(KEY_LEFT_CONTROL))
+		{
+			//copy over selected notes to copy buffer
+			if(_noteCopyBuffer)
+			{
+				//free existing buffer
+				for(int i = 0; i < _amountCopyBuffer; i++)
+				{
+					freeNote(&_noteCopyBuffer[i]);
+				}
+				freeArray(_noteCopyBuffer);
+			}
+
+			_amountCopyBuffer = _amountSelectedNotes;
+			_noteCopyBuffer = malloc(sizeof(Note)*_amountCopyBuffer);
+
+			for(int i = 0; i < _amountCopyBuffer; i++)
+			{
+				MakeNoteCopy(*_selectedNotes[i], &_noteCopyBuffer[i]);
+			}
+		}
+
 
 		bool delKey = IsKeyPressed(KEY_X) || IsKeyPressed(KEY_DELETE) || UIBUttonPressed("rmNoteButton");
 		
@@ -1066,58 +1103,58 @@ void fEditor(bool reset)
 			_amountSelectedNotes = 0;
 		}
 
-		if (IsKeyPressed(KEY_C) && !_musicPlaying)
+		if (IsKeyPressed(KEY_C) && !IsKeyDown(KEY_LEFT_CONTROL) && !_musicPlaying)
 		{
 			_musicHead = roundf((getMusicHead() - timeSeg.time) / secondsPerBeat) * secondsPerBeat + timeSeg.time;
 		}
 
-		if (IsKeyPressed(KEY_V) && IsKeyDown(KEY_LEFT_CONTROL) && closestTime > 0.03f && _amountSelectedNotes > 0)
+		if (IsKeyPressed(KEY_V) && IsKeyDown(KEY_LEFT_CONTROL) && _amountCopyBuffer > 0)
 		{
 			//copy currently selected notes at _musichead position
 
 			//get begin point of notes
 			float firstNote = -1;
-			for(int i = 0; i < _amountSelectedNotes; i++)
+			for(int i = 0; i < _amountCopyBuffer; i++)
 			{
 				if(firstNote == -1)
-					firstNote = _selectedNotes[i]->time;
-				else if(_selectedNotes[i]->time < firstNote)
+					firstNote = _noteCopyBuffer[i].time;
+				else if(_noteCopyBuffer[i].time < firstNote)
 				{
-					firstNote = _selectedNotes[i]->time;
+					firstNote = _noteCopyBuffer[i].time;
 				}
 			}
 			//copy over notes
 			int cost = 1;
-			for(int i = 0; i < _amountSelectedNotes; i++)
+			for(int i = 0; i < _amountCopyBuffer; i++)
 			{
-				int note = newNote(_musicHead+_selectedNotes[i]->time-firstNote);
+				int note = newNote(_musicHead+_noteCopyBuffer[i].time-firstNote);
 				doAction(ComAdd, note, cost);
 				cost = 0;
-				if(_selectedNotes[i]->anim)
+				if(_noteCopyBuffer[i].anim)
 				{
-					_papNotes[note]->anim = malloc(sizeof(Frame)*_selectedNotes[i]->animSize);
-					for(int j = 0; j < _selectedNotes[i]->animSize; j++)
+					_papNotes[note]->anim = malloc(sizeof(Frame)*_noteCopyBuffer[i].animSize);
+					for(int j = 0; j < _noteCopyBuffer[i].animSize; j++)
 					{
-						_papNotes[note]->anim[j] = _selectedNotes[i]->anim[j];
+						_papNotes[note]->anim[j] = _noteCopyBuffer[i].anim[j];
 					}
-					_papNotes[note]->animSize = _selectedNotes[i]->animSize;
+					_papNotes[note]->animSize = _noteCopyBuffer[i].animSize;
 				}
 
-				if(_selectedNotes[i]->hitSE_File)
+				if(_noteCopyBuffer[i].hitSE_File)
 				{
 					_papNotes[note]->hitSE_File = malloc(100);
-					strncpy(_papNotes[note]->hitSE_File, _selectedNotes[i]->hitSE_File, 100);
+					strncpy(_papNotes[note]->hitSE_File, _noteCopyBuffer[i].hitSE_File, 100);
 					char tmpStr[100];
-					snprintf(tmpStr, 100, "%s/%s", _map->folder, _selectedNotes[i]->hitSE_File);
+					snprintf(tmpStr, 100, "%s/%s", _map->folder, _noteCopyBuffer[i].hitSE_File);
 					_papNotes[note]->custSound = addCustomSound(tmpStr);
 				}
 
-				if(_selectedNotes[i]->texture_File)
+				if(_noteCopyBuffer[i].texture_File)
 				{
 					_papNotes[note]->texture_File = malloc(100);
-					strncpy(_papNotes[note]->texture_File, _selectedNotes[i]->texture_File, 100);
+					strncpy(_papNotes[note]->texture_File, _noteCopyBuffer[i].texture_File, 100);
 					char tmpStr[100];
-					snprintf(tmpStr, 100, "%s/%s", _map->folder, _selectedNotes[i]->texture_File);
+					snprintf(tmpStr, 100, "%s/%s", _map->folder, _noteCopyBuffer[i].texture_File);
 					_papNotes[note]->custTex = addCustomTexture(tmpStr);
 				}
 			}
