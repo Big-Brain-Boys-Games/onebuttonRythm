@@ -281,7 +281,7 @@ void saveMap ()
 	
 	for(int i = 0; i < _amountTimingSegments; i++)
 	{
-		fprintf(pFile, "%f %i %i\n", _paTimingSegment[i].time, _paTimingSegment[i].bpm, _paTimingSegment[i].beats);
+		fprintf(pFile, "%f %i %i %i\n", _paTimingSegment[i].time, _paTimingSegment[i].bpm, _paTimingSegment[i].beats, _paTimingSegment[i].zoom);
 	}
 
 	fprintf(pFile, "[Notes]\n");
@@ -651,6 +651,13 @@ void loadMap ()
 				{ }
 
 				_paTimingSegment[_amountTimingSegments-1].beats = fmin(atoi(partLine), 32);
+
+				//skip to ' '
+				for(;*partLine != ' ' && *partLine != '\0'; partLine++)
+				{ }
+
+				_paTimingSegment[_amountTimingSegments-1].zoom = atoi(partLine);
+
 				break;
 
 

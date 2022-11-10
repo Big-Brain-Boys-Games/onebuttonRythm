@@ -171,6 +171,11 @@ void fPlaying(bool reset)
 		return;
 	}
 
+	if(_settings.useMapZoom)
+	{
+		_scrollSpeed = 4.2 / getTimingSignature(_musicHead).zoom;
+	}
+
 
 	_musicHead += GetFrameTime() * _musicSpeed;
 	_musicPlaying = true;

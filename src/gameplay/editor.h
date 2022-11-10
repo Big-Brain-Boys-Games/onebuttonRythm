@@ -5,11 +5,6 @@
 
 #ifdef EXTERN_EDITOR
 
-    extern bool _showSettings;
-    extern bool _showNoteSettings;
-    extern bool _showAnimation;
-    extern bool _showTimingSettings;
-
     extern TimingSegment * _paTimingSegment;
     extern int _amountTimingSegments;
 

@@ -66,6 +66,16 @@
     growOnHover: 0.1;
 }
 
+#zoomSlider{
+    type: slider;
+    margin-left: 0;
+    margin-top: 8;
+    width: 20;
+    height: 2;
+    min: 1;
+    max: 20;
+}
+
 #BPMText{
     type: text;
     left: 22;
@@ -96,5 +106,16 @@
     height: 5;
     font-size: 2.5;
     content: "Beats";
+    color: WHITE;
+}
+
+#zoomText{
+    type: text;
+    margin-left: 0;
+    margin-top: 6;
+    width: 30;
+    height: 5;
+    font-size: 2.5;
+    content: "Zoom";
     color: WHITE;
 }

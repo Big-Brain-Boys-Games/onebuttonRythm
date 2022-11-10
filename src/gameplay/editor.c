@@ -35,14 +35,14 @@ int _barMeasureCount = 2;
 TimingSegment getTimingSignature(float time)
 {
 	if(!_paTimingSegment || _amountTimingSegments == 0)
-		return (TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0};
+		return (TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0, .beats=4, .zoom=_map->zoom};
 	for(int i = 0; i < _amountTimingSegments; i++)
 	{
 		if(time < _paTimingSegment[i].time)
 		{
 			i--;
 			if(i < 0)
-				return (TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0};
+				return (TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0, .beats=4, .zoom=_map->zoom};
 			return _paTimingSegment[i];
 		}
 	}
@@ -78,6 +78,7 @@ TimingSegment * addTimingSignature(float time, int bpm)
 		_paTimingSegment[0].time = time;
 		_paTimingSegment[0].bpm = bpm;
 		_paTimingSegment[0].beats = 4;
+		_paTimingSegment[0].zoom = _map->zoom;
 		return &(_paTimingSegment[0]);
 	}
 	for(int i = 0; i < _amountTimingSegments; i++)
@@ -432,6 +433,7 @@ void fEditorTimingSettings (bool reset)
 	timSeg->bpm = UIValueInteractable(timSeg->bpm, "BPM_Box");
 	timSeg->time = UIValueInteractable(timSeg->time*1000, "timeBox") / 1000.0;
 	timSeg->beats = UIValueInteractable(timSeg->beats, "beatsBox");
+	timSeg->zoom = UIValueInteractable(timSeg->zoom, "zoomSlider");
 
 	if (IsKeyPressed(KEY_ESCAPE) || UIBUttonPressed("backButton"))
 	{
@@ -780,6 +782,27 @@ void fEditor(bool reset)
 	}
 
 	drawCSS("theme/editor/editor.css");
+
+
+	static float scrollSpeedEditor = -1;
+	static bool scrollNeedsReset = false;
+
+	if(!_musicPlaying)
+	{
+		if(scrollSpeedEditor == -1)
+			scrollSpeedEditor = 4.2 / _settings.zoom;
+		
+		if(scrollNeedsReset)
+		{
+			_scrollSpeed = scrollSpeedEditor;
+		}
+		
+		scrollSpeedEditor = _scrollSpeed;
+	}else
+	{
+		_scrollSpeed = 4.2 / getTimingSignature(_musicHead).zoom;
+		scrollNeedsReset = true;
+	}
 
 	if(drawProgressBarI(true))
 		_musicPlaying = false;

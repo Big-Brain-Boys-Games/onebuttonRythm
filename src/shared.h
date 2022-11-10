@@ -40,6 +40,7 @@ typedef struct{
     double time;
     int bpm;
     int beats;
+    int zoom;
 }TimingSegment;
 
 float fDistance(float x1, float y1, float x2, float y2);
