@@ -1152,7 +1152,7 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 		}
 	}
 
-	if(amount < oldAmount) //fixes crash when deleting map then refreshing
+	if(amount != oldAmount) //fixes crash when maps aren't the same
 	{
 		for(int i = 0; i < oldAmount; i++)
 		{
