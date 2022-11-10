@@ -959,7 +959,26 @@ void makeMapZip(Map * map)
 
 	snprintf(str, 100, "%s.zip", map->name);
 	struct zip_t *zip = zip_open(str, 6, 'w');
-	strncpy(str, map->folder, 100);
+	
+	//manual copy over since double // fuck up zippy zip
+	int strlength = strlen(map->folder);
+	char lastC = 'a';
+	int index = 0;
+	for(int i = 0; i < strlength && i < 200; i++)
+	{
+		char c = map->folder[i];
+
+		if(c == '/' && lastC == '/')
+			continue;
+		
+		str[index] = c;
+		index++;
+		lastC = c;
+	}
+	str[index] = '\0';
+
+
+
 	FilePathList files = LoadDirectoryFiles(str);
 	for(int i = 0; i < files.count; i++)
 	{
@@ -967,8 +986,6 @@ void makeMapZip(Map * map)
 			continue;
 		zip_entry_open(zip, files.paths[i]);
 		{
-			snprintf(str, 100, "%s/%s", map->folder, files.paths[i]);
-
 			FILE * file = fopen(files.paths[i], "r");
 			fseek(file, 0L, SEEK_END);
 			int size = ftell(file);
