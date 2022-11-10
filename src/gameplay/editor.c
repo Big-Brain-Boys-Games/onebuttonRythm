@@ -340,7 +340,33 @@ void removeSelectedNote(int index)
 	_selectedNotes = realloc(_selectedNotes, sizeof(Note *) * _amountSelectedNotes);
 }
 
+void editorDrop()
+{
+	if(IsFileDropped())
+	{
+		printf("file dropped\n");
+		FilePathList files = LoadDroppedFiles();
+		for (int i = 0; i < files.count; i++)
+		{
+			if (strcmp(GetFileExtension(files.paths[i]), ".png") == 0)
+			{
+				char str[100];
+				snprintf(str, 100, "%s/image.png", _map->folder);
+				int size = 0;
+				unsigned char * data = LoadFileData(files.paths[i], &size);
+				SaveFileData(str, data, size);
+				UnloadFileData(data);
 
+				strncpy(_map->imageFile, "/image.png", 100);
+				
+				UnloadTexture(_map->image);
+				_map->image = LoadTexture(files.paths[i]);
+				_background = _map->image;
+			}
+		}
+		UnloadDroppedFiles(files);
+	}
+}
 
 void fEditorSongSettings(bool reset)
 {
@@ -351,6 +377,8 @@ void fEditorSongSettings(bool reset)
 	drawMusicGraph(0.4);
 	drawBars();
 	drawProgressBarI(false);
+
+	editorDrop();
 
 
 	drawCSS("theme/editor/songSettings.css");
@@ -730,6 +758,8 @@ void fEditor(bool reset)
 	drawVignette();
 	drawMusicGraph(0.4);
 	drawBars();
+
+	editorDrop();
 	
 
 	for(int i = 0; i < _amountTimingSegments && _paTimingSegment; i++)
@@ -1067,7 +1097,7 @@ void fEditor(bool reset)
 	_scrollSpeed = UIValueInteractable(_scrollSpeed*10, "zoomSlider") / 10.0;
 
 	if(UIBUttonPressed("zoomResetButton"))
-		_scrollSpeed = 4.2 / _settings.zoom;
+		_scrollSpeed = 4.2 / _map->zoom;
 
 	//Change scrollspeed
 	if (IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL)))
