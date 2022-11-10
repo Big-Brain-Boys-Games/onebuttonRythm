@@ -1014,6 +1014,9 @@ void fEditor(bool reset)
 
 		if (IsKeyPressed(KEY_A) && IsKeyDown(KEY_LEFT_CONTROL))
 		{
+			for(int i = 0; i < _amountSelectedNotes; i++)
+				removeSelectedNote(0);
+			
 			for(int i = 0; i < _amountNotes; i++)
 				addSelectNote(i);
 		}
