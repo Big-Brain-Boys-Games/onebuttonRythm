@@ -566,6 +566,9 @@ void loadMap ()
 		snprintf(str, 100, "%s/%s", _map->folder, _map->musicFile);
 		loadMusic(&_map->music, str, _map->musicPreviewOffset);
 	}
+
+	if(_map->zoom == 0)
+		_map->zoom = 7;
 	
 	_pMusic = &_map->music;
 	// _map->musicLength = (int)getMusicDuration();
@@ -634,6 +637,8 @@ void loadMap ()
 					_paTimingSegment = realloc(_paTimingSegment, sizeof(TimingSegment) * _amountTimingSegments);
 				}
 
+				_paTimingSegment[_amountTimingSegments-1] = (TimingSegment){.beats=4, .bpm=4, .time=0,.zoom=7};
+
 				_paTimingSegment[_amountTimingSegments-1].time = atof(line);
 
 				char * partLine = &(line[0]);
@@ -657,6 +662,9 @@ void loadMap ()
 				{ }
 
 				_paTimingSegment[_amountTimingSegments-1].zoom = atoi(partLine);
+
+				if(!_paTimingSegment[_amountTimingSegments-1].zoom)
+					_paTimingSegment[_amountTimingSegments-1].zoom = 7;
 
 				break;
 

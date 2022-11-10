@@ -113,6 +113,7 @@ TimingSegment * addTimingSignature(float time, int bpm)
 			_paTimingSegment[i].time = time;
 			_paTimingSegment[i].bpm = bpm;
 			_paTimingSegment[i].beats = 4;
+			_paTimingSegment[i].zoom = _map->zoom;
 
 			return &(_paTimingSegment[i]);
 		}
