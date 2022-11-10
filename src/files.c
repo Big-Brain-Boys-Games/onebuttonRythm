@@ -953,10 +953,7 @@ void makeMapZip(Map * map)
 		{
 			snprintf(str, 100, "%s/%s", map->folder, files.paths[i]);
 
-			printf("compressing file %s\n", str);
-			if(!FileExists(str))
-				printf("wtf??\n");
-			FILE * file = fopen(str, "r");
+			FILE * file = fopen(files.paths[i], "r");
 			fseek(file, 0L, SEEK_END);
 			int size = ftell(file);
 			rewind(file);
@@ -976,7 +973,7 @@ void addZipMap(char * file)
 {
 	int arg = 2;
 	char str [100];
-	strncpy(str, GetFileNameWithoutExt(file), 100);
+	snprintf(str, 100, "maps/%s", GetFileNameWithoutExt(file));
 	zip_extract(file, str, on_extract_entry, &arg);
 	_mapRefresh = true;
 }

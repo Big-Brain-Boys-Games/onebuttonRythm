@@ -94,6 +94,7 @@ void checkFileDropped()
 {
 	if (IsFileDropped())
 	{
+		printf("file dropped\n");
 		FilePathList files = LoadDroppedFiles();
 		for (int i = 0; i < files.count; i++)
 		{
