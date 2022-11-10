@@ -180,6 +180,22 @@ void drawCSS_Object(CSS_Object * object)
 		rect.y -= rect.height/2;
 	}
 
+	
+
+	if(mouseInRect(rect) && IsMouseButtonPressed(0))
+		object->pressedOn = true;
+
+	enum CSS_Type type = object->type;
+
+	if(type == css_toggle || type == css_button || type == css_buttonNoSprite || type == css_slider || type == css_textbox || type == css_numberbox)
+	{
+		if(mouseInRect(rect) && (IsMouseButtonPressed(0) || IsMouseButtonReleased(0)))
+		{
+			_anyUIButtonPressed = true;
+
+		}
+	}
+
 	switch(object->type)
 	{
 		case css_text:
@@ -194,7 +210,7 @@ void drawCSS_Object(CSS_Object * object)
 		case css_toggle:
 			object->selected = false;
 
-			if(mouseInRect(rect) && IsMouseButtonReleased(0))
+			if(mouseInRect(rect) && IsMouseButtonReleased(0) && object->pressedOn)
 			{
 				object->value = !object->value;
 				object->selected = true;
@@ -205,9 +221,6 @@ void drawCSS_Object(CSS_Object * object)
 				drawButton(rect, "X", object->fontSize);
 			}else
 				drawButton(rect, "", 1);
-
-			if(object->selected)
-				_anyUIButtonPressed = true;
 
 			
 			break;
@@ -222,16 +235,12 @@ void drawCSS_Object(CSS_Object * object)
 			else
 				drawButton(rect, object->text, fontSize);
 
-			object->selected = mouseInRect(rect) && IsMouseButtonReleased(0);
-			if(object->selected)
-				_anyUIButtonPressed = true;
+			object->selected = mouseInRect(rect) && IsMouseButtonReleased(0) && object->pressedOn;
 			break;
 
 		case css_buttonNoSprite:
 			drawButtonNoSprite(rect, object->text, fontSize);
-			object->selected = mouseInRect(rect) && IsMouseButtonReleased(0);
-			if(object->selected)
-				_anyUIButtonPressed = true;
+			object->selected = mouseInRect(rect) && IsMouseButtonReleased(0) && object->pressedOn;
 			break;
 
 		case css_textbox:
@@ -274,6 +283,9 @@ void drawCSS_Object(CSS_Object * object)
 		if(object->value < object->min)
 			object->value = object->min;
 	}
+
+	if(IsMouseButtonReleased(0))
+		object->pressedOn = false;
 		
 
 	if((object->type == css_button || object->type == css_buttonNoSprite) && object->selected)

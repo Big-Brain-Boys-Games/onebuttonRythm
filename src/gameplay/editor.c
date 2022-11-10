@@ -774,9 +774,16 @@ void fEditor(bool reset)
 	static Vector2 mouseBegin = {0};
 
 	if(IsMouseButtonPressed(0))
+	{
 		mouseBegin = GetMousePosition();
 
-	if(IsMouseButtonDown(0) || IsMouseButtonReleased(0))
+		if(_anyUIButtonPressed)
+		{
+			mouseBegin.x = -1;
+		}
+	}
+
+	if(mouseBegin.x != -1 && (IsMouseButtonDown(0) || IsMouseButtonReleased(0)))
 	{
 		Vector2 currentMouse = GetMousePosition();
 		
@@ -808,7 +815,13 @@ void fEditor(bool reset)
 				double time = _papNotes[i]->time;
 				if(beginTime < time && time < endTime)
 				{
-					addSelectNote(i);
+					bool found = false;
+					for(int note = 0; note < _amountSelectedNotes; note++)
+						if(_selectedNotes[note] == _papNotes[i])
+							found = true;
+
+					if(!found)
+						addSelectNote(i);
 				}
 			}
 		}

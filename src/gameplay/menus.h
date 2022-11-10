@@ -53,6 +53,7 @@ typedef struct CSS_Object{
     bool usesVariable;
     bool usesVariableHint;
     bool centered;
+    bool pressedOn;
 } CSS_Object;
 
 typedef struct CSS{

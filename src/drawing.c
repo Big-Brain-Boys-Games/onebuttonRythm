@@ -12,6 +12,7 @@
 #define EXTERN_GAMEPLAY
 #define EXTERN_AUDIO
 #define EXTERN_EDITOR
+#define EXTERN_MENUS
 
 #include "drawing.h"
 
@@ -560,6 +561,7 @@ bool drawProgressBarI(bool interActable)
 		{
 			isGrabbed = true;
 			_musicHead = clamp(GetMouseX()/(float)getWidth()*getMusicDuration(), 0, getMusicDuration());
+			_anyUIButtonPressed = true;
 		}
 		if(!IsMouseButtonDown(0))
 			isGrabbed = false;
