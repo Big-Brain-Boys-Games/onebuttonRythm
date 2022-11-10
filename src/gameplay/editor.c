@@ -762,6 +762,8 @@ void fEditor(bool reset)
 	drawBars();
 
 	editorDrop();
+
+	_framesOffset = 0; //disabled since notes get hit automatically and thus perfectly in sync
 	
 
 	for(int i = 0; i < _amountTimingSegments && _paTimingSegment; i++)

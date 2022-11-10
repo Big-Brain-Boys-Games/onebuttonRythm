@@ -47,7 +47,7 @@ int _musicFrameCount = 0;
 float _musicPreviewOffset;
 
 float _musicVolume, _audioEffectVolume;
-int _framesOffset;
+int _framesOffset = 0;
 
 
 int _menuMusicFrameCount = 0;

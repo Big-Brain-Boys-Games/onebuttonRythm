@@ -59,6 +59,8 @@ void fCountDown(bool reset)
 		return;
 	}
 
+	_framesOffset = _settings.offset*48; //_offset in ms
+
 	_musicLoops = false;
 	_musicPlaying = false;
 
@@ -175,6 +177,8 @@ void fPlaying(bool reset)
 	{
 		_scrollSpeed = 4.2 / getTimingSignature(_musicHead).zoom;
 	}
+
+	_framesOffset = _settings.offset*48; //_offset in ms
 
 
 	_musicHead += GetFrameTime() * _musicSpeed;
