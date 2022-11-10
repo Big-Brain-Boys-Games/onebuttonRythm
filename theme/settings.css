@@ -271,16 +271,40 @@
     width: 40;
 }
 
+#animationsText {
+    type: text;
+    parent: settingsContainer;
+    color: WHITE;
+    font-size: 3;
+    margin-left: 58;
+    margin-top: 40;
+    width: 30;
+    height: 5;
+    content: "Note Animations";
+}
+
 #animationsToggle {
     type: toggle;
     parent: settingsContainer;
     color: WHITE;
     font-size: 3;
-    margin-left: 68;
+    margin-left: 69;
     margin-top: 45;
     width: 5;
     height: 5;
     keepAspectRatio: yes;
+}
+
+#customAssetsText {
+    type: text;
+    parent: settingsContainer;
+    color: WHITE;
+    font-size: 3;
+    margin-left: 53;
+    margin-top: 50;
+    width: 40;
+    height: 5;
+    content: "Note Sound/ Textures";
 }
 
 #customAssetsToggle {
@@ -288,8 +312,32 @@
     parent: settingsContainer;
     color: WHITE;
     font-size: 3;
-    margin-left: 68;
+    margin-left: 69;
     margin-top: 55;
+    width: 5;
+    height: 5;
+    keepAspectRatio: yes;
+}
+
+#useMapZoomText {
+    type: text;
+    parent: settingsContainer;
+    color: WHITE;
+    font-size: 3;
+    margin-left: 9;
+    margin-top: 75;
+    width: 30;
+    height: 5;
+    content: "Use Map Zoom";
+}
+
+#useMapZoomToggle {
+    type: toggle;
+    parent: settingsContainer;
+    color: WHITE;
+    font-size: 3;
+    margin-left: 18;
+    margin-top: 80;
     width: 5;
     height: 5;
     keepAspectRatio: yes;

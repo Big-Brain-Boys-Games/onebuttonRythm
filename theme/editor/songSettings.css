@@ -123,6 +123,17 @@
     growOnHover: 0.1;
 }
 
+#zoomSlider{
+    type: slider;
+    margin-left: -2;
+    margin-top: 8;
+    width: 15;
+    height: 2;
+    min: 1;
+    max: 20;
+}
+
+
 
 
 #nameText{
@@ -223,4 +234,15 @@
     font-size: 2.5;
     content: "Difficulty";
     color: WHITE;
+}
+
+#zoomText{
+    type: text;
+    margin-left: 0;
+    margin-top: 6;
+    width: 15;
+    height: 3;
+    font-size: 2.5;
+    color: WHITE;
+    content: "zoom";
 }

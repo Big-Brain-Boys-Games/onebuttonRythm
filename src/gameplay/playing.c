@@ -50,6 +50,12 @@ void fCountDown(bool reset)
 		}
 		countDown = 3 + GetTime();
 		printf("fCountDown reset (%i)\n", contin);
+
+		if(_map->zoom)
+				_scrollSpeed = 4.2 / _map->zoom;
+			
+		if (!_settings.useMapZoom || !_map->zoom)
+			_scrollSpeed = 4.2 / _settings.zoom;
 		return;
 	}
 
@@ -58,8 +64,6 @@ void fCountDown(bool reset)
 
 	if( _musicHead <= 0 )
 		_musicHead = GetTime() - countDown;
-
-	
 
 
 	if (GetTime() + GetFrameTime() >= countDown)
@@ -80,8 +84,10 @@ void fCountDown(bool reset)
 			_averageAccuracy = 0;
 			_musicHead = 0;
 			countDown = 0;
-			_scrollSpeed = 4.2 / _map->zoom;
-			if (_settings.zoom != 0)
+			if(_map->zoom)
+				_scrollSpeed = 4.2 / _map->zoom;
+			
+			if (!_settings.useMapZoom || !_map->zoom)
 				_scrollSpeed = 4.2 / _settings.zoom;
 
 			//set all note.hits to false

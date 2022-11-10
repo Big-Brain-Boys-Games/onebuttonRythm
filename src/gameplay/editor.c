@@ -366,6 +366,7 @@ void fEditorSongSettings(bool reset)
 	_map->musicPreviewOffset = UIValueInteractable(_map->musicPreviewOffset, "previewOffsetBox");
 	_map->difficulty = UIValueInteractable(_map->difficulty, "difficultyBox");
 	_map->beats = UIValueInteractable(_map->beats, "beatsBox");
+	_map->zoom = UIValueInteractable(_map->zoom, "zoomSlider");
 
 	if(IsKeyPressed(KEY_ESCAPE) || UIBUttonPressed("backButton"))
 	{

@@ -38,7 +38,7 @@ Note ** _papNotes = 0;
 
 Settings _settings = (Settings){.volumeGlobal = 50, .volumeMusic = 100, .volumeSoundEffects = 100, .zoom = 7,
 	.offset = -60, .noteSize=10, .resolutionX=800, .resolutionY=600, .fullscreen=0,
-	.animations=1, .customAssets=1};
+	.animations=1, .customAssets=1, .useMapZoom=true};
 
 void (*_pNextGameplayFunction)(bool);
 void (*_pGameplayFunction)(bool);

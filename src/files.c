@@ -1033,6 +1033,7 @@ void loadSettings()
 		if(strcmp(line, "[Volume Music]\n") == 0)			{mode = spVolMusic;		continue;}
 		if(strcmp(line, "[Volume Sound Effects]\n") == 0)	{mode = spVolSE;		continue;}
 		if(strcmp(line, "[Zoom]\n") == 0)					{mode = spZoom;			continue;}
+		if(strcmp(line, "[UseMapZoom]\n") == 0)				{mode = spUseMapZoom;	continue;}
 		if(strcmp(line, "[NoteSize]\n") == 0)				{mode = spNoteSize;		continue;}
 		if(strcmp(line, "[Offset]\n") == 0)					{mode = spOffset;		continue;}
 		if(strcmp(line, "[ResolutionX]\n") == 0)			{mode = spResX;			continue;}
@@ -1061,6 +1062,9 @@ void loadSettings()
 				break;
 			case spZoom:
 				_settings.zoom = atoi(line);
+				break;
+			case spUseMapZoom:
+				_settings.useMapZoom = atoi(line);
 				break;
 			case spNoteSize:
 				_settings.noteSize = atoi(line);
@@ -1103,6 +1107,8 @@ void saveSettings ()
 	fprintf(file, "%i\n", _settings.volumeSoundEffects);
 	fprintf(file, "[Zoom]\n");
 	fprintf(file, "%i\n", _settings.zoom);
+	fprintf(file, "[UseMapZoom]\n");
+	fprintf(file, "%i\n", _settings.useMapZoom);
 	fprintf(file, "[NoteSize]\n");
 	fprintf(file, "%i\n", _settings.noteSize);
 	fprintf(file, "[Offset]\n");

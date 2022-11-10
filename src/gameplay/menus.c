@@ -1031,6 +1031,7 @@ void fSettings(bool reset)
 
 	_settings.animations = UIValueInteractable(_settings.animations, "animationsToggle");
 	_settings.customAssets = UIValueInteractable(_settings.customAssets, "customAssetsToggle");
+	_settings.useMapZoom = UIValueInteractable(_settings.useMapZoom, "useMapZoomToggle");
 
 	UITextBox(_playerName, "nameBox");
 
@@ -1749,6 +1750,9 @@ void fNewMap(bool reset)
 		newMap.folder[0] = '\0';
 		newMap.bpm = 100;
 		newMap.beats = 4;
+		newMap.zoom = 7;
+		newMap.id = rand();
+		newMap.difficulty = 5;
 	}
 	
 	ClearBackground(BLACK);
