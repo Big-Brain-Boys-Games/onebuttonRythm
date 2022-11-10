@@ -655,6 +655,15 @@ void loadMap ()
 
 
 			case fpNotes:
+				double time = atof(line);
+
+				int index = _noteIndex - 1;
+				if(index > 0 && _papNotes[index]->time > time)
+				{
+					//note out of order, skip note
+					continue;
+				}
+
 				if(_noteIndex <= _amountNotes)
 				{
 					_amountNotes += 50;
@@ -671,7 +680,7 @@ void loadMap ()
 				_papNotes[_noteIndex]->health = 1;
 				_papNotes[_noteIndex]->hit = 0;
 
-				int index = 0;
+				index = 0;
 				for(int j = 0; j < 2; j++)
 				{
 					//find " or end of line

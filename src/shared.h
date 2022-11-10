@@ -25,7 +25,7 @@ typedef struct{
 }CustomSound;
 
 typedef struct{
-    float time;
+    double time;
     CustomSound * custSound;
     CustomTexture * custTex;
     char * hitSE_File;
@@ -37,7 +37,7 @@ typedef struct{
 }Note;
 
 typedef struct{
-    float time;
+    double time;
     int bpm;
     int beats;
 }TimingSegment;
