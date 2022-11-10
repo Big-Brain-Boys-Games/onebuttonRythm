@@ -158,8 +158,8 @@ typedef struct Commmand{
 	Note data;
 } Command;
 #define COMMANDBUFFER 50
-Command _aCommandBuffer[50] = {0};
-int _CommandIndex = 0;
+Command * _paCommandBuffer = 0;
+int _CommandIndex = -1;
 int _CommandFurtestIndex = 0;
 
 #define freeArray(arr) \
@@ -209,22 +209,25 @@ void undoCommand(Command command)
 
 void freeCommand(int index)
 {
-	freeNote(&_aCommandBuffer[index].data);
+	freeNote(&_paCommandBuffer[index].data);
 }
 
 void undo()
 {
+	if(!_paCommandBuffer)
+		return;
+	
 	printf("undo\n");
 	free(_selectedNotes);
 	_selectedNotes = 0;
 	_amountSelectedNotes = 0;
 
-	while(_CommandIndex > 0 && _CommandIndex > _CommandFurtestIndex - COMMANDBUFFER)
+	while(_CommandIndex >= 0)
 	{
-		int index = _CommandIndex % COMMANDBUFFER;
-		int cost = _aCommandBuffer[index].cost;
+		int index = _CommandIndex;
+		int cost = _paCommandBuffer[index].cost;
 
-		undoCommand(_aCommandBuffer[index]);
+		undoCommand(_paCommandBuffer[index]);
 		freeCommand(index);
 
 		_CommandIndex--;
@@ -238,13 +241,20 @@ void undo()
 void doAction(CommandType type, int note, int cost)
 {
 	_CommandIndex++;
-	if(_CommandIndex > _CommandFurtestIndex)
-		_CommandFurtestIndex = _CommandIndex;
-	int index = _CommandIndex % COMMANDBUFFER;
-	_aCommandBuffer[index].type = type;
-	_aCommandBuffer[index].cost = cost;
-	_aCommandBuffer[index].time = _papNotes[note]->time;
-	_aCommandBuffer[index].data = (Note) {0};
+
+	if(!_paCommandBuffer)
+	{
+		_paCommandBuffer = malloc(sizeof(Command)*(_CommandIndex+1));
+	}else
+	{
+		_paCommandBuffer = realloc(_paCommandBuffer, sizeof(Command)*(_CommandIndex+1));
+	}
+
+	int index = _CommandIndex;
+	_paCommandBuffer[index].type = type;
+	_paCommandBuffer[index].cost = cost;
+	_paCommandBuffer[index].time = _papNotes[note]->time;
+	_paCommandBuffer[index].data = (Note) {0};
 
 	switch(type)
 	{
@@ -254,12 +264,12 @@ void doAction(CommandType type, int note, int cost)
 
 		case ComRemove:
 			//called before note removed
-			MakeNoteCopy(*_papNotes[note], &_aCommandBuffer[index].data);
+			MakeNoteCopy(*_papNotes[note], &_paCommandBuffer[index].data);
 			break;
 		
 		case ComChangeNote:
 			//called before note changes
-			MakeNoteCopy(*_papNotes[note], &_aCommandBuffer[index].data);
+			MakeNoteCopy(*_papNotes[note], &_paCommandBuffer[index].data);
 			break;
 	}
 }
@@ -737,11 +747,12 @@ void fEditor(bool reset)
 
 	if(reset)
 	{
-		for(int i = 0; i < COMMANDBUFFER; i++)
+		for(int i = 0; i < _CommandIndex; i++)
 		{
 			freeCommand(i);
-			_CommandIndex = 0;
 		}
+		freeArray(_paCommandBuffer);
+
 		startMusic();
 		_musicPlaying = false;
 		return;
