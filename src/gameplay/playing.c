@@ -196,6 +196,7 @@ void fPlaying(bool reset)
 		readScore(_map, &_highScore, &_highScoreCombo, &_highScoreMisses, &_highScoreAccuracy, &_highScoreRank);
 		if (_highScore < _score || rankCalculation(_score, _combo, _notesMissed, _averageAccuracy) > _highScoreRank)
 		{
+			_mapRefresh = true; //to show new rank
 			saveScore();
 		}
 

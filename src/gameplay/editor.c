@@ -174,7 +174,6 @@ typedef struct Commmand{
 #define COMMANDBUFFER 50
 Command * _paCommandBuffer = 0;
 int _CommandIndex = 0;
-int _CommandFurtestIndex = 0;
 
 #define freeArray(arr) \
 	if(arr)\
@@ -236,25 +235,27 @@ void undo()
 	_selectedNotes = 0;
 	_amountSelectedNotes = 0;
 
-	while(_CommandIndex >= 0)
+	while(_CommandIndex > 0)
 	{
+		_CommandIndex--;
 		int index = _CommandIndex;
 		int cost = _paCommandBuffer[index].cost;
 
 		undoCommand(_paCommandBuffer[index]);
 		freeCommand(index);
 
-		_CommandIndex--;
-
 		if(cost != 0)
 			break;
 	}
+
+	if(_CommandIndex < 0)
+		_CommandIndex = 0;
 
 }
 
 void doAction(CommandType type, int note, int cost)
 {
-
+	printf("do action\n");
 	if(!_paCommandBuffer)
 	{
 		_paCommandBuffer = malloc(sizeof(Command)*(_CommandIndex+1));

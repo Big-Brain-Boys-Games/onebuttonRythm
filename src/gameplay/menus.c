@@ -1325,8 +1325,6 @@ void fMapSelect(bool reset)
 	static int *misses;
 	static int selectedMap = -1;
 	static float selectMapTransition = 1;
-	static int hoverMap = -1;
-	static float hoverPeriod = 0;
 	static bool selectingMods = false;
 	_musicSpeed = 1;
 	static char search[100];
@@ -1355,7 +1353,6 @@ void fMapSelect(bool reset)
 	{
 		_playMenuMusic = true;
 		_musicPlaying = false;
-		hoverPeriod = 0;
 		drawVignette();
 		if (IsKeyPressed(KEY_ESCAPE) || interactableButton("Back", 0.03, getWidth() * 0.05, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
 		{
@@ -1459,19 +1456,13 @@ void fMapSelect(bool reset)
 		searchText->active = search[0] == '\0' && !searchBox->selected &&
 			!mouseInRect((Rectangle){.x=searchBox->x*getWidth(), .y=searchBox->y*getHeight(), .width=searchBox->width*getWidth(), .height=searchBox->height*getHeight()});
 
-	if (hoverMap == -1)
+	if(selectedMap == -1)
 	{
+		_playMenuMusic = true;
+		_musicPlaying = false;
 		_musicFrameCount = 1;
-		hoverPeriod = 0;
 	}
-	else
-	{
-		_disableLoadingScreen = true;
-		hoverPeriod += GetFrameTime();
-		// if(_musicLength)
-		// 	if (!*_musicLength)
-		// 		_musicFrameCount = _paMaps[hoverMap].musicPreviewOffset * 48000 * 2;
-	}
+
 	// draw map button
 	Rectangle mapSelectRect = (Rectangle){.x = 0, .y = getHeight() * 0.13, .width = getWidth(), .height = getHeight()};
 	startScissor(mapSelectRect.x, mapSelectRect.y, mapSelectRect.width, mapSelectRect.height);
@@ -1498,12 +1489,6 @@ void fMapSelect(bool reset)
 					missingLetter = true;
 					break;
 				}
-			}
-			if (missingLetter)
-			{
-				if(hoverMap == i)
-					hoverMap = -1;
-				continue;
 			}
 		}
 
@@ -1554,32 +1539,6 @@ void fMapSelect(bool reset)
 				if(rankObj)
 					drawRank(rankObj->x*getWidth()+mapButton.x, rankObj->y*getHeight()+mapButton.y, rankObj->width*getWidth(), rankObj->height * getWidth(), ranks[i]);
 			}
-		}
-		
-
-		if ((mouseInRect(mapButton) || selectedMap == i) && mouseInRect(mapSelectRect))
-		{
-			if (hoverPeriod > 1 && hoverPeriod < 2)
-			{
-				// play music
-				char str[100];
-				snprintf(str, 100, "%s/%s", _paMaps[i].folder, _paMaps[i].musicFile);
-				loadMusic(&_paMaps[i].music, str, _paMaps[i].musicPreviewOffset);
-				_playMenuMusic = false;
-				_musicFrameCount = _paMaps[i].musicPreviewOffset * 48000 * 2;
-				_musicPlaying = true;
-				hoverPeriod++;
-			}
-			hoverMap = i;
-			_disableLoadingScreen = true;
-		}
-		else if ((!mouseInRect(mapButton) || !mouseInRect(mapSelectRect)) && hoverMap == i)
-		{
-			hoverMap = -1;
-			_playMenuMusic = true;
-			_musicPlaying = false;
-			hoverPeriod = 0;
-			_musicFrameCount = 1;
 		}
 
 		if(_paMaps[i].cpuImage.width == 0)
@@ -1656,8 +1615,16 @@ void fMapSelect(bool reset)
 				playAudioEffect(_buttonSe);
 				selectedMap = i;
 				selectMapTransition = 0;
-				hoverPeriod = 0;
 				_musicFrameCount = 1;
+
+				// play music
+				char str[100];
+				snprintf(str, 100, "%s/%s", _paMaps[i].folder, _paMaps[i].musicFile);
+				loadMusic(&_paMaps[i].music, str, _paMaps[i].musicPreviewOffset);
+				_playMenuMusic = false;
+				_musicFrameCount = _paMaps[i].musicPreviewOffset * 48000 * 2;
+				_musicPlaying = true;
+				_disableLoadingScreen = true;
 			}
 
 			if(_paMaps[i].image.id == 0)
@@ -1690,16 +1657,12 @@ void fMapSelect(bool reset)
 	DrawRectangleGradientV(0, getHeight()*0.8, getWidth(), getHeight()*0.21, ColorAlpha(BLACK, 0), ColorAlpha(BLACK, 0.8));
 
 
-	if (hoverMap != -1 || selectedMap != -1)
+	if (selectedMap != -1 && _paMaps[selectedMap].name != 0)
 	{
-		int selMap = selectedMap != -1 ? selectedMap : hoverMap;
-		if(_paMaps[selMap].name != 0)
-		{
-			char str[100];
-			snprintf(str, 100, "%s - %s", _paMaps[selMap].name, _paMaps[selMap].artist);
-			int textSize = measureText(str, getWidth() * 0.05);
-			drawText(str, getWidth() * 0.9 - textSize, getHeight() * 0.92, getWidth() * 0.05, WHITE);
-		}
+		char str[100];
+		snprintf(str, 100, "%s - %s", _paMaps[selectedMap].name, _paMaps[selectedMap].artist);
+		int textSize = measureText(str, getWidth() * 0.05);
+		drawText(str, getWidth() * 0.9 - textSize, getHeight() * 0.92, getWidth() * 0.05, WHITE);
 	}
 
 	drawCursor();
