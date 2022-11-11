@@ -676,6 +676,7 @@ void loadMap ()
 				if(index > 0 && _papNotes[index]->time > time)
 				{
 					//note out of order, skip note
+					printf("note out of order, skipping\n");
 					continue;
 				}
 
@@ -696,7 +697,8 @@ void loadMap ()
 				_papNotes[_noteIndex]->hit = 0;
 
 				index = 0;
-				for(int j = 0; j < 2; j++)
+				int strlength = strlen(line);
+				while(index < strlength)
 				{
 					//find " or end of line
 					for(int i = index+1; i < 1000; i++)

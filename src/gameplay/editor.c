@@ -173,7 +173,7 @@ typedef struct Commmand{
 } Command;
 #define COMMANDBUFFER 50
 Command * _paCommandBuffer = 0;
-int _CommandIndex = -1;
+int _CommandIndex = 0;
 int _CommandFurtestIndex = 0;
 
 #define freeArray(arr) \
@@ -254,7 +254,6 @@ void undo()
 
 void doAction(CommandType type, int note, int cost)
 {
-	_CommandIndex++;
 
 	if(!_paCommandBuffer)
 	{
@@ -269,6 +268,8 @@ void doAction(CommandType type, int note, int cost)
 	_paCommandBuffer[index].cost = cost;
 	_paCommandBuffer[index].time = _papNotes[note]->time;
 	_paCommandBuffer[index].data = (Note) {0};
+
+	_CommandIndex++;
 
 	switch(type)
 	{
@@ -307,30 +308,36 @@ void removeNote(int index)
 		_papNotes[i] = _papNotes[i + 1];
 	}
 	
-	_papNotes = realloc(_papNotes, (_amountNotes+1) * sizeof(Note*));
+	_papNotes = realloc(_papNotes, _amountNotes * sizeof(Note*));
+
 }
 
 int newNote(float time)
 {
 	int closestIndex = 0;
-	_amountNotes++;
-	_papNotes = realloc(_papNotes, (_amountNotes+1)* sizeof(Note*));
-	for (int i = 0; i < _amountNotes - 1; i++)
+	for (int i = 0; i < _amountNotes; i++)
 	{
-		_papNotes[i] = _papNotes[i];
 		if (_papNotes[i]->time < time)
 		{
 			closestIndex = i + 1;
 		}else break;
 	}
+
+	_amountNotes++;
+	_papNotes = realloc(_papNotes, _amountNotes* sizeof(Note*));
+	_papNotes[_amountNotes-1] = 0;
+	
 	for (int i = _amountNotes-2; i >= closestIndex; i--)
 	{
 		_papNotes[i + 1] = _papNotes[i];
 	}
+
+
+
 	_papNotes[closestIndex] = calloc(1, sizeof(Note));
 	_papNotes[closestIndex]->time = time;
 	_papNotes[closestIndex]->health = 1;
-	_papNotes[closestIndex]->hit = 0;
+
 	return closestIndex;
 }
 
@@ -377,7 +384,7 @@ void editorDrop()
 			{
 				char str[100];
 				snprintf(str, 100, "%s/image.png", _map->folder);
-				int size = 0;
+				unsigned int size = 0;
 				unsigned char * data = LoadFileData(files.paths[i], &size);
 				SaveFileData(str, data, size);
 				UnloadFileData(data);
@@ -768,6 +775,7 @@ void fEditor(bool reset)
 				freeCommand(i);
 			}
 			freeArray(_paCommandBuffer);
+			_CommandIndex = 0;
 		}
 
 		if(_noteCopyBuffer)
