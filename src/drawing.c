@@ -717,7 +717,7 @@ void drawLoadScreen()
 	static float angle = 0;
 	angle += GetFrameTime()*(sinf(GetTime()*4)+1.5)*300;
 
-	DrawTextureTiled(_background, (Rectangle){.x=GetTime()*0.04*getWidth(), .y=GetTime()*0.04*getHeight(), .height = _background.height, .width= _background.width},
+	DrawTextureTiled(_menuBackground, (Rectangle){.x=GetTime()*0.04*getWidth(), .y=GetTime()*0.04*getHeight(), .height = _menuBackground.height, .width= _menuBackground.width},
 		(Rectangle){.x=0, .y=0, .height = getHeight(), .width= getWidth()}, (Vector2){.x=0, .y=0}, 0, 0.0002*getWidth(), ColorAlpha(WHITE, _loadingFade));
 
 	DrawRing((Vector2){.x=getWidth()/2, .y=getHeight()/2}, getWidth()*0.1, getWidth()*0.15, angle, angle+170, 50, ColorAlpha(WHITE, _loadingFade));

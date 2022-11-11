@@ -32,7 +32,7 @@ typedef struct Map{
 extern Map * _paMaps;
 #endif
 
-struct Settings{
+typedef struct Settings{
 	int zoom;
 	bool useMapZoom;
 	int volumeGlobal;
@@ -45,8 +45,8 @@ struct Settings{
 	double offset;
 	bool animations;
 	bool customAssets;
-};
-typedef struct Settings Settings;
+	bool editorTestZoom;
+} Settings;
 
 enum FilePart{
 	fpNone,

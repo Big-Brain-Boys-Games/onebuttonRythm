@@ -741,7 +741,7 @@ void loadCSS(char * fileName)
 							{
 								object.image = LoadTexture(value);
 								GenTextureMipmaps(&object.image);
-								SetTextureFilter(object.image, TEXTURE_FILTER_ANISOTROPIC_8X);
+								SetTextureFilter(object.image, TEXTURE_FILTER_TRILINEAR);
 							}
 						}
 
@@ -922,14 +922,13 @@ int UIValueInteractable(int variable, char * name)
 	if(!object)
 		return variable;
 	
-	if(object->selected)
-	{
-		return object->value;
-	}else
+	if(!object->selected)
 	{
 		object->value = variable;
 		return variable;
 	}
+	
+	return object->value;
 }
 
 void UISetActive(char * name, bool active)

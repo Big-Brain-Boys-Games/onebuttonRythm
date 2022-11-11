@@ -834,7 +834,7 @@ void fEditor(bool reset)
 	static float scrollSpeedEditor = -1;
 	static bool scrollNeedsReset = false;
 
-	if(!_musicPlaying)
+	if(!_musicPlaying || !_settings.editorTestZoom)
 	{
 		if(scrollSpeedEditor == -1)
 			scrollSpeedEditor = 4.2 / _settings.zoom;
@@ -846,7 +846,7 @@ void fEditor(bool reset)
 		}
 		
 		scrollSpeedEditor = _scrollSpeed;
-	}else
+	}else if(_settings.editorTestZoom)
 	{
 		_scrollSpeed = 4.2 / getTimingSignature(_musicHead).zoom;
 		scrollNeedsReset = true;
@@ -854,6 +854,12 @@ void fEditor(bool reset)
 
 	if(drawProgressBarI(true))
 		_musicPlaying = false;
+
+	if(UIBUttonPressed("editorTestZoomToggle"))
+	{
+		printf("haha");
+	}
+	_settings.editorTestZoom = UIValueInteractable(_settings.editorTestZoom, "editorTestZoomToggle");
 
 	CSS_Object * playButton = getCSS_ObjectPointer("playButton");
 	if(playButton)
