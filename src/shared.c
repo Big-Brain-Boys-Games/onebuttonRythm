@@ -167,15 +167,19 @@ int rankCalculation(int score, int combo, int misses, float accuracy)
     if(!_amountNotes)
         return 0;
     
-    float rank = 100*(1-accuracy);
+    float rank = 1-accuracy;
+
+    rank *= rank;
 
     rank *= 1 - ((float)misses / _amountNotes);
     rank *= 1 + ((float)combo / _amountNotes) * 0.5;
 
+    rank *= 6.0/1;
     if(rank > 6)
         rank = 6;
+
     
-    return (6.0/100)*rank; //map output from 100 to 6 ranks
+    return rank;
 }
 
 float musicTimeToAnimationTime(double time)
