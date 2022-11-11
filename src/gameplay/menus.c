@@ -963,8 +963,7 @@ void fCSSPage(bool reset)
 	_musicPlaying = false;
 
 	ClearBackground(BLACK);
-	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
-					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
+	drawBackground();
 	drawVignette();
 	drawCSS(_pCSS->file);
 	drawCursor();
@@ -976,8 +975,7 @@ void fMainMenu(bool reset)
 	checkFileDropped();
 	_musicLoops = true;
 	ClearBackground(BLACK);
-	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
-					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
+	drawBackground();
 
 	drawVignette();
 
@@ -1014,8 +1012,7 @@ void fSettings(bool reset)
 	
 	_musicPlaying = false;
 	ClearBackground(BLACK);
-	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
-					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
+	drawBackground();
 	
 
 	drawCSS("theme/settings.css");
@@ -1349,8 +1346,7 @@ void fMapSelect(bool reset)
 		_mapRefresh = false;
 	}
 	ClearBackground(BLACK);
-	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
-					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
+	drawBackground();
 
 	if (selectingMods)
 	{
@@ -1757,8 +1753,7 @@ void fNewMap(bool reset)
 	}
 	
 	ClearBackground(BLACK);
-	DrawTextureTiled(_background, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _background.height, .width = _background.width},
-					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, WHITE);
+	drawBackground();
 
 	drawVignette();
 

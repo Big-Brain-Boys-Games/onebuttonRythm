@@ -13,7 +13,6 @@
 
 int getWidth();
 int getHeight();
-void setFakeResolution(int x, int y);
 void exitGame();
 
 #endif

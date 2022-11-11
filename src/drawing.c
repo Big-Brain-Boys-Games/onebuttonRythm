@@ -411,12 +411,12 @@ void drawTextInRect(Rectangle rect, char * text, float fontSize, Color color, bo
 
 void drawBackground()
 {
-	if(!_noBackground)
+	if(!_noBackground && _background.id != _menuBackground.id)
 	{
 		drawTextureCorrectAspectRatio(_background, WHITE, (Rectangle){.x=0,.y=0,.width=getWidth(),.height=getHeight()}, 0);
 	}else{
-		DrawTextureTiled(_background, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
-		(Rectangle){.x=0, .y=0, .height = getHeight(), .width= getWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, WHITE);
+		DrawTextureTiled(_background, (Rectangle){.x=GetTime()*0.04*getWidth(), .y=GetTime()*0.04*getHeight(), .height = _background.height, .width= _background.width},
+		(Rectangle){.x=0, .y=0, .height = getHeight(), .width= getWidth()}, (Vector2){.x=0, .y=0}, 0, 0.0002*getWidth(), WHITE);
 	}
 }
 
@@ -717,10 +717,9 @@ void drawLoadScreen()
 	static float angle = 0;
 	angle += GetFrameTime()*(sinf(GetTime()*4)+1.5)*300;
 
-	DrawTextureTiled(_menuBackground, (Rectangle){.x = GetTime() * 50, .y = GetTime() * 50, .height = _menuBackground.height, .width = _menuBackground.width},
-					 (Rectangle){.x = 0, .y = 0, .height = getHeight(), .width = getWidth()}, (Vector2){.x = 0, .y = 0}, 0, 0.2, ColorAlpha(WHITE, _loadingFade));
-	// DrawTextureTiled(_menuBackground, (Rectangle){.x=GetTime()*50, .y=GetTime()*50, .height = _background.height, .width= _background.width},
-		// (Rectangle){.x=0, .y=0, .height = getHeight(), .width= getWidth()}, (Vector2){.x=0, .y=0}, 0, 0.2, ColorAlpha(WHITE, _loadingFade));
+	DrawTextureTiled(_background, (Rectangle){.x=GetTime()*0.04*getWidth(), .y=GetTime()*0.04*getHeight(), .height = _background.height, .width= _background.width},
+		(Rectangle){.x=0, .y=0, .height = getHeight(), .width= getWidth()}, (Vector2){.x=0, .y=0}, 0, 0.0002*getWidth(), ColorAlpha(WHITE, _loadingFade));
+
 	DrawRing((Vector2){.x=getWidth()/2, .y=getHeight()/2}, getWidth()*0.1, getWidth()*0.15, angle, angle+170, 50, ColorAlpha(WHITE, _loadingFade));
 	if(_loadingFade== 1)
 	{
