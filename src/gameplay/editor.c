@@ -796,7 +796,7 @@ void fEditor(bool reset)
 	if(IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S))
 	{
 		saveMap();
-		_transition = 0.1;
+		_transition = 0.2;
 	}
 
 

@@ -823,7 +823,7 @@ void initDrawing()
 	_cursorTex = LoadTexture("assets/cursor.png");
 	GenTextureMipmaps(&_cursorTex);
 	SetTextureFilter(_cursorTex, TEXTURE_FILTER_TRILINEAR);
-	_font = loadFont("assets/nasalization.otf", 256, 32);
+	_font = loadFont("assets/nasalization.otf", 512, 32);
 	GenTextureMipmaps(&_font.texture);
 	SetTextureFilter(_font.texture, TEXTURE_FILTER_TRILINEAR);
 	_background = _menuBackground;

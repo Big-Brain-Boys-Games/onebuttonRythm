@@ -32,6 +32,17 @@
     growOnHover: 0.1;
 }
 
+#editButton{
+    type: button;
+    image: assets/icons/edit.png;
+    margin-left: 0;
+    margin-top: 15;
+    width: 7;
+    height: 7;
+    keepAspectRatio: yes;
+    growOnHover: 0.1;
+}
+
 #exitButton{
     type: button;
     image: assets/icons/exit.png;

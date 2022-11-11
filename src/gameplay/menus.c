@@ -1079,6 +1079,7 @@ void fPause(bool reset)
 	}
 
 	UISetActive("retryButton", (_pNextGameplayFunction == &fPlaying || _pNextGameplayFunction == &fRecording));
+	UISetActive("editButton", (_pNextGameplayFunction == &fPlaying));
 	UISetActive("saveButton", (_pNextGameplayFunction == &fEditor));
 
 	if (UIBUttonPressed("saveButton"))
@@ -1086,6 +1087,16 @@ void fPause(bool reset)
 		saveMap();
 		_pGameplayFunction = _pNextGameplayFunction;
 		// gotoMainMenu(false);
+		_transition = 0.5;
+	}
+
+	if(UIBUttonPressed("editButton"))
+	{
+		_pGameplayFunction = &fEditor;
+		fEditor(true);
+
+		for(int i = 0; i < _amountNotes; i++)
+			_papNotes[i]->hit = false;
 	}
 
 	if (_pNextGameplayFunction == &fPlaying && UIBUttonPressed("retryButton"))
