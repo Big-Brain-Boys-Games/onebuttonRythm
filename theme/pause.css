@@ -12,7 +12,7 @@
 #retryButton{
     type: button;
     image: assets/icons/retry.png;
-    margin-left: 0;
+    margin-left: -7;
     margin-top: 15;
     width: 7;
     height: 7;
@@ -24,7 +24,7 @@
 #saveButton{
     type: button;
     image: assets/icons/save.png;
-    margin-left: 0;
+    margin-left: 7;
     margin-top: 0;
     width: 7;
     height: 7;
@@ -35,8 +35,8 @@
 #editButton{
     type: button;
     image: assets/icons/edit.png;
-    margin-left: 0;
-    margin-top: 15;
+    margin-left: 7;
+    margin-top: 0;
     width: 7;
     height: 7;
     keepAspectRatio: yes;
@@ -46,7 +46,7 @@
 #exitButton{
     type: button;
     image: assets/icons/exit.png;
-    margin-left: 0;
+    margin-left: -7;
     margin-top: 15;
     width: 7;
     height: 7;
