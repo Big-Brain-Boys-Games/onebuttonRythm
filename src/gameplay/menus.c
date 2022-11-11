@@ -1029,6 +1029,9 @@ void fSettings(bool reset)
 	_settings.offset = UIValueInteractable(_settings.offset, "offsetSlider");
 	_settings.offset = UIValueInteractable(_settings.offset, "offsetBox");
 
+	_settings.backgroundDarkness = UIValueInteractable(_settings.backgroundDarkness*255, "backgroundDarknessSlider") / 255.0;
+
+
 	_settings.animations = UIValueInteractable(_settings.animations, "animationsToggle");
 	_settings.customAssets = UIValueInteractable(_settings.customAssets, "customAssetsToggle");
 	_settings.useMapZoom = UIValueInteractable(_settings.useMapZoom, "useMapZoomToggle");

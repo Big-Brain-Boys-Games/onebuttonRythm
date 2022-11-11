@@ -411,9 +411,10 @@ void drawTextInRect(Rectangle rect, char * text, float fontSize, Color color, bo
 
 void drawBackground()
 {
+	ClearBackground(BLACK);
 	if(!_noBackground && _background.id != _menuBackground.id)
 	{
-		drawTextureCorrectAspectRatio(_background, WHITE, (Rectangle){.x=0,.y=0,.width=getWidth(),.height=getHeight()}, 0);
+		drawTextureCorrectAspectRatio(_background, ColorAlpha(WHITE, _settings.backgroundDarkness), (Rectangle){.x=0,.y=0,.width=getWidth(),.height=getHeight()}, 0);
 	}else{
 		DrawTextureTiled(_background, (Rectangle){.x=GetTime()*0.04*getWidth(), .y=GetTime()*0.04*getHeight(), .height = _background.height, .width= _background.width},
 		(Rectangle){.x=0, .y=0, .height = getHeight(), .width= getWidth()}, (Vector2){.x=0, .y=0}, 0, 0.0002*getWidth(), WHITE);

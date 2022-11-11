@@ -1069,19 +1069,22 @@ void loadSettings()
 		if(emptyLine)
 			continue;
 
-		if(strcmp(line, "[Name]\n") == 0)					{mode = spName;			continue;}
-		if(strcmp(line, "[Volume Global]\n") == 0)			{mode = spVolGlobal;	continue;}
-		if(strcmp(line, "[Volume Music]\n") == 0)			{mode = spVolMusic;		continue;}
-		if(strcmp(line, "[Volume Sound Effects]\n") == 0)	{mode = spVolSE;		continue;}
-		if(strcmp(line, "[Zoom]\n") == 0)					{mode = spZoom;			continue;}
-		if(strcmp(line, "[UseMapZoom]\n") == 0)				{mode = spUseMapZoom;	continue;}
-		if(strcmp(line, "[NoteSize]\n") == 0)				{mode = spNoteSize;		continue;}
-		if(strcmp(line, "[Offset]\n") == 0)					{mode = spOffset;		continue;}
-		if(strcmp(line, "[ResolutionX]\n") == 0)			{mode = spResX;			continue;}
-		if(strcmp(line, "[ResolutionY]\n") == 0)			{mode = spResY;			continue;}
-		if(strcmp(line, "[Fullscreen]\n") == 0)				{mode = spFS;			continue;}
-		if(strcmp(line, "[Animations]\n") == 0)				{mode = spAnimations;	continue;}
-		if(strcmp(line, "[CustomAssets]\n") == 0)			{mode = spCustomAssets;	continue;}
+		if(strcmp(line, "[Name]\n") == 0)					{mode = spName;					continue;}
+		if(strcmp(line, "[Volume Global]\n") == 0)			{mode = spVolGlobal;			continue;}
+		if(strcmp(line, "[Volume Music]\n") == 0)			{mode = spVolMusic;				continue;}
+		if(strcmp(line, "[Volume Sound Effects]\n") == 0)	{mode = spVolSE;				continue;}
+		if(strcmp(line, "[Zoom]\n") == 0)					{mode = spZoom;					continue;}
+		if(strcmp(line, "[UseMapZoom]\n") == 0)				{mode = spUseMapZoom;			continue;}
+		if(strcmp(line, "[NoteSize]\n") == 0)				{mode = spNoteSize;				continue;}
+		if(strcmp(line, "[Offset]\n") == 0)					{mode = spOffset;				continue;}
+		if(strcmp(line, "[ResolutionX]\n") == 0)			{mode = spResX;					continue;}
+		if(strcmp(line, "[ResolutionY]\n") == 0)			{mode = spResY;					continue;}
+		if(strcmp(line, "[Fullscreen]\n") == 0)				{mode = spFS;					continue;}
+		if(strcmp(line, "[Animations]\n") == 0)				{mode = spAnimations;			continue;}
+		if(strcmp(line, "[CustomAssets]\n") == 0)			{mode = spCustomAssets;			continue;}
+		if(strcmp(line, "[EditorTestZoom]\n") == 0)			{mode = spEditorTestZoom;		continue;}
+		if(strcmp(line, "[BackgroundDarkness]\n") == 0)		{mode = spBackgroundDarkness;	continue;}
+
 		
 		for(int i = 0; i < stringLength; i++)
 					if(line[i] == '\n') line[i]= '\0';
@@ -1128,6 +1131,12 @@ void loadSettings()
 			case spCustomAssets:
 				_settings.customAssets = atoi(line);
 				break;
+			case spEditorTestZoom:
+				_settings.editorTestZoom = atoi(line);
+				break;
+			case spBackgroundDarkness:
+				_settings.backgroundDarkness = atof(line);
+				break;
 		}
 	}
 	fclose(f);
@@ -1164,5 +1173,9 @@ void saveSettings ()
 	fprintf(file, "%i\n", _settings.animations);
 	fprintf(file, "[CustomAssets]\n");
 	fprintf(file, "%i\n", _settings.customAssets);
+	fprintf(file, "[EditorTestZoom]\n");
+	fprintf(file, "%i\n", _settings.editorTestZoom);
+	fprintf(file, "[BackgroundDarkness]\n");
+	fprintf(file, "%f\n", _settings.backgroundDarkness);
 	fclose(file);
 }

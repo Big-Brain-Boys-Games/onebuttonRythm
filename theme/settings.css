@@ -319,6 +319,30 @@
     keepAspectRatio: yes;
 }
 
+#backgroundDarknessText {
+    type: text;
+    parent: settingsContainer;
+    color: WHITE;
+    font-size: 3;
+    margin-left: 53;
+    margin-top: 60;
+    width: 40;
+    height: 5;
+    content: "background";
+}
+
+#backgroundDarknessSlider {
+    type: slider;
+    parent: settingsContainer;
+    min: 0;
+    max: 255;
+    margin-left: 55;
+    margin-top: 65;
+    width: 30;
+    height: 3;
+    growOnHover: 0.05;
+}
+
 #useMapZoomText {
     type: text;
     parent: settingsContainer;

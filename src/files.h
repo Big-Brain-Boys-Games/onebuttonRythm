@@ -46,6 +46,7 @@ typedef struct Settings{
 	bool animations;
 	bool customAssets;
 	bool editorTestZoom;
+	float backgroundDarkness;
 } Settings;
 
 enum FilePart{
@@ -82,7 +83,9 @@ enum SettingsPart{
 	spResY,
 	spFS,
 	spAnimations,
-	spCustomAssets
+	spCustomAssets,
+	spEditorTestZoom,
+	spBackgroundDarkness
 };
 
 #include "shared.h"
