@@ -341,6 +341,8 @@ CustomTexture * addCustomTexture(char * file)
 		_paCustomTextures[0]->file = malloc(100);
 		strncpy(_paCustomTextures[0]->file, file, 100);
 		_paCustomTextures[0]->texture = LoadTexture(file);
+		GenTextureMipmaps(&_paCustomTextures[0]->texture);
+		SetTextureFilter(_paCustomTextures[0]->texture, TEXTURE_FILTER_ANISOTROPIC_8X);
 		_paCustomTextures[0]->uses = 1;
 		return _paCustomTextures[0];
 	}else
@@ -361,6 +363,8 @@ CustomTexture * addCustomTexture(char * file)
 			_paCustomTextures[_customTexturesSize] = malloc(sizeof(CustomTexture));
 			_paCustomTextures[_customTexturesSize]->file = file;
 			_paCustomTextures[_customTexturesSize]->texture = LoadTexture(file);
+			GenTextureMipmaps(&_paCustomTextures[0]->texture);
+			SetTextureFilter(_paCustomTextures[0]->texture, TEXTURE_FILTER_ANISOTROPIC_8X);
 			_paCustomTextures[_customTexturesSize]->uses = 1;
 			_customTexturesSize++;
 			return _paCustomTextures[_customTexturesSize-1];
@@ -547,6 +551,9 @@ void loadMap ()
 	snprintf(str, 100, "%s/%s", _map->folder, _map->imageFile);
 	if(!_map->image.id)
 		_map->image = LoadTexture(str);
+
+	GenTextureMipmaps(&_map->image);
+	SetTextureFilter(_map->image, TEXTURE_FILTER_ANISOTROPIC_8X);
 	
 	if(_map->image.id)
 	{

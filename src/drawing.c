@@ -744,6 +744,42 @@ void drawButtonNoSprite(Rectangle rect, char * text, float fontScale)
 	drawText(text, rect.x + rect.width / 2 - textSize / 2, rect.y + rect.height*0.2, screenSize * fontScale, (color.r == GRAY.r) ? BLACK : DARKGRAY);
 }
 
+Font loadFont(char * file, int fontSize, int padding)
+{
+	if(!FileExists(file))
+	{
+		printf("file %s doesn't exist\n", file);
+		return (Font){0};
+	}
+
+	printf("Loading custom font %s\n", file);
+
+	unsigned int fileSize = 0;
+    unsigned char *fileData = LoadFileData(file, &fileSize);
+	Font font;
+	font.baseSize = fontSize;
+	font.glyphCount = 95;
+	font.glyphPadding = padding;
+	font.glyphs = LoadFontData(fileData, fileSize, font.baseSize, 0, font.glyphCount, FONT_DEFAULT);
+
+	if (font.glyphs != NULL)
+	{
+
+		Image atlas = GenImageFontAtlas(font.glyphs, &font.recs, font.glyphCount, font.baseSize, font.glyphPadding, 0);
+		font.texture = LoadTextureFromImage(atlas);
+
+		// Update glyphs[i].image to use alpha, required to be used on ImageDrawText()
+		for (int i = 0; i < font.glyphCount; i++)
+		{
+			UnloadImage(font.glyphs[i].image);
+			font.glyphs[i].image = ImageFromImage(atlas, font.recs[i]);
+		}
+
+		UnloadImage(atlas);
+	}
+	return font;
+}
+
 void initDrawing()
 {
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
@@ -765,6 +801,7 @@ void initDrawing()
 	_loadingFade = 0.3;
 
 	_menuBackground = LoadTexture("assets/background.png");
+	GenTextureMipmaps(&_menuBackground);
 	SetTextureFilter(_menuBackground, TEXTURE_FILTER_BILINEAR);
 
 	_loadingFade += 0.1;
@@ -775,18 +812,25 @@ void initDrawing()
 	EndDrawing();
 
 	_heartTex = LoadTexture("assets/heart.png");
-	SetTextureFilter(_heartTex, TEXTURE_FILTER_BILINEAR);
+	GenTextureMipmaps(&_heartTex);
+	SetTextureFilter(_heartTex, TEXTURE_FILTER_TRILINEAR);
 	_healthBarTex = LoadTexture("assets/healthBar.png");
-	SetTextureFilter(_healthBarTex, TEXTURE_FILTER_BILINEAR);
+	GenTextureMipmaps(&_healthBarTex);
+	SetTextureFilter(_healthBarTex, TEXTURE_FILTER_TRILINEAR);
 	_noteTex = LoadTexture("assets/note.png");
-	SetTextureFilter(_noteTex, TEXTURE_FILTER_BILINEAR);
+	GenTextureMipmaps(&_noteTex);
+	SetTextureFilter(_noteTex, TEXTURE_FILTER_TRILINEAR);
 	_cursorTex = LoadTexture("assets/cursor.png");
-	SetTextureFilter(_cursorTex, TEXTURE_FILTER_BILINEAR);
-	_font = LoadFontEx("assets/nasalization.otf", 512, 0, 0);
-	SetTextureFilter(_font.texture, TEXTURE_FILTER_BILINEAR);
+	GenTextureMipmaps(&_cursorTex);
+	SetTextureFilter(_cursorTex, TEXTURE_FILTER_TRILINEAR);
+	_font = loadFont("assets/nasalization.otf", 256, 32);
+	GenTextureMipmaps(&_font.texture);
+	SetTextureFilter(_font.texture, TEXTURE_FILTER_TRILINEAR);
 	_background = _menuBackground;
 
 	_iconTime = LoadTexture("assets/icons/clock.png");
+	GenTextureMipmaps(&_iconTime);
+	SetTextureFilter(_font.texture, TEXTURE_FILTER_TRILINEAR);
 
 
 

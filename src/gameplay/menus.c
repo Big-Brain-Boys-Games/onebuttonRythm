@@ -740,7 +740,8 @@ void loadCSS(char * fileName)
 							}else
 							{
 								object.image = LoadTexture(value);
-								SetTextureFilter(object.image, TEXTURE_FILTER_TRILINEAR);
+								GenTextureMipmaps(&object.image);
+								SetTextureFilter(object.image, TEXTURE_FILTER_ANISOTROPIC_8X);
 							}
 						}
 
