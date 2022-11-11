@@ -15,7 +15,7 @@
 	extern int _noteIndex, _amountNotes, _notesMissed;
 
 	extern float _scrollSpeed, _wantedScrollSpeed, _maxMargin, _averageAccuracy;
-	extern int _highScore, _score, _combo, _highestCombo, _highScoreCombo, _highScoreMisses;
+	extern int _highScore, _score, _combo, _highestCombo, _highScoreCombo, _highScoreMisses, _highScoreRank;
 	extern float _highScoreAccuracy;
 	extern bool _noBackground;
 

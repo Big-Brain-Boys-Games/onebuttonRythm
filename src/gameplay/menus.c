@@ -927,7 +927,7 @@ int UIValueInteractable(int variable, char * name)
 		object->value = variable;
 		return variable;
 	}
-	
+
 	return object->value;
 }
 
@@ -1014,6 +1014,8 @@ void fSettings(bool reset)
 	_musicPlaying = false;
 	ClearBackground(BLACK);
 	drawBackground();
+
+	drawVignette();
 	
 
 	drawCSS("theme/settings.css");

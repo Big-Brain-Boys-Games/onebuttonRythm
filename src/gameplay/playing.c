@@ -193,9 +193,8 @@ void fPlaying(bool reset)
 	if (endOfMusic())
 	{
 		stopMusic();
-		int tmp;
-		readScore(_map, &_highScore, &_highScoreCombo, &_highScoreMisses, &_highScoreAccuracy, &tmp);
-		if (_highScore < _score)
+		readScore(_map, &_highScore, &_highScoreCombo, &_highScoreMisses, &_highScoreAccuracy, &_highScoreRank);
+		if (_highScore < _score || rankCalculation(_score, _combo, _notesMissed, _averageAccuracy) > _highScoreRank)
 		{
 			saveScore();
 		}
@@ -444,7 +443,7 @@ void fEndScreen(bool reset)
 	if(newHighscoreObj)
 		newHighscoreObj->active = (_highScore < _score);
 
-	drawText("Rank", getWidth() * 0.55, getHeight() * 0.75, getWidth() * 0.05, LIGHTGRAY);
+	drawText("Rank", getWidth() * 0.55, getHeight() * 0.75, getWidth() * 0.05, WHITE);
 	drawRank(getWidth()*0.7, getHeight()*0.65, getWidth()*0.2, getWidth()*0.2, rankCalculation(_score, _highestCombo, _notesMissed, _averageAccuracy));
 
 	// if (interactableButton("Retry", 0.05, getWidth() * 0.15, getHeight() * 0.72, getWidth() * 0.3, getHeight() * 0.1))
