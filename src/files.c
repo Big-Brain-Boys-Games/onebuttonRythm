@@ -342,7 +342,7 @@ CustomTexture * addCustomTexture(char * file)
 		strncpy(_paCustomTextures[0]->file, file, 100);
 		_paCustomTextures[0]->texture = LoadTexture(file);
 		GenTextureMipmaps(&_paCustomTextures[0]->texture);
-		SetTextureFilter(_paCustomTextures[0]->texture, TEXTURE_FILTER_ANISOTROPIC_8X);
+		SetTextureFilter(_paCustomTextures[0]->texture, TEXTURE_FILTER_TRILINEAR);
 		_paCustomTextures[0]->uses = 1;
 		return _paCustomTextures[0];
 	}else
@@ -364,7 +364,7 @@ CustomTexture * addCustomTexture(char * file)
 			_paCustomTextures[_customTexturesSize]->file = file;
 			_paCustomTextures[_customTexturesSize]->texture = LoadTexture(file);
 			GenTextureMipmaps(&_paCustomTextures[0]->texture);
-			SetTextureFilter(_paCustomTextures[0]->texture, TEXTURE_FILTER_ANISOTROPIC_8X);
+			SetTextureFilter(_paCustomTextures[0]->texture, TEXTURE_FILTER_TRILINEAR);
 			_paCustomTextures[_customTexturesSize]->uses = 1;
 			_customTexturesSize++;
 			return _paCustomTextures[_customTexturesSize-1];
@@ -553,7 +553,7 @@ void loadMap ()
 		_map->image = LoadTexture(str);
 
 	GenTextureMipmaps(&_map->image);
-	SetTextureFilter(_map->image, TEXTURE_FILTER_ANISOTROPIC_8X);
+	SetTextureFilter(_map->image, TEXTURE_FILTER_TRILINEAR);
 	
 	if(_map->image.id)
 	{
