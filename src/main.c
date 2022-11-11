@@ -86,6 +86,8 @@ int main(int argc, char **argv)
 		float globalVolume = _settings.volumeGlobal / 100.0;
 		_musicVolume = _settings.volumeMusic / 100.0 * globalVolume;
 		_audioEffectVolume = _settings.volumeSoundEffects / 100.0 * globalVolume;
+
+		_scrollSpeed = (_wantedScrollSpeed * GetFrameTime()*15 + _scrollSpeed) / (1+GetFrameTime()*15);
 		
 		_isKeyPressed = isAnyKeyDown();
 		if (_pGameplayFunction != &fMapSelect)

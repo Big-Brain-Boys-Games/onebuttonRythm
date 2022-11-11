@@ -52,10 +52,10 @@ void fCountDown(bool reset)
 		printf("fCountDown reset (%i)\n", contin);
 
 		if(_map->zoom)
-				_scrollSpeed = 4.2 / _map->zoom;
+				_wantedScrollSpeed = 4.2 / _map->zoom;
 			
 		if (!_settings.useMapZoom || !_map->zoom)
-			_scrollSpeed = 4.2 / _settings.zoom;
+			_wantedScrollSpeed = 4.2 / _settings.zoom;
 		return;
 	}
 
@@ -87,10 +87,10 @@ void fCountDown(bool reset)
 			_musicHead = 0;
 			countDown = 0;
 			if(_map->zoom)
-				_scrollSpeed = 4.2 / _map->zoom;
+				_wantedScrollSpeed = 4.2 / _map->zoom;
 			
 			if (!_settings.useMapZoom || !_map->zoom)
-				_scrollSpeed = 4.2 / _settings.zoom;
+				_wantedScrollSpeed = 4.2 / _settings.zoom;
 
 			//set all note.hits to false
 			for(int i = 0; i < _amountNotes; i++)
@@ -175,7 +175,7 @@ void fPlaying(bool reset)
 
 	if(_settings.useMapZoom)
 	{
-		_scrollSpeed = 4.2 / getTimingSignature(_musicHead).zoom;
+		_wantedScrollSpeed = 4.2 / getTimingSignature(_musicHead).zoom;
 	}
 
 	_framesOffset = _settings.offset*48; //_offset in ms

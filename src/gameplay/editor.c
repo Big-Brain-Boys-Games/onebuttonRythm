@@ -841,14 +841,14 @@ void fEditor(bool reset)
 		
 		if(scrollNeedsReset)
 		{
-			_scrollSpeed = scrollSpeedEditor;
+			_wantedScrollSpeed = scrollSpeedEditor;
 			scrollNeedsReset = false;
 		}
 		
 		scrollSpeedEditor = _scrollSpeed;
 	}else if(_settings.editorTestZoom)
 	{
-		_scrollSpeed = 4.2 / getTimingSignature(_musicHead).zoom;
+		_wantedScrollSpeed = 4.2 / getTimingSignature(_musicHead).zoom;
 		scrollNeedsReset = true;
 	}
 
@@ -1196,21 +1196,21 @@ void fEditor(bool reset)
 		}
 	}
 
-	_scrollSpeed = UIValueInteractable(_scrollSpeed*10, "zoomSlider") / 10.0;
+	_wantedScrollSpeed = UIValueInteractable(_wantedScrollSpeed*10, "zoomSlider") / 10.0;
 
 	if(UIBUttonPressed("zoomResetButton"))
-		_scrollSpeed = 4.2 / _map->zoom;
+		_wantedScrollSpeed = 4.2 / _map->zoom;
 
 	//Change scrollspeed
 	if (IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL)))
-		_scrollSpeed /= 1.2;
+		_wantedScrollSpeed /= 1.2;
 
 	if (IsKeyPressed(KEY_UP) || (GetMouseWheelMove() > 0 && IsKeyDown(KEY_LEFT_CONTROL)))
-		_scrollSpeed *= 1.2;
+		_wantedScrollSpeed *= 1.2;
 
 	
-	if (_scrollSpeed == 0)
-		_scrollSpeed = 0.01;
+	if (_wantedScrollSpeed == 0)
+		_wantedScrollSpeed = 0.01;
 	
 	//Selecting notes
 	float distance = fabs(GetMousePosition().x - mouseBegin.x) + fabs(GetMousePosition().y - mouseBegin.y);
