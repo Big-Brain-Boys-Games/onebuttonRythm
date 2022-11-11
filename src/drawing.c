@@ -775,15 +775,15 @@ void initDrawing()
 	EndDrawing();
 
 	_heartTex = LoadTexture("assets/heart.png");
-	SetTextureFilter(_heartTex, TEXTURE_FILTER_ANISOTROPIC_8X);
+	SetTextureFilter(_heartTex, TEXTURE_FILTER_BILINEAR);
 	_healthBarTex = LoadTexture("assets/healthBar.png");
-	SetTextureFilter(_healthBarTex, TEXTURE_FILTER_ANISOTROPIC_8X);
+	SetTextureFilter(_healthBarTex, TEXTURE_FILTER_BILINEAR);
 	_noteTex = LoadTexture("assets/note.png");
-	SetTextureFilter(_noteTex, TEXTURE_FILTER_ANISOTROPIC_8X);
+	SetTextureFilter(_noteTex, TEXTURE_FILTER_BILINEAR);
 	_cursorTex = LoadTexture("assets/cursor.png");
-	SetTextureFilter(_cursorTex, TEXTURE_FILTER_ANISOTROPIC_8X);
-	_font = LoadFontEx("assets/nasalization.otf", 512, 0, 250);
-	SetTextureFilter(_font.texture, TEXTURE_FILTER_ANISOTROPIC_8X);
+	SetTextureFilter(_cursorTex, TEXTURE_FILTER_BILINEAR);
+	_font = LoadFontEx("assets/nasalization.otf", 512, 0, 0);
+	SetTextureFilter(_font.texture, TEXTURE_FILTER_BILINEAR);
 	_background = _menuBackground;
 
 	_iconTime = LoadTexture("assets/icons/clock.png");
