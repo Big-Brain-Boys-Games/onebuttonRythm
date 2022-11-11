@@ -740,6 +740,7 @@ void loadCSS(char * fileName)
 							}else
 							{
 								object.image = LoadTexture(value);
+								SetTextureFilter(object.image, TEXTURE_FILTER_BILINEAR);
 							}
 						}
 
