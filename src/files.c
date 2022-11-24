@@ -1022,9 +1022,7 @@ void makeMapZip(Map * map)
 void addZipMap(char * file)
 {
 	int arg = 2;
-	char str [100];
-	snprintf(str, 100, "maps/%s", GetFileNameWithoutExt(file));
-	zip_extract(file, str, on_extract_entry, &arg);
+	zip_extract(file, "./", on_extract_entry, &arg);
 	_mapRefresh = true;
 }
 
