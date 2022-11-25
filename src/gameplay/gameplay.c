@@ -102,6 +102,7 @@ void checkFileDropped()
 			{
 				addZipMap(files.paths[i]);
 				strncpy(_notfication, "map imported", 100);
+				_mapRefresh = true;
 			}
 		}
 		UnloadDroppedFiles(files);

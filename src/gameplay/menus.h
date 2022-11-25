@@ -19,7 +19,20 @@
 
 
 
-enum CSS_Type {css_text, css_image, css_rectangle, css_toggle ,css_button, css_buttonNoSprite, css_textbox, css_numberbox, css_slider, css_container};
+enum CSS_Type {
+    css_text,
+    css_image,
+    css_rectangle,
+    css_toggle,
+    css_button,
+    css_buttonNoSprite,
+    css_textbox,
+    css_numberbox,
+    css_slider,
+    css_container,
+    css_array,
+    css_array_element
+};
 
 typedef struct CSS_Variable{
     char * name;
@@ -31,7 +44,11 @@ typedef struct CSS_Object{
     char * name;
     int nameCharBits;
     char * parent;
+    struct CSS_Object * parentObj;
+    struct CSS_Object ** children;
+    int childrenCount;
     enum CSS_Type type;
+    int drawTick;
     char * text;
     char * hintText;
     Color color;

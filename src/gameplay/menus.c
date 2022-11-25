@@ -72,6 +72,9 @@ void freeCSS_Object(CSS_Object * object)
 
 	if(object->makeActive)
 		free(object->makeActive);
+
+	if(object->children)
+		free(object->children);
 }
 
 void freeCSS(CSS * css)
@@ -96,6 +99,8 @@ void freeCSS(CSS * css)
 	css->objectCount = 0;
 }
 
+int _drawTick = 0;
+
 void drawCSS_Object(CSS_Object * object)
 {
 	if(!object->active)
@@ -103,6 +108,11 @@ void drawCSS_Object(CSS_Object * object)
 		object->selected = false;
 		return;
 	}
+
+	if(object->drawTick == _drawTick)
+		return;
+	
+	object->drawTick = _drawTick;
 
 	float scrollValue = _scrollValue;
 
@@ -117,38 +127,43 @@ void drawCSS_Object(CSS_Object * object)
 
 
 	
-	bool scissorMode = false;
-	if(object->parent)
+	int scissors = 0;
+	if(object->parentObj)
 	{
-		CSS_Object parent = getCSS_Object(object->parent);
+		CSS_Object parent = *object;
 
-		if(!parent.active)
-			return;
-
-		float growAmount = parent.growOnHover * fmin(parent.hoverTime*15, 1);
-		
-
-		rect.x *= parent.width;
-		rect.y *= parent.height;
-
-		rect.x += parent.x*getWidth();
-		rect.y += parent.y*getHeight();
-
-		rect.width *= parent.width;
-		rect.height *= parent.height;
-
-		rect.x -= rect.width*growAmount/2;
-		rect.y -= rect.height*growAmount/2;
-
-		rect.width += rect.width*growAmount;
-		rect.height += rect.height*growAmount;
-
-		if(parent.type == css_container)
+		while(parent.parentObj)
 		{
-			startScissor(parent.x*getWidth(), parent.y*getHeight(), parent.width*getWidth(), parent.height*getHeight());
-			scissorMode = true;
-			if(parent.scrollable)
-				scrollValue = parent.scrollValue;
+			parent = *parent.parentObj;
+
+			if(!parent.active)
+				return;
+
+			float growAmount = parent.growOnHover * fmin(parent.hoverTime*15, 1);
+			
+
+			rect.x *= parent.width;
+			rect.y *= parent.height;
+
+			rect.x += parent.x*getWidth();
+			rect.y += parent.y*getHeight();
+
+			rect.width *= parent.width;
+			rect.height *= parent.height;
+
+			rect.x -= rect.width*growAmount/2;
+			rect.y -= rect.height*growAmount/2;
+
+			rect.width += rect.width*growAmount;
+			rect.height += rect.height*growAmount;
+
+			if(parent.type == css_container)
+			{
+				startScissor(parent.x*getWidth(), parent.y*getHeight(), parent.width*getWidth(), parent.height*getHeight());
+				scissors++;
+				if(parent.scrollable)
+					scrollValue = parent.scrollValue;
+			}
 		}
 	}
 
@@ -270,7 +285,12 @@ void drawCSS_Object(CSS_Object * object)
 		drawHint(rect, object->hintText);
 	}
 
-	if(scissorMode)
+	for(int i = 0; i < object->childrenCount; i++)
+	{
+		drawCSS_Object(object->children[i]);
+	}
+
+	for(;scissors > 0; scissors--)
 	{
 		endScissor();
 	}
@@ -360,6 +380,8 @@ void drawCSS(char * file)
 		loadCSS(file);
 	}
 
+	_drawTick++;
+
 	if(strcmp(_pCSS->file, file))
 	{
 		freeCSS(_pCSS);
@@ -402,18 +424,6 @@ void drawContainer(char * name, int x, int y)
 	object->active = true;
 
 	drawCSS_Object(object);
-
-	for(int i = 0; i < _pCSS->objectCount; i++)
-	{
-		if(!_pCSS->objects[i].parent)
-			continue;
-		
-		if(object->name[0] == _pCSS->objects[i].parent[0] && !strcmp(object->name, _pCSS->objects[i].parent))
-		{
-			//found child
-			drawCSS_Object(&_pCSS->objects[i]);
-		}
-	}
 
 	*object = original;
 }
@@ -604,6 +614,12 @@ void loadCSS(char * fileName)
 
 							if(!strcmp(value, "numberbox"))
 								object.type = css_numberbox;
+
+							if(!strcmp(value, "array"))
+								object.type = css_array;
+							
+							if(!strcmp(value, "array_element"))
+								object.type = css_array_element;
 						}
 
 						if(!strcmp(var, "content"))
@@ -847,6 +863,28 @@ void loadCSS(char * fileName)
 				_pCSS->objects = malloc(sizeof(CSS_Object)*_pCSS->objectCount);
 			}
 			_pCSS->objects[_pCSS->objectCount-1] = object;
+		}
+	}
+
+	//apply parents and children
+	for(int i = 0; i < _pCSS->objectCount; i++)
+	{
+		CSS_Object * obj = &_pCSS->objects[i];
+
+		if(obj->parent)
+		{
+			CSS_Object * parent = getCSS_ObjectPointer(obj->parent);
+			obj->parentObj = parent;
+			if(parent->children)
+			{
+				parent->childrenCount++;
+				parent->children = realloc(parent->children, sizeof(CSS_Object*)*parent->childrenCount);
+			}else
+			{
+				parent->childrenCount = 1;
+				parent->children = malloc(sizeof(CSS_Object*)*parent->childrenCount);
+			}
+			parent->children[parent->childrenCount-1] = obj;
 		}
 	}
 }
