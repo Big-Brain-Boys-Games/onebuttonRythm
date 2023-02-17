@@ -64,14 +64,17 @@
 
 #mapContainer{
     parent: maps;
-    type: container;
+    type: buttonNoSprite;
     scrollable: no;
     left: 0;
     top: 0;
-    width: 30;
-    height: 30.2;
+    width: 25;
+    height: 35;
+    padding-left: 5;
+    padding-top: 5;
     active: yes;
     growOnHover: 0.3;
+    makeActive: mapButtonsContainer;
 }
 
 #mapBackground{
@@ -298,12 +301,13 @@
 
 #mapButtonsContainer{
     type: container;
+    parent: mapContainer;
     scrollable: no;
     left: 0;
-    top: 0;
-    width: 30;
-    height: 40;
-    active: yes;
+    top: -10;
+    width: 100;
+    height: 100;
+    active: no;
 }
 
 #mapButtonBackground{
@@ -321,7 +325,7 @@
     type: button;
     parent: mapButtonsContainer;
     image: assets/icons/play.png;
-    command: "play ";
+    command: "play _map_name_";
     color: BLACK;
     left: 0;
     top: 77;
@@ -334,6 +338,7 @@
     type: button;
     parent: mapButtonsContainer;
     image: assets/icons/edit.png;
+    command: "edit _map_name_";
     color: BLACK;
     left: 33;
     top: 76;
@@ -346,6 +351,7 @@
     type: button;
     parent: mapButtonsContainer;
     image: assets/icons/export.png;
+    command: "export _map_name_";
     color: BLACK;
     left: 66;
     top: 76;

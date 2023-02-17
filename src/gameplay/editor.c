@@ -769,6 +769,13 @@ void fEditor(bool reset)
 
 	if(reset)
 	{
+		setMusicStart();
+		_musicHead = 0;
+		_transition = 0.1;
+		_disableLoadingScreen = false;
+		_musicPlaying = false;
+		loadMap();
+		
 		if(_paCommandBuffer)
 		{
 			for(int i = 0; i < _CommandIndex; i++)

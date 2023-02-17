@@ -33,14 +33,14 @@ void commandError(char * cmd)
 Map * getMap(char * name)
 {
     if(name == 0)
-        return;
+        return 0;
 
     for(int i = 0; i < _mapsCount; i++)
     {
-        if(strcmp(_paMaps[i].name, name) != 0)
-            continue;
-
-        return &_paMaps[i];
+        if(strcmp(_paMaps[i].name, name) == 0)
+        {
+            return &_paMaps[i];
+        }
     }
     
     return 0;
@@ -53,7 +53,9 @@ void commandPlay(char * cmd)
 
     char * argument = strtok(cmd, " ");
 
-    char * map = 0;
+    char * map = malloc(100);
+    map[0] = '\0';
+    bool NoMap = true;
 
     while( argument != NULL)
     {
@@ -70,12 +72,16 @@ void commandPlay(char * cmd)
             }
         }else
         {
-            map = malloc(strlen(argument)+1);
-            strcpy(map, argument);
+            if(map[0] != '\0')
+                strcat(map, " ");
+            strcat(map, argument);
+            NoMap = false;
         }
+
+        argument = strtok(NULL, " ");
     }
 
-    if(map == 0)
+    if(NoMap)
     {
         commandParser("error no map provided");
         return;
@@ -85,9 +91,13 @@ void commandPlay(char * cmd)
 
     if(pMap == 0)
     {
-        commandParser("error map doesn't exist");
+        char errormsg[100];
+        snprintf("error Map %s doesn't exit", map, 100);
+        commandParser(errormsg);
         return;
     }
+
+    _map = pMap;
 
     _pNextGameplayFunction = &fPlaying;
     _pGameplayFunction = &fPlaying;
@@ -111,7 +121,9 @@ void commandEdit(char * cmd)
 
     char * argument = strtok(cmd, " ");
 
-    char * map = 0;
+    char * map = malloc(100);
+    map[0] = '\0';
+    bool NoMap = true;
 
     while( argument != NULL)
     {
@@ -124,12 +136,16 @@ void commandEdit(char * cmd)
             }
         }else
         {
-            map = malloc(strlen(argument)+1);
-            strcpy(map, argument);
+            if(map[0] != '\0')
+                strcat(map, " ");
+            strcat(map, argument);
+            NoMap = false;
         }
+
+        argument = strtok(NULL, " ");
     }
 
-    if(map == 0)
+    if(NoMap)
     {
         commandParser("error no map provided");
         return;
@@ -139,9 +155,13 @@ void commandEdit(char * cmd)
 
     if(pMap == 0)
     {
-        commandParser("error map doesn't exist");
+        char errormsg[100];
+        snprintf("error Map %s doesn't exit", map, 100);
+        commandParser(errormsg);
         return;
     }
+
+    _map = pMap;
 
     _pNextGameplayFunction = &fPlaying;
     _pGameplayFunction = &fEditor;
@@ -154,23 +174,29 @@ void commandExport(char * cmd)
 
     char * argument = strtok(cmd, " ");
 
-    char * map = 0;
+    char * map = malloc(100);
+    map[0] = '\0';
+    bool NoMap = true;
 
     while( argument != NULL)
     {
         if(argument[0] == "-")
         {
             //is flag, check for all flags
-            
-            //no flags :P
+
+            //no arguments :P
         }else
         {
-            map = malloc(strlen(argument)+1);
-            strcpy(map, argument);
+            if(map[0] != '\0')
+                strcat(map, " ");
+            strcat(map, argument);
+            NoMap = false;
         }
+
+        argument = strtok(NULL, " ");
     }
 
-    if(map == 0)
+    if(NoMap)
     {
         commandParser("error no map provided");
         return;
@@ -180,9 +206,13 @@ void commandExport(char * cmd)
 
     if(pMap == 0)
     {
-        commandParser("error map doesn't exist");
+        char errormsg[100];
+        snprintf("error Map %s doesn't exit", map, 100);
+        commandParser(errormsg);
         return;
     }
+
+    _map = pMap;
 
     _pNextGameplayFunction = &fMainMenu;
     _pGameplayFunction = &fExport;
@@ -223,7 +253,7 @@ void commandParser(char * line)
     
     char * command = str;
 
-    printf("command: %s\n", command);
+    printf("command: %s\n", line);
 
     int commandsCount = sizeof(_commands) / sizeof(_commands[0]);
 

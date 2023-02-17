@@ -69,6 +69,7 @@ typedef struct CSS_Object{
     float scrollValue;
     char * loadFile;
     char * makeActive;
+    int makeActiveObj;
     char * command;
     float hoverTime;
     float growOnHover;

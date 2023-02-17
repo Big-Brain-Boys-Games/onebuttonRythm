@@ -21,6 +21,16 @@
 
 void fRecording(bool reset)
 {
+	if(reset)
+	{
+		setMusicStart();
+		_musicHead = 0;
+		_transition = 0.1;
+		_disableLoadingScreen = false;
+		_musicPlaying = false;
+		loadMap();
+		return;
+	}
 	if (IsKeyPressed(KEY_ESCAPE))
 	{
 		_pGameplayFunction = &fPause;

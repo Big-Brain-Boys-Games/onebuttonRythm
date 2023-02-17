@@ -142,7 +142,14 @@ void drawCSS_Object(CSS_Object * object)
 			parent = _pCSS->objects[parent.parentObj];
 
 			if(!parent.active)
+			{
+				for(;scissors>0;scissors--)
+				{
+					endScissor();
+				}
+
 				return;
+			}
 
 			float growAmount = parent.growOnHover * fmin(parent.hoverTime*15, 1);
 			
@@ -327,7 +334,7 @@ void drawCSS_Object(CSS_Object * object)
 		//button action
 		if(object->makeActive)
 		{
-			CSS_Object * activatedObject = getCSS_ObjectPointer(object->makeActive);
+			CSS_Object * activatedObject = &_pCSS->objects[object->makeActiveObj];
 			activatedObject->active = !activatedObject->active;
 		}
 
@@ -814,6 +821,16 @@ void loadCSS(char * fileName)
 							object.fontSize = atof(value)/100.0;
 						}
 
+						if(!strcmp(var, "padding-left"))
+						{
+							object.paddingX = atof(value)/100.0;
+						}
+
+						if(!strcmp(var, "padding-top"))
+						{
+							object.paddingY = atof(value)/100.0;
+						}
+
 						if(!strcmp(var, "left"))
 						{
 							object.x = atof(value)/100.0;
@@ -931,6 +948,21 @@ void loadCSS(char * fileName)
 		}
 	}
 
+	//find makeActiveObj's based of makeActive's
+	for(int i = 0; i < _pCSS->objectCount; i++)
+	{
+		CSS_Object * obj = &_pCSS->objects[i];
+		obj->makeActiveObj = 0; //first object is surely to exist
+
+		if(obj->makeActive)
+		{
+			CSS_Object * chain = getCSS_ObjectPointer(obj->makeActive);
+
+			if(chain > 0)
+				obj->makeActiveObj = chain-_pCSS->objects; //:P
+		}
+	}
+
 	//spawn elements of array
 	for(int i = 0; i < _pCSS->objectCount; i++)
 	{
@@ -939,25 +971,38 @@ void loadCSS(char * fileName)
 		if(obj.type != css_array)
 			continue;
 
-		//all conditions have been met, how lets see how many times we have to spawn them
+		//all conditions have been met, lets see how many times we have to spawn them
 
 		if(!strcmp(obj.text, "maps"))
 		{
+			if(obj.active == false)
+				continue;
+
+			int width = obj.width / (_pCSS->objects[obj.children[0]].width+_pCSS->objects[obj.children[0]].paddingX);
+			float padding = obj.width - width*(_pCSS->objects[obj.children[0]].width+_pCSS->objects[obj.children[0]].paddingX);
+			padding *= 0.5;
 			//spawn 1 per map
-			for(int map = 1; map < _mapsCount; map++)
+			for(int map = 0; map < _mapsCount; map++)
 			{
 				_map = &_paMaps[map];
 				for(int child = 0; child < obj.childrenCount; child++)
 				{
 					CSS_Object * newChild = makeCSS_ObjectClone(_pCSS->objects[obj.children[child]]);
-					float x = map*(newChild->width+newChild->paddingX);
-					int row = (x+newChild->width+newChild->paddingX) / obj.width;
-					newChild->x = x - row;
+					
+					int x = map;
+					int row = x / width;
+					x -= row * width;
+					newChild->x = x*(newChild->width+newChild->paddingX) + padding;
 					float y = row * (newChild->height+newChild->paddingY);
 					newChild->y = y;
+					// printf("map: %i %i\n", x, row);
 					// printf("map: %.2f\n", newChild->x);
 				}
 			}
+
+			// printf("children count: %i", obj.childrenCount);
+
+			_pCSS->objects[obj.children[0]].active = false;
 		}
 	}
 }
@@ -967,6 +1012,37 @@ void loadCSS(char * fileName)
 		str1 = malloc(100); \
 		strcpy(str1, str2); \
 	}
+
+void replaceTextVariables(char * str)
+{
+	if(_map == 0)
+		return;
+	
+	//todo: set check that it doesn't overgo it's bounds (maybe strncpy)
+	char * newStr = malloc(100);
+	newStr[0] = '\0';
+
+	char * token = strtok(str, " ");
+	while( token != NULL ) {
+		
+		if(strcmp(token, "_map_name_") == 0)
+		{
+			strcat(newStr, _map->name);
+		}else if(strcmp(token, "_map_image_") == 0)
+		{
+			strcat(newStr, _map->name);
+		}else {
+			strcat(newStr, token);
+		}
+		token = strtok(NULL, " ");
+		
+		if(token != 0)
+			strcat(newStr, " ");
+	}
+
+	strcpy(str, newStr);
+	free(newStr);
+}
 
 CSS_Object * makeCSS_ObjectClone(CSS_Object object)
 {
@@ -983,21 +1059,23 @@ CSS_Object * makeCSS_ObjectClone(CSS_Object object)
 	stringcopy(new->hintText, object.hintText);
 	stringcopy(new->loadFile, object.loadFile);
 	stringcopy(new->makeActive, object.makeActive);
+	stringcopy(new->command, object.command);
 
 	new->children = malloc(sizeof(int)*object.childrenCount);
 
-	// printf("parent: %i\n", new-_pCSS->objects);
+	// printf("parent: %s\n", new->name);
 
-	if(new->text && _map) //do more checks if maps points correctly
+
+	//variable replacement part
+
+	if(new->text) //do more checks if maps points correctly
 	{
-		if(!strcmp(new->text, "_map_name_"))
-			strcpy(new->text, _map->name);
+		replaceTextVariables(new->text);
+	}
 
-		if(!strcmp(new->text, "_map_image_"))
-		{
-			new->texPointer = &_map->image;
-			printf("_map_image_\n");
-		}
+	if(new->command)
+	{
+		replaceTextVariables(new->command);
 	}
 
 	int index = new-_pCSS->objects;
@@ -1006,7 +1084,16 @@ CSS_Object * makeCSS_ObjectClone(CSS_Object object)
 	{
 		CSS_Object * child = makeCSS_ObjectClone(_pCSS->objects[object.children[i]]);
 		child->parentObj = index;
-		new->children[i] = child-_pCSS->objects;
+		_pCSS->objects[index].children[i] = child-_pCSS->objects;
+
+		if(new->makeActive)
+		{
+			if(strcmp(new->makeActive, child->name) == 0)
+			{
+				//copy id of child to parent makeActiveObj
+				new->makeActiveObj = _pCSS->objects[index].children[i];
+			}
+		}
 	}
 
 	return &_pCSS->objects[index];

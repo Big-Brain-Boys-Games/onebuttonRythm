@@ -152,6 +152,12 @@ void fPlaying(bool reset)
 
 	if(reset)
 	{
+		setMusicStart();
+		_musicHead = 0;
+		_transition = 0.1;
+		_disableLoadingScreen = false;
+		_musicPlaying = false;
+		loadMap();
 		for(int i = 0; i < _amountNotes; i++)
 			_papNotes[i]->hit = false;
 

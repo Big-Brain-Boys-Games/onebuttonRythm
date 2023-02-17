@@ -40,7 +40,7 @@ Color _UIColor = WHITE;
 
 Color _fade = WHITE;
 
-#define MAXSCISSORS 50
+#define MAXSCISSORS 100
 
 Rectangle _scissors[MAXSCISSORS] = {0};
 int _scissorIndex = -1;

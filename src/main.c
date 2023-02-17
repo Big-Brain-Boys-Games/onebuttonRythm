@@ -69,8 +69,6 @@ int main(int argc, char **argv)
 	audioInit();
 	srand(time(NULL));
 
-	commandParser("print hello world how is it going");
-
 	initFolders();
 	
 	_pGameplayFunction = &fIntro;
