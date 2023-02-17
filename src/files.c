@@ -34,6 +34,7 @@
 #endif
 
 Map * _paMaps = 0;
+int _mapsCount = 0;
 
 void initFolders()
 {
@@ -202,6 +203,8 @@ Map loadMapInfo(char * file)
 	// SetTextureFilter(map.image, TEXTURE_FILTER_BILINEAR);
 	free(pStr);
 	printf("successfully loaded %s\n", file);
+
+	readScore(&map);
 	return map;
 }
 
@@ -885,13 +888,16 @@ void saveScore()
 	fclose(file);
 }
 
-void readScore(Map * map, int *score, int * combo, int * misses, float * accuracy, int * rank)
+void readScore(Map * map)
 {
-	*score = 0;
-	*combo = 0;
-	*accuracy = 0;
-	*misses = 0;
-	*rank = 0;
+	if(!map)
+		return;
+	
+	map->highscore = 0;
+	map->combo = 0;
+	map->accuracy = 0;
+	map->misses = 0;
+	map->rank = 0;
 
 	FILE * file;
 	char str [200];
@@ -907,7 +913,7 @@ void readScore(Map * map, int *score, int * combo, int * misses, float * accurac
 	char line [1000];
 	while(fgets(line,sizeof(line),file)!= NULL)
 	{
-		*score = atoi(line);
+		map->highscore = atoi(line);
 		char * part = &line[0];
 		for(int i = 0; i < 1000; i++)
 		{
@@ -920,7 +926,7 @@ void readScore(Map * map, int *score, int * combo, int * misses, float * accurac
 				return;
 			part++;
 		}
-		*combo = atoi(part);
+		map->combo = atoi(part);
 		for(int i = 0; i < 1000; i++)
 		{
 			if(*part == ' ')
@@ -932,7 +938,7 @@ void readScore(Map * map, int *score, int * combo, int * misses, float * accurac
 				return;
 			part++;
 		}
-		*accuracy = atof(part);
+		map->accuracy = atof(part);
 		for(int i = 0; i < 1000; i++)
 		{
 			if(*part == ' ')
@@ -944,7 +950,7 @@ void readScore(Map * map, int *score, int * combo, int * misses, float * accurac
 				return;
 			part++;
 		}
-		*misses = atoi(part);
+		map->misses = atoi(part);
 		for(int i = 0; i < 1000; i++)
 		{
 			if(*part == ' ')
@@ -956,7 +962,7 @@ void readScore(Map * map, int *score, int * combo, int * misses, float * accurac
 				return;
 			part++;
 		}
-		*rank = atoi(part);
+		map->rank = atoi(part);
 	}
 	fclose(file);
 	return;

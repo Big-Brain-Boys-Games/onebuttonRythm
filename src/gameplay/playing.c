@@ -193,8 +193,8 @@ void fPlaying(bool reset)
 	if (endOfMusic())
 	{
 		stopMusic();
-		readScore(_map, &_highScore, &_highScoreCombo, &_highScoreMisses, &_highScoreAccuracy, &_highScoreRank);
-		if (_highScore < _score || rankCalculation(_score, _combo, _notesMissed, _averageAccuracy) > _highScoreRank)
+		readScore(_map);
+		if (_map->highscore < _score || rankCalculation(_score, _combo, _notesMissed, _averageAccuracy) > _map->rank)
 		{
 			_mapRefresh = true; //to show new rank
 			saveScore();
@@ -423,10 +423,10 @@ void fEndScreen(bool reset)
 
 	drawCSS("theme/endScreen.css");
 
-	setCSS_VariableInt("highscore", _highScore);
-	setCSS_VariableInt("highcombo", _highScoreCombo);
-	setCSS_VariableInt("highaccuracy", 100*(1-_highScoreAccuracy));
-	setCSS_VariableInt("highmisses", _highScoreMisses);
+	setCSS_VariableInt("highscore", _map->highscore);
+	setCSS_VariableInt("highcombo", _map->combo);
+	setCSS_VariableInt("highaccuracy", 100*(1-_map->accuracy));
+	setCSS_VariableInt("highmisses", _map->misses);
 
 	setCSS_VariableInt("score", _score);
 	setCSS_VariableInt("combo", _highestCombo);
@@ -436,13 +436,13 @@ void fEndScreen(bool reset)
 	CSS_Object * oldHighscoreObj = getCSS_ObjectPointer("oldHighscore");
 
 	if(oldHighscoreObj)
-		oldHighscoreObj->active = _highScore!=0;
+		oldHighscoreObj->active = _map->highscore!=0;
 
 	
 	CSS_Object * newHighscoreObj = getCSS_ObjectPointer("newHighscore");
 
 	if(newHighscoreObj)
-		newHighscoreObj->active = (_highScore < _score);
+		newHighscoreObj->active = (_map->highscore < _score);
 
 	drawText("Rank", getWidth() * 0.55, getHeight() * 0.75, getWidth() * 0.05, WHITE);
 	drawRank(getWidth()*0.7, getHeight()*0.65, getWidth()*0.2, getWidth()*0.2, rankCalculation(_score, _highestCombo, _notesMissed, _averageAccuracy));

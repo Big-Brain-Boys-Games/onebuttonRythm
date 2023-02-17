@@ -44,18 +44,24 @@ typedef struct CSS_Object{
     char * name;
     int nameCharBits;
     char * parent;
-    struct CSS_Object * parentObj;
-    struct CSS_Object ** children;
+    int  parentObj;
+    int * children;
     int childrenCount;
     enum CSS_Type type;
     int drawTick;
     char * text;
     char * hintText;
     Color color;
-    Texture2D image;
+
+    bool isImagePointer;
+    union{
+        Texture2D tex;
+        Texture2D * texPointer;
+    };
     float opacity;
     float fontSize;
     float x, y, width, height;
+    float paddingX, paddingY;
     bool selected;
     int value;
     int max, min;
@@ -63,6 +69,7 @@ typedef struct CSS_Object{
     float scrollValue;
     char * loadFile;
     char * makeActive;
+    char * command;
     float hoverTime;
     float growOnHover;
     float rotateOnHover;
@@ -83,6 +90,7 @@ typedef struct CSS{
 
 void drawCSS(char * file);
 void loadCSS(char * fileName);
+CSS_Object * makeCSS_ObjectClone(CSS_Object object);
 CSS_Object getCSS_Object(char * name);
 CSS_Object * getCSS_ObjectPointer(char * name);
 CSS_Variable * getCSS_Variable(char * name);

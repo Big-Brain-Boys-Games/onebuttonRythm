@@ -26,10 +26,18 @@ typedef struct Map{
 	int musicLength;
 	Texture2D image;
 	Image cpuImage;
+
+	//don't get saved with map V
+	int highscore;
+	int combo;
+	int misses;
+	int rank;
+	float accuracy;
 } Map;
 
 #ifdef EXTERN_FILES
 extern Map * _paMaps;
+extern int _mapsCount;
 #endif
 
 typedef struct Settings{
@@ -100,7 +108,7 @@ void freeMap(Map * map);
 void freeNote(Note * note);
 void freeNotes();
 void saveScore();
-void readScore(Map * map, int *score, int * combo, int * misses, float * accuracy, int * rank);
+void readScore(Map * map);
 void makeMap(Map * map);
 void addZipMap(char * file);
 void makeMapZip(Map * map);

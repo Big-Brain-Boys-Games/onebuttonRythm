@@ -27,6 +27,7 @@
 #include "../drawing.h"
 #include "../thread.h"
 #include "../main.h"
+#include "../commands.h"
 
 CSS * _pCSS = 0;
 
@@ -45,13 +46,13 @@ void freeCSS_Object(CSS_Object * object)
 	if(!object)
 		return;
 
-	if(object->image.id)
+	if(!object->isImagePointer && object->tex.id)
 	{
-		if(_map && object->image.id == _map->image.id)
+		if(_map && object->tex.id == _map->image.id)
 		{}
 		else
 		{
-			UnloadTexture(object->image);
+			UnloadTexture(object->tex);
 		}
 	}
 
@@ -75,6 +76,9 @@ void freeCSS_Object(CSS_Object * object)
 
 	if(object->children)
 		free(object->children);
+
+	if(object->command)
+		free(object->command);
 }
 
 void freeCSS(CSS * css)
@@ -126,15 +130,16 @@ void drawCSS_Object(CSS_Object * object)
 	Rectangle rect = (Rectangle){.x=object->x*getWidth(), .y=(object->y+scrollValue)*getHeight(), .width=object->width*width, .height=object->height*height};
 
 
-	
+	// printf("object: %i\n", object-_pCSS->objects);
 	int scissors = 0;
-	if(object->parentObj)
+	if(object->parentObj != -1)
 	{
 		CSS_Object parent = *object;
 
-		while(parent.parentObj)
+		while(parent.parentObj != -1)
 		{
-			parent = *parent.parentObj;
+			// printf("parent: %i\n", parent.parentObj);
+			parent = _pCSS->objects[parent.parentObj];
 
 			if(!parent.active)
 				return;
@@ -211,6 +216,15 @@ void drawCSS_Object(CSS_Object * object)
 		}
 	}
 
+	Texture2D image = {0};
+	if(object->isImagePointer)
+	{
+		if(object->texPointer)
+			image = *object->texPointer;
+	} else {
+		image = object->tex;
+	}
+
 	switch(object->type)
 	{
 		case css_text:
@@ -219,7 +233,7 @@ void drawCSS_Object(CSS_Object * object)
 			break;
 		
 		case css_image:
-			drawTextureCorrectAspectRatio(object->image, object->color, rect, rotation);
+			drawTextureCorrectAspectRatio(image, object->color, rect, rotation);
 			break;
 
 		case css_toggle:
@@ -245,8 +259,8 @@ void drawCSS_Object(CSS_Object * object)
 			break;
 
 		case css_button:
-			if(object->image.id)
-				drawButtonPro(rect, object->text, fontSize, object->image, rotation);
+			if(image.id)
+				drawButtonPro(rect, object->text, fontSize, image, rotation);
 			else
 				drawButton(rect, object->text, fontSize);
 
@@ -287,7 +301,7 @@ void drawCSS_Object(CSS_Object * object)
 
 	for(int i = 0; i < object->childrenCount; i++)
 	{
-		drawCSS_Object(object->children[i]);
+		drawCSS_Object(&_pCSS->objects[object->children[i]]);
 	}
 
 	for(;scissors > 0; scissors--)
@@ -315,6 +329,11 @@ void drawCSS_Object(CSS_Object * object)
 		{
 			CSS_Object * activatedObject = getCSS_ObjectPointer(object->makeActive);
 			activatedObject->active = !activatedObject->active;
+		}
+
+		if(object->command)
+		{
+			commandParser(object->command);
 		}
 
 		if(object->loadFile)
@@ -534,6 +553,8 @@ void loadCSS(char * fileName)
 	_pCSS->variables = 0;
 	_pCSS->variableCount = 0;
 
+	bool mapRefresh = false;
+
 	for(int i = 0; i < size; i++)
 	{
 		if(text[i] == '#')
@@ -542,6 +563,7 @@ void loadCSS(char * fileName)
 			CSS_Object object = {0};
 			object.opacity = 1;
 			object.active = true;
+			object.parentObj = -1;
 
 			for(int nameIndex = i; nameIndex < size; nameIndex++)
 			{
@@ -696,6 +718,15 @@ void loadCSS(char * fileName)
 							}
 						}
 
+						if(!strcmp(var, "command"))
+						{
+							if(strlen(value))
+							{
+								object.command = malloc(100);
+								strncpy(object.command, value, 100);
+							}
+						}
+
 						if(!strcmp(var, "keepAspectRatio"))
 						{
 							object.keepAspectRatio = !strcmp(value, "yes");
@@ -748,16 +779,18 @@ void loadCSS(char * fileName)
 							{
 								if(_map)
 								{
-									object.image = _map->image;
+									object.isImagePointer = true;
+									object.texPointer = &_map->image;
 								}
 							}else if(!strcmp(value, "_background_"))
 							{
-								object.image = _menuBackground;
+								object.isImagePointer = true;
+								object.texPointer = &_menuBackground;
 							}else
 							{
-								object.image = LoadTexture(value);
-								GenTextureMipmaps(&object.image);
-								SetTextureFilter(object.image, TEXTURE_FILTER_TRILINEAR);
+								object.tex = LoadTexture(value);
+								GenTextureMipmaps(&object.tex);
+								SetTextureFilter(object.tex, TEXTURE_FILTER_TRILINEAR);
 							}
 						}
 
@@ -853,6 +886,11 @@ void loadCSS(char * fileName)
 				object.text[0] = '\0';
 			}
 
+			if(object.type == css_array && !strcmp(object.text, "maps"))
+			{
+				mapRefresh = true;
+			}
+
 			object.color.a = object.opacity*255;
 
 			_pCSS->objectCount++;
@@ -866,27 +904,112 @@ void loadCSS(char * fileName)
 		}
 	}
 
+	if(mapRefresh)
+	{
+		mapInfoLoading(); //not multithreaded for now
+	}
+
 	//apply parents and children
 	for(int i = 0; i < _pCSS->objectCount; i++)
 	{
 		CSS_Object * obj = &_pCSS->objects[i];
-
+		obj->parentObj = -1;
 		if(obj->parent)
 		{
 			CSS_Object * parent = getCSS_ObjectPointer(obj->parent);
-			obj->parentObj = parent;
+			obj->parentObj = parent-_pCSS->objects; //:P
 			if(parent->children)
 			{
 				parent->childrenCount++;
-				parent->children = realloc(parent->children, sizeof(CSS_Object*)*parent->childrenCount);
+				parent->children = realloc(parent->children, sizeof(int)*parent->childrenCount);
 			}else
 			{
 				parent->childrenCount = 1;
-				parent->children = malloc(sizeof(CSS_Object*)*parent->childrenCount);
+				parent->children = malloc(sizeof(int)*parent->childrenCount);
 			}
-			parent->children[parent->childrenCount-1] = obj;
+			parent->children[parent->childrenCount-1] = obj-_pCSS->objects; //:P
 		}
 	}
+
+	//spawn elements of array
+	for(int i = 0; i < _pCSS->objectCount; i++)
+	{
+		CSS_Object obj = _pCSS->objects[i];
+		
+		if(obj.type != css_array)
+			continue;
+
+		//all conditions have been met, how lets see how many times we have to spawn them
+
+		if(!strcmp(obj.text, "maps"))
+		{
+			//spawn 1 per map
+			for(int map = 1; map < _mapsCount; map++)
+			{
+				_map = &_paMaps[map];
+				for(int child = 0; child < obj.childrenCount; child++)
+				{
+					CSS_Object * newChild = makeCSS_ObjectClone(_pCSS->objects[obj.children[child]]);
+					float x = map*(newChild->width+newChild->paddingX);
+					int row = (x+newChild->width+newChild->paddingX) / obj.width;
+					newChild->x = x - row;
+					float y = row * (newChild->height+newChild->paddingY);
+					newChild->y = y;
+					// printf("map: %.2f\n", newChild->x);
+				}
+			}
+		}
+	}
+}
+
+#define stringcopy(str1, str2) \
+	if(str2) { \
+		str1 = malloc(100); \
+		strcpy(str1, str2); \
+	}
+
+CSS_Object * makeCSS_ObjectClone(CSS_Object object)
+{
+	_pCSS->objectCount++;
+	_pCSS->objects = realloc(_pCSS->objects, sizeof(CSS_Object)*_pCSS->objectCount);
+	
+	CSS_Object * new = &_pCSS->objects[_pCSS->objectCount-1];
+
+	*new = object;
+
+	stringcopy(new->name, object.name);
+	stringcopy(new->parent, object.parent);
+	stringcopy(new->text, object.text);
+	stringcopy(new->hintText, object.hintText);
+	stringcopy(new->loadFile, object.loadFile);
+	stringcopy(new->makeActive, object.makeActive);
+
+	new->children = malloc(sizeof(int)*object.childrenCount);
+
+	// printf("parent: %i\n", new-_pCSS->objects);
+
+	if(new->text && _map) //do more checks if maps points correctly
+	{
+		if(!strcmp(new->text, "_map_name_"))
+			strcpy(new->text, _map->name);
+
+		if(!strcmp(new->text, "_map_image_"))
+		{
+			new->texPointer = &_map->image;
+			printf("_map_image_\n");
+		}
+	}
+
+	int index = new-_pCSS->objects;
+
+	for(int i = 0; i < object.childrenCount; i++)
+	{
+		CSS_Object * child = makeCSS_ObjectClone(_pCSS->objects[object.children[i]]);
+		child->parentObj = index;
+		new->children[i] = child-_pCSS->objects;
+	}
+
+	return &_pCSS->objects[index];
 }
 
 CSS_Object * getCSS_ObjectPointer(char * name)
@@ -1170,29 +1293,19 @@ void fPause(bool reset)
 }
 
 
-struct mapInfoLoadingArgs
-{
-	int *amount;
-	int **highScores;
-	int **combos;
-	int **misses;
-	int **ranks;
-	float **accuracy;
-};
-
 char **filesCaching = 0;
 
 #ifdef __unix
-void mapInfoLoading(struct mapInfoLoadingArgs *args)
+void mapInfoLoading()
 #else
-DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
+DWORD WINAPI *mapInfoLoading()
 #endif
 {
 	lockLoadingMutex();
 	_loading++;
 	unlockLoadingMutex();
-	static int oldAmount = 0;
 	FilePathList files = LoadDirectoryFiles("maps/");
+	static int oldAmount = 0;
 
 	int amount = 0;
 	for(int i = 0; i < files.count; i++)
@@ -1229,14 +1342,8 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 	}
 	UnloadDirectoryFiles(files);
 
-	if (args->highScores != 0)
-	{
-		*args->highScores = realloc(*args->highScores, amount * sizeof(int));
-		*args->combos = realloc(*args->combos, amount * sizeof(int));
-		*args->accuracy = realloc(*args->accuracy, amount * sizeof(float));
-		*args->misses = realloc(*args->misses, amount * sizeof(int));
-		*args->ranks = realloc(*args->ranks, amount * sizeof(int));
-		
+	if (_paMaps != 0)
+	{	
 		char **tmp = calloc(amount, sizeof(char *));
 		for (int i = 0; i < amount && i < oldAmount; i++)
 		{
@@ -1261,11 +1368,6 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 	}
 	else
 	{
-		*args->highScores = malloc(amount * sizeof(int));
-		*args->combos = malloc(amount * sizeof(int));
-		*args->misses = malloc(amount * sizeof(int));
-		*args->ranks = malloc(amount * sizeof(int));
-		*args->accuracy = malloc(amount * sizeof(float));
 		filesCaching = calloc(amount, sizeof(char *));
 		for (int i = 0; i < amount; i++)
 			filesCaching[i] = calloc(100, sizeof(char));
@@ -1295,12 +1397,7 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 				strncpy(filesCaching[mapIndex], filesCaching[j], 100);
 				_paMaps[mapIndex] = _paMaps[j];
 				_paMaps[j] = (Map){0};
-				readScore(&_paMaps[mapIndex],
-						  &((*args->highScores)[mapIndex]),
-						  &((*args->combos)[mapIndex]),
-						  &((*args->misses)[mapIndex]),
-						  &((*args->accuracy)[mapIndex]),
-						  &((*args->ranks)[mapIndex]));
+				readScore(&_paMaps[mapIndex]);
 				break;
 			}
 		}
@@ -1321,12 +1418,7 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 		}
 		if (_paMaps[mapIndex].name != 0)
 		{
-			readScore(&_paMaps[mapIndex],
-					  &((*args->highScores)[mapIndex]),
-					  &((*args->combos)[mapIndex]),
-					  &((*args->misses)[mapIndex]),
-					  &((*args->accuracy)[mapIndex]),
-					  &((*args->ranks)[mapIndex]));
+			readScore(&_paMaps[mapIndex]);
 		}
 
 		// caching
@@ -1337,8 +1429,7 @@ DWORD WINAPI *mapInfoLoading(struct mapInfoLoadingArgs *args)
 	lockLoadingMutex();
 	_loading--;
 	unlockLoadingMutex();
-	*args->amount = mapIndex;
-	free(args);
+	_mapsCount = mapIndex;
 }
 
 #ifdef __unix
@@ -1369,12 +1460,6 @@ DWORD WINAPI *loadMapImage(Map * map)
 
 void fMapSelect(bool reset)
 {
-	static int amount = 0;
-	static int *highScores;
-	static int *combos;
-	static int *ranks;
-	static float *accuracy;
-	static int *misses;
 	static int selectedMap = -1;
 	static float selectMapTransition = 1;
 	static bool selectingMods = false;
@@ -1388,14 +1473,7 @@ void fMapSelect(bool reset)
 	checkFileDropped();
 	if (_mapRefresh)
 	{
-		struct mapInfoLoadingArgs *args = malloc(sizeof(struct mapInfoLoadingArgs));
-		args->amount = &amount;
-		args->combos = &combos;
-		args->highScores = &highScores;
-		args->accuracy = &accuracy;
-		args->misses = &misses;
-		args->ranks = &ranks;
-		createThread((void *(*)(void *))mapInfoLoading, args);
+		createThread((void *(*)(void *))mapInfoLoading, 0);
 		_mapRefresh = false;
 	}
 	ClearBackground(BLACK);
@@ -1484,7 +1562,7 @@ void fMapSelect(bool reset)
 	{
 		menuScroll -= scrollSpeed;
 	}
-	menuScroll = clamp(menuScroll, -.2 * floor(amount / 2), 0);
+	// menuScroll = clamp(menuScroll, -.2 * floor(amount / 2), 0);
 
 	if(UIBUttonPressed("modsButton"))
 	// if (interactableButton("Mods", 0.03, getWidth() * 0.2, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
@@ -1519,188 +1597,188 @@ void fMapSelect(bool reset)
 	Rectangle mapSelectRect = (Rectangle){.x = 0, .y = getHeight() * 0.13, .width = getWidth(), .height = getHeight()};
 	startScissor(mapSelectRect.x, mapSelectRect.y, mapSelectRect.width, mapSelectRect.height);
 	int mapCount = -1;
-	for (int i = 0; i < amount; i++)
-	{
-		// draw maps
-		if (search[0] != '\0')
-		{
-			bool missingLetter = false;
-			char str[100];
-			snprintf(str, 100, "%s - %s", _paMaps[i].name, _paMaps[i].artist);
-			int stringLength = strlen(str);
-			for (int j = 0; j < 100 && search[j] != '\0'; j++)
-			{
-				bool foundOne = false;
-				for (int k = 0; k < stringLength; k++)
-				{
-					if (tolower(search[j]) == tolower(str[k]))
-						foundOne = true;
-				}
-				if (!foundOne)
-				{
-					missingLetter = true;
-					break;
-				}
-			}
-		}
+	// for (int i = 0; i < amount; i++)
+	// {
+	// 	// draw maps
+	// 	if (search[0] != '\0')
+	// 	{
+	// 		bool missingLetter = false;
+	// 		char str[100];
+	// 		snprintf(str, 100, "%s - %s", _paMaps[i].name, _paMaps[i].artist);
+	// 		int stringLength = strlen(str);
+	// 		for (int j = 0; j < 100 && search[j] != '\0'; j++)
+	// 		{
+	// 			bool foundOne = false;
+	// 			for (int k = 0; k < stringLength; k++)
+	// 			{
+	// 				if (tolower(search[j]) == tolower(str[k]))
+	// 					foundOne = true;
+	// 			}
+	// 			if (!foundOne)
+	// 			{
+	// 				missingLetter = true;
+	// 				break;
+	// 			}
+	// 		}
+	// 	}
 
-		mapCount++;
-		int x = getWidth() * 0.02 + getWidth() * 0.32 * (mapCount % 3);
-		Rectangle mapButton = (Rectangle){.x = x, .y = menuScrollSmooth * getHeight() + getHeight() * ((floor(i / 3) > floor(selectedMap / 3) && selectedMap != -1 ? 0.3 : 0.225) + 0.3375 * floor(mapCount / 3)), .width = getWidth() * 0.3, .height = getHeight() * 0.3};
+	// 	mapCount++;
+	// 	int x = getWidth() * 0.02 + getWidth() * 0.32 * (mapCount % 3);
+	// 	Rectangle mapButton = (Rectangle){.x = x, .y = menuScrollSmooth * getHeight() + getHeight() * ((floor(i / 3) > floor(selectedMap / 3) && selectedMap != -1 ? 0.3 : 0.225) + 0.3375 * floor(mapCount / 3)), .width = getWidth() * 0.3, .height = getHeight() * 0.3};
 		
-		if(mapButton.y + mapButton.height < 0 || mapButton.y > getHeight())
-			continue;
+	// 	if(mapButton.y + mapButton.height < 0 || mapButton.y > getHeight())
+	// 		continue;
 
-				setCSS_Variable("mapname", _paMaps[i].name);
-		setCSS_Variable("artist", _paMaps[i].artist);
-		setCSS_VariableInt("difficulty", _paMaps[i].difficulty);
+	// 			setCSS_Variable("mapname", _paMaps[i].name);
+	// 	setCSS_Variable("artist", _paMaps[i].artist);
+	// 	setCSS_VariableInt("difficulty", _paMaps[i].difficulty);
 
-		CSS_Variable * nameAndArtistVar = getCSS_Variable("mapname_artist");
-		if(nameAndArtistVar)
-			snprintf(nameAndArtistVar->value, 100, "%s - %s", _paMaps[i].name, _paMaps[i].artist);
+	// 	CSS_Variable * nameAndArtistVar = getCSS_Variable("mapname_artist");
+	// 	if(nameAndArtistVar)
+	// 		snprintf(nameAndArtistVar->value, 100, "%s - %s", _paMaps[i].name, _paMaps[i].artist);
 
 
-		CSS_Variable * musicLength = getCSS_Variable("musicLength");
-		if(musicLength)
-			snprintf(musicLength->value, 100, "%i:%i", _paMaps[i].musicLength/60, _paMaps[i].musicLength%60);
+	// 	CSS_Variable * musicLength = getCSS_Variable("musicLength");
+	// 	if(musicLength)
+	// 		snprintf(musicLength->value, 100, "%i:%i", _paMaps[i].musicLength/60, _paMaps[i].musicLength%60);
 
 		
-		//todo: lord forgive me for what i've done
-		CSS_Object * mapImageObject = getCSS_ObjectPointer("mapImage");
-		if(mapImageObject)
-		{
-			mapImageObject->image = _paMaps[i].image;
-		}
+	// 	//todo: lord forgive me for what i've done
+	// 	CSS_Object * mapImageObject = getCSS_ObjectPointer("mapImage");
+	// 	if(mapImageObject)
+	// 	{
+	// 		mapImageObject->image = _paMaps[i].image;
+	// 	}
 
-		drawContainer("mapContainer", mapButton.x, mapButton.y);
+	// 	drawContainer("mapContainer", mapButton.x, mapButton.y);
 
-		if(highScores[i] != 0)
-		{
-			CSS_Object * highScoreObject = getCSS_ObjectPointer("highscoreContainer");
+	// 	if(highScores[i] != 0)
+	// 	{
+	// 		CSS_Object * highScoreObject = getCSS_ObjectPointer("highscoreContainer");
 
-			if(highScoreObject)
-			{
-				setCSS_VariableInt("highscore", highScores[i]);
-				setCSS_VariableInt("combo", combos[i]);
-				setCSS_VariableInt("accuracy", 100*(1-accuracy[i]));
-				setCSS_VariableInt("misses", misses[i]);
+	// 		if(highScoreObject)
+	// 		{
+	// 			setCSS_VariableInt("highscore", highScores[i]);
+	// 			setCSS_VariableInt("combo", combos[i]);
+	// 			setCSS_VariableInt("accuracy", 100*(1-accuracy[i]));
+	// 			setCSS_VariableInt("misses", misses[i]);
 
-				drawContainer("highscoreContainer", mapButton.x, mapButton.y);
+	// 			drawContainer("highscoreContainer", mapButton.x, mapButton.y);
 
-				CSS_Object * rankObj = getCSS_ObjectPointer("rank");
-				if(rankObj)
-					drawRank(rankObj->x*getWidth()+mapButton.x, rankObj->y*getHeight()+mapButton.y, rankObj->width*getWidth(), rankObj->height * getWidth(), ranks[i]);
-			}
-		}
+	// 			CSS_Object * rankObj = getCSS_ObjectPointer("rank");
+	// 			if(rankObj)
+	// 				drawRank(rankObj->x*getWidth()+mapButton.x, rankObj->y*getHeight()+mapButton.y, rankObj->width*getWidth(), rankObj->height * getWidth(), ranks[i]);
+	// 		}
+	// 	}
 
-		if(_paMaps[i].cpuImage.width == 0)
-		{
-			_paMaps[i].cpuImage.width = -1;
-			createThread((void *(*)(void *))loadMapImage, &_paMaps[i]);
-			_paMaps[i].cpuImage.width = -1;
-		}
+	// 	if(_paMaps[i].cpuImage.width == 0)
+	// 	{
+	// 		_paMaps[i].cpuImage.width = -1;
+	// 		createThread((void *(*)(void *))loadMapImage, &_paMaps[i]);
+	// 		_paMaps[i].cpuImage.width = -1;
+	// 	}
 
-		if (selectedMap == i)
-		{
-			if (IsMouseButtonReleased(0) && mouseInRect(mapButton) && mouseInRect(mapSelectRect))
-				selectedMap = -1;
+	// 	if (selectedMap == i)
+	// 	{
+	// 		if (IsMouseButtonReleased(0) && mouseInRect(mapButton) && mouseInRect(mapSelectRect))
+	// 			selectedMap = -1;
 			
-			startScissor(mapButton.x, mapButton.y, mapButton.width, mapButton.height*0.8+mapButton.height*0.5*selectMapTransition);
-			drawContainer("mapButtonsContainer", mapButton.x, mapButton.y);
-			endScissor();
+	// 		startScissor(mapButton.x, mapButton.y, mapButton.width, mapButton.height*0.8+mapButton.height*0.5*selectMapTransition);
+	// 		drawContainer("mapButtonsContainer", mapButton.x, mapButton.y);
+	// 		endScissor();
 
-			bool playButton = UIBUttonPressed("playButton");
-			bool editorButton = UIBUttonPressed("editorButton");
-			bool exportButton = UIBUttonPressed("exportButton");
+	// 		bool playButton = UIBUttonPressed("playButton");
+	// 		bool editorButton = UIBUttonPressed("editorButton");
+	// 		bool exportButton = UIBUttonPressed("exportButton");
 
-			if(!mouseInRect(mapSelectRect))
-			{
-				playButton = false;
-				editorButton = false;
-				exportButton = false;
-			}
+	// 		if(!mouseInRect(mapSelectRect))
+	// 		{
+	// 			playButton = false;
+	// 			editorButton = false;
+	// 			exportButton = false;
+	// 		}
 			
-			if (playButton || editorButton || exportButton)
-			{
-				_map = &_paMaps[i];
-				setMusicStart();
-				_musicHead = 0;
-				printf("selected map!\n");
-				_transition = 0.1;
-				_disableLoadingScreen = false;
-				_musicPlaying = false;
+	// 		if (playButton || editorButton || exportButton)
+	// 		{
+	// 			_map = &_paMaps[i];
+	// 			setMusicStart();
+	// 			_musicHead = 0;
+	// 			printf("selected map!\n");
+	// 			_transition = 0.1;
+	// 			_disableLoadingScreen = false;
+	// 			_musicPlaying = false;
 
-				CSS_Object * mapImageObject = getCSS_ObjectPointer("mapImage");
-				if(mapImageObject)
-				{
-					mapImageObject->image = (Texture2D){0};
-				}
+	// 			CSS_Object * mapImageObject = getCSS_ObjectPointer("mapImage");
+	// 			if(mapImageObject)
+	// 			{
+	// 				mapImageObject->image = (Texture2D){0};
+	// 			}
 
-				loadMap();
-			}
+	// 			loadMap();
+	// 		}
 			
-			if (playButton)
-			{
-				_pNextGameplayFunction = &fPlaying;
-				_pGameplayFunction = &fCountDown;
-				fCountDown(true);
-				fPlaying(true);
-			}
-			if (editorButton)
-			{
-				_pNextGameplayFunction = &fEditor;
-				_pGameplayFunction = &fEditor;
-				fEditor(true);
-			}
-			if (exportButton)
-			{
-				_pGameplayFunction = &fExport;
-			}
-			DrawRectangleGradientV(mapButton.x, mapButton.y + mapButton.height, mapButton.width, mapButton.height * 0.05 * selectMapTransition, ColorAlpha(BLACK, 0.3), ColorAlpha(BLACK, 0));
-		}
-		else
-		{
-			// drawMapThumbnail(mapButton, &_paMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], false);
+	// 		if (playButton)
+	// 		{
+	// 			_pNextGameplayFunction = &fPlaying;
+	// 			_pGameplayFunction = &fCountDown;
+	// 			fCountDown(true);
+	// 			fPlaying(true);
+	// 		}
+	// 		if (editorButton)
+	// 		{
+	// 			_pNextGameplayFunction = &fEditor;
+	// 			_pGameplayFunction = &fEditor;
+	// 			fEditor(true);
+	// 		}
+	// 		if (exportButton)
+	// 		{
+	// 			_pGameplayFunction = &fExport;
+	// 		}
+	// 		DrawRectangleGradientV(mapButton.x, mapButton.y + mapButton.height, mapButton.width, mapButton.height * 0.05 * selectMapTransition, ColorAlpha(BLACK, 0.3), ColorAlpha(BLACK, 0));
+	// 	}
+	// 	else
+	// 	{
+	// 		// drawMapThumbnail(mapButton, &_paMaps[i], (highScores)[i], (combos)[i], (accuracy)[i], false);
 
-			if (IsMouseButtonReleased(0) && mouseInRect(mapButton) && mouseInRect(mapSelectRect))
-			{
-				playAudioEffect(_buttonSe);
-				selectedMap = i;
-				selectMapTransition = 0;
-				_musicFrameCount = 1;
+	// 		if (IsMouseButtonReleased(0) && mouseInRect(mapButton) && mouseInRect(mapSelectRect))
+	// 		{
+	// 			playAudioEffect(_buttonSe);
+	// 			selectedMap = i;
+	// 			selectMapTransition = 0;
+	// 			_musicFrameCount = 1;
 
-				// play music
-				char str[100];
-				snprintf(str, 100, "%s/%s", _paMaps[i].folder, _paMaps[i].musicFile);
-				loadMusic(&_paMaps[i].music, str, _paMaps[i].musicPreviewOffset);
-				_playMenuMusic = false;
-				_musicFrameCount = _paMaps[i].musicPreviewOffset * 48000 * 2;
-				_musicPlaying = true;
-				_disableLoadingScreen = true;
-			}
+	// 			// play music
+	// 			char str[100];
+	// 			snprintf(str, 100, "%s/%s", _paMaps[i].folder, _paMaps[i].musicFile);
+	// 			loadMusic(&_paMaps[i].music, str, _paMaps[i].musicPreviewOffset);
+	// 			_playMenuMusic = false;
+	// 			_musicFrameCount = _paMaps[i].musicPreviewOffset * 48000 * 2;
+	// 			_musicPlaying = true;
+	// 			_disableLoadingScreen = true;
+	// 		}
 
-			if(_paMaps[i].image.id == 0)
-			{
-				//load map image onto gpu(cant be loaded in sperate thread because opengl >:( )
-				if(_paMaps[i].cpuImage.width > 0)
-				{
-					_paMaps[i].image = LoadTextureFromImage(_paMaps[i].cpuImage);
-					UnloadImage(_paMaps[i].cpuImage);
-					_paMaps[i].cpuImage.width = -1;
-					if(_paMaps[i].image.id == 0)
-						_paMaps[i].image.id = -1; 
-					else
-						SetTextureFilter(_paMaps[i].image, TEXTURE_FILTER_BILINEAR);
-				}
-			}
-		}
-	}
+	// 		if(_paMaps[i].image.id == 0)
+	// 		{
+	// 			//load map image onto gpu(cant be loaded in sperate thread because opengl >:( )
+	// 			if(_paMaps[i].cpuImage.width > 0)
+	// 			{
+	// 				_paMaps[i].image = LoadTextureFromImage(_paMaps[i].cpuImage);
+	// 				UnloadImage(_paMaps[i].cpuImage);
+	// 				_paMaps[i].cpuImage.width = -1;
+	// 				if(_paMaps[i].image.id == 0)
+	// 					_paMaps[i].image.id = -1; 
+	// 				else
+	// 					SetTextureFilter(_paMaps[i].image, TEXTURE_FILTER_BILINEAR);
+	// 			}
+	// 		}
+	// 	}
+	// }
 
-	CSS_Object * mapImageObject = getCSS_ObjectPointer("mapImage");
-	if(mapImageObject)
-	{
-		mapImageObject->image = (Texture2D){0};
-	}
+	// CSS_Object * mapImageObject = getCSS_ObjectPointer("mapImage");
+	// if(mapImageObject)
+	// {
+	// 	mapImageObject->image = (Texture2D){0};
+	// }
 	
 	drawVignette();
 

@@ -19,6 +19,7 @@
 #include "shared.h"
 #include "drawing.h"
 #include "thread.h"
+#include "commands.h"
 
 
 
@@ -67,6 +68,8 @@ int main(int argc, char **argv)
 	initDrawing();
 	audioInit();
 	srand(time(NULL));
+
+	commandParser("print hello world how is it going");
 
 	initFolders();
 	
