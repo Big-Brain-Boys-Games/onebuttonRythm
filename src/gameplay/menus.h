@@ -40,6 +40,29 @@ typedef struct CSS_Variable{
     char * value;
 } CSS_Variable;
 
+enum CSS_Image_State{
+    CSSImage_notLoaded,
+    CSSImage_loading,
+    CSSImage_loaded,
+    CSSImage_error
+};
+
+typedef struct CSS_Image{
+    char * file;
+    enum CSS_Image_State state;
+    Texture2D texture;
+    bool * stop;
+    bool isCopy;
+} CSS_Image;
+
+typedef struct CSS_Array_Child{
+    bool enabled;
+    float x;
+    float y;
+    char * key;
+    int index;
+} CSS_Array_Child;
+
 typedef struct CSS_Object{
     char * name;
     int nameCharBits;
@@ -53,11 +76,7 @@ typedef struct CSS_Object{
     char * hintText;
     Color color;
 
-    bool isImagePointer;
-    union{
-        Texture2D tex;
-        Texture2D * texPointer;
-    };
+    CSS_Image image;
     float opacity;
     float fontSize;
     float x, y, width, height;
@@ -79,6 +98,11 @@ typedef struct CSS_Object{
     bool usesVariableHint;
     bool centered;
     bool pressedOn;
+
+    bool arrayChild;
+    int arrayObj;
+    CSS_Array_Child * arrayChildren;
+    int arrayChildCount;
 } CSS_Object;
 
 typedef struct CSS{

@@ -31,7 +31,6 @@
 
 CSS * _pCSS = 0;
 
-float _scrollValue = 0;
 bool _mapRefresh = true;
 bool _anyUIButtonPressed = false;
 
@@ -41,20 +40,31 @@ bool _anyUIButtonPressed = false;
 		arr = 0; \
 	}
 
+void freeCSS_Image(CSS_Image * img)
+{
+	if(img->file)
+		printf("image file : %i\n", img->file);
+	freeArray(img->file);
+
+	if(img->isCopy)
+		return;
+	
+	if(img->state == CSSImage_loaded)
+	{
+		UnloadTexture(img->texture);
+	}
+	if(img->state == CSSImage_loading && img->stop != 0)
+	{
+		*img->stop = true; //sends signal to loading function to not write to address
+	}
+}
+
 void freeCSS_Object(CSS_Object * object)
 {
 	if(!object)
 		return;
 
-	if(!object->isImagePointer && object->tex.id)
-	{
-		if(_map && object->tex.id == _map->image.id)
-		{}
-		else
-		{
-			UnloadTexture(object->tex);
-		}
-	}
+	freeCSS_Image(&object->image);
 
 	if(object->name)
 		free(object->name);
@@ -118,7 +128,7 @@ void drawCSS_Object(CSS_Object * object)
 	
 	object->drawTick = _drawTick;
 
-	float scrollValue = _scrollValue;
+	float scrollValue = 0; //objects cannot scroll themselves
 
 
 	
@@ -127,7 +137,7 @@ void drawCSS_Object(CSS_Object * object)
 	if(object->keepAspectRatio)
 		width = height;
 
-	Rectangle rect = (Rectangle){.x=object->x*getWidth(), .y=(object->y+scrollValue)*getHeight(), .width=object->width*width, .height=object->height*height};
+	Rectangle rect = (Rectangle){.x=object->x*getWidth(), .y=(object->y)*getHeight(), .width=object->width*width, .height=object->height*height};
 
 
 	// printf("object: %i\n", object-_pCSS->objects);
@@ -173,11 +183,16 @@ void drawCSS_Object(CSS_Object * object)
 			{
 				startScissor(parent.x*getWidth(), parent.y*getHeight(), parent.width*getWidth(), parent.height*getHeight());
 				scissors++;
-				if(parent.scrollable)
-					scrollValue = parent.scrollValue;
+			}
+
+			if(parent.scrollable)
+			{
+				scrollValue += parent.scrollValue;
 			}
 		}
 	}
+
+	rect.y += scrollValue * getHeight();
 
 	if(mouseInRect(rect) || object->selected)
 	{
@@ -207,6 +222,27 @@ void drawCSS_Object(CSS_Object * object)
 		rect.y -= rect.height/2;
 	}
 
+	bool skip = false;
+
+	//if rect is out of bounds skip
+	if(rect.x + rect.width < 0)
+		skip = true;
+	if(rect.x > getWidth())
+		skip = true;
+
+	if(rect.y + rect.height < 0)
+		skip = true;
+	if(rect.y > getHeight())
+		skip = true;
+
+	if(skip)
+	{
+		for(;scissors>0; scissors--)
+			endScissor();
+		
+		return;
+	}
+
 	
 
 	if(mouseInRect(rect) && IsMouseButtonPressed(0))
@@ -224,12 +260,14 @@ void drawCSS_Object(CSS_Object * object)
 	}
 
 	Texture2D image = {0};
-	if(object->isImagePointer)
+	if(object->image.state == CSSImage_loaded)
 	{
-		if(object->texPointer)
-			image = *object->texPointer;
-	} else {
-		image = object->tex;
+		image = object->image.texture;
+	}
+
+	if(object->image.file && object->image.state == CSSImage_notLoaded)
+	{
+		loadCSS_Image_Immediate(&object->image);
 	}
 
 	switch(object->type)
@@ -296,9 +334,16 @@ void drawCSS_Object(CSS_Object * object)
 			slider(rect, &object->selected, &object->value, object->max, object->min);
 			break;
 		
-		case css_container:
-			object->scrollValue += GetMouseWheelMove() * .04;
-			break;
+	}
+
+	if(object->scrollable && mouseInRect(rect))
+	{
+		float frametime = GetFrameTime();
+		if(frametime > 1/360.0)
+			frametime = 1/360.0;
+
+		//limit scrolling when bad framerate (ie loading map images)
+		object->scrollValue += GetMouseWheelMove() * frametime * 15;
 	}
 
 	if(object->hoverTime > 0.05 && object->hintText)
@@ -514,6 +559,28 @@ void setCSS_VariableInt(char * name, int value)
 		snprintf(var->value, 100, "%i", value);
 }
 
+void loadCSS_Image_Immediate(CSS_Image * image)
+{
+	if(image->file == 0)
+		return;
+	
+	image->texture = LoadTexture(image->file);
+	image->state = CSSImage_loaded;
+	image->stop = 0;
+
+	GenTextureMipmaps(&image->texture);
+	SetTextureFilter(image->texture, TEXTURE_FILTER_TRILINEAR);
+}
+
+void loadCSS_Image_OnViewing(CSS_Image * image)
+{
+	if(image->file == 0)
+		return;
+	
+	image->state = CSSImage_notLoaded;
+	image->stop = 0;
+}
+
 void loadCSS(char * fileName)
 {
 	FILE * file = fopen(fileName, "r");
@@ -651,6 +718,7 @@ void loadCSS(char * fileName)
 								object.type = css_array_element;
 						}
 
+
 						if(!strcmp(var, "content"))
 						{
 							if(strlen(value))
@@ -782,22 +850,30 @@ void loadCSS(char * fileName)
 
 						if(!strcmp(var, "image"))
 						{
-							if(!strcmp(value, "_mapimage_"))
+							object.image = (CSS_Image){0};
+							if(!strcmp(value, "_map_image_"))
 							{
 								if(_map)
 								{
-									object.isImagePointer = true;
-									object.texPointer = &_map->image;
+									object.image.file = malloc(100);
+									strcpy(object.image.file, _map->imageFile);
+									loadCSS_Image_Immediate(&object.image);
+								}else
+								{
+									object.image.file = malloc(100);
+									strcpy(object.image.file, "_map_image_");
+									object.image.state = CSSImage_notLoaded;
 								}
 							}else if(!strcmp(value, "_background_"))
 							{
-								object.isImagePointer = true;
-								object.texPointer = &_menuBackground;
+								object.image.state = CSSImage_loaded;
+								object.image.isCopy = true;
+								object.image.texture = _menuBackground;
 							}else
 							{
-								object.tex = LoadTexture(value);
-								GenTextureMipmaps(&object.tex);
-								SetTextureFilter(object.tex, TEXTURE_FILTER_TRILINEAR);
+								object.image.file = malloc(100);
+								strcpy(object.image.file, value);
+								loadCSS_Image_Immediate(&object.image);
 							}
 						}
 
@@ -978,9 +1054,9 @@ void loadCSS(char * fileName)
 			if(obj.active == false)
 				continue;
 
-			int width = obj.width / (_pCSS->objects[obj.children[0]].width+_pCSS->objects[obj.children[0]].paddingX);
-			float padding = obj.width - width*(_pCSS->objects[obj.children[0]].width+_pCSS->objects[obj.children[0]].paddingX);
-			padding *= 0.5;
+			_pCSS->objects[i].arrayChildren = calloc(_mapsCount*obj.childrenCount, sizeof(CSS_Array_Child));
+			_pCSS->objects[i].arrayChildCount = _mapsCount * obj.childrenCount;
+
 			//spawn 1 per map
 			for(int map = 0; map < _mapsCount; map++)
 			{
@@ -989,22 +1065,59 @@ void loadCSS(char * fileName)
 				{
 					CSS_Object * newChild = makeCSS_ObjectClone(_pCSS->objects[obj.children[child]]);
 					
-					int x = map;
-					int row = x / width;
-					x -= row * width;
-					newChild->x = x*(newChild->width+newChild->paddingX) + padding;
-					float y = row * (newChild->height+newChild->paddingY);
-					newChild->y = y;
-					// printf("map: %i %i\n", x, row);
-					// printf("map: %.2f\n", newChild->x);
+					int childIndex = newChild - _pCSS->objects;
+
+					newChild->arrayChild = true;
+					newChild->arrayObj = i; //points to parent / array object
+
+					CSS_Array_Child * childArray = &_pCSS->objects[i].arrayChildren[map];
+
+					childArray->enabled = newChild->active;
+					childArray->index = childIndex;
+					childArray->key = malloc(100);
+					strcpy(childArray->key, _map->name);
+
 				}
 			}
 
 			// printf("children count: %i", obj.childrenCount);
 
 			_pCSS->objects[obj.children[0]].active = false;
+
+			updateArrayChildren(&_pCSS->objects[i]);
 		}
 	}
+}
+
+void updateArrayChildren(CSS_Object * object)
+{
+	if(object->type != css_array)
+		return;
+	
+	int width = object->width / (_pCSS->objects[object->children[0]].width+_pCSS->objects[object->children[0]].paddingX);
+	float padding = object->width - width*(_pCSS->objects[object->children[0]].width+_pCSS->objects[object->children[0]].paddingX);
+	padding *= 0.5;
+
+	int activeChildCounter = 0;
+	for(int i = 0; i < object->arrayChildCount; i++)
+	{
+		//todo: don't assume every child is the same width and height
+		
+		int x = activeChildCounter;
+		int row = x / width;
+		x -= row * width;
+		CSS_Object * child = &_pCSS->objects[object->arrayChildren[i].index];
+		child->x = x*(child->width+child->paddingX) + padding;
+		float y = row * (child->height+child->paddingY);
+		child->y = y;
+
+		if(object->arrayChildren[i].enabled)
+			activeChildCounter++;
+		
+		child->active = object->arrayChildren[i].enabled;
+	}
+
+	
 }
 
 #define stringcopy(str1, str2) \
@@ -1028,9 +1141,18 @@ void replaceTextVariables(char * str)
 		if(strcmp(token, "_map_name_") == 0)
 		{
 			strcat(newStr, _map->name);
+		}else if(strcmp(token, "_map_artist_") == 0)
+		{
+			strcat(newStr, _map->artist);
+		}else if(strcmp(token, "_map_difficulty_") == 0)
+		{
+			sprintf(newStr, "%s%i", newStr, _map->difficulty);
+		}else if(strcmp(token, "_map_time_") == 0)
+		{
+			sprintf(newStr, "%s%i:%i", newStr, _map->musicLength/60, _map->musicLength%60);
 		}else if(strcmp(token, "_map_image_") == 0)
 		{
-			strcat(newStr, _map->name);
+			sprintf(newStr, "%s/%s", _map->folder, _map->imageFile);
 		}else {
 			strcat(newStr, token);
 		}
@@ -1060,6 +1182,7 @@ CSS_Object * makeCSS_ObjectClone(CSS_Object object)
 	stringcopy(new->loadFile, object.loadFile);
 	stringcopy(new->makeActive, object.makeActive);
 	stringcopy(new->command, object.command);
+	stringcopy(new->image.file, object.image.file);
 
 	new->children = malloc(sizeof(int)*object.childrenCount);
 
@@ -1078,6 +1201,11 @@ CSS_Object * makeCSS_ObjectClone(CSS_Object object)
 		replaceTextVariables(new->command);
 	}
 
+	if(new->image.file)
+	{
+		replaceTextVariables(new->image.file);
+	}
+
 	int index = new-_pCSS->objects;
 
 	for(int i = 0; i < object.childrenCount; i++)
@@ -1086,12 +1214,12 @@ CSS_Object * makeCSS_ObjectClone(CSS_Object object)
 		child->parentObj = index;
 		_pCSS->objects[index].children[i] = child-_pCSS->objects;
 
-		if(new->makeActive)
+		if(_pCSS->objects[index].makeActive)
 		{
-			if(strcmp(new->makeActive, child->name) == 0)
+			if(strcmp(_pCSS->objects[index].makeActive, child->name) == 0)
 			{
 				//copy id of child to parent makeActiveObj
-				new->makeActiveObj = _pCSS->objects[index].children[i];
+				_pCSS->objects[index].makeActiveObj = _pCSS->objects[index].children[i];
 			}
 		}
 	}
@@ -1558,11 +1686,11 @@ void fMapSelect(bool reset)
 	if (selectMapTransition > 1)
 		selectMapTransition = 1;
 	checkFileDropped();
-	if (_mapRefresh)
-	{
-		createThread((void *(*)(void *))mapInfoLoading, 0);
-		_mapRefresh = false;
-	}
+	// if (_mapRefresh)
+	// {
+	// 	createThread((void *(*)(void *))mapInfoLoading, 0);
+	// 	_mapRefresh = false;
+	// }
 	ClearBackground(BLACK);
 	drawBackground();
 
@@ -1664,7 +1792,45 @@ void fMapSelect(bool reset)
 		_transition = 0.1;
 	}
 
+	char oldSearch[100];
+	strcpy(oldSearch, search);
 	UITextBox(search, "searchBox");
+
+	if(strcmp(oldSearch, search))
+	{
+		//search has updated, updating maps
+
+		CSS_Object * mapArrayObject = getCSS_ObjectPointer("maps");
+
+		for(int i = 0; i < mapArrayObject->arrayChildCount; i++)
+		{
+			// mapArrayObject->arrayChildren[i].key
+
+			bool missingLetter = false;
+			char str[100];
+			// snprintf(str, 100, "%s - %s", _paMaps[i].name, _paMaps[i].artist);
+			strcpy(str, mapArrayObject->arrayChildren[i].key);
+			int stringLength = strlen(str);
+			for (int j = 0; j < 100 && search[j] != '\0'; j++)
+			{
+				bool foundOne = false;
+				for (int k = 0; k < stringLength; k++)
+				{
+					if (tolower(search[j]) == tolower(str[k]))
+						foundOne = true;
+				}
+				if (!foundOne)
+				{
+					missingLetter = true;
+					break;
+				}
+			}
+
+			mapArrayObject->arrayChildren[i].enabled = !missingLetter;
+		}
+
+		updateArrayChildren(mapArrayObject);
+	}
 
 	CSS_Object * searchText = getCSS_ObjectPointer("searchText");
 	CSS_Object * searchBox = getCSS_ObjectPointer("searchBox");
