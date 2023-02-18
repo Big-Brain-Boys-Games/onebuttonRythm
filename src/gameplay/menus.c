@@ -344,6 +344,9 @@ void drawCSS_Object(CSS_Object * object)
 
 		//limit scrolling when bad framerate (ie loading map images)
 		object->scrollValue += GetMouseWheelMove() * frametime * 15;
+
+		if(object->scrollValue < 0)
+			object->scrollValue = 0;
 	}
 
 	if(object->hoverTime > 0.05 && object->hintText)
@@ -856,7 +859,7 @@ void loadCSS(char * fileName)
 								if(_map)
 								{
 									object.image.file = malloc(100);
-									strcpy(object.image.file, _map->imageFile);
+									sprintf(object.image.file, "%s/%s", _map->folder, _map->imageFile);
 									loadCSS_Image_Immediate(&object.image);
 								}else
 								{
@@ -1757,6 +1760,7 @@ void fMapSelect(bool reset)
 		return;
 	}
 
+	_map = 0; //fixes stuff for load map
 	drawCSS("theme/mapSelect.css");
 
 	// DrawRectangle(0, 0, getWidth(), getHeight()*0.13, BLACK);
