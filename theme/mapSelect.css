@@ -76,6 +76,7 @@
 #mapContainer{
     parent: maps;
     type: buttonNoSprite;
+    opacity: 0;
     scrollable: no;
     left: 0;
     top: 0;
@@ -117,7 +118,7 @@
     opacity: 0.8;
     top: 4;
     left: 4;
-    width: 20;
+    width: 30;
     height: 30;
 }
 
@@ -140,8 +141,8 @@
     top: 5;
     left: 12;
     font-size: 2.7;
-    width: 25;
-    height: 50;
+    width: 2;
+    height: 5;
     color: WHITE;
 }
 
@@ -164,8 +165,8 @@
     top: 19;
     left: 11;
     font-size: 1.9;
-    width: 25;
-    height: 50;
+    width: 2;
+    height: 2;
     color: WHITE;
 }
 
@@ -188,6 +189,7 @@
     width: 100;
     height: 20;
     font-size: 3;
+    textClipping: yes;
     color: DARKGRAY;
 }
 

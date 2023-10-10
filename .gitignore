@@ -63,7 +63,7 @@ vgcore*
 *.conf
 scores/*
 *~
-build/
+*build*/
 .depend
 maps/*
 Makefile

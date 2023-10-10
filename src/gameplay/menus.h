@@ -93,6 +93,7 @@ typedef struct CSS_Object{
     float hoverTime;
     float growOnHover;
     float rotateOnHover;
+    bool textClipping;
     bool keepAspectRatio;
     bool usesVariable;
     bool usesVariableHint;

@@ -274,7 +274,13 @@ void drawCSS_Object(CSS_Object * object)
 	{
 		case css_text:
 			if(object->text)
-				drawTextInRect(rect, object->text, fontSize*getWidth(), object->color, mouseInRect(rect));
+			{
+				if (object->textClipping)
+					drawTextInRect(rect, object->text, fontSize*getWidth(), object->color, mouseInRect(rect));
+				else
+					drawText(object->text, rect.x, rect.y, fontSize*getWidth(), object->color);
+			}
+			// DrawRectangle(rect.x, rect.y, rect.width, rect.height, LIGHTGRAY);
 			break;
 		
 		case css_image:
@@ -313,7 +319,8 @@ void drawCSS_Object(CSS_Object * object)
 			break;
 
 		case css_buttonNoSprite:
-			drawButtonNoSprite(rect, object->text, fontSize);
+			if (object->opacity > 0)
+				drawButtonNoSprite(rect, object->text, fontSize);
 			object->selected = mouseInRect(rect) && IsMouseButtonReleased(0) && object->pressedOn;
 			break;
 
@@ -888,6 +895,11 @@ void loadCSS(char * fileName)
 						if(!strcmp(var, "growOnHover"))
 						{
 							object.growOnHover = atof(value);
+						}
+
+						if(!strcmp(var, "textClipping"))
+						{
+							object.textClipping = !strcmp(value, "yes");
 						}
 
 						if(!strcmp(var, "rotateOnHover"))
@@ -1516,7 +1528,8 @@ char **filesCaching = 0;
 #ifdef __unix
 void mapInfoLoading()
 #else
-DWORD WINAPI *mapInfoLoading()
+// DWORD WINAPI *mapInfoLoading()
+void mapInfoLoading()
 #endif
 {
 	lockLoadingMutex();
