@@ -92,7 +92,7 @@ void commandPlay(char * cmd)
     if(pMap == 0)
     {
         char errormsg[100];
-        snprintf("error Map %s doesn't exit", map, 100);
+        strcpy(errormsg, "error Map doesn't exist");
         commandParser(errormsg);
         return;
     }
@@ -156,7 +156,7 @@ void commandEdit(char * cmd)
     if(pMap == 0)
     {
         char errormsg[100];
-        snprintf("error Map %s doesn't exit", map, 100);
+        strcpy(errormsg, "error Map doesn't exit");
         commandParser(errormsg);
         return;
     }
@@ -207,7 +207,7 @@ void commandExport(char * cmd)
     if(pMap == 0)
     {
         char errormsg[100];
-        snprintf("error Map %s doesn't exit", map, 100);
+        strcpy(errormsg, "error Map doesn't exist");
         commandParser(errormsg);
         return;
     }

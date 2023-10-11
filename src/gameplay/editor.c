@@ -38,14 +38,14 @@ int _amountCopyBuffer = 0;
 TimingSegment getTimingSignature(float time)
 {
 	if(!_paTimingSegment || _amountTimingSegments == 0)
-		return (TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0, .beats=4, .zoom=_map->zoom};
+		return (TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0, .beats=_map->beats, .zoom=_map->zoom};
 	for(int i = 0; i < _amountTimingSegments; i++)
 	{
 		if(time < _paTimingSegment[i].time)
 		{
 			i--;
 			if(i < 0)
-				return (TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0, .beats=4, .zoom=_map->zoom};
+				return (TimingSegment){.bpm=_map->bpm, .time=_map->offset/1000.0, .beats=_map->beats, .zoom=_map->zoom};
 			return _paTimingSegment[i];
 		}
 	}
@@ -946,7 +946,7 @@ void fEditor(bool reset)
 
 
 	TimingSegment timeSeg = getTimingSignature(_musicHead);
-	float secondsPerBeat = (60.0/timeSeg.bpm) / _barMeasureCount;
+	float secondsPerBeat = (60.0/timeSeg.bpm/timeSeg.beats) / _barMeasureCount;
 	if (_musicPlaying)
 	{
 		_musicHead += GetFrameTime() * _musicSpeed;
@@ -1006,7 +1006,8 @@ void fEditor(bool reset)
 
 			if(IsKeyPressed(KEY_LEFT) || (((int)timeLeftKey)%2 == 1 && timeLeftKey > 7))
 			{
-				secondsPerBeat = (60.0/getTimingSignature(_musicHead-0.001).bpm) / _barMeasureCount;
+				// TimingSegment ts = getTimingSignature(_musicHead-0.001);
+				// secondsPerBeat = (60.0/ts.bpm/ts.beats) / _barMeasureCount;
 				double before = _musicHead;
 				_musicHead = floorf((getMusicHead() - timeSeg.time) / secondsPerBeat) * secondsPerBeat;
 				_musicHead += timeSeg.time;	
@@ -1058,7 +1059,7 @@ void fEditor(bool reset)
 			undo();
 		}
 		
-		if (closestTime > 0.003f && ((IsKeyPressed(KEY_Z) && !IsKeyDown(KEY_LEFT_CONTROL)) || UIBUttonPressed("addNoteButton")))
+		if (closestTime > 0.003f && ((IsKeyDown(KEY_Z) && !IsKeyDown(KEY_LEFT_CONTROL)) || UIBUttonPressed("addNoteButton")))
 		{
 			doAction(ComAdd, newNote(getMusicHead()), 1);
 			_noteIndex = closestIndex;
@@ -1113,8 +1114,15 @@ void fEditor(bool reset)
 		}
 
 
-		bool delKey = IsKeyPressed(KEY_X) || IsKeyPressed(KEY_DELETE) || UIBUttonPressed("rmNoteButton");
+		static double lastDelPos = -100;
+		bool delKey = IsKeyDown(KEY_X) || IsKeyDown(KEY_DELETE) || UIBUttonPressed("rmNoteButton");
 		
+		if(lastDelPos == getMusicHead())
+			delKey = false;
+		
+		if(delKey)
+			lastDelPos = getMusicHead();
+
 		if (delKey && closestTime < _maxMargin && !_amountSelectedNotes)
 		{
 			doAction(ComRemove, closestIndex, 1);
@@ -1210,10 +1218,10 @@ void fEditor(bool reset)
 		_wantedScrollSpeed = 4.2 / _map->zoom;
 
 	//Change scrollspeed
-	if (IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL)))
+	if (IsKeyPressed(KEY_DOWN) || (GetMouseWheelMove() > 0 && IsKeyDown(KEY_LEFT_CONTROL)))
 		_wantedScrollSpeed /= 1.2;
 
-	if (IsKeyPressed(KEY_UP) || (GetMouseWheelMove() > 0 && IsKeyDown(KEY_LEFT_CONTROL)))
+	if (IsKeyPressed(KEY_UP) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL)))
 		_wantedScrollSpeed *= 1.2;
 
 	

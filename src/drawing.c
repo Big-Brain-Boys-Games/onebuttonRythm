@@ -271,7 +271,7 @@ void dNotes ()
 
 		float customScale = 0;
 
-		float maxDistance = _scrollSpeed * _maxMargin*2*(1+_settings.noteSize/10.0);
+		float maxDistance = _scrollSpeed * _maxMargin*2.5*(_settings.noteSize/10.0);
 
 		if(closestNote < maxDistance)
 		{
@@ -293,7 +293,8 @@ void dNotes ()
 
 		float customScale = 0;
 
-		float maxDistance = _scrollSpeed * _maxMargin*2;
+		// float maxDistance = _scrollSpeed * _maxMargin*2.5;
+		float maxDistance = _scrollSpeed * _maxMargin*2.5*(_settings.noteSize/10.0);
 
 		if(closestNote < maxDistance)
 		{
@@ -429,10 +430,12 @@ void resetBackGround()
 void drawActualBars(TimingSegment timseg)
 {
 	//Draw the bars
-	double distBetweenBeats = (60.0/timseg.bpm) / _barMeasureCount;
 	if(timseg.beats < 1)
 		return;
-	double distBetweenBars = distBetweenBeats*timseg.beats;
+	
+	double distBetweenBars = (60.0/timseg.bpm) / _barMeasureCount;
+	double distBetweenBeats = (60.0/timseg.bpm)/timseg.beats / _barMeasureCount;
+	// double distBetweenBars = distBetweenBeats*timseg.beats;
 	for (int i = (screenToMusicTime(0)-timseg.time)/distBetweenBars; i < (screenToMusicTime(getWidth())-timseg.time)/distBetweenBars; i++)
 	{
 		DrawRectangle(musicTimeToScreen(distBetweenBars*i+timseg.time)-10,getHeight()*0.6,getWidth()*0.01,getHeight()*0.3,(Color){.r=255,.g=255,.b=255,.a=180});
