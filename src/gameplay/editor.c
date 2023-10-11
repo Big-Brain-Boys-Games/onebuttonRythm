@@ -1022,12 +1022,15 @@ void fEditor(bool reset)
 		//Scroll timeline with mousewheel
 		if(!IsKeyDown(KEY_LEFT_CONTROL))
 		{
+			float factor = 1;
+			if(IsKeyDown(KEY_LEFT_SHIFT))
+				factor = timeSeg.beats;
 			if(GetMouseWheelMove() != 0)
 				_musicHead = roundf((getMusicHead() - timeSeg.time) / secondsPerBeat) * secondsPerBeat +timeSeg.time;
 			if (GetMouseWheelMove() < 0)
-				_musicHead += secondsPerBeat;
+				_musicHead += secondsPerBeat * factor;
 			if (GetMouseWheelMove() > 0)
-				_musicHead -= secondsPerBeat;
+				_musicHead -= secondsPerBeat * factor;
 		}
 		if (IsMouseButtonDown(2))
 		{

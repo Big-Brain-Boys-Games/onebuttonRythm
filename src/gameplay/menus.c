@@ -352,7 +352,7 @@ void drawCSS_Object(CSS_Object * object)
 		//limit scrolling when bad framerate (ie loading map images)
 		object->scrollValue += GetMouseWheelMove() * frametime * 15;
 
-		if(object->scrollValue < 0)
+		if(object->scrollValue > 0)
 			object->scrollValue = 0;
 	}
 
