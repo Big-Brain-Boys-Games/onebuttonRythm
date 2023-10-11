@@ -1,6 +1,7 @@
 #ifndef GAME_MAIN
 #define GAME_MAIN
 
+#define MAXFPS 360.0
 
 #ifdef EXTERN_MAIN
 

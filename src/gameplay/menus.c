@@ -346,8 +346,8 @@ void drawCSS_Object(CSS_Object * object)
 	if(object->scrollable && mouseInRect(rect))
 	{
 		float frametime = GetFrameTime();
-		if(frametime > 1/360.0)
-			frametime = 1/360.0;
+		if(frametime > 1/MAXFPS)
+			frametime = 1/MAXFPS;
 
 		//limit scrolling when bad framerate (ie loading map images)
 		object->scrollValue += GetMouseWheelMove() * frametime * 15;
@@ -1428,6 +1428,7 @@ void fSettings(bool reset)
 	_settings.volumeMusic = UIValueInteractable(_settings.volumeMusic, "musicVolume");
 	_settings.volumeSoundEffects = UIValueInteractable(_settings.volumeSoundEffects, "effectVolume");
 
+	_settings.customNoteHeigth = UIValueInteractable(_settings.customNoteHeigth*100, "customNoteHeight")/100.0;
 	_settings.zoom = UIValueInteractable(_settings.zoom, "zoomSlider");
 	_settings.noteSize = UIValueInteractable(_settings.noteSize, "noteSizeSlider");
 	_settings.offset = UIValueInteractable(_settings.offset, "offsetSlider");

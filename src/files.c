@@ -705,6 +705,7 @@ void loadMap ()
 				_papNotes[_noteIndex]->custTex = 0;
 				_papNotes[_noteIndex]->health = 1;
 				_papNotes[_noteIndex]->hit = 0;
+				_papNotes[_noteIndex]->customHeight = 0;
 
 				index = 0;
 				int strlength = strlen(line);
@@ -1088,6 +1089,7 @@ void loadSettings()
 		if(strcmp(line, "[CustomAssets]\n") == 0)			{mode = spCustomAssets;			continue;}
 		if(strcmp(line, "[EditorTestZoom]\n") == 0)			{mode = spEditorTestZoom;		continue;}
 		if(strcmp(line, "[BackgroundDarkness]\n") == 0)		{mode = spBackgroundDarkness;	continue;}
+		if(strcmp(line, "[customNoteHeight]\n") == 0)		{mode = spCustomNoteHeight;		continue;}
 
 		
 		for(int i = 0; i < stringLength; i++)
@@ -1141,6 +1143,9 @@ void loadSettings()
 			case spBackgroundDarkness:
 				_settings.backgroundDarkness = atof(line);
 				break;
+			case spCustomNoteHeight:
+				_settings.customNoteHeigth = atof(line);
+				break;
 		}
 	}
 	fclose(f);
@@ -1181,5 +1186,7 @@ void saveSettings ()
 	fprintf(file, "%i\n", _settings.editorTestZoom);
 	fprintf(file, "[BackgroundDarkness]\n");
 	fprintf(file, "%f\n", _settings.backgroundDarkness);
+	fprintf(file, "[customNoteHeigth]\n");
+	fprintf(file, "%f\n", _settings.customNoteHeigth);
 	fclose(file);
 }

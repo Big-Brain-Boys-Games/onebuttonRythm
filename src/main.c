@@ -67,6 +67,7 @@ int main(int argc, char **argv)
 	initDrawing();
 	audioInit();
 	srand(time(NULL));
+	SetRandomSeed(time(NULL));
 
 	initFolders();
 	

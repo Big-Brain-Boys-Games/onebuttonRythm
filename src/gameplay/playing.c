@@ -211,7 +211,7 @@ void fPlaying(bool reset)
 		_transition = 0.1;
 		return;
 	}
-	if (IsKeyPressed(KEY_ESCAPE))
+	if (IsKeyDown(KEY_ESCAPE))
 	{
 		_pGameplayFunction = &fPause;
 		_pNextGameplayFunction = &fPlaying;
@@ -281,93 +281,100 @@ void fPlaying(bool reset)
 
 		drawText(str, x, y, size, WHITE);
 	}
-
-    if (_noteIndex < _amountNotes-1 && getMusicHead() - margin > _papNotes[_noteIndex]->time)
-	{
-		// passed note
-		_noteIndex++;
-		_health -= _missPenalty * getHealthMod() * _papNotes[_noteIndex]->health;
-		_combo = 0;
-		playAudioEffect(_missSe);
-	}
-
-	if (_isKeyPressed && _noteIndex < _amountNotes)
-	{
-		float closestTime = 55;
-		float closestNote = 9999999;
-		int closestIndex = 0;
-		for (int i = _noteIndex; i <= _noteIndex + 1 && i < _amountNotes; i++)
+	// _isKeyPressed = false;
+	// //do gameplay loop multiple times for higher polling (3 times per frame)
+	// for(int i = 0; i < 3; i++)
+	// {
+	// 	WaitTime(1.0/MAXFPS/3);
+	// 	PollInputEvents();
+		if (_noteIndex < _amountNotes-1 && getMusicHead() - margin > _papNotes[_noteIndex]->time)
 		{
-			if (closestNote > _papNotes[i]->time - getMusicHead() - margin)
-			{
-				closestNote = _papNotes[i]->time - getMusicHead() - margin;
-				closestTime = fabs(_papNotes[i]->time - getMusicHead());
-				closestIndex = i;
-			}
+			// passed note
+			_noteIndex++;
+			_health -= _missPenalty * getHealthMod() * _papNotes[_noteIndex]->health;
+			_combo = 0;
+			playAudioEffect(_missSe);
 		}
-		if (fabs(closestTime) < margin)
+		// if (isAnyKeyDown())
+		// 	_isKeyPressed = true;
+		
+		if (_isKeyPressed && _noteIndex < _amountNotes)
 		{
-			while (_noteIndex < closestIndex)
+			float closestTime = 55;
+			float closestNote = 9999999;
+			int closestIndex = 0;
+			for (int i = _noteIndex; i <= _noteIndex + 1 && i < _amountNotes; i++)
 			{
+				if (closestNote > _papNotes[i]->time - getMusicHead() - margin)
+				{
+					closestNote = _papNotes[i]->time - getMusicHead() - margin;
+					closestTime = fabs(_papNotes[i]->time - getMusicHead());
+					closestIndex = i;
+				}
+			}
+			if (fabs(closestTime) < margin)
+			{
+				while (_noteIndex < closestIndex)
+				{
+					_noteIndex++;
+					_combo = 0;
+					_health -= _missPenalty * getHealthMod() * _papNotes[_noteIndex]->health;
+					_notesMissed++;
+				}
+				_averageAccuracy = ((_averageAccuracy * (_noteIndex - _notesMissed)) + ((1 / margin) * closestTime)) / (_noteIndex - _notesMissed + 1);
+				int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / margin)) * _papNotes[_noteIndex]->health;
+				_health += healthAdded * (1 / (getHealthMod() + 0.1));
+				int scoreAdded = noLessThanZero(300 - closestTime * (300 / margin));
+				if (scoreAdded > 200)
+				{
+					addRipple(1.5);
+				}
+				else if (scoreAdded > 100)
+				{
+					addRipple(1);
+				}
+				else
+				{
+					addRipple(0.6);
+				}
+				_score += scoreAdded * (1 + _combo / 100) * getScoreMod();
+				_papNotes[_noteIndex]->hit = 1;
 				_noteIndex++;
-				_combo = 0;
-				_health -= _missPenalty * getHealthMod() * _papNotes[_noteIndex]->health;
-				_notesMissed++;
-			}
-			_averageAccuracy = ((_averageAccuracy * (_noteIndex - _notesMissed)) + ((1 / margin) * closestTime)) / (_noteIndex - _notesMissed + 1);
-			int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / margin)) * _papNotes[_noteIndex]->health;
-			_health += healthAdded * (1 / (getHealthMod() + 0.1));
-			int scoreAdded = noLessThanZero(300 - closestTime * (300 / margin));
-			if (scoreAdded > 200)
-			{
-				addRipple(1.5);
-			}
-			else if (scoreAdded > 100)
-			{
-				addRipple(1);
+				_combo++;
+				lastHit = GetTime();
+
+				float noteDist = 99;
+
+				if(closestIndex > 0)
+				{
+					noteDist = fabsf(_papNotes[closestIndex]->time - _papNotes[closestIndex-1]->time);
+				}
+				if(closestIndex < _amountNotes-1)
+				{
+					float tmp = fabsf(_papNotes[closestIndex]->time - _papNotes[closestIndex+1]->time);
+					noteDist = fmin(tmp, noteDist);
+				}
+
+				hitPointTimings[hitPointsIndex] = _papNotes[closestIndex]->time - _musicHead;
+				hitPointsTimes[hitPointsIndex] = _musicHead;
+				hitPointScores[hitPointsIndex] = scoreAdded;
+				hitPointsIndex = (hitPointsIndex+1)%HITPOINTAMOUNT;
+
+				if(_papNotes[closestIndex]->custSound && _settings.customAssets)
+					playAudioEffect(_papNotes[closestIndex]->custSound->sound);
+				else	
+					playAudioEffect(_hitSe);
 			}
 			else
 			{
-				addRipple(0.6);
+				printf("missed note\n");
+				_combo = 0;
+				_health -= _missPenalty * getHealthMod() * _papNotes[_noteIndex]->health;
+				playAudioEffect(_missHitSe);
+				_notesMissed++;
 			}
-			_score += scoreAdded * (1 + _combo / 100) * getScoreMod();
-			_papNotes[_noteIndex]->hit = 1;
-			_noteIndex++;
-			_combo++;
-			lastHit = GetTime();
-
-			float noteDist = 99;
-
-			if(closestIndex > 0)
-			{
-				noteDist = fabsf(_papNotes[closestIndex]->time - _papNotes[closestIndex-1]->time);
-			}
-			if(closestIndex < _amountNotes-1)
-			{
-				float tmp = fabsf(_papNotes[closestIndex]->time - _papNotes[closestIndex+1]->time);
-				noteDist = fmin(tmp, noteDist);
-			}
-
-			hitPointTimings[hitPointsIndex] = _papNotes[closestIndex]->time - _musicHead;
-			hitPointsTimes[hitPointsIndex] = _musicHead;
-			hitPointScores[hitPointsIndex] = scoreAdded;
-			hitPointsIndex = (hitPointsIndex+1)%HITPOINTAMOUNT;
-
-			if(_papNotes[closestIndex]->custSound && _settings.customAssets)
-				playAudioEffect(_papNotes[closestIndex]->custSound->sound);
-			else	
-				playAudioEffect(_hitSe);
 		}
-		else
-		{
-			printf("missed note\n");
-			_combo = 0;
-			_health -= _missPenalty * getHealthMod() * _papNotes[_noteIndex]->health;
-			playAudioEffect(_missHitSe);
-			_notesMissed++;
-		}
-		ClearBackground(BLACK);
-	}
+	// }
 
 	if (_health > 100)
 		_health = 100;

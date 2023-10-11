@@ -83,7 +83,7 @@
     width: 25;
     height: 35;
     padding-left: 5;
-    padding-top: 5;
+    padding-top: 10;
     active: yes;
     growOnHover: 0.3;
     makeActive: mapButtonsContainer;

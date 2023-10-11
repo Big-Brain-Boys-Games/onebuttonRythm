@@ -222,6 +222,11 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 		int x = musicTimeToScreen(note->time)- scaleNotes / 2;
 		int y = getHeight() / 2 - scaleNotes/2;
 
+		if (_pGameplayFunction != &fEditor)
+		{
+			y += getHeight()*note->customHeight*_settings.customNoteHeigth;
+		}
+
 		int width = scaleNotes;
 		
 		drawTextureCorrectAspectRatio(tex, colorNoAni,
@@ -795,7 +800,7 @@ void initDrawing()
 		InitWindow(_settings.resolutionX, _settings.resolutionY, "One Button Rythm");
 	
 	SetWindowIcon(LoadImage("assets/note.png"));
-	SetTargetFPS(360);
+	SetTargetFPS(MAXFPS);
 	SetExitKey(0);
 
 	HideCursor();

@@ -34,6 +34,7 @@ typedef struct{
     int animSize;
     float health;
     short int hit;
+    float customHeight;
 }Note;
 
 typedef struct{
