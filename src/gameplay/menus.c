@@ -1303,6 +1303,19 @@ void UITextBox(char * variable, char * name)
 	}
 }
 
+bool UISelected(char * name)
+{
+	if(!name)
+		return false;
+	
+	CSS_Object *object = getCSS_ObjectPointer(name);
+
+	if(!object)
+		return false;
+	
+	return object->selected;
+}
+
 int UIValueInteractable(int variable, char * name)
 {
 	if(!name)

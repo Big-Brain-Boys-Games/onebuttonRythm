@@ -126,6 +126,7 @@ bool UIBUttonPressed(char * name);
 void fCSSPage(bool reset);
 void UITextBox(char * variable, char * name);
 int UIValueInteractable(int variable, char * name);
+bool UISelected(char * name);
 void UISetActive(char * name, bool active);
 
 void fPause(bool reset);

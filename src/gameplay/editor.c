@@ -1215,7 +1215,8 @@ void fEditor(bool reset)
 		}
 	}
 
-	_wantedScrollSpeed = UIValueInteractable(_wantedScrollSpeed*10, "zoomSlider") / 10.0;
+	if(UISelected("zoomSlider"))
+		_wantedScrollSpeed = UIValueInteractable(_wantedScrollSpeed*10, "zoomSlider") / 10.0;
 
 	if(UIBUttonPressed("zoomResetButton"))
 		_wantedScrollSpeed = 4.2 / _map->zoom;
@@ -1227,8 +1228,7 @@ void fEditor(bool reset)
 	if (IsKeyPressed(KEY_UP) || (GetMouseWheelMove() < 0 && IsKeyDown(KEY_LEFT_CONTROL)))
 		_wantedScrollSpeed *= 1.2;
 
-	
-	if (_wantedScrollSpeed == 0)
+	if (_wantedScrollSpeed < 0.01)
 		_wantedScrollSpeed = 0.01;
 	
 	//Selecting notes
