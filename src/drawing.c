@@ -273,8 +273,18 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 		pos.x = x + (pos.x-0.5)*2*getWidth();
 		pos.y *= getHeight();
 		
-		pos.x -= scaleNotes/2;
-		pos.y -= scaleNotes/2;
+		if(_settings.horizontal)
+		{
+			pos.x -= scaleNotes/2;
+			pos.y -= scaleNotes/2;
+		}else{
+			pos.x += scaleNotes/2;
+			pos.y += scaleNotes/2;
+
+			float x = pos.x;
+			pos.x = pos.y/getHeight()*getWidth();
+			pos.y = (1-x/getWidth())*getHeight();
+		}
 
 		drawTextureCorrectAspectRatio(tex, color,
 			(Rectangle){.x=pos.x, .y=pos.y, .width=scaleNotes, .height=scaleNotes}, 0);
