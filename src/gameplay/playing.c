@@ -346,7 +346,7 @@ void fPlaying(bool reset)
 				_health += healthAdded * (1 / (getHealthMod() + 0.1)) - 1;
 				int scoreAdded = noLessThanZero(300 - closestTime * (300 / margin));
 				Vector2 position = (Vector2){musicTimeToScreen(_papNotes[closestIndex]->time)/getWidth(),
-					0.5+_papNotes[closestIndex]->customHeight*_settings.customNoteHeigth};
+					0.5+(abs(closestIndex % 12 - 6)-3)/6.0*_settings.customNoteHeigth};
 				if (scoreAdded > 200)
 				{
 					addRipple(1.5, position);
@@ -419,7 +419,8 @@ void fPlaying(bool reset)
 	{
 		printf("goto fail\n");
 		// goto fFail
-		stopMusic();
+		_musicPlaying = false;
+		_playMenuMusic = true;
 		_pGameplayFunction = &fFail;
 		playAudioEffect(_failSe);
 		_transition = 0.1;
@@ -503,6 +504,16 @@ void fEndScreen(bool reset)
 		_mapRefresh = true;
 		_transition = 0.1;
 	}
+
+	int modsSoFar = 0;
+	for (int i = 0; i < 100; i++)
+	{
+		if (_activeMod[i] != 0)
+		{
+			drawText(_activeMod[i]->name, getWidth() * (0.05 + 0.12 * modsSoFar), getHeight() * 0.9, getWidth() * 0.03, WHITE);
+			modsSoFar++;
+		}
+	}
 	drawCursor();
 }
 
@@ -542,4 +553,5 @@ void fFail(bool reset)
 		_transition = 0.1;
 	}
 	drawCursor();
+	drawProgressBar();
 }

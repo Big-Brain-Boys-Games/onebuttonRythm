@@ -25,6 +25,7 @@ typedef struct{
 }CustomSound;
 
 typedef struct{
+    int index;
     double time;
     CustomSound * custSound;
     CustomTexture * custTex;
@@ -34,7 +35,6 @@ typedef struct{
     int animSize;
     float health;
     short int hit;
-    float customHeight;
 }Note;
 
 typedef struct{

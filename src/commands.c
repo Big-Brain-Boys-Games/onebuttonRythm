@@ -116,15 +116,6 @@ void commandPlay(char * cmd)
     if(reset)
         fPlaying(true);
 
-    if(_settings.customNoteHeigth != 0)
-    {
-        for(int i = 0; i < _amountNotes; i++)
-        {
-            // _papNotes[i]->customHeight = (rand() % 200) / 200.0 - 0.5;
-            _papNotes[i]->customHeight = abs(i % 12 - 6) / 6.0 - 0.5;
-            printf("note %f\n", _papNotes[i]->customHeight);
-        }
-    }
     _transition = 0.1;
 }
 

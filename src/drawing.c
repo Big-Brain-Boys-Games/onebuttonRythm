@@ -235,7 +235,8 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 
 		if (_pGameplayFunction != &fEditor)
 		{
-			y += note->customHeight*_settings.customNoteHeigth;
+			int index = abs(note->index % 12 - 6)-3;
+			y += index/6.0*_settings.customNoteHeigth;
 		}
 
 		float width = scaleNotes;

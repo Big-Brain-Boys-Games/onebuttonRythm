@@ -92,6 +92,9 @@ int main(int argc, char **argv)
 		_scrollSpeed = (_wantedScrollSpeed * GetFrameTime()*15 + _scrollSpeed) / (1+GetFrameTime()*15);
 		
 		_isKeyPressed = isAnyKeyDown();
+		if(IsKeyDown(KEY_ESCAPE))
+			_isKeyPressed = false;
+		
 		if (_pGameplayFunction != &fMapSelect)
 			_mapRefresh = true;
 		

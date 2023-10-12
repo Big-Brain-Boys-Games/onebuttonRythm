@@ -87,7 +87,10 @@ float getMarginMod()
 	float value = 1;
 	for (int i = 0; i < 100; i++)
 		if (_activeMod[i] != 0)
+		{
 			value *= _activeMod[i]->marginMod;
+			value *= _activeMod[i]->speedMod;
+		}
 	return value;
 }
 

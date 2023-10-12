@@ -705,7 +705,7 @@ void loadMap ()
 				_papNotes[_noteIndex]->custTex = 0;
 				_papNotes[_noteIndex]->health = 1;
 				_papNotes[_noteIndex]->hit = 0;
-				_papNotes[_noteIndex]->customHeight = 0;
+				_papNotes[_noteIndex]->index = index;
 
 				index = 0;
 				int strlength = strlen(line);
