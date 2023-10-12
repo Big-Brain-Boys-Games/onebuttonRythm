@@ -187,6 +187,7 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 			}
 		}
 	}
+	//menu music
 	if (_menuMusic.size > 0 && _menuMusic.size > _menuMusicFrameCount && _menuMusicFrameCount > 0)
 	{
 		for (int i = 0; i < frameCount * 2; i++)

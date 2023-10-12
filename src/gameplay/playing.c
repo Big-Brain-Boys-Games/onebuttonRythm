@@ -204,8 +204,13 @@ void fPlaying(bool reset)
 		readScore(_map);
 		if (_map->highscore < _score || rankCalculation(_score, _combo, _notesMissed, _averageAccuracy) > _map->rank)
 		{
-			_mapRefresh = true; //to show new rank
+			// _mapRefresh = true; //to show new rank
 			saveScore();
+			_map->highscore = _score;
+			_map->accuracy = _averageAccuracy;
+			_map->misses = _notesMissed;
+			_map->combo = _combo;
+			_map->rank = rankCalculation(_score, _combo, _notesMissed, _averageAccuracy);
 		}
 
 		_pGameplayFunction = &fEndScreen;

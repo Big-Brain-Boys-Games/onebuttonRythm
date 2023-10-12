@@ -23,6 +23,8 @@ IF (WIN32)
 
 ENDIF()
 
+target_precompile_headers(${PROJECT_NAME} PUBLIC deps/miniaudio/miniaudio.h)
+
 set(CMAKE_DISABLE_TESTING ON)
 set(ZIP_STATIC_PIC "true")
 set(RAYLIB_LIBTYPE "STATIC")
