@@ -769,8 +769,9 @@ void fEditor(bool reset)
 
 	if(reset)
 	{
-		setMusicStart();
-		_musicHead = 0;
+		if(_musicHead != 0)
+			setMusicStart();
+		// _musicHead = 0;
 		_transition = 0.1;
 		_disableLoadingScreen = false;
 		_musicPlaying = false;
@@ -975,6 +976,9 @@ void fEditor(bool reset)
 	{
 		setMusicFrameCount();
 		_noteIndex = 0;
+		float factor = 1;
+		if(IsKeyDown(KEY_LEFT_SHIFT))
+			factor = timeSeg.beats;
 		static float timeRightKey = 0;
 		//Snapping left and right with arrow keys
 		if (IsKeyDown(KEY_RIGHT))
@@ -990,8 +994,8 @@ void fEditor(bool reset)
 				// Add the offset
 				_musicHead += timeSeg.time;
 				// Add the bps to the music head
-				if(before >= _musicHead-0.001) _musicHead += secondsPerBeat;
-				if(before >= _musicHead-0.001) _musicHead += secondsPerBeat;
+				if(before >= _musicHead-0.001) _musicHead += secondsPerBeat*factor;
+				if(before >= _musicHead-0.001) _musicHead += secondsPerBeat*factor;
 				// // snap it again (it's close enough right?????)
 				// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
 				_musicPlaying = false;
@@ -1006,13 +1010,14 @@ void fEditor(bool reset)
 
 			if(IsKeyPressed(KEY_LEFT) || (((int)timeLeftKey)%2 == 1 && timeLeftKey > 7))
 			{
+				timeLeftKey += 1;
 				// TimingSegment ts = getTimingSignature(_musicHead-0.001);
 				// secondsPerBeat = (60.0/ts.bpm/ts.beats) / _barMeasureCount;
 				double before = _musicHead;
 				_musicHead = floorf((getMusicHead() - timeSeg.time) / secondsPerBeat) * secondsPerBeat;
 				_musicHead += timeSeg.time;	
-				if(before <= _musicHead+0.001) _musicHead -= secondsPerBeat;
-				if(before <= _musicHead+0.001) _musicHead -= secondsPerBeat;
+				if(before <= _musicHead+0.001) _musicHead -= secondsPerBeat*factor;
+				if(before <= _musicHead+0.001) _musicHead -= secondsPerBeat*factor;
 				// _musicHead = roundf(getMusicHead() / secondsPerBeat) * secondsPerBeat;
 				_musicPlaying = false;
 			}
@@ -1022,9 +1027,6 @@ void fEditor(bool reset)
 		//Scroll timeline with mousewheel
 		if(!IsKeyDown(KEY_LEFT_CONTROL))
 		{
-			float factor = 1;
-			if(IsKeyDown(KEY_LEFT_SHIFT))
-				factor = timeSeg.beats;
 			if(GetMouseWheelMove() != 0)
 				_musicHead = roundf((getMusicHead() - timeSeg.time) / secondsPerBeat) * secondsPerBeat +timeSeg.time;
 			if (GetMouseWheelMove() < 0)

@@ -91,6 +91,8 @@ int main(int argc, char **argv)
 		_audioEffectVolume = _settings.volumeSoundEffects / 100.0 * globalVolume;
 
 		_scrollSpeed = (_wantedScrollSpeed * GetFrameTime()*15 + _scrollSpeed) / (1+GetFrameTime()*15);
+		if(fabsf(1-_scrollSpeed/_wantedScrollSpeed)<0.01)
+			_scrollSpeed = _wantedScrollSpeed;
 		
 		if(_musicPreviewTimer > 0 && _pGameplayFunction != fMapSelect)
 		{
