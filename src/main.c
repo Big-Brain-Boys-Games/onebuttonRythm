@@ -61,6 +61,7 @@ void exitGame()
 
 int main(int argc, char **argv)
 {
+	SetTraceLogLevel(LOG_INFO || LOG_DEBUG || LOG_TRACE);
 	snprintf(_playerName, 100, "guest%i", rand());
 	loadSettings();
 	LoadingMutexInit();
@@ -91,6 +92,11 @@ int main(int argc, char **argv)
 
 		_scrollSpeed = (_wantedScrollSpeed * GetFrameTime()*15 + _scrollSpeed) / (1+GetFrameTime()*15);
 		
+		if(_musicPreviewTimer > 0 && _pGameplayFunction != fMapSelect)
+		{
+			_musicPreviewTimer = -1;
+		}
+
 		_isKeyPressed = isAnyKeyDown();
 		if(IsKeyDown(KEY_ESCAPE))
 			_isKeyPressed = false;
