@@ -338,7 +338,7 @@ void fPlaying(bool reset)
 					printf("accuracy is nan, not rewriting\n");
 
 				int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / margin)) * _papNotes[_noteIndex]->health;
-				_health += healthAdded * (1 / (getHealthMod() + 0.1));
+				_health += healthAdded * (1 / (getHealthMod() + 0.1)) - 1;
 				int scoreAdded = noLessThanZero(300 - closestTime * (300 / margin));
 				Vector2 position = (Vector2){musicTimeToScreen(_papNotes[closestIndex]->time)/getWidth(),
 					0.5+_papNotes[closestIndex]->customHeight*_settings.customNoteHeigth};

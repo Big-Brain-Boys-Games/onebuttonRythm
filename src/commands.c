@@ -103,6 +103,7 @@ void commandPlay(char * cmd)
 
     _pNextGameplayFunction = &fPlaying;
     _pGameplayFunction = &fPlaying;
+    _musicPreviewTimer = 0;
     
     if(countDown)
     {
