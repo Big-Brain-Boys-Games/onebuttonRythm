@@ -1441,12 +1441,14 @@ void fMainMenu(bool reset)
 	{
 		// Switching to settings
 		_pGameplayFunction = &fSettings;
+		_pNextGameplayFunction = &fMainMenu;
 		_transition = 0.1;
 	}
 
 	if(UIBUttonPressed("newmapButton"))
 	{
 		_pGameplayFunction = &fNewMap;
+		_pNextGameplayFunction = &fMainMenu;
 		fNewMap(true);
 		_transition = 0.1;
 	}
@@ -1500,7 +1502,14 @@ void fSettings(bool reset)
 
 	if ( IsKeyPressed(KEY_ESCAPE) || UIBUttonPressed("backButton"))
 	{
-		_pGameplayFunction = &fMainMenu;
+		_pGameplayFunction = _pNextGameplayFunction;
+
+		if(_pGameplayFunction == &fCountDown)
+		{
+			_pNextGameplayFunction = &fPlaying;
+			fCountDown(true);
+		}
+
 		_transition = 0.1;
 		
 		if(_settings.noteSize == 0)

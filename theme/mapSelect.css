@@ -320,6 +320,7 @@
     top: 45;
     width: 30;
     height: 30;
+    max: 10;
 }
 
 #mapButtonsContainer{

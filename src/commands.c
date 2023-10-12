@@ -125,6 +125,30 @@ void commandPlay(char * cmd)
     _transition = 0.1;
 }
 
+void commandSettings(char * cmd)
+{
+    bool countDown = true;
+    bool reset = true;
+
+    char * argument = strtok(cmd, " ");
+
+    char * map = malloc(100);
+    map[0] = '\0';
+    bool NoMap = true;
+
+    while( argument != NULL)
+    {
+        argument = strtok(NULL, " ");
+    }
+
+    // _pNextGameplayFunction = _pGameplayFunction;
+    if(_pNextGameplayFunction == &fPlaying)
+        _pNextGameplayFunction = &fCountDown;
+    _pGameplayFunction = &fSettings;
+
+    _transition = 0.1;
+}
+
 void commandEdit(char * cmd)
 {
     bool reset = true;
@@ -235,7 +259,7 @@ Command _commands[] = {
     {commandPlay, "play"},
     {commandEdit, "edit"},
     {commandExport, "export"},
-    {commandPlay, "play"},
+    {commandSettings, "settings"},
 };
 
 void commandParser(char * line)

@@ -248,7 +248,7 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 			width *= getWidth();
 			drawTextureCorrectAspectRatio(tex, colorNoAni,
 				(Rectangle){.x=x*getWidth(), .y=y*getHeight(), .width=width, .height=width}, 0);
-			DrawCircleV((Vector2){(musicTimeToScreen(note->time) / getWidth())*getWidth(), y*getHeight()}, width/2, WHITE);
+			// DrawCircleV((Vector2){(musicTimeToScreen(note->time) / getWidth())*getWidth(), y*getHeight()}, width/2, WHITE);
 		}else
 		{
 			x += + scaleNotes / 2;
@@ -256,7 +256,7 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 			x = 1-x;
 			drawTextureCorrectAspectRatio(tex, colorNoAni,
 				(Rectangle){.x=y*getWidth(), .y=x*getHeight(), .width=width, .height=width}, 0);
-			DrawCircleV((Vector2){y*getWidth(), (1-musicTimeToScreen(note->time) / getWidth())*getHeight()}, width/2, WHITE);
+			// DrawCircleV((Vector2){y*getWidth(), (1-musicTimeToScreen(note->time) / getWidth())*getHeight()}, width/2, WHITE);
 		}
 
 		// DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=getHeight() / 2 -tex.height * scaleNotes/2}, 0,  scaleNotes, colorNoAni);

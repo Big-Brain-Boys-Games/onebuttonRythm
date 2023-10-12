@@ -72,6 +72,7 @@ int main(int argc, char **argv)
 	initFolders();
 	
 	_pGameplayFunction = &fIntro;
+	_pNextGameplayFunction = &fMainMenu;
 	_transition = 1;
 	while (!WindowShouldClose())
 	{
