@@ -1194,7 +1194,7 @@ void saveSettings ()
 	fprintf(file, "%i\n", _settings.editorTestZoom);
 	fprintf(file, "[BackgroundDarkness]\n");
 	fprintf(file, "%f\n", _settings.backgroundDarkness);
-	fprintf(file, "[customNoteHeigth]\n");
+	fprintf(file, "[customNoteHeight]\n");
 	fprintf(file, "%f\n", _settings.customNoteHeigth);
 	fprintf(file, "[noteOverlap]\n");
 	fprintf(file, "%f\n", _settings.noteOverlap);

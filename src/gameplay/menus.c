@@ -1183,7 +1183,7 @@ void replaceTextVariables(char * str)
 			sprintf(newStr, "%i", _map->misses);
 		}else if(strcmp(token, "_map_accuracy_") == 0)
 		{
-			sprintf(newStr, "%.2f", _map->accuracy);
+			sprintf(newStr, "%.2f", (1-_map->accuracy)*100);
 		}else {
 			strcat(newStr, token);
 		}
@@ -1195,6 +1195,17 @@ void replaceTextVariables(char * str)
 
 	strcpy(str, newStr);
 	free(newStr);
+}
+
+bool CSS_ObjectActive(CSS_Object* object)
+{
+	while(object)
+	{
+		if(!object->active)
+			return false;
+		object = &_pCSS->objects[object->parentObj];
+	}
+	return true;
 }
 
 CSS_Object * makeCSS_ObjectClone(CSS_Object object)
@@ -1256,8 +1267,9 @@ CSS_Object * makeCSS_ObjectClone(CSS_Object object)
 		{
 			if(_map->highscore)
 			{
-				printf("_map_rank_\n");
 				new->image.state = CSSImage_rank;
+				new->image.isCopy = true;
+				new->value = _map->rank;
 			}
 		}
 	}

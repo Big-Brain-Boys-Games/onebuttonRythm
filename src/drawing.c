@@ -193,6 +193,11 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 {
 	float scaleNotes = (float)(getWidth()/(256.0/_noteTex.width)) * 0.05;
 
+	// if(!_settings.horizontal)
+	// {
+	// 	scaleNotes = (float)(getHeight()/(256.0/_noteTex.width)) * 0.05;
+	// }
+
 	if(note->hit)
 		return;
 	Texture tex = _noteTex;
@@ -219,9 +224,13 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 			colorNoAni.a = 100;
 		}
 
+		// if(_settings.horizontal)
 		scaleNotes /= getWidth();
+		// else
+		// 	scaleNotes /= getHeight();
 
-		float x = musicTimeToScreen(note->time) / getWidth()- scaleNotes / 2;
+		// float x = (musicTimeToScreen(note->time) / getWidth());
+		float x = musicTimeToScreen(note->time) / getWidth();
 		float y = 0.5 - scaleNotes/2;
 
 		if (_pGameplayFunction != &fEditor)
@@ -232,17 +241,22 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 		float width = scaleNotes;
 
 
+
 		if(_settings.horizontal || _pGameplayFunction == &fEditor)
 		{
+			x -= scaleNotes / 2;
 			width *= getWidth();
 			drawTextureCorrectAspectRatio(tex, colorNoAni,
 				(Rectangle){.x=x*getWidth(), .y=y*getHeight(), .width=width, .height=width}, 0);
+			DrawCircleV((Vector2){(musicTimeToScreen(note->time) / getWidth())*getWidth(), y*getHeight()}, width/2, WHITE);
 		}else
 		{
+			x += + scaleNotes / 2;
 			width *= getHeight();
 			x = 1-x;
 			drawTextureCorrectAspectRatio(tex, colorNoAni,
 				(Rectangle){.x=y*getWidth(), .y=x*getHeight(), .width=width, .height=width}, 0);
+			DrawCircleV((Vector2){y*getWidth(), (1-musicTimeToScreen(note->time) / getWidth())*getHeight()}, width/2, WHITE);
 		}
 
 		// DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=getHeight() / 2 -tex.height * scaleNotes/2}, 0,  scaleNotes, colorNoAni);
@@ -273,6 +287,7 @@ void dNotes ()
 {
 	static float fade = 0;
 	float width = getWidth() * 0.01;
+	float height = getHeight() * 0.01;
 	float position = musicTimeToScreen(_musicHead);
 	
 	if(_settings.horizontal)
@@ -297,7 +312,7 @@ void dNotes ()
 
 		float customScale = 0;
 
-		float maxDistance = _scrollSpeed * _maxMargin*2.5*(_settings.noteSize/10.0);
+		float maxDistance = _scrollSpeed * _maxMargin*2.5*(_settings.noteSize/10.0)*(_settings.noteOverlap);
 
 		if(closestNote < maxDistance)
 		{
@@ -330,7 +345,10 @@ void dNotes ()
 
 	}
 
-	DrawRectangle(position - width / 2,0 , width, getHeight(), ColorAlpha(WHITE, 0.5*fade));
+	if(_settings.horizontal)
+		DrawRectangle(position - width / 2,0 , width, getHeight(), ColorAlpha(WHITE, 0.5*fade));
+	else
+		DrawRectangle(0 ,(1-position/getWidth())*getHeight() - height/2, getWidth(), height, ColorAlpha(WHITE, 0.5*fade));
 	if(_isKeyPressed)
 		fade = 1;
 	fade -= GetFrameTime()*10;
