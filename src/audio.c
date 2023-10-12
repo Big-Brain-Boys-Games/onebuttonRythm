@@ -42,6 +42,7 @@ int _effectOffset;
 
 double _musicHead = 0, _musicSpeed = 1;
 bool _musicPlaying = false, _musicLoops = true, _playMenuMusic = true;
+float _musicPreviewTimer = 0;
 
 int _musicFrameCount = 0;
 float _musicPreviewOffset;
@@ -176,6 +177,15 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 		else if (_musicLoops && _pMusic->size > 0)
 			_musicFrameCount = _musicFrameCount % _pMusic->size;
 		_musicFrameCount += frameCount * _musicSpeed;
+
+		if(_musicPreviewTimer > 0)
+		{
+			_musicPreviewTimer -= frameCount / (48000.0*1);
+			if(_musicPreviewTimer <= 0)
+			{
+				stopMusic();
+			}
+		}
 	}
 	if (_menuMusic.size > 0 && _menuMusic.size > _menuMusicFrameCount && _menuMusicFrameCount > 0)
 	{

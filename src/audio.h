@@ -12,6 +12,7 @@ typedef struct Audio
 #ifdef EXTERN_AUDIO
     extern double _musicHead, _musicSpeed;
     extern bool _musicPlaying, _musicLoops, _playMenuMusic;
+    extern float _musicPreviewTimer;
 
     extern int _musicFrameCount;
     extern float _musicPreviewOffset;

@@ -329,7 +329,14 @@ void fPlaying(bool reset)
 					_health -= _missPenalty * getHealthMod() * _papNotes[_noteIndex]->health;
 					_notesMissed++;
 				}
-				_averageAccuracy = ((_averageAccuracy * (_noteIndex - _notesMissed)) + ((1 / margin) * closestTime)) / (_noteIndex - _notesMissed + 1);
+				float newAccuracy = ((_averageAccuracy * (_noteIndex - _notesMissed)) + ((1 / margin) * closestTime)) / (_noteIndex - _notesMissed + 1);
+
+				if (newAccuracy == newAccuracy)
+				{
+					_averageAccuracy = newAccuracy;
+				}else
+					printf("accuracy is nan, not rewriting\n");
+
 				int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / margin)) * _papNotes[_noteIndex]->health;
 				_health += healthAdded * (1 / (getHealthMod() + 0.1));
 				int scoreAdded = noLessThanZero(300 - closestTime * (300 / margin));

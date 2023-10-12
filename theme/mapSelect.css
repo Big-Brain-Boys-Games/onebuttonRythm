@@ -87,6 +87,7 @@
     active: yes;
     growOnHover: 0.3;
     makeActive: mapButtonsContainer;
+    command: "preview _map_name_";
 }
 
 #mapBackground{

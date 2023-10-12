@@ -7,11 +7,13 @@
 #define EXTERN_FILES
 #define EXTERN_GAMEPLAY
 #define EXTERN_MAIN
+#define EXTERN_AUDIO
 
 #include "gameplay/gameplay.h"
 #include "gameplay/playing.h"
 #include "gameplay/editor.h"
 #include "gameplay/menus.h"
+#include "audio.h"
 #include "main.h"
 #include "files.h"
 
@@ -123,6 +125,48 @@ void commandPlay(char * cmd)
         }
     }
     _transition = 0.1;
+}
+
+void commandPreview(char * cmd)
+{
+    char * argument = strtok(cmd, " ");
+
+    char * map = malloc(100);
+    map[0] = '\0';
+    bool NoMap = true;
+
+    while( argument != NULL)
+    {
+        if(argument[0] == "-")
+        {
+            //no flags
+        }else
+        {
+            if(map[0] != '\0')
+                strcat(map, " ");
+            strcat(map, argument);
+            NoMap = false;
+        }
+
+        argument = strtok(NULL, " ");
+    }
+
+    if(NoMap)
+    {
+        commandParser("error no map provided");
+        return;
+    }
+
+    Map * pMap = getMap(map);
+
+    char str[100];
+    snprintf(str, 100, "%s/%s", pMap->folder, pMap->musicFile);
+    loadMusic(&pMap->music, str, pMap->musicPreviewOffset);
+    _playMenuMusic = false;
+    _musicFrameCount = pMap->musicPreviewOffset * 48000 * 2;
+    _musicPlaying = true;
+    _disableLoadingScreen = true;
+    _musicPreviewTimer = 7;
 }
 
 void commandSettings(char * cmd)
@@ -256,10 +300,11 @@ void commandExport(char * cmd)
 Command _commands[] = {
     {commandPrint, "print"},
     {commandError, "error"},
+    {commandPreview, "preview"},
     {commandPlay, "play"},
     {commandEdit, "edit"},
     {commandExport, "export"},
-    {commandSettings, "settings"},
+    {commandSettings, "settings"}
 };
 
 void commandParser(char * line)

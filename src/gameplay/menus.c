@@ -1418,7 +1418,6 @@ void fCSSPage(bool reset)
 	_musicLoops = true;
 	_playMenuMusic = true;
 	_musicPlaying = false;
-
 	ClearBackground(BLACK);
 	drawBackground();
 	drawVignette();
@@ -1882,6 +1881,7 @@ void fMapSelect(bool reset)
 	if (IsKeyPressed(KEY_ESCAPE) || UIBUttonPressed("backButton"))
 	//interactableButton("Back", 0.03, getWidth() * 0.05, getHeight() * 0.05, getWidth() * 0.1, getHeight() * 0.05))
 	{
+		gotoMainMenu(false);
 		_pGameplayFunction = &fMainMenu;
 		_transition = 0.1;
 	}
@@ -1933,12 +1933,12 @@ void fMapSelect(bool reset)
 		searchText->active = search[0] == '\0' && !searchBox->selected &&
 			!mouseInRect((Rectangle){.x=searchBox->x*getWidth(), .y=searchBox->y*getHeight(), .width=searchBox->width*getWidth(), .height=searchBox->height*getHeight()});
 
-	if(selectedMap == -1)
-	{
-		_playMenuMusic = true;
-		_musicPlaying = false;
-		_musicFrameCount = 1;
-	}
+	// if(selectedMap == -1)
+	// {
+	// 	_playMenuMusic = true;
+	// 	_musicPlaying = false;
+	// 	_musicFrameCount = 1;
+	// }
 
 	// draw map button
 	Rectangle mapSelectRect = (Rectangle){.x = 0, .y = getHeight() * 0.13, .width = getWidth(), .height = getHeight()};
