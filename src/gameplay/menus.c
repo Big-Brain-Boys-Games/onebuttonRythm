@@ -1482,6 +1482,7 @@ void fSettings(bool reset)
 	_settings.animations = UIValueInteractable(_settings.animations, "animationsToggle");
 	_settings.customAssets = UIValueInteractable(_settings.customAssets, "customAssetsToggle");
 	_settings.useMapZoom = UIValueInteractable(_settings.useMapZoom, "useMapZoomToggle");
+	_settings.horizontal = UIValueInteractable(_settings.horizontal, "noteDirectionToggle");
 
 	UITextBox(_playerName, "nameBox");
 

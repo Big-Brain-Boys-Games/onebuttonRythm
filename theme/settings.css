@@ -414,3 +414,27 @@
     height: 5;
     keepAspectRatio: yes;
 }
+
+#noteDirectionToggleText {
+    type: text;
+    parent: settingsContainer;
+    color: WHITE;
+    font-size: 3;
+    margin-left: 9;
+    margin-top: 90;
+    width: 30;
+    height: 5;
+    content: "Horizontal notes";
+}
+
+#noteDirectionToggle {
+    type: toggle;
+    parent: settingsContainer;
+    color: WHITE;
+    font-size: 3;
+    margin-left: 18;
+    margin-top: 95;
+    width: 5;
+    height: 5;
+    keepAspectRatio: yes;
+}

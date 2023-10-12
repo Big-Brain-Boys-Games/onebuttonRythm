@@ -1090,7 +1090,8 @@ void loadSettings()
 		if(strcmp(line, "[EditorTestZoom]\n") == 0)			{mode = spEditorTestZoom;		continue;}
 		if(strcmp(line, "[BackgroundDarkness]\n") == 0)		{mode = spBackgroundDarkness;	continue;}
 		if(strcmp(line, "[customNoteHeight]\n") == 0)		{mode = spCustomNoteHeight;		continue;}
-		if(strcmp(line, "[noteOverlap]\n") == 0)			{mode = spNoteOverlap;		continue;}
+		if(strcmp(line, "[noteOverlap]\n") == 0)			{mode = spNoteOverlap;			continue;}
+		if(strcmp(line, "[horizontal]\n") == 0)				{mode = spHorizontal;			continue;}
 
 		
 		for(int i = 0; i < stringLength; i++)
@@ -1150,6 +1151,9 @@ void loadSettings()
 			case spNoteOverlap:
 				_settings.noteOverlap = atof(line);
 				break;
+			case spHorizontal:
+				_settings.horizontal = atoi(line);
+				break;
 		}
 	}
 	fclose(f);
@@ -1194,5 +1198,7 @@ void saveSettings ()
 	fprintf(file, "%f\n", _settings.customNoteHeigth);
 	fprintf(file, "[noteOverlap]\n");
 	fprintf(file, "%f\n", _settings.noteOverlap);
+	fprintf(file, "[horizontal]\n");
+	fprintf(file, "%i\n", _settings.horizontal);
 	fclose(file);
 }

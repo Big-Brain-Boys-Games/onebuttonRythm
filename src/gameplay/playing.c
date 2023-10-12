@@ -231,7 +231,10 @@ void fPlaying(bool reset)
 		rippleEffect[i] += GetFrameTime() * 1200 * rippleEffectStrength[i];
 		rippleEffectStrength[i] = fmax(rippleEffectStrength[i] - GetFrameTime() * 5, 0);
 		float size = rippleEffect[i];
-		DrawRing((Vector2){.x = musicTimeToScreen(_musicHead), .y = getHeight() * 0.5}, size * getWidth() * 0.001, size * 0.7 * getWidth() * 0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i] * 0.35));
+		if(_settings.horizontal)
+			DrawRing((Vector2){.x = musicTimeToScreen(_musicHead), .y = getHeight() * 0.5}, size * getWidth() * 0.001, size * 0.7 * getWidth() * 0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i] * 0.35));
+		else
+			DrawRing((Vector2){.y = (1-musicTimeToScreen(_musicHead)/getWidth())*getHeight(), .x = getWidth() * 0.5}, size * getWidth() * 0.001, size * 0.7 * getWidth() * 0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i] * 0.35));
 	}
 
 	//draw hitpoints
@@ -254,7 +257,10 @@ void fPlaying(bool reset)
 		Vector3 hsv = ColorToHSV(hpColor);
 		hpColor = ColorFromHSV(hsv.x, 0.4, hsv.z);
 
-		DrawCircle( musicTimeToScreen(_musicHead+hitPointTimings[i]), getHeight()*0.4, getWidth()*0.017, ColorAlpha(hpColor, alpha));
+		if(_settings.horizontal)
+			DrawCircle( musicTimeToScreen(_musicHead+hitPointTimings[i]), getHeight()*0.4, getWidth()*0.017, ColorAlpha(hpColor, alpha));
+		else
+			DrawCircle( getWidth()*0.4, (1-musicTimeToScreen(_musicHead+hitPointTimings[i])/getWidth())*getHeight(), getWidth()*0.017, ColorAlpha(hpColor, alpha));
 	}
 
 	dNotes();

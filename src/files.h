@@ -57,6 +57,7 @@ typedef struct Settings{
 	float backgroundDarkness;
 	float customNoteHeigth;
 	float noteOverlap;
+	bool horizontal;
 } Settings;
 
 enum FilePart{
@@ -97,7 +98,8 @@ enum SettingsPart{
 	spEditorTestZoom,
 	spBackgroundDarkness,
 	spCustomNoteHeight,
-	spNoteOverlap
+	spNoteOverlap,
+	spHorizontal
 };
 
 #include "shared.h"

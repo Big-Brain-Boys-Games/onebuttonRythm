@@ -219,18 +219,31 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 			colorNoAni.a = 100;
 		}
 
-		int x = musicTimeToScreen(note->time)- scaleNotes / 2;
-		int y = getHeight() / 2 - scaleNotes/2;
+		scaleNotes /= getWidth();
+
+		float x = musicTimeToScreen(note->time) / getWidth()- scaleNotes / 2;
+		float y = 0.5 - scaleNotes/2;
 
 		if (_pGameplayFunction != &fEditor)
 		{
-			y += getHeight()*note->customHeight*_settings.customNoteHeigth;
+			y += note->customHeight*_settings.customNoteHeigth;
 		}
 
-		int width = scaleNotes;
-		
-		drawTextureCorrectAspectRatio(tex, colorNoAni,
-			(Rectangle){.x=x, .y=y, .width=width, .height=width}, 0);
+		float width = scaleNotes;
+
+
+		if(_settings.horizontal || _pGameplayFunction == &fEditor)
+		{
+			width *= getWidth();
+			drawTextureCorrectAspectRatio(tex, colorNoAni,
+				(Rectangle){.x=x*getWidth(), .y=y*getHeight(), .width=width, .height=width}, 0);
+		}else
+		{
+			width *= getHeight();
+			x = 1-x;
+			drawTextureCorrectAspectRatio(tex, colorNoAni,
+				(Rectangle){.x=y*getWidth(), .y=x*getHeight(), .width=width, .height=width}, 0);
+		}
 
 		// DrawTextureEx(tex, (Vector2){.x=musicTimeToScreen(note->time)- tex.width * scaleNotes / 2, .y=getHeight() / 2 -tex.height * scaleNotes/2}, 0,  scaleNotes, colorNoAni);
 	}
@@ -262,8 +275,16 @@ void dNotes ()
 	float width = getWidth() * 0.01;
 	float position = musicTimeToScreen(_musicHead);
 	
-	DrawRectangle(0, getHeight()*0.35, getWidth(), getHeight()*0.3, ColorAlpha(BLACK, 0.4));
-	DrawRectangleGradientH(0,0 , position - width / 2, getHeight(), ColorAlpha(BLACK, 0.6), ColorAlpha(BLACK, 0.3));
+	if(_settings.horizontal)
+	{
+		DrawRectangle(0, getHeight()*0.35, getWidth(), getHeight()*0.3, ColorAlpha(BLACK, 0.4));
+		DrawRectangleGradientH(0,0 , position - width / 2, getHeight(), ColorAlpha(BLACK, 0.6), ColorAlpha(BLACK, 0.3));
+	}else
+	{
+		DrawRectangle(getWidth()*0.35, 0, getWidth()*0.3, getHeight(), ColorAlpha(BLACK, 0.4));
+		DrawRectangleGradientH(0,(1-position/getWidth())*getHeight() - (width/getWidth()*getHeight()) / 2 , getWidth(), getHeight(), ColorAlpha(BLACK, 0.6), ColorAlpha(BLACK, 0.3));
+	}
+
 	for(int i = _noteIndex >= _amountNotes ? _amountNotes-1 : _noteIndex; i >= 0 && i < _amountNotes && musicTimeToScreen(_papNotes[i]->time) > 0; i--)
 	{
 		if(i < 0) continue;
