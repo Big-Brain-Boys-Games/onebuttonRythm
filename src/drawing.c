@@ -427,27 +427,28 @@ void drawTextureCorrectAspectRatio(Texture2D tex, Color color, Rectangle rect, f
 
 void drawTextInRect(Rectangle rect, char * text, float fontSize, Color color, bool scroll)
 {
-	
 	int length = strlen(text);
 	int lengthPx = measureText(text, fontSize);
-	char* textPointer = text;
+	char str[100];
+	strcpy(str, text);
+	char* textPointer = str;
 	if(lengthPx > rect.width)
 	{
 		int cutoff = length * (rect.width/lengthPx)+1;
 		if(cutoff > length)
 			cutoff = length;
 		
-		if(scroll) { //scroll the text when hovering
+		if(scroll) { //scroll the str when hovering
 			int offset = (int)floor(GetTime()*1.5)%(length-(cutoff-1));
 			textPointer += offset;
-			text[offset+cutoff] = '\0';
+			str[offset+cutoff] = '\0';
 		} else {
 			if(cutoff-2 >= 0)
-				text[cutoff-2] = '.';
+				str[cutoff-2] = '.';
 			if(cutoff-1 >= 0)
-				text[cutoff-1] = '.';
-			text[cutoff] = '.';
-			text[cutoff+1] = '\0';
+				str[cutoff-1] = '.';
+			str[cutoff] = '.';
+			str[cutoff+1] = '\0';
 		}
 	}
 	drawText(textPointer, rect.x, rect.y, fontSize, color);

@@ -183,7 +183,7 @@
 #mapName {
     type: text;
     parent: mapContainer;
-    content: "_map_name_ - _map_arist_";
+    content: "_map_name_ - _map_artist_";
     left: 0;
     top: 82;
     width: 100;

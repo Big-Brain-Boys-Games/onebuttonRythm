@@ -129,8 +129,6 @@ void drawCSS_Object(CSS_Object * object)
 	object->drawTick = _drawTick;
 
 	float scrollValue = 0; //objects cannot scroll themselves
-
-
 	
 	float width = getWidth();
 	float height = getHeight();
@@ -206,6 +204,7 @@ void drawCSS_Object(CSS_Object * object)
 		growAmount *= -1;
 
 
+	Rectangle rectInteract = rect;
 	rect.x -= rect.width*growAmount/2;
 	rect.y -= rect.height*growAmount/2;
 
@@ -245,14 +244,14 @@ void drawCSS_Object(CSS_Object * object)
 
 	
 
-	if(mouseInRect(rect) && IsMouseButtonPressed(0))
+	if(mouseInRect(rectInteract) && IsMouseButtonPressed(0))
 		object->pressedOn = true;
 
 	enum CSS_Type type = object->type;
 
 	if(type == css_toggle || type == css_button || type == css_buttonNoSprite || type == css_slider || type == css_textbox || type == css_numberbox)
 	{
-		if(mouseInRect(rect) && (IsMouseButtonPressed(0) || IsMouseButtonReleased(0)))
+		if(mouseInRect(rectInteract) && (IsMouseButtonPressed(0) || IsMouseButtonReleased(0)))
 		{
 			_anyUIButtonPressed = true;
 
@@ -276,7 +275,7 @@ void drawCSS_Object(CSS_Object * object)
 			if(object->text)
 			{
 				if (object->textClipping)
-					drawTextInRect(rect, object->text, fontSize*getWidth(), object->color, mouseInRect(rect));
+					drawTextInRect(rect, object->text, fontSize*getWidth(), object->color, mouseInRect(rectInteract));
 				else
 					drawText(object->text, rect.x, rect.y, fontSize*getWidth(), object->color);
 			}
@@ -294,7 +293,7 @@ void drawCSS_Object(CSS_Object * object)
 		case css_toggle:
 			object->selected = false;
 
-			if(mouseInRect(rect) && IsMouseButtonReleased(0) && object->pressedOn)
+			if(mouseInRect(rectInteract) && IsMouseButtonReleased(0) && object->pressedOn)
 			{
 				object->value = !object->value;
 				object->selected = true;
@@ -319,13 +318,13 @@ void drawCSS_Object(CSS_Object * object)
 			else
 				drawButton(rect, object->text, fontSize);
 
-			object->selected = mouseInRect(rect) && IsMouseButtonReleased(0) && object->pressedOn;
+			object->selected = mouseInRect(rectInteract) && IsMouseButtonReleased(0) && object->pressedOn;
 			break;
 
 		case css_buttonNoSprite:
 			if (object->opacity > 0)
 				drawButtonNoSprite(rect, object->text, fontSize);
-			object->selected = mouseInRect(rect) && IsMouseButtonReleased(0) && object->pressedOn;
+			object->selected = mouseInRect(rectInteract) && IsMouseButtonReleased(0) && object->pressedOn;
 			break;
 
 		case css_textbox:
@@ -347,7 +346,7 @@ void drawCSS_Object(CSS_Object * object)
 		
 	}
 
-	if(object->scrollable && mouseInRect(rect))
+	if(object->scrollable && mouseInRect(rectInteract))
 	{
 		float frametime = GetFrameTime();
 		if(frametime > 1/MAXFPS)
