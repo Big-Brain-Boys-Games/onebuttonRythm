@@ -44,6 +44,7 @@ enum CSS_Image_State{
     CSSImage_notLoaded,
     CSSImage_loading,
     CSSImage_loaded,
+    CSSImage_rank,
     CSSImage_error
 };
 

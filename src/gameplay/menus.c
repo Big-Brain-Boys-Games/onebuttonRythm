@@ -284,7 +284,11 @@ void drawCSS_Object(CSS_Object * object)
 			break;
 		
 		case css_image:
-			drawTextureCorrectAspectRatio(image, object->color, rect, rotation);
+			if (object->image.state == CSSImage_rank)
+			{
+				drawRank(rect.x, rect.y, rect.width, rect.height, object->value);
+			}else
+				drawTextureCorrectAspectRatio(image, object->color, rect, rotation);
 			break;
 
 		case css_toggle:
@@ -1168,6 +1172,18 @@ void replaceTextVariables(char * str)
 		}else if(strcmp(token, "_map_image_") == 0)
 		{
 			sprintf(newStr, "%s/%s", _map->folder, _map->imageFile);
+		}else if(strcmp(token, "_map_highscore_") == 0)
+		{
+			sprintf(newStr, "%i", _map->highscore);
+		}else if(strcmp(token, "_map_combo_") == 0)
+		{
+			sprintf(newStr, "%i", _map->combo);
+		}else if(strcmp(token, "_map_miss_") == 0)
+		{
+			sprintf(newStr, "%i", _map->misses);
+		}else if(strcmp(token, "_map_accuracy_") == 0)
+		{
+			sprintf(newStr, "%.2f", _map->accuracy);
 		}else {
 			strcat(newStr, token);
 		}
@@ -1219,6 +1235,31 @@ CSS_Object * makeCSS_ObjectClone(CSS_Object object)
 	if(new->image.file)
 	{
 		replaceTextVariables(new->image.file);
+	}
+
+
+	// printf("new name %s\n", new->name);
+	if(!strcmp(new->name, "highscoreContainer"))
+	{
+		if(_map)
+		{
+			if(_map->highscore)
+			{
+				new->active = true;
+			}
+		}
+	}
+
+	if(!strcmp(new->text, "_map_rank_"))
+	{
+		if(_map)
+		{
+			if(_map->highscore)
+			{
+				printf("_map_rank_\n");
+				new->image.state = CSSImage_rank;
+			}
+		}
 	}
 
 	int index = new-_pCSS->objects;
@@ -1429,6 +1470,7 @@ void fSettings(bool reset)
 	_settings.volumeSoundEffects = UIValueInteractable(_settings.volumeSoundEffects, "effectVolume");
 
 	_settings.customNoteHeigth = UIValueInteractable(_settings.customNoteHeigth*100, "customNoteHeight")/100.0;
+	_settings.noteOverlap = UIValueInteractable(_settings.noteOverlap*100, "noteOverlap")/100.0;
 	_settings.zoom = UIValueInteractable(_settings.zoom, "zoomSlider");
 	_settings.noteSize = UIValueInteractable(_settings.noteSize, "noteSizeSlider");
 	_settings.offset = UIValueInteractable(_settings.offset, "offsetSlider");

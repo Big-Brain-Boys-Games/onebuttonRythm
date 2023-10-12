@@ -367,6 +367,30 @@
     growOnHover: 0.05;
 }
 
+#noteOverlapText {
+    type: text;
+    parent: settingsContainer;
+    color: WHITE;
+    font-size: 3;
+    margin-left: 53;
+    margin-top: 90;
+    width: 40;
+    height: 5;
+    content: "note overlap";
+}
+
+#noteOverlap {
+    type: slider;
+    parent: settingsContainer;
+    min: 1;
+    max: 100;
+    margin-left: 55;
+    margin-top: 95;
+    width: 30;
+    height: 3;
+    growOnHover: 0.05;
+}
+
 #useMapZoomText {
     type: text;
     parent: settingsContainer;

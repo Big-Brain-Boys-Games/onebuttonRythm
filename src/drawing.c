@@ -298,7 +298,7 @@ void dNotes ()
 
 		float customScale = 0;
 
-		float maxDistance = _scrollSpeed * _maxMargin*2.5*(_settings.noteSize/10.0);
+		float maxDistance = _scrollSpeed * _maxMargin*2.5*(_settings.noteSize/10.0)*(_settings.noteOverlap);
 
 		if(closestNote < maxDistance)
 		{
