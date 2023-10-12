@@ -112,7 +112,7 @@
     type: button;
     image: assets/icons/retry.png;
     left: 10;
-    top: 80;
+    top: 70;
     width: 12;
     height: 12;
     growOnHover: 0.1;
@@ -123,7 +123,7 @@
     type: button;
     image: assets/icons/exit.png;
     left: 20;
-    top: 79;
+    top: 69;
     width: 15;
     height: 15;
     growOnHover: 0.1;
