@@ -309,7 +309,7 @@ void dNotes ()
 	}
 
 	//draw notes before line
-	for(int i = _noteIndex >= _amountNotes ? _amountNotes-1 : _noteIndex; i < _amountNotes && i>= 0 && musicTimeToScreen(_papNotes[i]->time) < getWidth(); i++)
+	for(int i = _noteIndex >= _amountNotes ? _amountNotes-1 : _noteIndex; i < _amountNotes && i>= 0 && musicTimeToScreen(_papNotes[i]->time) < getWidth()*1.5; i++)
 	{
 		float closestNote = 999;
 		if(i != 0)

@@ -1,0 +1,56 @@
+#continueButton{
+    type: button;
+    image: assets/icons/play.png;
+    left: 45;
+    top: 30;
+    width: 7;
+    height: 7;
+    keepAspectRatio: yes;
+    growOnHover: 0.1;
+}
+
+#retryButton{
+    type: button;
+    image: assets/icons/retry.png;
+    margin-left: -7;
+    margin-top: 15;
+    width: 7;
+    height: 7;
+    keepAspectRatio: yes;
+    growOnHover: 0.1;
+    rotateOnHover: -90;
+}
+
+#saveButton{
+    type: button;
+    image: assets/icons/save.png;
+    margin-left: 7;
+    margin-top: 0;
+    width: 7;
+    height: 7;
+    keepAspectRatio: yes;
+    growOnHover: 0.1;
+}
+
+#editButton{
+    type: button;
+    image: assets/icons/edit.png;
+    margin-left: 7;
+    margin-top: 0;
+    width: 7;
+    height: 7;
+    keepAspectRatio: yes;
+    growOnHover: 0.1;
+}
+
+#exitButton{
+    type: button;
+    image: assets/icons/exit.png;
+    margin-left: -7;
+    margin-top: 15;
+    width: 7;
+    height: 7;
+    keepAspectRatio: yes;
+    growOnHover: 0.1;
+    rotateOnHover: 10;
+}

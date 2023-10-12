@@ -1,0 +1,384 @@
+#titleDarkening {
+    type: rectangle;
+    color: BLACK;
+    opacity: 0.7;
+    x: 0;
+    y: 0;
+    width: 100;
+    height: 13;
+}
+
+#backButton {
+    type: button;
+    image: "assets/icons/back.png";
+    left: 5;
+    top: 3;
+    width: 8;
+    height: 8;
+    growOnHover: 0.2;
+    keepAspectRatio: yes;
+    rotateOnHover: -10;
+}
+
+#modsButton {
+    type: button;
+    content: "Mods";
+    font-size: 2.5;
+    left: 20;
+    top: 4;
+    width: 10;
+    height: 5;
+    growOnHover: 0.2;
+}
+
+#searchBox {
+    type: textbox;
+    content: "";
+    font-size: 2.5;
+    left: 38;
+    top: 4;
+    width: 60;
+    height: 5;
+    growOnHover: 0.2;
+}
+
+#searchText {
+    type: image;
+    image: "assets/icons/zoom.png";
+    left: 38;
+    top: 4;
+    width: 5;
+    height: 5;
+    color: DARKGRAY;
+    keepAspectRatio: yes;
+}
+
+#allMaps{
+    type: container;
+    left: 0;
+    top: 13;
+    width: 100;
+    height: 87;
+    active: yes;
+}
+
+#maps{
+    type: array;
+    parent: allMaps;
+    content: "maps";
+    scrollable: yes;
+    left: 0;
+    top: 0;
+    width: 100;
+    height: 100;
+}
+
+#mapContainer{
+    parent: maps;
+    type: buttonNoSprite;
+    opacity: 0;
+    scrollable: no;
+    left: 0;
+    top: 0;
+    width: 25;
+    height: 35;
+    padding-left: 5;
+    padding-top: 10;
+    active: yes;
+    growOnHover: 0.3;
+    makeActive: mapButtonsContainer;
+}
+
+#mapBackground{
+    type: rectangle;
+    parent: mapContainer;
+    color: BLACK;
+    left: 0;
+    top: 0;
+    width: 100;
+    height: 90;
+}
+
+#mapImage {
+    type: image;
+    content: "_map_image_";
+    image: "_map_image_";
+    parent: mapContainer;
+    left: 0;
+    top: 0;
+    width: 100;
+    height: 80;
+    color: WHITE;
+}
+
+#mapStatsDarkening{
+    type: rectangle;
+    parent: mapContainer;
+    color: BLACK;
+    opacity: 0.8;
+    top: 4;
+    left: 4;
+    width: 30;
+    height: 30;
+}
+
+#difficultyIcon {
+    type: image;
+    parent: mapContainer;
+    image: "assets/icons/star.png";
+    top: 5;
+    left: 5;
+    width: 11;
+    height: 11;
+    keepAspectRatio: yes;
+    color: WHITE;
+}
+
+#difficulty {
+    type: text;
+    parent: mapContainer;
+    content: _map_difficulty_;
+    top: 5;
+    left: 12;
+    font-size: 2.7;
+    width: 2;
+    height: 5;
+    color: WHITE;
+}
+
+#timeIcon {
+    type: image;
+    parent: mapContainer;
+    image: "assets/icons/clock.png";
+    top: 19.5;
+    left: 5;
+    width: 8;
+    height: 8;
+    keepAspectRatio: yes;
+    color: WHITE;
+}
+
+#songLength {
+    type: text;
+    parent: mapContainer;
+    content: _map_time_;
+    top: 19;
+    left: 11;
+    font-size: 1.9;
+    width: 2;
+    height: 2;
+    color: WHITE;
+}
+
+#mapBar {
+    type: rectangle;
+    parent: mapContainer;
+    left: 0;
+    top: 80;
+    width: 100;
+    height: 20;
+    color: WHITE;
+}
+
+#mapName {
+    type: text;
+    parent: mapContainer;
+    content: "_map_name_ - _map_arist_";
+    left: 0;
+    top: 82;
+    width: 100;
+    height: 20;
+    font-size: 3;
+    textClipping: yes;
+    color: DARKGRAY;
+}
+
+#highscoreContainer{
+    type: container;
+    parent: mapContainer;
+    scrollable: no;
+    left: 20;
+    top: 0;
+    width: 80;
+    height: 100;
+    active: no;
+}
+
+#highscoreBackground{
+    type: rectangle;
+    parent: highscoreContainer;
+    left: 65;
+    top: 5;
+    width: 40;
+    height: 38;
+    color: BLACK;
+    opacity: 0.8;
+}
+
+#difficultyIcon {
+    type: image;
+    parent: highscoreContainer;
+    image: "assets/icons/trophy.png";
+    top: 17;
+    left: 69;
+    width: 20;
+    height: 20;
+    centered: yes;
+    keepAspectRatio: yes;
+    color: WHITE;
+}
+
+#highscoreText{
+    type: text;
+    parent: highscoreContainer;
+    content: "_map_highscore_";
+    left: 74;
+    top: 6;
+    width: 2;
+    textClipping: no;
+    color: WHITE;
+    font-size: 1.5;
+}
+
+#comboText{
+    type: text;
+    parent: highscoreContainer;
+    content: "combo";
+    left: 74;
+    top: 17;
+    width: 2;
+    textClipping: no;
+    color: WHITE;
+    font-size: 1.1;
+}
+
+#comboValue{
+    type: text;
+    parent: highscoreContainer;
+    content: "_map_combo_";
+    left: 100;
+    top: 17.5;
+    width: 2;
+    textClipping: no;
+    color: WHITE;
+    font-size: 1;
+}
+
+#missesText{
+    type: text;
+    parent: highscoreContainer;
+    content: "Miss";
+    left: 74;
+    top: 24;
+    width: 2;
+    textClipping: no;
+    color: WHITE;
+    font-size: 1.1;
+}
+
+#missesValue{
+    type: text;
+    parent: highscoreContainer;
+    content: "_map_miss_";
+    left: 100;
+    top: 24;
+    width: 2;
+    textClipping: no;
+    color: WHITE;
+    font-size: 1.3;
+}
+
+#accuracyText{
+    type: text;
+    parent: highscoreContainer;
+    content: "_map_accuracy_";
+    left: 74;
+    top: 31;
+    width: 2;
+    textClipping: no;
+    color: WHITE;
+    font-size: 1.5;
+}
+
+#accuracyProcent{
+    type: text;
+    parent: highscoreContainer;
+    content: "%";
+    left: 100;
+    top: 31;
+    width: 2;
+    textClipping: no;
+    color: WHITE;
+    font-size: 1.5;
+}
+
+#rank{
+    type: image;
+    parent: highscoreContainer;
+    content: "_map_rank_";
+    left: 70;
+    top: 45;
+    width: 30;
+    height: 30;
+}
+
+#mapButtonsContainer{
+    type: container;
+    parent: mapContainer;
+    scrollable: no;
+    left: 0;
+    top: 25;
+    width: 100;
+    height: 100;
+    active: no;
+}
+
+#mapButtonBackground{
+    type: rectangle;
+    parent: mapButtonsContainer;
+    left: 0;
+    top: 75;
+    width: 100;
+    height: 20;
+    color: DARKBLUE;
+    opacity: 1;
+}
+
+#playButton{
+    type: button;
+    parent: mapButtonsContainer;
+    image: assets/icons/play.png;
+    command: "play _map_name_";
+    color: BLACK;
+    left: 0;
+    top: 77;
+    width: 33;
+    height: 16;
+    growOnHover: 0.1;
+}
+
+#editorButton{
+    type: button;
+    parent: mapButtonsContainer;
+    image: assets/icons/edit.png;
+    command: "edit _map_name_";
+    color: BLACK;
+    left: 33;
+    top: 76;
+    width: 33;
+    height: 20;
+    growOnHover: 0.1;
+}
+
+#exportButton{
+    type: button;
+    parent: mapButtonsContainer;
+    image: assets/icons/export.png;
+    command: "export _map_name_";
+    color: BLACK;
+    left: 66;
+    top: 76;
+    width: 33;
+    height: 18;
+    growOnHover: 0.1;
+}

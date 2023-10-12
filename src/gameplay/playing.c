@@ -134,14 +134,16 @@ void fCountDown(bool reset)
 #define HITPOINTAMOUNT 10
 
 #define RippleAmount 10
-#define addRipple(newRipple)                             \
+#define addRipple(newRipple, position)                             \
 	rippleEffect[rippleEffectIndex] = 0;                 \
 	rippleEffectStrength[rippleEffectIndex] = newRipple; \
+	rippleEffectPosition[rippleEffectIndex] = position; \
 	rippleEffectIndex = (rippleEffectIndex + 1) % RippleAmount;
 void fPlaying(bool reset)
 {
 	static float rippleEffect[RippleAmount] = {0};
 	static float rippleEffectStrength[RippleAmount] = {0};
+	static Vector2 rippleEffectPosition[RippleAmount] = {0};
 	static int rippleEffectIndex = 0;
 	static float smoothHealth = 50;
 
@@ -232,9 +234,9 @@ void fPlaying(bool reset)
 		rippleEffectStrength[i] = fmax(rippleEffectStrength[i] - GetFrameTime() * 5, 0);
 		float size = rippleEffect[i];
 		if(_settings.horizontal)
-			DrawRing((Vector2){.x = musicTimeToScreen(_musicHead), .y = getHeight() * 0.5}, size * getWidth() * 0.001, size * 0.7 * getWidth() * 0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i] * 0.35));
+			DrawRing((Vector2){.x = rippleEffectPosition[i].x*getWidth(), .y = getHeight() * rippleEffectPosition[i].y}, size * getWidth() * 0.001, size * 0.7 * getWidth() * 0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i] * 0.35));
 		else
-			DrawRing((Vector2){.y = (1-musicTimeToScreen(_musicHead)/getWidth())*getHeight(), .x = getWidth() * 0.5}, size * getWidth() * 0.001, size * 0.7 * getWidth() * 0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i] * 0.35));
+			DrawRing((Vector2){.y = (1-rippleEffectPosition[i].x)*getHeight(), .x = getWidth() * rippleEffectPosition[i].y}, size * getWidth() * 0.001, size * 0.7 * getWidth() * 0.001, 0, 360, 50, ColorAlpha(WHITE, rippleEffectStrength[i] * 0.35));
 	}
 
 	//draw hitpoints
@@ -331,17 +333,19 @@ void fPlaying(bool reset)
 				int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / margin)) * _papNotes[_noteIndex]->health;
 				_health += healthAdded * (1 / (getHealthMod() + 0.1));
 				int scoreAdded = noLessThanZero(300 - closestTime * (300 / margin));
+				Vector2 position = (Vector2){musicTimeToScreen(_papNotes[closestIndex]->time)/getWidth(),
+					0.5+_papNotes[closestIndex]->customHeight*_settings.customNoteHeigth};
 				if (scoreAdded > 200)
 				{
-					addRipple(1.5);
+					addRipple(1.5, position);
 				}
 				else if (scoreAdded > 100)
 				{
-					addRipple(1);
+					addRipple(1, position);
 				}
 				else
 				{
-					addRipple(0.6);
+					addRipple(0.6, position);
 				}
 				_score += scoreAdded * (1 + _combo / 100) * getScoreMod();
 				_papNotes[_noteIndex]->hit = 1;

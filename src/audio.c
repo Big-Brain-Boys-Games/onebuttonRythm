@@ -152,8 +152,12 @@ void loadAudio(Audio * audio, char *file)
 	args->audioLength = &audio->size;
 	args->buffer = (void*)&audio->data;
 	args->file = malloc(100);
-	strncpy(args->file, file, 100);
+	strcpy(args->file, file);
+	#ifdef __unix
 	createThread((void *(*)(void *))decodeAudio, args);
+	#else
+	createThread((DWORD WINAPI *(*)(void *))decodeAudio, args);
+	#endif
 }
 
 void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount)

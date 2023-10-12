@@ -1,0 +1,118 @@
+#darkenBackground{
+    type: rectangle;
+    left: 0;
+    top: 0;
+    width: 100;
+    height: 70;
+    color: BLACK;
+    opacity: 0.8;
+}
+
+#pageTitle{
+    type:text;
+    content: "Note Settings";
+    color: WHITE;
+    font-size: 3.3;
+    left: 42;
+    top: 3;
+    width: 100;
+}
+
+#backButton{
+    type: button;
+    left: 83;
+    top: 25;
+    width: 15;
+    height: 7;
+    content: "Back";
+    font-size: 3;
+    color: WHITE;
+    growOnHover: 0.1;
+}
+
+#animationButton{
+    type: button;
+    left: 83;
+    top: 35;
+    width: 15;
+    height: 7;
+    content: "Animation";
+    font-size: 3;
+    color: WHITE;
+    growOnHover: 0.1;
+}
+
+#removeAnimationButton{
+    type: button;
+    left: 75;
+    top: 45;
+    width: 25;
+    height: 7;
+    content: "Reset Animation";
+    font-size: 3;
+    color: WHITE;
+    growOnHover: 0.1;
+}
+
+#textureFileBox{
+    type: textbox;
+    left: 40;
+    top: 12;
+    width: 30;
+    height: 5;
+    growOnHover: 0.1;
+}
+
+#hitSoundBox{
+    type: textbox;
+    margin-left: 0;
+    margin-top: 6;
+    width: 30;
+    height: 5;
+    growOnHover: 0.1;
+}
+
+#healthBox{
+    type: numberbox;
+    margin-left: 10;
+    margin-top: 6;
+    width: 10;
+    height: 5;
+    min: 0;
+    max: 20;
+    font-size: 3;
+    growOnHover: 0.1;
+}
+
+#TextureText{
+    type: text;
+    left: 22;
+    top: 13;
+    width: 30;
+    height: 5;
+    font-size: 2.5;
+    content: "Texture";
+    color: WHITE;
+}
+
+#SoundText{
+    type: text;
+    margin-left: 0;
+    margin-top: 6;
+    width: 30;
+    height: 5;
+    font-size: 2.5;
+    content: "Sound";
+    color: WHITE;
+}
+
+#healthText{
+    type: text;
+    margin-left: 0;
+    margin-top: 6;
+    width: 30;
+    height: 5;
+    font-size: 2.5;
+    content: "Damage";
+    color: WHITE;
+}
