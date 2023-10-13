@@ -234,6 +234,19 @@ void drawCSS_Object(CSS_Object * object)
 	if(rect.y > getHeight())
 		skip = true;
 
+	if(_scissorMode)
+	{
+		if(rect.x + rect.width < _scissors[_scissorIndex].x)
+			skip = true;
+		if(rect.x > _scissors[_scissorIndex].width+_scissors[_scissorIndex].x)
+			skip = true;
+
+		if(rect.y + rect.height < _scissors[_scissorIndex].y)
+			skip = true;
+		if(rect.y > _scissors[_scissorIndex].y + _scissors[_scissorIndex].height)
+			skip = true;
+	}
+
 	if(skip)
 	{
 		for(;scissors>0; scissors--)
@@ -243,8 +256,7 @@ void drawCSS_Object(CSS_Object * object)
 	}
 
 	
-
-	if(mouseInRect(rectInteract) && IsMouseButtonPressed(0))
+	if(mouseInRect(rectInteract) && IsMouseButtonPressed(0) && (!_scissorMode || mouseInRect(_scissors[_scissorIndex])))
 		object->pressedOn = true;
 
 	enum CSS_Type type = object->type;

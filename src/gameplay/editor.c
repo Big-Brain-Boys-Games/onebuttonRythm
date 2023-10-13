@@ -861,13 +861,21 @@ void fEditor(bool reset)
 		scrollNeedsReset = true;
 	}
 
+	static bool playAfterUngrab = false;
+	static bool pausedBecauseGrab = false;
+	
 	if(drawProgressBarI(true))
-		_musicPlaying = false;
-
-	if(UIBUttonPressed("editorTestZoomToggle"))
 	{
-		printf("haha");
+		_musicPlaying = false;
+		pausedBecauseGrab = true;
+	}else
+	{
+		if(pausedBecauseGrab)
+			_musicPlaying = playAfterUngrab;
+		pausedBecauseGrab = false;
+		playAfterUngrab = _musicPlaying;
 	}
+
 	_settings.editorTestZoom = UIValueInteractable(_settings.editorTestZoom, "editorTestZoomToggle");
 
 	CSS_Object * playButton = getCSS_ObjectPointer("playButton");
@@ -1218,7 +1226,7 @@ void fEditor(bool reset)
 	}
 
 	if(UISelected("zoomSlider"))
-		_wantedScrollSpeed = UIValueInteractable(_wantedScrollSpeed*10, "zoomSlider") / 10.0;
+		_wantedScrollSpeed = sqrtf(UIValueInteractable(_wantedScrollSpeed*_wantedScrollSpeed*10, "zoomSlider")) / 10.0;
 
 	if(UIBUttonPressed("zoomResetButton"))
 		_wantedScrollSpeed = 4.2 / _map->zoom;

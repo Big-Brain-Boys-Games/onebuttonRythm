@@ -487,10 +487,12 @@ void fEndScreen(bool reset)
 	if(UIBUttonPressed("retryButton"))
 	{
 		// retrying map
-		printf("retrying map! \n");
-
-		_pGameplayFunction = &fCountDown;
+		printf("retrying map! \n");	
+		_pGameplayFunction = fCountDown;
+		_noteIndex = 0;
 		fCountDown(true);
+		fPlaying(true);
+		_transition = 0.1;
 		_musicHead = 0;
 		_transition = 0.1;
 	}
@@ -538,9 +540,11 @@ void fFail(bool reset)
 	{
 		// retrying map
 		printf("retrying map! \n");
-		_pGameplayFunction = &fCountDown;
-		fCountDown(true);
+		_pGameplayFunction = fCountDown;
+		_noteIndex = 0;
 		_musicHead = 0;
+		fCountDown(true);
+		fPlaying(true);
 		_transition = 0.7;
 	}
 	if (UIBUttonPressed("exitButton"))

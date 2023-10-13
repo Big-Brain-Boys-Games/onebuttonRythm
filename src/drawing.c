@@ -273,7 +273,7 @@ void drawNote(float musicTime, Note * note, Color color, float customScaling)
 		pos.x = x + (pos.x-0.5)*2*getWidth();
 		pos.y *= getHeight();
 		
-		if(_settings.horizontal)
+		if(_settings.horizontal || _pGameplayFunction == fEditor)
 		{
 			pos.x -= scaleNotes/2;
 			pos.y -= scaleNotes/2;
@@ -301,7 +301,7 @@ void dNotes ()
 	float height = getHeight() * 0.01;
 	float position = musicTimeToScreen(_musicHead);
 	
-	if(_settings.horizontal)
+	if(_settings.horizontal || _pGameplayFunction == fEditor)
 	{
 		DrawRectangle(0, getHeight()*0.35, getWidth(), getHeight()*0.3, ColorAlpha(BLACK, 0.4));
 		DrawRectangleGradientH(0,0 , position - width / 2, getHeight(), ColorAlpha(BLACK, 0.6), ColorAlpha(BLACK, 0.3));
@@ -356,7 +356,7 @@ void dNotes ()
 
 	}
 
-	if(_settings.horizontal)
+	if(_settings.horizontal  || _pGameplayFunction == fEditor)
 		DrawRectangle(position - width / 2,0 , width, getHeight(), ColorAlpha(WHITE, 0.5*fade));
 	else
 		DrawRectangle(0 ,(1-position/getWidth())*getHeight() - height/2, getWidth(), height, ColorAlpha(WHITE, 0.5*fade));
@@ -616,7 +616,9 @@ bool drawProgressBarI(bool interActable)
 	{
 		float x = getMusicPosition()/ getMusicDuration()*getWidth();
 		float y = getHeight()*0.94;
-		if((fDistance(x, y, GetMouseX(), GetMouseY()) < getWidth()*0.03 && IsMouseButtonDown(0)) || isGrabbed)
+		// if((fDistance(x, y, GetMouseX(), GetMouseY()) < getWidth()*0.03 && IsMouseButtonDown(0)) || isGrabbed)
+		if((mouseInRect((Rectangle){getWidth()*0.01, getHeight()*0.93, getWidth()*0.98, getHeight()*0.02}) && IsMouseButtonDown(0)) || 
+			(fDistance(x, y, GetMouseX(), GetMouseY()) < getWidth()*0.03 && IsMouseButtonDown(0)) ||isGrabbed)
 		{
 			isGrabbed = true;
 			_musicHead = clamp(GetMouseX()/(float)getWidth()*getMusicDuration(), 0, getMusicDuration());

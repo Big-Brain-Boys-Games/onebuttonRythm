@@ -26,6 +26,10 @@
 
     extern float _hitPart;
 
+    extern Rectangle _scissors[];
+    extern int _scissorIndex;
+    extern bool _scissorMode;
+
 #endif
 
 void startScissor(int x, int y, int width, int height);
