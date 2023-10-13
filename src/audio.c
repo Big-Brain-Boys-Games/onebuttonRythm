@@ -169,9 +169,15 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 		int tmpFrameCount = _musicFrameCount - _framesOffset*_musicSpeed;
 		if (_pMusic->size > 0 && _pMusic->size > tmpFrameCount && tmpFrameCount > 0) 
 		{
+			static float smoothing = 0;
 			for (int i = 0; i < frameCount * 2; i++)
 			{
 				((float *)pOutput)[i] = _pMusic->data[(int)(i * _musicSpeed + tmpFrameCount * 2)] * _musicVolume;
+				if(_musicSpeed < 1)
+				{
+					smoothing = (((float *)pOutput)[i] + smoothing) / 2;
+					((float *)pOutput)[i] = smoothing;
+				}
 			}
 		}
 		else if (_musicLoops && _pMusic->size > 0)

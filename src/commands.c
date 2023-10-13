@@ -39,7 +39,6 @@ Map * getMap(char * name)
 
     for(int i = 0; i < _mapsCount; i++)
     {
-        printf("\"%s\" == \"%s\"\n", _paMaps[i].name, name);
         if(strcmp(_paMaps[i].name, name) == 0)
         {
             return &_paMaps[i];
