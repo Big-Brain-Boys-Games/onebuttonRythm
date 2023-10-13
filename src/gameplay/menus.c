@@ -1593,7 +1593,8 @@ void fPause(bool reset)
 	if(UIBUttonPressed("editButton"))
 	{
 		_pGameplayFunction = &fEditor;
-		fEditor(true);
+		if(_pNextGameplayFunction != &fEditor)
+			fEditor(true);
 
 		for(int i = 0; i < _amountNotes; i++)
 			_papNotes[i]->hit = false;
