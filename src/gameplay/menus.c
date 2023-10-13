@@ -824,6 +824,7 @@ void loadCSS(char * fileName)
 							{
 								object.command = malloc(100);
 								strncpy(object.command, value, 100);
+								replaceTextVariables(object.command);
 							}
 						}
 
@@ -1548,7 +1549,7 @@ void fPause(bool reset)
 
 	drawProgressBar();
 
-	if (IsKeyPressed(KEY_ESCAPE) || UIBUttonPressed("continueButton"))
+	if (IsKeyPressed(KEY_ESCAPE))
 	{
 		if (_pNextGameplayFunction == &fPlaying)
 		{
@@ -1560,8 +1561,25 @@ void fPause(bool reset)
 			_pGameplayFunction = _pNextGameplayFunction;
 	}
 
+	if(UIBUttonPressed("continueButton"))
+	{
+		if(_pNextGameplayFunction == &fEditor)
+		{
+			_fromEditor = true;
+			for(_noteIndex = 0; _noteIndex < _amountNotes; _noteIndex++)
+			{
+				if(_papNotes[_noteIndex]->time > getMusicHead())
+					break;
+			}
+		}
+		_pNextGameplayFunction = &fPlaying;
+		_pGameplayFunction = &fCountDown;
+		fCountDown(true);
+		_transition = 0.1;
+	}
+
 	UISetActive("retryButton", (_pNextGameplayFunction == &fPlaying || _pNextGameplayFunction == &fRecording));
-	UISetActive("editButton", (_pNextGameplayFunction == &fPlaying));
+	// UISetActive("editButton", (_pNextGameplayFunction == &fPlaying));
 	UISetActive("saveButton", (_pNextGameplayFunction == &fEditor));
 
 	if (UIBUttonPressed("saveButton"))

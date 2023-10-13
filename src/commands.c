@@ -39,6 +39,7 @@ Map * getMap(char * name)
 
     for(int i = 0; i < _mapsCount; i++)
     {
+        printf("\"%s\" == \"%s\"\n", _paMaps[i].name, name);
         if(strcmp(_paMaps[i].name, name) == 0)
         {
             return &_paMaps[i];
@@ -58,6 +59,8 @@ void commandPlay(char * cmd)
     char * map = malloc(100);
     map[0] = '\0';
     bool NoMap = true;
+
+    _fromEditor = _pNextGameplayFunction == fEditor;
 
     while( argument != NULL)
     {
@@ -109,8 +112,8 @@ void commandPlay(char * cmd)
     {
         _pGameplayFunction = &fCountDown;
 
-        if(reset)
-            fCountDown(true);
+        // if(reset)
+        fCountDown(true);
     }
 
     if(reset)

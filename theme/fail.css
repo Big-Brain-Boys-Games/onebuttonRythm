@@ -50,6 +50,17 @@
     growOnHover: 0.1;
 }
 
+#editButton{
+    type: button;
+    image: assets/icons/edit.png;
+    top: 75;
+    left: 30;
+    width: 10;
+    height: 10;
+    keepAspectRatio: yes;
+    growOnHover: 0.1;
+}
+
 #scoreText{
     type: text;
     content: "Score";

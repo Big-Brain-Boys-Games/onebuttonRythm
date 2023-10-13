@@ -8,7 +8,6 @@
     extern float _health = 50;
     extern int _missPenalty = 5;
     extern int _hitPoints = 5;
-
 #endif
 
 

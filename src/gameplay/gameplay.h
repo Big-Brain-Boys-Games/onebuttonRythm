@@ -26,6 +26,7 @@
 	extern void (*_pGameplayFunction)(bool);
 
 	extern char _notfication[100];
+	extern bool _fromEditor;
 
 #endif
 

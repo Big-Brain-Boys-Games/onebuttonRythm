@@ -33,6 +33,7 @@ int _noteIndex = 0, _amountNotes = 0, _notesMissed = 0;
 float _scrollSpeed = 0.6, _wantedScrollSpeed = 0.6, _maxMargin = 0.1, _averageAccuracy = 0;
 int _score, _combo, _highestCombo;
 bool _noBackground = false;
+bool _fromEditor = false;
 
 Note ** _papNotes = 0;
 

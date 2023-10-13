@@ -202,7 +202,7 @@ void fPlaying(bool reset)
 	{
 		stopMusic();
 		readScore(_map);
-		if (_map->highscore < _score || rankCalculation(_score, _combo, _notesMissed, _averageAccuracy) > _map->rank)
+		if (!_fromEditor && (_map->highscore < _score || rankCalculation(_score, _combo, _notesMissed, _averageAccuracy) > _map->rank))
 		{
 			// _mapRefresh = true; //to show new rank
 			saveScore();
@@ -336,13 +336,15 @@ void fPlaying(bool reset)
 				}
 				float newAccuracy = ((_averageAccuracy * (_noteIndex - _notesMissed)) + ((1 / margin) * closestTime)) / (_noteIndex - _notesMissed + 1);
 
-				if (newAccuracy == newAccuracy)
+				if (newAccuracy == newAccuracy && !isinf(newAccuracy))
 				{
 					_averageAccuracy = newAccuracy;
 				}else
 					printf("accuracy is nan, not rewriting\n");
 
-				int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / margin)) * _papNotes[_noteIndex]->health;
+				int healthAdded = noLessThanZero(_hitPoints - closestTime * (_hitPoints / margin))-1;
+				if(healthAdded < 0)
+					healthAdded *= _papNotes[_noteIndex]->health;
 				_health += healthAdded * (1 / (getHealthMod() + 0.1)) - 1;
 				int scoreAdded = noLessThanZero(300 - closestTime * (300 / margin));
 				Vector2 position = (Vector2){musicTimeToScreen(_papNotes[closestIndex]->time)/getWidth(),
@@ -554,6 +556,14 @@ void fFail(bool reset)
 		unloadMap();
 		gotoMainMenu(false);
 		_pNextGameplayFunction = &fPlaying;
+		_transition = 0.1;
+	}
+	if (UIBUttonPressed("editButton"))
+	{
+		// exiting map
+		fEditor(true);
+		_pGameplayFunction = &fEditor;
+		_pNextGameplayFunction = &fEditor;
 		_transition = 0.1;
 	}
 	drawCursor();
